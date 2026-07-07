@@ -55,5 +55,16 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             gfx.fill(leftPos + ENERGY_X, topPos + ENERGY_Y + (ENERGY_HEIGHT - filled),
                     leftPos + ENERGY_X + ENERGY_WIDTH, topPos + ENERGY_Y + ENERGY_HEIGHT, ENERGY_COLOR);
         }
+
+        // Тултипы: значения энергии на шкале, проценты на стрелке
+        if (isHovering(ENERGY_X - 1, ENERGY_Y - 1, ENERGY_WIDTH + 2, ENERGY_HEIGHT + 2, mouseX, mouseY)) {
+            gfx.setTooltipForNextFrame(font, Component.translatable("tooltip.spacereloaded.energy",
+                    menu.energy(), menu.energyCapacity()), mouseX, mouseY);
+        }
+        if (isHovering(arrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT, mouseX, mouseY)) {
+            int percent = 100 * menu.progress() / menu.maxProgress();
+            gfx.setTooltipForNextFrame(font, Component.translatable("tooltip.spacereloaded.progress",
+                    percent), mouseX, mouseY);
+        }
     }
 }

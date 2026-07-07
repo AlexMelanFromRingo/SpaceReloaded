@@ -12,6 +12,8 @@ public final class ModTags {
     public static final TagKey<Block> AIRTIGHT = block("airtight");
     /** Принудительно газопроницаемые (решётки, вентиляция) — сильнее автоправила. */
     public static final TagKey<Block> PASSES_GAS = block("passes_gas");
+    /** К чему визуально стыкуются энергокабели. */
+    public static final TagKey<Block> ENERGY_CONNECTABLE = block("energy_connectable");
 
     private static TagKey<Block> block(String name) {
         return TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name));

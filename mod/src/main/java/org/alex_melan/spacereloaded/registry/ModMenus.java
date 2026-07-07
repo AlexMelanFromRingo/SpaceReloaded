@@ -6,7 +6,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import org.alex_melan.spacereloaded.SpaceReloaded;
+import org.alex_melan.spacereloaded.energy.BatteryMenu;
 import org.alex_melan.spacereloaded.machine.AssemblyTableMenu;
+import org.alex_melan.spacereloaded.machine.GeneratorMenu;
 import org.alex_melan.spacereloaded.machine.SingleInputMachineMenu;
 
 /**
@@ -27,6 +29,12 @@ public final class ModMenus {
 
     public static final MenuType<AssemblyTableMenu> ASSEMBLY_TABLE = register("assembly_table",
             new MenuType<>(AssemblyTableMenu::new, FeatureFlags.VANILLA_SET));
+
+    public static final MenuType<GeneratorMenu> COAL_GENERATOR = register("coal_generator",
+            new MenuType<>(GeneratorMenu::new, FeatureFlags.VANILLA_SET));
+
+    public static final MenuType<BatteryMenu> BATTERY = register("battery",
+            new MenuType<>(BatteryMenu::new, FeatureFlags.VANILLA_SET));
 
     private static <T extends net.minecraft.world.inventory.AbstractContainerMenu> MenuType<T> register(
             String name, MenuType<T> type) {

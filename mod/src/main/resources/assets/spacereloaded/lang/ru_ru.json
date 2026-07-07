@@ -35,5 +35,8 @@
 	"item.spacereloaded.carbon_fiber": "Углепластик",
 	"block.spacereloaded.crusher": "Дробилка",
 	"block.spacereloaded.electric_furnace": "Электропечь",
-	"block.spacereloaded.assembly_table": "Сборочный стол"
+	"block.spacereloaded.assembly_table": "Сборочный стол",
+	"block.spacereloaded.coal_generator": "Угольный генератор",
+	"tooltip.spacereloaded.energy": "%s / %s E",
+	"tooltip.spacereloaded.progress": "%s%%"
 }

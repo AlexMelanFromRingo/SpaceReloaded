@@ -8,6 +8,7 @@ import org.alex_melan.spacereloaded.SpaceReloaded;
 import org.alex_melan.spacereloaded.energy.BatteryBlockEntity;
 import org.alex_melan.spacereloaded.energy.CreativePowerBlockEntity;
 import org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity;
+import org.alex_melan.spacereloaded.machine.CoalGeneratorBlockEntity;
 import org.alex_melan.spacereloaded.machine.CrusherBlockEntity;
 import org.alex_melan.spacereloaded.machine.ElectricFurnaceBlockEntity;
 import org.alex_melan.spacereloaded.energy.RtgBlockEntity;
@@ -51,6 +52,10 @@ public final class ModBlockEntities {
             register("assembly_table", new BlockEntityType<>(AssemblyTableBlockEntity::new,
                     Set.of(ModBlocks.ASSEMBLY_TABLE)));
 
+    public static final BlockEntityType<CoalGeneratorBlockEntity> COAL_GENERATOR =
+            register("coal_generator", new BlockEntityType<>(CoalGeneratorBlockEntity::new,
+                    Set.of(ModBlocks.COAL_GENERATOR)));
+
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> register(
             String name, BlockEntityType<T> type) {
         return Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE,
@@ -67,6 +72,7 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CRUSHER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ELECTRIC_FURNACE);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ASSEMBLY_TABLE);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), COAL_GENERATOR);
     }
 
     private ModBlockEntities() {

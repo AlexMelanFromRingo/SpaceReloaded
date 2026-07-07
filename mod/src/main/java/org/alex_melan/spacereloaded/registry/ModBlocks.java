@@ -12,13 +12,14 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.alex_melan.spacereloaded.SpaceReloaded;
-import org.alex_melan.spacereloaded.energy.BatteryBlockEntity;
+import org.alex_melan.spacereloaded.energy.BatteryBlock;
 import org.alex_melan.spacereloaded.energy.CableBlock;
 import org.alex_melan.spacereloaded.energy.CreativePowerBlockEntity;
 import org.alex_melan.spacereloaded.energy.MachineBlock;
-import org.alex_melan.spacereloaded.energy.RtgBlockEntity;
+import org.alex_melan.spacereloaded.energy.RtgBlock;
 import org.alex_melan.spacereloaded.energy.SolarPanelBlockEntity;
 import org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity;
+import org.alex_melan.spacereloaded.machine.CoalGeneratorBlockEntity;
 import org.alex_melan.spacereloaded.machine.CrusherBlockEntity;
 import org.alex_melan.spacereloaded.machine.ElectricFurnaceBlockEntity;
 import org.alex_melan.spacereloaded.machine.ProcessingMachineBlock;
@@ -71,20 +72,17 @@ public final class ModBlocks {
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
 
-    /** РИТЭГ (FR-011). */
-    public static final Block RTG = register("rtg",
-            props -> new MachineBlock<>(props, RtgBlockEntity::new,
-                    () -> ModBlockEntities.RTG, RtgBlockEntity::serverTick),
+    /** РИТЭГ (FR-011): KSP-стиль — колонна с радиаторами. */
+    public static final Block RTG = register("rtg", RtgBlock::new,
             BlockBehaviour.Properties.of()
                     .strength(3.5f, 9.0f)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
+                    .noOcclusion()
                     .lightLevel(state -> 7));
 
-    /** Аккумулятор (FR-010). */
-    public static final Block BATTERY = register("battery",
-            props -> new MachineBlock<>(props, BatteryBlockEntity::new,
-                    () -> ModBlockEntities.BATTERY, BatteryBlockEntity::serverTick),
+    /** Аккумулятор (FR-010): 5 уровней заряда + GUI. */
+    public static final Block BATTERY = register("battery", BatteryBlock::new,
             BlockBehaviour.Properties.of()
                     .strength(3.0f, 8.0f)
                     .sound(SoundType.METAL)
@@ -106,6 +104,14 @@ public final class ModBlocks {
                     .strength(-1.0f, 3_600_000.0f) // неразрушим, как бедрок
                     .sound(SoundType.METAL)
                     .lightLevel(state -> 10));
+
+    /** Угольный генератор — стартовая энергетика (жжёт печное топливо). */
+    public static final Block COAL_GENERATOR = register("coal_generator",
+            props -> new ProcessingMachineBlock(props, CoalGeneratorBlockEntity::new,
+                    () -> ModBlockEntities.COAL_GENERATOR),
+            BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> 8));
 
     // --- Станки (US3, T041) ---
     public static final Block CRUSHER = register("crusher",

@@ -1,5 +1,9 @@
 {
 	"variants": {
-		"": { "model": "spacereloaded:block/battery" }
+		"charge=0": { "model": "spacereloaded:block/battery_0" },
+		"charge=1": { "model": "spacereloaded:block/battery_1" },
+		"charge=2": { "model": "spacereloaded:block/battery_2" },
+		"charge=3": { "model": "spacereloaded:block/battery_3" },
+		"charge=4": { "model": "spacereloaded:block/battery_4" }
 	}
 }

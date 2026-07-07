@@ -35,5 +35,8 @@
 	"item.spacereloaded.carbon_fiber": "Carbon Fiber",
 	"block.spacereloaded.crusher": "Crusher",
 	"block.spacereloaded.electric_furnace": "Electric Furnace",
-	"block.spacereloaded.assembly_table": "Assembly Table"
+	"block.spacereloaded.assembly_table": "Assembly Table",
+	"block.spacereloaded.coal_generator": "Coal Generator",
+	"tooltip.spacereloaded.energy": "%s / %s E",
+	"tooltip.spacereloaded.progress": "%s%%"
 }

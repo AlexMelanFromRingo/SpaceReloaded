@@ -61,11 +61,19 @@ public abstract class ProcessingMachineBlockEntity extends BaseContainerBlockEnt
 
     protected ProcessingMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
                                            int inputSlots) {
+        this(type, pos, state, inputSlots, false);
+    }
+
+    protected ProcessingMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                                           int inputSlots, boolean generator) {
         super(type, pos, state);
         this.inputSlots = inputSlots;
         this.items = NonNullList.withSize(inputSlots + 1, ItemStack.EMPTY);
         long capacity = SpaceReloaded.config().generatorBufferCapacity;
-        this.energy = new SimpleEnergyStorage(capacity, capacity, 0); // приём извне, без отдачи
+        // Потребитель: приём извне без отдачи; генератор — наоборот
+        this.energy = generator
+                ? new SimpleEnergyStorage(capacity, 0, Long.MAX_VALUE)
+                : new SimpleEnergyStorage(capacity, capacity, 0);
     }
 
     /** Длительность одной операции, тики. */

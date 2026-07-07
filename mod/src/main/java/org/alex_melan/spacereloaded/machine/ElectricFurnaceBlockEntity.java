@@ -7,7 +7,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.block.state.BlockState;
 import org.alex_melan.spacereloaded.SpaceReloaded;
 import org.alex_melan.spacereloaded.machine.recipe.ElectricFurnaceRecipe;
@@ -19,6 +21,9 @@ public class ElectricFurnaceBlockEntity extends ProcessingMachineBlockEntity {
 
     private final RecipeManager.CachedCheck<SingleRecipeInput, ElectricFurnaceRecipe> quickCheck =
             RecipeManager.createCheck(ModRecipes.ELECTRIC_SMELTING);
+    /** Фолбэк: обычные печные рецепты — электропечь умеет всё, что ваниль, но быстрее. */
+    private final RecipeManager.CachedCheck<SingleRecipeInput, SmeltingRecipe> vanillaCheck =
+            RecipeManager.createCheck(RecipeType.SMELTING);
 
     public ElectricFurnaceBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.ELECTRIC_FURNACE, pos, state, 1);
@@ -32,7 +37,13 @@ public class ElectricFurnaceBlockEntity extends ProcessingMachineBlockEntity {
     @Override
     protected ItemStack peekResult(ServerLevel level) {
         SingleRecipeInput input = new SingleRecipeInput(items.get(0));
-        return quickCheck.getRecipeFor(input, level)
+        ItemStack own = quickCheck.getRecipeFor(input, level)
+                .map(holder -> holder.value().assemble(input))
+                .orElse(ItemStack.EMPTY);
+        if (!own.isEmpty()) {
+            return own;
+        }
+        return vanillaCheck.getRecipeFor(input, level)
                 .map(holder -> holder.value().assemble(input))
                 .orElse(ItemStack.EMPTY);
     }

@@ -19,6 +19,7 @@
 		"spacereloaded:gyroscope",
 		"spacereloaded:crusher",
 		"spacereloaded:electric_furnace",
-		"spacereloaded:assembly_table"
+		"spacereloaded:assembly_table",
+		"spacereloaded:coal_generator"
 	]
 }

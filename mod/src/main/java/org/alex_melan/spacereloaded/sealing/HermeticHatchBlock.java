@@ -1,6 +1,7 @@
 package org.alex_melan.spacereloaded.sealing;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,11 +23,20 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.alex_melan.spacereloaded.SpaceReloaded;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
- * Герметичный люк (T034). Шлюз возникает из ГЕОМЕТРИИ: тамбур с двумя люками —
- * это просто маленькая комната; 26-направленный fill честно обсчитывает её как
- * зону. Интерлок: люк не откроется, пока в радиусе открыт другой люк — оба
- * сразу открыть нельзя, основная зона не разгерметизируется (сценарий US2-1/2).
+ * Герметичный люк (T034). Шлюз возникает из геометрии: тамбур с двумя люками —
+ * обычная зона для 26-направленного fill.
+ *
+ * <p><b>Группы люков</b>: смежные люки (до {@value #MAX_GROUP} блоков — проём
+ * 1×2/2×1/2×2) работают как одна дверь: открываются/закрываются вместе, друг
+ * друга НЕ интерлочат. Интерлок действует только между разными группами:
+ * пока открыта чужая группа в радиусе — эта не откроется.
  * Открытие — через цикл выравнивания давления (задержка + шипение).
  *
  * <p>Закрытый люк герметичен (тег #spacereloaded:airtight); открытый пропускает
@@ -36,6 +46,9 @@ public class HermeticHatchBlock extends Block {
 
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty CYCLING = BooleanProperty.create("cycling");
+
+    /** Максимум люков в группе-«двери» (2×2 проём). */
+    private static final int MAX_GROUP = 4;
 
     public HermeticHatchBlock(Properties properties) {
         super(properties);
@@ -62,18 +75,20 @@ public class HermeticHatchBlock extends Block {
             return InteractionResult.SUCCESS;
         }
         ServerLevel serverLevel = (ServerLevel) level;
+        List<BlockPos> group = collectGroup(serverLevel, pos);
 
-        if (state.getValue(OPEN)) {
-            // Закрытие мгновенно и всегда разрешено
-            level.setBlock(pos, state.setValue(OPEN, false).setValue(CYCLING, false), 3);
+        boolean anyOpen = group.stream().anyMatch(p -> serverLevel.getBlockState(p).getValue(OPEN));
+        if (anyOpen) {
+            // Закрытие всей группы мгновенно и всегда разрешено
+            setGroup(serverLevel, group, false, false);
             level.playSound(null, pos, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 1.0f, 1.0f);
-            ZoneManager.markBlockChanged(serverLevel, pos);
             return InteractionResult.SUCCESS_SERVER;
         }
-        if (state.getValue(CYCLING)) {
+        boolean anyCycling = group.stream().anyMatch(p -> serverLevel.getBlockState(p).getValue(CYCLING));
+        if (anyCycling) {
             return InteractionResult.SUCCESS_SERVER; // цикл уже идёт
         }
-        if (findOpenHatchNearby(serverLevel, pos)) {
+        if (findOpenHatchNearby(serverLevel, pos, group)) {
             if (player instanceof ServerPlayer serverPlayer) {
                 serverPlayer.sendOverlayMessage(
                         Component.translatable("message.spacereloaded.airlock_interlock"));
@@ -81,8 +96,10 @@ public class HermeticHatchBlock extends Block {
             level.playSound(null, pos, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 0.5f, 1.6f);
             return InteractionResult.SUCCESS_SERVER;
         }
-        // Цикл выравнивания давления
-        level.setBlock(pos, state.setValue(CYCLING, true), 3);
+        // Цикл выравнивания давления — вся группа мигает, тикаем по кликнутому блоку
+        for (BlockPos member : group) {
+            serverLevel.setBlock(member, serverLevel.getBlockState(member).setValue(CYCLING, true), 3);
+        }
         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.6f, 1.4f);
         serverLevel.scheduleTick(pos, this, SpaceReloaded.config().airlockCycleTicks);
         return InteractionResult.SUCCESS_SERVER;
@@ -93,28 +110,60 @@ public class HermeticHatchBlock extends Block {
         if (!state.getValue(CYCLING)) {
             return;
         }
-        // Повторная проверка интерлока: другой люк могли открыть за время цикла
-        if (findOpenHatchNearby(level, pos)) {
-            level.setBlock(pos, state.setValue(CYCLING, false), 3);
+        List<BlockPos> group = collectGroup(level, pos);
+        // Повторная проверка интерлока: чужой люк могли открыть за время цикла
+        if (findOpenHatchNearby(level, pos, group)) {
+            setGroup(level, group, false, false);
             return;
         }
-        level.setBlock(pos, state.setValue(OPEN, true).setValue(CYCLING, false), 3);
+        setGroup(level, group, true, false);
         level.playSound(null, pos, SoundEvents.IRON_DOOR_OPEN, SoundSource.BLOCKS, 1.0f, 1.0f);
-        // scheduleTick-путь не проходит через события использования — метим сами
-        ZoneManager.markBlockChanged(level, pos);
     }
 
-    /** Интерлок: есть ли другой ОТКРЫТЫЙ (или открывающийся) люк в радиусе тамбура. */
-    private boolean findOpenHatchNearby(ServerLevel level, BlockPos pos) {
+    private void setGroup(ServerLevel level, List<BlockPos> group, boolean open, boolean cycling) {
+        for (BlockPos member : group) {
+            BlockState memberState = level.getBlockState(member);
+            if (memberState.getBlock() instanceof HermeticHatchBlock) {
+                level.setBlock(member, memberState.setValue(OPEN, open).setValue(CYCLING, cycling), 3);
+                // setBlock/scheduleTick не проходят через события использования — метим сами
+                ZoneManager.markBlockChanged(level, member);
+            }
+        }
+    }
+
+    /** Группа-«дверь»: смежные люки (6-связность), лимит MAX_GROUP. */
+    private static List<BlockPos> collectGroup(ServerLevel level, BlockPos start) {
+        List<BlockPos> group = new ArrayList<>();
+        Set<BlockPos> visited = new HashSet<>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        queue.add(start.immutable());
+        visited.add(start.immutable());
+        while (!queue.isEmpty() && group.size() < MAX_GROUP) {
+            BlockPos current = queue.poll();
+            group.add(current);
+            for (Direction dir : Direction.values()) {
+                BlockPos neighbor = current.relative(dir);
+                if (visited.add(neighbor)
+                        && level.getBlockState(neighbor).getBlock() instanceof HermeticHatchBlock) {
+                    queue.add(neighbor);
+                }
+            }
+        }
+        return group;
+    }
+
+    /** Интерлок: открытый/открывающийся люк ЧУЖОЙ группы в радиусе тамбура. */
+    private boolean findOpenHatchNearby(ServerLevel level, BlockPos pos, List<BlockPos> ownGroup) {
+        Set<BlockPos> own = new HashSet<>(ownGroup);
         int radius = SpaceReloaded.config().airlockInterlockRadius;
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dy = -radius; dy <= radius; dy++) {
                 for (int dz = -radius; dz <= radius; dz++) {
-                    if (dx == 0 && dy == 0 && dz == 0) {
+                    cursor.set(pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz);
+                    if (own.contains(cursor)) {
                         continue;
                     }
-                    cursor.set(pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz);
                     BlockState other = level.getBlockState(cursor);
                     if (other.getBlock() instanceof HermeticHatchBlock
                             && (other.getValue(OPEN) || other.getValue(CYCLING))) {

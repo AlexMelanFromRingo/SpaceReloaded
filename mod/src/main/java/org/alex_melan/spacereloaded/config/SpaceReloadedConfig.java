@@ -35,6 +35,8 @@ public final class SpaceReloadedConfig {
     public double solarVacuumMultiplier = 1.5;
     /** Выработка РИТЭГа, E/тик — слабо, но всегда. */
     public long rtgEnergyPerTick = 4;
+    /** Выработка угольного генератора, E/тик горения. */
+    public long coalGeneratorEnergyPerTick = 12;
     /** Ёмкость аккумулятора, E. */
     public long batteryCapacity = 100_000;
     /** Максимальный ввод/вывод аккумулятора, E/тик. */

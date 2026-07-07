@@ -1,4 +1,45 @@
 {
-	"parent": "minecraft:block/cube_all",
-	"textures": { "all": "spacereloaded:block/rtg" }
+	"textures": {
+		"core": "spacereloaded:block/rtg",
+		"fin": "spacereloaded:block/rtg_fin",
+		"particle": "#core"
+	},
+	"elements": [
+		{
+			"from": [4, 0, 4],
+			"to": [12, 16, 12],
+			"faces": {
+				"down":  { "texture": "#core" },
+				"up":    { "texture": "#core" },
+				"north": { "texture": "#core" },
+				"south": { "texture": "#core" },
+				"west":  { "texture": "#core" },
+				"east":  { "texture": "#core" }
+			}
+		},
+		{
+			"from": [0, 2, 7],
+			"to": [16, 14, 9],
+			"faces": {
+				"down":  { "texture": "#fin" },
+				"up":    { "texture": "#fin" },
+				"north": { "texture": "#fin" },
+				"south": { "texture": "#fin" },
+				"west":  { "texture": "#fin" },
+				"east":  { "texture": "#fin" }
+			}
+		},
+		{
+			"from": [7, 2, 0],
+			"to": [9, 14, 16],
+			"faces": {
+				"down":  { "texture": "#fin" },
+				"up":    { "texture": "#fin" },
+				"north": { "texture": "#fin" },
+				"south": { "texture": "#fin" },
+				"west":  { "texture": "#fin" },
+				"east":  { "texture": "#fin" }
+			}
+		}
+	]
 }

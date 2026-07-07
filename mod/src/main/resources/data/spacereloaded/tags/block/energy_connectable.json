@@ -1,0 +1,15 @@
+{
+	"replace": false,
+	"values": [
+		"spacereloaded:energy_cable",
+		"spacereloaded:creative_power",
+		"spacereloaded:solar_panel",
+		"spacereloaded:rtg",
+		"spacereloaded:battery",
+		"spacereloaded:atmosphere_controller",
+		"spacereloaded:crusher",
+		"spacereloaded:electric_furnace",
+		"spacereloaded:assembly_table",
+		"spacereloaded:coal_generator"
+	]
+}

@@ -27,6 +27,7 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.ATMOSPHERE_CONTROLLER);
                         output.accept(ModBlocks.SOLAR_PANEL);
                         output.accept(ModBlocks.RTG);
+                        output.accept(ModBlocks.COAL_GENERATOR);
                         output.accept(ModBlocks.BATTERY);
                         output.accept(ModBlocks.ENERGY_CABLE);
                         output.accept(ModBlocks.CREATIVE_POWER);
