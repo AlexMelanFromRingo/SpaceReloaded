@@ -67,8 +67,18 @@ public class SpaceReloaded implements ModInitializer {
 			}
 		});
 		UseBlockCallback.EVENT.register((player, level, hand, hitResult) -> {
-			// Подсказка: сборка теперь со стартовой площадки (ПКМ по пилону)
 			BlockPos usePos = hitResult.getBlockPos();
+			// Заправочный рукав по баку — подключение
+			if (player.getItemInHand(hand).is(org.alex_melan.spacereloaded.registry.ModItems.FUELING_HOSE)
+					&& level.getBlockState(usePos).is(ModBlocks.FUEL_TANK)) {
+				if (level instanceof ServerLevel serverLevel
+						&& player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+					org.alex_melan.spacereloaded.rocket.FuelingHose.link(serverPlayer, serverLevel, usePos);
+					return InteractionResult.SUCCESS_SERVER;
+				}
+				return InteractionResult.SUCCESS;
+			}
+			// Подсказка: сборка теперь со стартовой площадки (ПКМ по пилону)
 			if (!player.isSecondaryUseActive()
 					&& level.getBlockState(usePos).is(ModBlocks.COMMAND_MODULE)) {
 				if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {

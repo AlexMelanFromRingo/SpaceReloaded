@@ -34,6 +34,9 @@ public final class ModCreativeTab {
                         output.accept(ModItems.OXYGEN_MASK);
                         output.accept(ModItems.OXYGEN_CANISTER);
                         output.accept(ModBlocks.ELECTROLYZER);
+                        output.accept(ModBlocks.REFINERY);
+                        output.accept(ModBlocks.OIL_SHALE);
+                        output.accept(ModItems.FUELING_HOSE);
                         output.accept(ModBlocks.MOON_REGOLITH);
                         output.accept(ModBlocks.MOON_STONE);
                         output.accept(ModBlocks.MOON_ICE);

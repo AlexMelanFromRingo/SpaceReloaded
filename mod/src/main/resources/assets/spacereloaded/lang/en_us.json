@@ -73,5 +73,14 @@
 	"tooltip.spacereloaded.fuel": "Fuel: %s / %s kg",
 	"planet.spacereloaded.earth": "Earth",
 	"planet.spacereloaded.earth_orbit": "Earth Orbit",
-	"planet.spacereloaded.moon": "Moon"
+	"planet.spacereloaded.moon": "Moon",
+	"block.spacereloaded.oil_shale": "Oil Shale",
+	"block.spacereloaded.refinery": "Refinery",
+	"item.spacereloaded.fueling_hose": "Fueling Hose",
+	"message.spacereloaded.hose.linked": "Hose connected to the tank",
+	"message.spacereloaded.hose.no_tank": "No linked tank in reach (16 blocks)",
+	"message.spacereloaded.hose.pumped": "Pumped %s kg into the rocket",
+	"message.spacereloaded.hose.drained": "Drained %s kg into the tank",
+	"message.spacereloaded.hose.rocket_full": "Rocket tanks are full",
+	"message.spacereloaded.hose.nothing": "Nothing to drain"
 }

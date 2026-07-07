@@ -26,6 +26,8 @@
 		"spacereloaded:rocket_seat",
 		"spacereloaded:moon_stone",
 		"spacereloaded:moon_ice",
-		"spacereloaded:electrolyzer"
+		"spacereloaded:electrolyzer",
+		"spacereloaded:oil_shale",
+		"spacereloaded:refinery"
 	]
 }

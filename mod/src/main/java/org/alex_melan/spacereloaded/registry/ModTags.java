@@ -22,6 +22,8 @@ public final class ModTags {
 
     /** Что электролизёр принимает как источник воды (льды). */
     public static final TagKey<Item> ELECTROLYZER_INPUT = item("electrolyzer_input");
+    /** Сырьё перегонного куба (нефтеносный сланец). */
+    public static final TagKey<Item> REFINERY_INPUT = item("refinery_input");
 
     private static TagKey<Item> item(String name) {
         return TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name));

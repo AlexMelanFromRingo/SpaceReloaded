@@ -7,6 +7,7 @@ import net.minecraft.resources.Identifier;
 import org.alex_melan.spacereloaded.SpaceReloaded;
 import org.alex_melan.spacereloaded.client.gui.BatteryScreen;
 import org.alex_melan.spacereloaded.client.gui.ElectrolyzerScreen;
+import org.alex_melan.spacereloaded.client.gui.RefineryScreen;
 import org.alex_melan.spacereloaded.client.gui.GeneratorScreen;
 import org.alex_melan.spacereloaded.client.gui.MachineScreen;
 import org.alex_melan.spacereloaded.machine.MachineMenu;
@@ -34,6 +35,7 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		MenuScreens.register(ModMenus.COAL_GENERATOR, GeneratorScreen::new);
 		MenuScreens.register(ModMenus.BATTERY, BatteryScreen::new);
 		MenuScreens.register(ModMenus.ELECTROLYZER, ElectrolyzerScreen::new);
+		MenuScreens.register(ModMenus.REFINERY, RefineryScreen::new);
 
 		EntityRendererRegistry.register(ModEntities.ROCKET, RocketRenderer::new);
 	}

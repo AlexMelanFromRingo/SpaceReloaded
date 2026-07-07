@@ -22,6 +22,7 @@ import org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity;
 import org.alex_melan.spacereloaded.machine.CoalGeneratorBlockEntity;
 import org.alex_melan.spacereloaded.machine.CrusherBlockEntity;
 import org.alex_melan.spacereloaded.machine.ElectrolyzerBlockEntity;
+import org.alex_melan.spacereloaded.machine.RefineryBlockEntity;
 import org.alex_melan.spacereloaded.machine.ElectricFurnaceBlockEntity;
 import org.alex_melan.spacereloaded.machine.ProcessingMachineBlock;
 import org.alex_melan.spacereloaded.rocket.AssemblyPylonBlock;
@@ -173,6 +174,19 @@ public final class ModBlocks {
     public static final Block MOON_ICE = register("moon_ice", Block::new,
             BlockBehaviour.Properties.of().strength(1.2f).requiresCorrectToolForDrops()
                     .sound(SoundType.GLASS));
+
+    /** Нефтеносный сланец — сырьё перегонки (глубины Земли). */
+    public static final Block OIL_SHALE = register("oil_shale", Block::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 3.0f).requiresCorrectToolForDrops()
+                    .sound(SoundType.DEEPSLATE));
+
+    /** Перегонный куб: сланец → топливо (земная ветка). */
+    public static final Block REFINERY = register("refinery",
+            props -> new ProcessingMachineBlock(props, RefineryBlockEntity::new,
+                    () -> ModBlockEntities.REFINERY),
+            BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> 5));
 
     /** Электролизёр (US6 ISRU): лёд → топливо + кислород. */
     public static final Block ELECTROLYZER = register("electrolyzer",

@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:steel_ingot", "minecraft:leather", "minecraft:copper_ingot" ],
+	"result": { "id": "spacereloaded:fueling_hose" }
+}

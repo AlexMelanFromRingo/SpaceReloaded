@@ -66,6 +66,10 @@ public final class SpaceReloadedConfig {
     public double electrolyzerFuelPerOp = 50.0;
     /** Кислорода в баллон за операцию (единицы прочности). */
     public int electrolyzerOxygenPerOp = 300;
+    /** Длительность операции перегонного куба, тики. */
+    public int refineryTicks = 120;
+    /** Топлива за операцию перегонки, кг. */
+    public double refineryFuelPerOp = 100.0;
 
     // --- Шлюзы (US2) ---
     /** Длительность цикла выравнивания давления люка, тики. */

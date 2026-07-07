@@ -73,5 +73,14 @@
 	"tooltip.spacereloaded.fuel": "Топливо: %s / %s кг",
 	"planet.spacereloaded.earth": "Земля",
 	"planet.spacereloaded.earth_orbit": "Орбита Земли",
-	"planet.spacereloaded.moon": "Луна"
+	"planet.spacereloaded.moon": "Луна",
+	"block.spacereloaded.oil_shale": "Нефтеносный сланец",
+	"block.spacereloaded.refinery": "Перегонный куб",
+	"item.spacereloaded.fueling_hose": "Заправочный рукав",
+	"message.spacereloaded.hose.linked": "Рукав подключён к баку",
+	"message.spacereloaded.hose.no_tank": "Подключённый бак вне досягаемости (16 блоков)",
+	"message.spacereloaded.hose.pumped": "Закачано в ракету: %s кг",
+	"message.spacereloaded.hose.drained": "Слито в бак: %s кг",
+	"message.spacereloaded.hose.rocket_full": "Баки ракеты полны",
+	"message.spacereloaded.hose.nothing": "Сливать нечего"
 }

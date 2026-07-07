@@ -183,8 +183,48 @@ public class RocketEntity extends Entity {
 
     // ---------- Посадка пилота ----------
 
+    /** Заправка (рукав): принять до amountKg, вернуть фактически принятое. */
+    public double refuel(double amountKg) {
+        if (launched || structure == null || flight == null) {
+            return 0;
+        }
+        double capacity = structure.totalPropellantCapacityKg();
+        double accepted = Math.clamp(amountKg, 0, Math.max(0, capacity - flight.propellantKg()));
+        if (accepted > 0) {
+            flight = new FlightState(flight.pos(), flight.vel(), flight.pitch(), flight.roll(),
+                    flight.pitchRate(), flight.rollRate(), flight.propellantKg() + accepted);
+        }
+        return accepted;
+    }
+
+    /** Слив (рукав): отдать до amountKg. */
+    public double drain(double amountKg) {
+        if (launched || flight == null) {
+            return 0;
+        }
+        double drained = Math.clamp(amountKg, 0, flight.propellantKg());
+        if (drained > 0) {
+            flight = new FlightState(flight.pos(), flight.vel(), flight.pitch(), flight.roll(),
+                    flight.pitchRate(), flight.rollRate(), flight.propellantKg() - drained);
+        }
+        return drained;
+    }
+
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 hitPos) {
+        // Заправочный рукав: ПКМ — закачать из подключённого бака, sneak+ПКМ — слить
+        if (player.getItemInHand(hand).is(org.alex_melan.spacereloaded.registry.ModItems.FUELING_HOSE)) {
+            if (!level().isClientSide() && !launched
+                    && player instanceof ServerPlayer serverPlayer) {
+                if (player.isSecondaryUseActive()) {
+                    FuelingHose.drainFromRocket(serverPlayer, (ServerLevel) level(), this);
+                } else {
+                    FuelingHose.pumpToRocket(serverPlayer, (ServerLevel) level(), this);
+                }
+                return InteractionResult.SUCCESS_SERVER;
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (player.isSecondaryUseActive()) {
             // Sneak+ПКМ по припаркованной ракете — разобрать в блоки
             if (!level().isClientSide() && !launched && rocketData != null) {

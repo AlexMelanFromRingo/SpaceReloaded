@@ -34,6 +34,10 @@ public final class ModItems {
     public static final Item OXYGEN_CANISTER = register("oxygen_canister",
             properties -> new Item(properties.durability(1200)));
 
+    /** Заправочный рукав: бак → ракета (и обратно с sneak). */
+    public static final Item FUELING_HOSE = register("fueling_hose",
+            properties -> new Item(properties.stacksTo(1)));
+
     // --- Материалы промышленной цепочки (US3, T040/T042) ---
     public static final Item RAW_TITANIUM = simple("raw_titanium");
     public static final Item RAW_TUNGSTEN = simple("raw_tungsten");

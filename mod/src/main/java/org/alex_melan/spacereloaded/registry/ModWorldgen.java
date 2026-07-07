@@ -17,6 +17,7 @@ public final class ModWorldgen {
 
     public static final ResourceKey<PlacedFeature> ORE_TITANIUM = placed("ore_titanium");
     public static final ResourceKey<PlacedFeature> ORE_TUNGSTEN = placed("ore_tungsten");
+    public static final ResourceKey<PlacedFeature> OIL_SHALE = placed("oil_shale");
 
     private static ResourceKey<PlacedFeature> placed(String name) {
         return ResourceKey.create(Registries.PLACED_FEATURE,
@@ -28,6 +29,8 @@ public final class ModWorldgen {
                 GenerationStep.Decoration.UNDERGROUND_ORES, ORE_TITANIUM);
         BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(),
                 GenerationStep.Decoration.UNDERGROUND_ORES, ORE_TUNGSTEN);
+        BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(),
+                GenerationStep.Decoration.UNDERGROUND_ORES, OIL_SHALE);
     }
 
     private ModWorldgen() {
