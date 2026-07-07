@@ -29,6 +29,7 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.RTG);
                         output.accept(ModBlocks.BATTERY);
                         output.accept(ModBlocks.ENERGY_CABLE);
+                        output.accept(ModBlocks.CREATIVE_POWER);
                         output.accept(ModItems.OXYGEN_MASK);
                     })
                     .build());

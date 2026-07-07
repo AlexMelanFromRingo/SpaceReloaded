@@ -6,6 +6,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.alex_melan.spacereloaded.SpaceReloaded;
 import org.alex_melan.spacereloaded.energy.BatteryBlockEntity;
+import org.alex_melan.spacereloaded.energy.CreativePowerBlockEntity;
 import org.alex_melan.spacereloaded.energy.RtgBlockEntity;
 import org.alex_melan.spacereloaded.energy.SolarPanelBlockEntity;
 import org.alex_melan.spacereloaded.sealing.AtmosphereControllerBlockEntity;
@@ -31,6 +32,10 @@ public final class ModBlockEntities {
             register("battery", new BlockEntityType<>(BatteryBlockEntity::new,
                     Set.of(ModBlocks.BATTERY)));
 
+    public static final BlockEntityType<CreativePowerBlockEntity> CREATIVE_POWER =
+            register("creative_power", new BlockEntityType<>(CreativePowerBlockEntity::new,
+                    Set.of(ModBlocks.CREATIVE_POWER)));
+
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> register(
             String name, BlockEntityType<T> type) {
         return Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE,
@@ -43,6 +48,7 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), RTG);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), BATTERY);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ATMOSPHERE_CONTROLLER);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CREATIVE_POWER);
     }
 
     private ModBlockEntities() {

@@ -11,5 +11,6 @@
 	"item.spacereloaded.oxygen_mask": "Oxygen Mask",
 	"message.spacereloaded.airlock_interlock": "Airlock interlock: another hatch is open",
 	"death.attack.spacereloaded.vacuum": "%1$s suffocated in vacuum",
-	"death.attack.spacereloaded.vacuum.player": "%1$s suffocated in vacuum whilst fighting %2$s"
+	"death.attack.spacereloaded.vacuum.player": "%1$s suffocated in vacuum whilst fighting %2$s",
+	"block.spacereloaded.creative_power": "Creative Power Source"
 }

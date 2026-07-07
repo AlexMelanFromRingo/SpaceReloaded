@@ -13,6 +13,8 @@ import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.alex_melan.spacereloaded.SpaceReloaded;
 import org.alex_melan.spacereloaded.energy.BatteryBlockEntity;
+import org.alex_melan.spacereloaded.energy.CableBlock;
+import org.alex_melan.spacereloaded.energy.CreativePowerBlockEntity;
 import org.alex_melan.spacereloaded.energy.MachineBlock;
 import org.alex_melan.spacereloaded.energy.RtgBlockEntity;
 import org.alex_melan.spacereloaded.energy.SolarPanelBlockEntity;
@@ -85,11 +87,21 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops());
 
     /** Энергокабель: сеть с кэшируемой топологией (T032). */
-    public static final Block ENERGY_CABLE = register("energy_cable", Block::new,
+    public static final Block ENERGY_CABLE = register("energy_cable", CableBlock::new,
             BlockBehaviour.Properties.of()
                     .strength(1.5f, 5.0f)
                     .sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops());
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion());
+
+    /** Креативный источник энергии — для тестов (quickstart) и отладки. */
+    public static final Block CREATIVE_POWER = register("creative_power",
+            props -> new MachineBlock<>(props, CreativePowerBlockEntity::new,
+                    () -> ModBlockEntities.CREATIVE_POWER, CreativePowerBlockEntity::serverTick),
+            BlockBehaviour.Properties.of()
+                    .strength(-1.0f, 3_600_000.0f) // неразрушим, как бедрок
+                    .sound(SoundType.METAL)
+                    .lightLevel(state -> 10));
 
     /**
      * Регистрация блока + BlockItem по контракту 26.2: id задаётся заранее
