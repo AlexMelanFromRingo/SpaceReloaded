@@ -18,10 +18,10 @@
 - [X] T011 [P] `core/voxel`: `VoxelView`, `GasPermeability`, `ArrayVoxelGrid` (bounding box + byte[]), билдер для тестовых сцен
 - [X] T012 Порт алгоритма из RoomCheckerPlugin → `core/sealing/GasFloodFill`: 26 направлений (сохранить массив DIRECTIONS_3D), чебышёвский радиус, статусы SEALED/LEAK/UNBOUNDED, early-exit при не-diagnostic, long-упаковка вместо объектов BlockVector3
 - [X] T013 JUnit `GasFloodFillTest`: замкнутый куб 5×5×5 = SEALED; диагональная щель = LEAK; открытый объём = UNBOUNDED; закрытая/открытая дверь; полость 10к блоков < 200 мс; early-exit vs diagnostic
-- [ ] T014 [P] `core/rocketry`: PartProperties/RocketStructure/RocketPerformance + `PerformanceCalculator` (CoM, центр тяги, момент инерции точечными массами, TWR, Δv по Циолковскому, предупреждения)
-- [ ] T015 [P] JUnit `PerformanceCalculatorTest`: Δv против аналитики (1%), CoM симметричной/асимметричной решётки, предупреждение при снятом двигателе
-- [ ] T016 [P] `core/ballistics`: BallisticIntegrator + ImpactEnergy; JUnit против аналитики свободного падения
-- [ ] T017 `core/rocketry/FlightIntegrator`: полу-неявный Эйлер, Мещерский, моменты, гиродины; JUnit: вертикальный подъём против аналитики, момент от асимметрии
+- [X] T014 [P] `core/rocketry`: PartProperties/RocketStructure/RocketPerformance + `PerformanceCalculator` (CoM, центр тяги, момент инерции точечными массами, TWR, Δv по Циолковскому, предупреждения)
+- [X] T015 [P] JUnit `PerformanceCalculatorTest`: Δv против аналитики (1%), CoM симметричной/асимметричной решётки, предупреждение при снятом двигателе
+- [X] T016 [P] `core/ballistics`: BallisticIntegrator + ImpactEnergy; JUnit против аналитики свободного падения
+- [X] T017 `core/rocketry/FlightIntegrator`: полу-неявный Эйлер, Мещерский, моменты, гиродины; JUnit: вертикальный подъём против аналитики, момент от асимметрии
 - [ ] T018 Конфиг мода (json): лимиты (радиус зоны, блоки ракеты, параллельные пересчёты, TTL lease)
 
 ## Phase 3: US1 — Герметичная база (P1) 🎯 MVP
@@ -102,5 +102,5 @@
 ## Статус
 
 - [X] Phase 1 — T001…T005 (коммит «скелет», build зелёный)
-- [ ] Phase 2 — частично: T010…T013 готовы (порт sealing + 15 тестов зелёные); осталось T014…T018
+- [ ] Phase 2 — T010…T017 готовы (sealing + физика ракет + баллистика, 32 теста зелёные); осталось T018 (конфиг, уходит в Phase 3)
 - [ ] Остальное — в работе
