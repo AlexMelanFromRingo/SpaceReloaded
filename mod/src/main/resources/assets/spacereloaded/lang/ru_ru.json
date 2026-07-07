@@ -62,5 +62,16 @@
 	"message.spacereloaded.assembly.disconnected": "Деталь на %s не соединена с командным модулем",
 	"message.spacereloaded.assembly.use_pylon": "Стройте ракету на стартовой площадке и жмите ПКМ по сборочному пилону",
 	"message.spacereloaded.rocket.reached_orbit": "Орбита достигнута! Вы на своей орбитальной платформе — стройте станцию. Для схода с орбиты — зажигание и набор высоты.",
-	"message.spacereloaded.rocket.reentry": "Вход в атмосферу! Держите Прыжок для тормозного импульса — касание мягче 15 м/с."
+	"message.spacereloaded.rocket.reentry": "Вход в атмосферу! Держите Прыжок для тормозного импульса — касание мягче 15 м/с.",
+	"block.spacereloaded.moon_regolith": "Лунный реголит",
+	"block.spacereloaded.moon_stone": "Лунный камень",
+	"block.spacereloaded.moon_ice": "Лунный лёд",
+	"block.spacereloaded.electrolyzer": "Электролизёр",
+	"item.spacereloaded.oxygen_canister": "Кислородный баллон",
+	"message.spacereloaded.fuel_tank.level": "Топливо: %s / %s кг",
+	"message.spacereloaded.rocket.destination": "Цель: %s",
+	"tooltip.spacereloaded.fuel": "Топливо: %s / %s кг",
+	"planet.spacereloaded.earth": "Земля",
+	"planet.spacereloaded.earth_orbit": "Орбита Земли",
+	"planet.spacereloaded.moon": "Луна"
 }

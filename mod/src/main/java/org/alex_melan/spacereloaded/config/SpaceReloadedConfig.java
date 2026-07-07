@@ -60,6 +60,13 @@ public final class SpaceReloadedConfig {
     /** Длительность операции сборочного стола, тики. */
     public int assemblyTicks = 160;
 
+    /** Длительность операции электролизёра, тики. */
+    public int electrolyzerTicks = 100;
+    /** Топлива за операцию, кг. */
+    public double electrolyzerFuelPerOp = 50.0;
+    /** Кислорода в баллон за операцию (единицы прочности). */
+    public int electrolyzerOxygenPerOp = 300;
+
     // --- Шлюзы (US2) ---
     /** Длительность цикла выравнивания давления люка, тики. */
     public int airlockCycleTicks = 40;

@@ -165,8 +165,12 @@ public final class RocketAssembler {
             }
             long local = PackedPos.pack(pos.getX() - minX, pos.getY() - minY, pos.getZ() - minZ);
             blocks.add(new ScannedBlock(pos.immutable(), state, local, properties.get()));
-            // MVP: баки полные (честная заправка — вместе с ISRU)
-            double fill = properties.get().propellantCapacityKg();
+            // Честное топливо (US6): фактический запас из блок-сущности бака
+            double fill = 0;
+            if (properties.get().propellantCapacityKg() > 0
+                    && level.getBlockEntity(pos) instanceof FuelTankBlockEntity tank) {
+                fill = Math.min(tank.propellantKg(), properties.get().propellantCapacityKg());
+            }
             parts.add(new PlacedPart(local, properties.get(), fill));
         }
 

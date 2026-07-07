@@ -21,9 +21,11 @@ import org.alex_melan.spacereloaded.energy.SolarPanelBlockEntity;
 import org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity;
 import org.alex_melan.spacereloaded.machine.CoalGeneratorBlockEntity;
 import org.alex_melan.spacereloaded.machine.CrusherBlockEntity;
+import org.alex_melan.spacereloaded.machine.ElectrolyzerBlockEntity;
 import org.alex_melan.spacereloaded.machine.ElectricFurnaceBlockEntity;
 import org.alex_melan.spacereloaded.machine.ProcessingMachineBlock;
 import org.alex_melan.spacereloaded.rocket.AssemblyPylonBlock;
+import org.alex_melan.spacereloaded.rocket.FuelTankBlock;
 import org.alex_melan.spacereloaded.rocket.LaunchPadBlock;
 import org.alex_melan.spacereloaded.rocket.RocketSeatBlock;
 import org.alex_melan.spacereloaded.sealing.AtmosphereControllerBlock;
@@ -148,7 +150,7 @@ public final class ModBlocks {
     public static final Block ROCKET_HULL = register("rocket_hull", Block::new,
             BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
-    public static final Block FUEL_TANK = register("fuel_tank", Block::new,
+    public static final Block FUEL_TANK = register("fuel_tank", FuelTankBlock::new,
             BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
     public static final Block ROCKET_ENGINE = register("rocket_engine", Block::new,
@@ -161,6 +163,24 @@ public final class ModBlocks {
     public static final Block GYROSCOPE = register("gyroscope", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
+
+    // --- Луна (US6) ---
+    public static final Block MOON_REGOLITH = register("moon_regolith", Block::new,
+            BlockBehaviour.Properties.of().strength(0.6f).sound(SoundType.GRAVEL));
+    public static final Block MOON_STONE = register("moon_stone", Block::new,
+            BlockBehaviour.Properties.of().strength(2.0f, 7.0f).requiresCorrectToolForDrops()
+                    .sound(SoundType.DEEPSLATE));
+    public static final Block MOON_ICE = register("moon_ice", Block::new,
+            BlockBehaviour.Properties.of().strength(1.2f).requiresCorrectToolForDrops()
+                    .sound(SoundType.GLASS));
+
+    /** Электролизёр (US6 ISRU): лёд → топливо + кислород. */
+    public static final Block ELECTROLYZER = register("electrolyzer",
+            props -> new ProcessingMachineBlock(props, ElectrolyzerBlockEntity::new,
+                    () -> ModBlockEntities.ELECTROLYZER),
+            BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> 5));
 
     // --- Стартовая инфраструктура и кресло (US4, срез 2) ---
     public static final Block LAUNCH_PAD = register("launch_pad", LaunchPadBlock::new,

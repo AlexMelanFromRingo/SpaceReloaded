@@ -62,5 +62,16 @@
 	"message.spacereloaded.assembly.disconnected": "Part at %s is not connected to the command module",
 	"message.spacereloaded.assembly.use_pylon": "Build on a launch pad and right-click the assembly pylon",
 	"message.spacereloaded.rocket.reached_orbit": "Orbit reached! You are on your orbital pad — build your station. Ignite again and climb to deorbit.",
-	"message.spacereloaded.rocket.reentry": "Atmospheric reentry! Hold Jump for the retro burn — touch down below 15 m/s."
+	"message.spacereloaded.rocket.reentry": "Atmospheric reentry! Hold Jump for the retro burn — touch down below 15 m/s.",
+	"block.spacereloaded.moon_regolith": "Moon Regolith",
+	"block.spacereloaded.moon_stone": "Moon Stone",
+	"block.spacereloaded.moon_ice": "Moon Ice",
+	"block.spacereloaded.electrolyzer": "Electrolyzer",
+	"item.spacereloaded.oxygen_canister": "Oxygen Canister",
+	"message.spacereloaded.fuel_tank.level": "Fuel: %s / %s kg",
+	"message.spacereloaded.rocket.destination": "Destination: %s",
+	"tooltip.spacereloaded.fuel": "Fuel: %s / %s kg",
+	"planet.spacereloaded.earth": "Earth",
+	"planet.spacereloaded.earth_orbit": "Earth Orbit",
+	"planet.spacereloaded.moon": "Moon"
 }

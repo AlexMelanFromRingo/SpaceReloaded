@@ -61,7 +61,8 @@ public final class ModRegistries {
             double solarEfficiency,
             double coordinateScale,
             int transitionAltitude,
-            Optional<Identifier> transitionTarget
+            java.util.List<Identifier> transitionTargets,
+            String arrival
     ) {
         public static final Codec<PlanetProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Identifier.CODEC.fieldOf("dimension").forGetter(PlanetProfile::dimension),
@@ -70,7 +71,9 @@ public final class ModRegistries {
                 Codec.DOUBLE.optionalFieldOf("solar_efficiency", 1.0).forGetter(PlanetProfile::solarEfficiency),
                 Codec.DOUBLE.optionalFieldOf("coordinate_scale", 1.0).forGetter(PlanetProfile::coordinateScale),
                 Codec.INT.optionalFieldOf("transition_altitude", 100_000).forGetter(PlanetProfile::transitionAltitude),
-                Identifier.CODEC.optionalFieldOf("transition_target").forGetter(PlanetProfile::transitionTarget)
+                Identifier.CODEC.listOf().optionalFieldOf("transition_targets", java.util.List.of())
+                        .forGetter(PlanetProfile::transitionTargets),
+                Codec.STRING.optionalFieldOf("arrival", "descend").forGetter(PlanetProfile::arrival)
         ).apply(instance, PlanetProfile::new));
     }
 

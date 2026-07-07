@@ -8,6 +8,7 @@ import net.minecraft.world.inventory.MenuType;
 import org.alex_melan.spacereloaded.SpaceReloaded;
 import org.alex_melan.spacereloaded.energy.BatteryMenu;
 import org.alex_melan.spacereloaded.machine.AssemblyTableMenu;
+import org.alex_melan.spacereloaded.machine.ElectrolyzerMenu;
 import org.alex_melan.spacereloaded.machine.GeneratorMenu;
 import org.alex_melan.spacereloaded.machine.SingleInputMachineMenu;
 
@@ -35,6 +36,9 @@ public final class ModMenus {
 
     public static final MenuType<BatteryMenu> BATTERY = register("battery",
             new MenuType<>(BatteryMenu::new, FeatureFlags.VANILLA_SET));
+
+    public static final MenuType<ElectrolyzerMenu> ELECTROLYZER = register("electrolyzer",
+            new MenuType<>(ElectrolyzerMenu::new, FeatureFlags.VANILLA_SET));
 
     private static <T extends net.minecraft.world.inventory.AbstractContainerMenu> MenuType<T> register(
             String name, MenuType<T> type) {

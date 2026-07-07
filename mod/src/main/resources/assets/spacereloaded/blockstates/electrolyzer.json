@@ -1,0 +1,8 @@
+{
+	"variants": {
+		"facing=north": { "model": "spacereloaded:block/electrolyzer" },
+		"facing=east":  { "model": "spacereloaded:block/electrolyzer", "y": 90 },
+		"facing=south": { "model": "spacereloaded:block/electrolyzer", "y": 180 },
+		"facing=west":  { "model": "spacereloaded:block/electrolyzer", "y": 270 }
+	}
+}

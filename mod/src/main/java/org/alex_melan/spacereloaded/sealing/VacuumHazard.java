@@ -41,10 +41,28 @@ public final class VacuumHazard {
                 continue;
             }
             if (entity.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.OXYGEN_MASK)) {
-                continue; // TODO US2+: расход кислорода из баллонов
+                if (!(entity instanceof net.minecraft.world.entity.player.Player player)) {
+                    continue; // мобы в маске дышат бесплатно (нет инвентаря)
+                }
+                if (consumeOxygen(player)) {
+                    continue; // баллон тратится — дышим
+                }
             }
             entity.hurtServer(level, ModDamageTypes.vacuum(level), config.vacuumDamage);
         }
+    }
+
+    /** Баллоны (US6): маска дышит из первого заряженного баллона в инвентаре. */
+    private static boolean consumeOxygen(net.minecraft.world.entity.player.Player player) {
+        var inventory = player.getInventory();
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            var stack = inventory.getItem(i);
+            if (stack.is(ModItems.OXYGEN_CANISTER) && stack.getDamageValue() < stack.getMaxDamage()) {
+                stack.setDamageValue(stack.getDamageValue() + 1);
+                return true;
+            }
+        }
+        return false;
     }
 
     private VacuumHazard() {

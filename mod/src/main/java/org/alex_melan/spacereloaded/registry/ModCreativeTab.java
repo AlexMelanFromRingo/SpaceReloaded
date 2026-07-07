@@ -32,6 +32,11 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.ENERGY_CABLE);
                         output.accept(ModBlocks.CREATIVE_POWER);
                         output.accept(ModItems.OXYGEN_MASK);
+                        output.accept(ModItems.OXYGEN_CANISTER);
+                        output.accept(ModBlocks.ELECTROLYZER);
+                        output.accept(ModBlocks.MOON_REGOLITH);
+                        output.accept(ModBlocks.MOON_STONE);
+                        output.accept(ModBlocks.MOON_ICE);
                         output.accept(ModBlocks.CRUSHER);
                         output.accept(ModBlocks.ELECTRIC_FURNACE);
                         output.accept(ModBlocks.ASSEMBLY_TABLE);

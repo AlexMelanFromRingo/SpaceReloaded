@@ -1,0 +1,10 @@
+{
+	"dimension": "spacereloaded:moon",
+	"gravity": 1.62,
+	"breathable": false,
+	"solar_efficiency": 1.3,
+	"coordinate_scale": 8.0,
+	"transition_altitude": 220,
+	"transition_targets": [ "spacereloaded:earth_orbit" ],
+	"arrival": "descend"
+}

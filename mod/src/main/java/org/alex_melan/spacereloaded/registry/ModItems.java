@@ -30,6 +30,10 @@ public final class ModItems {
                     .setAsset(OXYGEN_MASK_ASSET)
                     .build())));
 
+    /** Баллон со сжатым кислородом: расходуется маской в вакууме, заряжается электролизёром. */
+    public static final Item OXYGEN_CANISTER = register("oxygen_canister",
+            properties -> new Item(properties.durability(1200)));
+
     // --- Материалы промышленной цепочки (US3, T040/T042) ---
     public static final Item RAW_TITANIUM = simple("raw_titanium");
     public static final Item RAW_TUNGSTEN = simple("raw_tungsten");

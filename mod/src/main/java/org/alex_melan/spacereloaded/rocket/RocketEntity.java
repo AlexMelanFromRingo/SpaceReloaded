@@ -34,6 +34,7 @@ import org.alex_melan.spacereloaded.core.rocketry.PerformanceCalculator;
 import org.alex_melan.spacereloaded.core.rocketry.RocketPerformance;
 import org.alex_melan.spacereloaded.core.rocketry.RocketStructure;
 import org.alex_melan.spacereloaded.registry.ModEntities;
+import org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity;
 
 import java.util.List;
 
@@ -61,6 +62,8 @@ public class RocketEntity extends Entity {
     private RocketStructure structure;
     private FlightState flight;
     private boolean launched;
+    private boolean prevSprint;
+    private int destinationIndex;
 
     // Производные размеры (сервер и клиент)
     private float sizeX = 1;
@@ -183,6 +186,13 @@ public class RocketEntity extends Entity {
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 hitPos) {
         if (player.isSecondaryUseActive()) {
+            // Sneak+ПКМ по припаркованной ракете — разобрать в блоки
+            if (!level().isClientSide() && !launched && rocketData != null) {
+                ejectPassengers();
+                disassembleInto((ServerLevel) level());
+                discard();
+                return InteractionResult.SUCCESS_SERVER;
+            }
             return InteractionResult.PASS;
         }
         if (!level().isClientSide()) {
@@ -225,17 +235,26 @@ public class RocketEntity extends Entity {
         ServerLevel serverLevel = (ServerLevel) level();
 
         boolean jump = false;
-        if (getFirstPassenger() instanceof ServerPlayer pilot) {
+        boolean sprint = false;
+        ServerPlayer pilot = getFirstPassenger() instanceof ServerPlayer sp ? sp : null;
+        if (pilot != null) {
             Input input = pilot.getLastClientInput();
             jump = input.jump();
+            sprint = input.sprint();
         }
 
         if (!launched) {
+            // Выбор цели полёта (спринт циклит список из профиля планеты)
+            if (sprint && !prevSprint && pilot != null) {
+                cycleDestination(serverLevel, pilot);
+            }
+            prevSprint = sprint;
             if (jump) {
                 tryIgnite(serverLevel);
             }
             return;
         }
+        prevSprint = sprint;
 
         ControlInput control = new ControlInput(jump ? 1.0 : 0.0, 0, 0, true);
         flight = new FlightState(corePos(), flight.vel(), flight.pitch(), flight.roll(),
@@ -256,7 +275,7 @@ public class RocketEntity extends Entity {
 
         // Переход между измерениями: набрали высоту перехода профиля (FR-031)
         var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(serverLevel);
-        if (profile.isPresent() && profile.get().transitionTarget().isPresent()
+        if (profile.isPresent() && !profile.get().transitionTargets().isEmpty()
                 && getY() >= profile.get().transitionAltitude()) {
             transition(serverLevel, profile.get());
         }
@@ -269,8 +288,10 @@ public class RocketEntity extends Entity {
      * на автоплатформе (GC-стиль); прибытие в атмосферу — падение с ретро-burn.
      */
     private void transition(ServerLevel from, org.alex_melan.spacereloaded.registry.ModRegistries.PlanetProfile fromProfile) {
+        var targets = fromProfile.transitionTargets();
+        var targetId = targets.get(Math.floorMod(destinationIndex, targets.size()));
         var targetProfile = org.alex_melan.spacereloaded.planet.PlanetManager
-                .profileById(from, fromProfile.transitionTarget().get());
+                .profileById(from, targetId);
         if (targetProfile.isEmpty()) {
             return;
         }
@@ -282,14 +303,14 @@ public class RocketEntity extends Entity {
         double scale = fromProfile.coordinateScale() / targetProfile.get().coordinateScale();
         double targetX = getX() * scale;
         double targetZ = getZ() * scale;
-        boolean toOrbit = targetProfile.get().gravity() < 5.0;
+        boolean toOrbit = "platform".equals(targetProfile.get().arrival());
 
         double targetY;
         if (toOrbit) {
             targetY = org.alex_melan.spacereloaded.planet.PlanetManager
                     .ensureOrbitPlatform(target, targetX, targetZ);
         } else {
-            targetY = targetProfile.get().transitionAltitude() - 20.0;
+            targetY = Math.max(180.0, targetProfile.get().transitionAltitude() - 20.0);
         }
 
         org.alex_melan.spacereloaded.planet.ModTickets.holdAround(from, blockPosition(), 2);
@@ -371,27 +392,64 @@ public class RocketEntity extends Entity {
         return false;
     }
 
-    /** Посадка/разборка (T052): блоки возвращаются в мир; жёсткий удар — взрыв. */
+    /**
+     * Касание земли: мягко — ракета остаётся собранной сущностью (парковка,
+     * как в AR/GC); жёстко — разбор с взрывом. Разбор вручную: sneak+ПКМ.
+     */
     private void land(ServerLevel level) {
         double impactSpeed = new Vec3(flight.vel().x(), flight.vel().y(), flight.vel().z()).length();
+        if (impactSpeed <= CRASH_SPEED) {
+            launched = false;
+            entityData.set(DATA_LAUNCHED, false);
+            entityData.set(DATA_PITCH, 0.0f);
+            entityData.set(DATA_ROLL, 0.0f);
+            flight = FlightState.atRest(corePos(), flight.propellantKg());
+            setDeltaMovement(Vec3.ZERO);
+            level.playSound(null, blockPosition(), SoundEvents.IRON_DOOR_CLOSE,
+                    SoundSource.NEUTRAL, 2.0f, 0.8f);
+            return;
+        }
         ejectPassengers();
+        disassembleInto(level);
+        float power = (float) Math.min(4.0, impactSpeed / 5.0);
+        level.explode(this, getX(), getY(), getZ(), power, Level.ExplosionInteraction.BLOCK);
+        discard();
+    }
 
+    /** Разбор в блоки: остаток топлива честно возвращается в баки (US6). */
+    private void disassembleInto(ServerLevel level) {
         int baseX = (int) Math.round(getX() - halfX());
         int baseY = (int) Math.round(getY());
         int baseZ = (int) Math.round(getZ() - halfZ());
+        double totalCapacity = 0;
+        for (RocketData.Entry entry : rocketData.blocks()) {
+            totalCapacity += entry.capacityKg();
+        }
+        double fraction = totalCapacity <= 0 ? 0
+                : Math.clamp(flight.propellantKg() / totalCapacity, 0, 1);
         for (RocketData.Entry entry : rocketData.blocks()) {
             BlockPos target = new BlockPos(
                     baseX + PackedPos.unpackX(entry.localPos()),
                     baseY + PackedPos.unpackY(entry.localPos()),
                     baseZ + PackedPos.unpackZ(entry.localPos()));
             level.setBlock(target, entry.state(), 3);
+            if (entry.capacityKg() > 0
+                    && level.getBlockEntity(target) instanceof FuelTankBlockEntity tank) {
+                tank.setPropellantKg(entry.capacityKg() * fraction);
+            }
         }
-        if (impactSpeed > CRASH_SPEED) {
-            float power = (float) Math.min(4.0, impactSpeed / 5.0);
-            level.explode(this, getX(), getY(), getZ(), power, Level.ExplosionInteraction.BLOCK);
+    }
+
+    /** Циклический выбор цели перехода (список из профиля планеты). */
+    private void cycleDestination(ServerLevel level, ServerPlayer pilot) {
+        var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
+        if (profile.isEmpty() || profile.get().transitionTargets().size() <= 1) {
+            return;
         }
-        level.playSound(null, blockPosition(), SoundEvents.IRON_DOOR_CLOSE, SoundSource.NEUTRAL, 2.0f, 0.6f);
-        discard();
+        destinationIndex = (destinationIndex + 1) % profile.get().transitionTargets().size();
+        var target = profile.get().transitionTargets().get(destinationIndex);
+        pilot.sendOverlayMessage(Component.translatable("message.spacereloaded.rocket.destination",
+                Component.translatable("planet.spacereloaded." + target.getPath())));
     }
 
     // ---------- Прочее ----------
@@ -408,6 +466,7 @@ public class RocketEntity extends Entity {
             output.store("rocket", RocketData.CODEC, persisted);
         }
         output.putBoolean("launched", launched);
+        output.putInt("destination", destinationIndex);
         output.putDouble("vel_x", flight == null ? 0 : flight.vel().x());
         output.putDouble("vel_y", flight == null ? 0 : flight.vel().y());
         output.putDouble("vel_z", flight == null ? 0 : flight.vel().z());
@@ -432,6 +491,7 @@ public class RocketEntity extends Entity {
                     0, 0, data.propellantKg());
         });
         this.launched = input.getBooleanOr("launched", false);
+        this.destinationIndex = input.getIntOr("destination", 0);
         entityData.set(DATA_LAUNCHED, launched);
     }
 }

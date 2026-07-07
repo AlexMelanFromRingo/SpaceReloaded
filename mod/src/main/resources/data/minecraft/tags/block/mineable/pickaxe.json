@@ -23,6 +23,9 @@
 		"spacereloaded:coal_generator",
 		"spacereloaded:launch_pad",
 		"spacereloaded:assembly_pylon",
-		"spacereloaded:rocket_seat"
+		"spacereloaded:rocket_seat",
+		"spacereloaded:moon_stone",
+		"spacereloaded:moon_ice",
+		"spacereloaded:electrolyzer"
 	]
 }

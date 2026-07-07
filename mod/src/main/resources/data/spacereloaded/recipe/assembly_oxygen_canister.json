@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:steel_ingot", "spacereloaded:steel_ingot", "spacereloaded:hermetic_glass" ],
+	"result": { "id": "spacereloaded:oxygen_canister", "components": { "minecraft:damage": 1200 } }
+}
