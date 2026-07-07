@@ -25,6 +25,12 @@ public class RefineryMenu extends AbstractContainerMenu {
         checkContainerDataCount(data, 6);
 
         addSlot(new Slot(container, 0, 44, 35));
+        addSlot(new Slot(container, 1, 116, 35) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return false; // сера — только наружу
+            }
+        });
         addStandardInventorySlots(playerInventory, 8, 84);
         addDataSlots(data);
     }
@@ -65,8 +71,8 @@ public class RefineryMenu extends AbstractContainerMenu {
         }
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
-        if (index == 0) {
-            if (!moveItemStackTo(stack, 1, slots.size(), true)) {
+        if (index <= 1) {
+            if (!moveItemStackTo(stack, 2, slots.size(), true)) {
                 return ItemStack.EMPTY;
             }
         } else if (!moveItemStackTo(stack, 0, 1, false)) {

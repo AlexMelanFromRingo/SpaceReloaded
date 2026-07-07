@@ -155,23 +155,48 @@ public final class RocketAssembler {
         }
         BlockPos origin = new BlockPos(minX, minY, minZ);
 
-        List<ScannedBlock> blocks = new ArrayList<>(collected.size());
-        List<PlacedPart> parts = new ArrayList<>(collected.size());
+        // Первый проход: свойства + единый тип топлива двигателей
+        List<PartProperties> resolved = new ArrayList<>(collected.size());
+        String engineFuel = "";
         for (BlockPos pos : collected) {
-            BlockState state = level.getBlockState(pos);
-            Optional<PartProperties> properties = resolver.resolve(state);
+            Optional<PartProperties> properties = resolver.resolve(level.getBlockState(pos));
             if (properties.isEmpty()) {
                 return new Result.Error("message.spacereloaded.assembly.unknown_part", pos);
             }
-            long local = PackedPos.pack(pos.getX() - minX, pos.getY() - minY, pos.getZ() - minZ);
-            blocks.add(new ScannedBlock(pos.immutable(), state, local, properties.get()));
-            // Честное топливо (US6): фактический запас из блок-сущности бака
-            double fill = 0;
-            if (properties.get().propellantCapacityKg() > 0
-                    && level.getBlockEntity(pos) instanceof FuelTankBlockEntity tank) {
-                fill = Math.min(tank.propellantKg(), properties.get().propellantCapacityKg());
+            resolved.add(properties.get());
+            if (properties.get().role() == org.alex_melan.spacereloaded.core.rocketry.PartRole.ENGINE) {
+                if (engineFuel.isEmpty()) {
+                    engineFuel = properties.get().fuelType();
+                } else if (!engineFuel.equals(properties.get().fuelType())) {
+                    return new Result.Error("message.spacereloaded.assembly.mixed_fuel", pos);
+                }
             }
-            parts.add(new PlacedPart(local, properties.get(), fill));
+        }
+
+        List<ScannedBlock> blocks = new ArrayList<>(collected.size());
+        List<PlacedPart> parts = new ArrayList<>(collected.size());
+        for (int i = 0; i < collected.size(); i++) {
+            BlockPos pos = collected.get(i);
+            PartProperties props = resolved.get(i);
+            long local = PackedPos.pack(pos.getX() - minX, pos.getY() - minY, pos.getZ() - minZ);
+
+            // Баки: фактический запас и тип из блок-сущности; тип обязан совпадать
+            // с двигателями (пустые баки принимают тип двигателей)
+            double fill = 0;
+            if (props.role() == org.alex_melan.spacereloaded.core.rocketry.PartRole.TANK) {
+                if (level.getBlockEntity(pos) instanceof FuelTankBlockEntity tank) {
+                    fill = Math.min(tank.propellantKg(), props.propellantCapacityKg());
+                    if (fill > 0 && !engineFuel.isEmpty()
+                            && !tank.fuelType().equals(engineFuel)) {
+                        return new Result.Error("message.spacereloaded.assembly.mixed_fuel", pos);
+                    }
+                }
+                String tankFuel = engineFuel.isEmpty() ? props.fuelType() : engineFuel;
+                props = new PartProperties(props.massKg(), props.role(), 0, 0,
+                        tankFuel, props.propellantCapacityKg(), 0);
+            }
+            blocks.add(new ScannedBlock(pos.immutable(), level.getBlockState(pos), local, props));
+            parts.add(new PlacedPart(local, props, fill));
         }
 
         return new Result.Ok(blocks, origin, new RocketStructure(parts), commandPos.immutable());

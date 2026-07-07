@@ -106,7 +106,7 @@ public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity {
         }
         for (Direction dir : Direction.values()) {
             if (level.getBlockEntity(getBlockPos().relative(dir)) instanceof FuelTankBlockEntity tank) {
-                fuelBuffer -= tank.fill(fuelBuffer);
+                fuelBuffer -= tank.fill(fuelBuffer, "spacereloaded:hydrolox");
                 if (fuelBuffer <= 0) {
                     break;
                 }

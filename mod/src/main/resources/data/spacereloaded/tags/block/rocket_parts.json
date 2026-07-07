@@ -6,6 +6,7 @@
 		"spacereloaded:rocket_engine",
 		"spacereloaded:command_module",
 		"spacereloaded:gyroscope",
-		"spacereloaded:rocket_seat"
+		"spacereloaded:rocket_seat",
+		"spacereloaded:hydrolox_engine"
 	]
 }

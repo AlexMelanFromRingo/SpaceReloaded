@@ -51,12 +51,17 @@ public final class FuelingHose {
             player.sendOverlayMessage(Component.translatable("message.spacereloaded.hose.no_tank"));
             return;
         }
+        if (!tank.fuelType().isEmpty() && !rocket.rocketFuelType().isEmpty()
+                && !tank.fuelType().equals(rocket.rocketFuelType())) {
+            player.sendOverlayMessage(Component.translatable("message.spacereloaded.hose.wrong_fuel"));
+            return;
+        }
         double accepted = rocket.refuel(tank.propellantKg());
         if (accepted <= 0) {
             player.sendOverlayMessage(Component.translatable("message.spacereloaded.hose.rocket_full"));
             return;
         }
-        tank.setPropellantKg(tank.propellantKg() - accepted);
+        tank.drain(accepted);
         player.sendOverlayMessage(Component.translatable("message.spacereloaded.hose.pumped",
                 String.format(Locale.ROOT, "%.0f", accepted)));
     }
@@ -73,7 +78,10 @@ public final class FuelingHose {
             player.sendOverlayMessage(Component.translatable("message.spacereloaded.hose.nothing"));
             return;
         }
-        tank.fill(drained);
+        double stored = tank.fill(drained, rocket.rocketFuelType());
+        if (stored < drained) {
+            rocket.refuel(drained - stored); // несовместимый бак — вернуть в ракету
+        }
         player.sendOverlayMessage(Component.translatable("message.spacereloaded.hose.drained",
                 String.format(Locale.ROOT, "%.0f", drained)));
     }

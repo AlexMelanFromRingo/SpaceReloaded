@@ -63,6 +63,8 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.ROCKET_ENGINE);
                         output.accept(ModBlocks.COMMAND_MODULE);
                         output.accept(ModBlocks.GYROSCOPE);
+                        output.accept(ModBlocks.HYDROLOX_ENGINE);
+                        output.accept(ModBlocks.FUELING_PUMP);
                         output.accept(ModBlocks.ROCKET_SEAT);
                         output.accept(ModBlocks.LAUNCH_PAD);
                         output.accept(ModBlocks.ASSEMBLY_PYLON);

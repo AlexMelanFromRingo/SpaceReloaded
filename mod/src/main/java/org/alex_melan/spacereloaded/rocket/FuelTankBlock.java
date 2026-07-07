@@ -34,10 +34,15 @@ public class FuelTankBlock extends Block implements EntityBlock {
         }
         if (level.getBlockEntity(pos) instanceof FuelTankBlockEntity tank
                 && player instanceof ServerPlayer serverPlayer) {
+            Component fuelName = tank.fuelType().isEmpty()
+                    ? Component.translatable("fuel.spacereloaded.empty")
+                    : Component.translatable("fuel.spacereloaded."
+                            + tank.fuelType().substring(tank.fuelType().indexOf(':') + 1));
             serverPlayer.sendOverlayMessage(Component.translatable(
                     "message.spacereloaded.fuel_tank.level",
                     String.format(Locale.ROOT, "%.0f", tank.propellantKg()),
-                    String.format(Locale.ROOT, "%.0f", tank.capacityKg())));
+                    String.format(Locale.ROOT, "%.0f", tank.capacityKg()),
+                    fuelName));
         }
         return InteractionResult.SUCCESS_SERVER;
     }

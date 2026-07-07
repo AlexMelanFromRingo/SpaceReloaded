@@ -27,6 +27,7 @@ import org.alex_melan.spacereloaded.machine.ElectricFurnaceBlockEntity;
 import org.alex_melan.spacereloaded.machine.ProcessingMachineBlock;
 import org.alex_melan.spacereloaded.rocket.AssemblyPylonBlock;
 import org.alex_melan.spacereloaded.rocket.FuelTankBlock;
+import org.alex_melan.spacereloaded.rocket.FuelingPumpBlock;
 import org.alex_melan.spacereloaded.rocket.LaunchPadBlock;
 import org.alex_melan.spacereloaded.rocket.RocketSeatBlock;
 import org.alex_melan.spacereloaded.sealing.AtmosphereControllerBlock;
@@ -161,6 +162,17 @@ public final class ModBlocks {
     public static final Block COMMAND_MODULE = register("command_module", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
+    /** Гидролоксовый двигатель: ниже тяга, выше Isp — для орбиты и Луны. */
+    public static final Block HYDROLOX_ENGINE = register("hydrolox_engine", Block::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion());
+
+    /** Заправочная колонка: автозаправка припаркованной ракеты у площадки. */
+    public static final Block FUELING_PUMP = register("fueling_pump", FuelingPumpBlock::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
     public static final Block GYROSCOPE = register("gyroscope", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());

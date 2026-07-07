@@ -80,6 +80,14 @@ public class RefineryBlockEntity extends ProcessingMachineBlockEntity {
                 progress = 0;
                 input.shrink(1);
                 fuelBuffer += SpaceReloaded.config().refineryFuelPerOp;
+                // Побочный продукт перегонки — сера (в композиты и порох)
+                ItemStack byproduct = items.get(1);
+                if (byproduct.isEmpty()) {
+                    items.set(1, new ItemStack(net.minecraft.world.item.Items.SULFUR));
+                } else if (byproduct.is(net.minecraft.world.item.Items.SULFUR)
+                        && byproduct.getCount() < byproduct.getMaxStackSize()) {
+                    byproduct.grow(1);
+                }
             }
             setChanged();
         } else if (progress > 0) {
@@ -94,7 +102,7 @@ public class RefineryBlockEntity extends ProcessingMachineBlockEntity {
         }
         for (Direction dir : Direction.values()) {
             if (level.getBlockEntity(getBlockPos().relative(dir)) instanceof FuelTankBlockEntity tank) {
-                fuelBuffer -= tank.fill(fuelBuffer);
+                fuelBuffer -= tank.fill(fuelBuffer, "spacereloaded:kerolox");
                 if (fuelBuffer <= 0) {
                     break;
                 }

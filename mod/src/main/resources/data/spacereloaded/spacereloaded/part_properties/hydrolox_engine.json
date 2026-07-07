@@ -1,0 +1,8 @@
+{
+	"block": "spacereloaded:hydrolox_engine",
+	"mass_kg": 450.0,
+	"role": "engine",
+	"thrust_n": 32000.0,
+	"isp_sec": 450.0,
+	"fuel": "spacereloaded:hydrolox"
+}

@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:titanium_alloy_ingot", "spacereloaded:titanium_alloy_ingot", "spacereloaded:tungsten_ingot", "spacereloaded:steel_ingot", "spacereloaded:carbon_fiber" ],
+	"result": { "id": "spacereloaded:hydrolox_engine" }
+}

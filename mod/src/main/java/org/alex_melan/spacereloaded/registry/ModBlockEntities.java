@@ -13,6 +13,7 @@ import org.alex_melan.spacereloaded.machine.CrusherBlockEntity;
 import org.alex_melan.spacereloaded.machine.ElectrolyzerBlockEntity;
 import org.alex_melan.spacereloaded.machine.RefineryBlockEntity;
 import org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity;
+import org.alex_melan.spacereloaded.rocket.FuelingPumpBlockEntity;
 import org.alex_melan.spacereloaded.machine.ElectricFurnaceBlockEntity;
 import org.alex_melan.spacereloaded.energy.RtgBlockEntity;
 import org.alex_melan.spacereloaded.energy.SolarPanelBlockEntity;
@@ -70,6 +71,10 @@ public final class ModBlockEntities {
     public static final BlockEntityType<RefineryBlockEntity> REFINERY =
             register("refinery", new BlockEntityType<>(RefineryBlockEntity::new,
                     Set.of(ModBlocks.REFINERY)));
+
+    public static final BlockEntityType<FuelingPumpBlockEntity> FUELING_PUMP =
+            register("fueling_pump", new BlockEntityType<>(FuelingPumpBlockEntity::new,
+                    Set.of(ModBlocks.FUELING_PUMP)));
 
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> register(
             String name, BlockEntityType<T> type) {

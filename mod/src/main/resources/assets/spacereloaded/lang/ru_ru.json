@@ -82,5 +82,15 @@
 	"message.spacereloaded.hose.pumped": "Закачано в ракету: %s кг",
 	"message.spacereloaded.hose.drained": "Слито в бак: %s кг",
 	"message.spacereloaded.hose.rocket_full": "Баки ракеты полны",
-	"message.spacereloaded.hose.nothing": "Сливать нечего"
+	"message.spacereloaded.hose.nothing": "Сливать нечего",
+	"block.spacereloaded.hydrolox_engine": "Гидролоксовый двигатель",
+	"block.spacereloaded.fueling_pump": "Заправочная колонка",
+	"fuel.spacereloaded.kerolox": "Керолокс",
+	"fuel.spacereloaded.hydrolox": "Гидролокс",
+	"fuel.spacereloaded.empty": "пусто",
+	"message.spacereloaded.hose.wrong_fuel": "Тип топлива не совпадает",
+	"message.spacereloaded.assembly.mixed_fuel": "Смешение топлив на %s — одна ракета, одно топливо",
+	"message.spacereloaded.pump.mode.fuel": "Колонка: ЗАПРАВКА",
+	"message.spacereloaded.pump.mode.drain": "Колонка: ОТКАЧКА",
+	"message.spacereloaded.pump.mode.off": "Колонка: ВЫКЛ"
 }

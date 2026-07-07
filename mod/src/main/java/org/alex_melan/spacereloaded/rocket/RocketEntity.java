@@ -183,6 +183,24 @@ public class RocketEntity extends Entity {
 
     // ---------- Посадка пилота ----------
 
+    /** Тип топлива ракеты — по двигателям (сборка гарантирует единый тип). */
+    public String rocketFuelType() {
+        if (rocketData == null) {
+            return "";
+        }
+        for (RocketData.Entry entry : rocketData.blocks()) {
+            if (entry.role().equals("engine")) {
+                return entry.fuel();
+            }
+        }
+        return "";
+    }
+
+    /** Припаркована (не в полёте) — можно заправлять/разбирать. */
+    public boolean isParked() {
+        return !launched && rocketData != null;
+    }
+
     /** Заправка (рукав): принять до amountKg, вернуть фактически принятое. */
     public double refuel(double amountKg) {
         if (launched || structure == null || flight == null) {
@@ -475,7 +493,7 @@ public class RocketEntity extends Entity {
             level.setBlock(target, entry.state(), 3);
             if (entry.capacityKg() > 0
                     && level.getBlockEntity(target) instanceof FuelTankBlockEntity tank) {
-                tank.setPropellantKg(entry.capacityKg() * fraction);
+                tank.setPropellant(entry.capacityKg() * fraction, rocketFuelType());
             }
         }
     }

@@ -82,5 +82,15 @@
 	"message.spacereloaded.hose.pumped": "Pumped %s kg into the rocket",
 	"message.spacereloaded.hose.drained": "Drained %s kg into the tank",
 	"message.spacereloaded.hose.rocket_full": "Rocket tanks are full",
-	"message.spacereloaded.hose.nothing": "Nothing to drain"
+	"message.spacereloaded.hose.nothing": "Nothing to drain",
+	"block.spacereloaded.hydrolox_engine": "Hydrolox Engine",
+	"block.spacereloaded.fueling_pump": "Fueling Pump",
+	"fuel.spacereloaded.kerolox": "Kerolox",
+	"fuel.spacereloaded.hydrolox": "Hydrolox",
+	"fuel.spacereloaded.empty": "empty",
+	"message.spacereloaded.hose.wrong_fuel": "Fuel type mismatch",
+	"message.spacereloaded.assembly.mixed_fuel": "Mixed fuel types at %s — one rocket, one fuel",
+	"message.spacereloaded.pump.mode.fuel": "Pump: FUELING",
+	"message.spacereloaded.pump.mode.drain": "Pump: DRAINING",
+	"message.spacereloaded.pump.mode.off": "Pump: OFF"
 }
