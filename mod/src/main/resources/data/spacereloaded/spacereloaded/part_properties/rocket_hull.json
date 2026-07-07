@@ -1,0 +1,5 @@
+{
+	"block": "spacereloaded:rocket_hull",
+	"mass_kg": 300.0,
+	"role": "hull"
+}

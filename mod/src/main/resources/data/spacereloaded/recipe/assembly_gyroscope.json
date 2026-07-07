@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:steel_ingot","spacereloaded:steel_ingot","spacereloaded:titanium_alloy_ingot","minecraft:copper_ingot" ],
+	"result": { "id": "spacereloaded:gyroscope", "count": 1 }
+}

@@ -16,6 +16,10 @@ import org.alex_melan.spacereloaded.config.SpaceReloadedConfig;
 import org.alex_melan.spacereloaded.registry.ModBlockEntities;
 import org.alex_melan.spacereloaded.registry.ModBlocks;
 import org.alex_melan.spacereloaded.registry.ModCreativeTab;
+import org.alex_melan.spacereloaded.registry.ModMenus;
+import org.alex_melan.spacereloaded.registry.ModRecipes;
+import org.alex_melan.spacereloaded.registry.ModRegistries;
+import org.alex_melan.spacereloaded.registry.ModWorldgen;
 import org.alex_melan.spacereloaded.registry.ModItems;
 import org.alex_melan.spacereloaded.sealing.VacuumHazard;
 import org.alex_melan.spacereloaded.sealing.ZoneManager;
@@ -44,6 +48,10 @@ public class SpaceReloaded implements ModInitializer {
 		ModItems.init();
 		ModBlockEntities.init();
 		ModCreativeTab.init();
+		ModRecipes.init();
+		ModMenus.init();
+		ModRegistries.init();
+		ModWorldgen.init();
 
 		// Инвалидация зон по событиям (T024). Изменения складываются в отложенную
 		// очередь и обрабатываются в конце тика: к этому моменту BlockState уже

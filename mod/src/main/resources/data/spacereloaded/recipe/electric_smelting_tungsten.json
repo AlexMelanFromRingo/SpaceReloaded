@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:tungsten_dust",
+	"result": { "id": "spacereloaded:tungsten_ingot" }
+}

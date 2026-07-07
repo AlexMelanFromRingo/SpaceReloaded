@@ -18,6 +18,10 @@ import org.alex_melan.spacereloaded.energy.CreativePowerBlockEntity;
 import org.alex_melan.spacereloaded.energy.MachineBlock;
 import org.alex_melan.spacereloaded.energy.RtgBlockEntity;
 import org.alex_melan.spacereloaded.energy.SolarPanelBlockEntity;
+import org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity;
+import org.alex_melan.spacereloaded.machine.CrusherBlockEntity;
+import org.alex_melan.spacereloaded.machine.ElectricFurnaceBlockEntity;
+import org.alex_melan.spacereloaded.machine.ProcessingMachineBlock;
 import org.alex_melan.spacereloaded.sealing.AtmosphereControllerBlock;
 import org.alex_melan.spacereloaded.sealing.HermeticHatchBlock;
 
@@ -102,6 +106,51 @@ public final class ModBlocks {
                     .strength(-1.0f, 3_600_000.0f) // неразрушим, как бедрок
                     .sound(SoundType.METAL)
                     .lightLevel(state -> 10));
+
+    // --- Станки (US3, T041) ---
+    public static final Block CRUSHER = register("crusher",
+            props -> new ProcessingMachineBlock(props, CrusherBlockEntity::new,
+                    () -> ModBlockEntities.CRUSHER),
+            BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+    public static final Block ELECTRIC_FURNACE = register("electric_furnace",
+            props -> new ProcessingMachineBlock(props, ElectricFurnaceBlockEntity::new,
+                    () -> ModBlockEntities.ELECTRIC_FURNACE),
+            BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> 6));
+    public static final Block ASSEMBLY_TABLE = register("assembly_table",
+            props -> new ProcessingMachineBlock(props, AssemblyTableBlockEntity::new,
+                    () -> ModBlockEntities.ASSEMBLY_TABLE),
+            BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
+    // --- Руды (US3, T040) ---
+    public static final Block TITANIUM_ORE = register("titanium_ore", Block::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 3.0f).requiresCorrectToolForDrops());
+    public static final Block DEEPSLATE_TITANIUM_ORE = register("deepslate_titanium_ore", Block::new,
+            BlockBehaviour.Properties.of().strength(4.5f, 3.0f).requiresCorrectToolForDrops()
+                    .sound(SoundType.DEEPSLATE));
+    public static final Block DEEPSLATE_TUNGSTEN_ORE = register("deepslate_tungsten_ore", Block::new,
+            BlockBehaviour.Properties.of().strength(5.0f, 3.0f).requiresCorrectToolForDrops()
+                    .sound(SoundType.DEEPSLATE));
+
+    // --- Инженерные блоки — детали ракет (US3 → US4); поведение сущности в Phase 6 ---
+    public static final Block ROCKET_HULL = register("rocket_hull", Block::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+    public static final Block FUEL_TANK = register("fuel_tank", Block::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+    public static final Block ROCKET_ENGINE = register("rocket_engine", Block::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+    public static final Block COMMAND_MODULE = register("command_module", Block::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+    public static final Block GYROSCOPE = register("gyroscope", Block::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
 
     /**
      * Регистрация блока + BlockItem по контракту 26.2: id задаётся заранее

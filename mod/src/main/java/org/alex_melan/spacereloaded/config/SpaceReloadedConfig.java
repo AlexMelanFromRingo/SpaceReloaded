@@ -48,6 +48,16 @@ public final class SpaceReloadedConfig {
     /** Буфер контроллера атмосферы, E. */
     public long controllerEnergyCapacity = 4_000;
 
+    // --- Станки (US3) ---
+    /** Потребление станка во время работы, E/тик. */
+    public long machineEnergyPerTick = 8;
+    /** Длительность операции дробилки, тики. */
+    public int crusherTicks = 100;
+    /** Длительность операции электропечи, тики. */
+    public int electricFurnaceTicks = 120;
+    /** Длительность операции сборочного стола, тики. */
+    public int assemblyTicks = 160;
+
     // --- Шлюзы (US2) ---
     /** Длительность цикла выравнивания давления люка, тики. */
     public int airlockCycleTicks = 40;

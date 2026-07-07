@@ -1,0 +1,6 @@
+{
+	"block": "spacereloaded:gyroscope",
+	"mass_kg": 200.0,
+	"role": "gyro",
+	"gyro_torque_nm": 200000.0
+}

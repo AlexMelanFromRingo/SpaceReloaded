@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:crushing",
+	"ingredient": "spacereloaded:raw_tungsten",
+	"result": { "id": "spacereloaded:tungsten_dust", "count": 2 }
+}

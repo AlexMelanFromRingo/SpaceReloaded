@@ -1,0 +1,7 @@
+{
+	"block": "spacereloaded:fuel_tank",
+	"mass_kg": 300.0,
+	"role": "tank",
+	"fuel": "spacereloaded:kerolox",
+	"propellant_capacity_kg": 2000.0
+}

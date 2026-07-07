@@ -1,0 +1,10 @@
+{
+	"replace": false,
+	"values": [
+		"spacereloaded:rocket_hull",
+		"spacereloaded:fuel_tank",
+		"spacereloaded:rocket_engine",
+		"spacereloaded:command_module",
+		"spacereloaded:gyroscope"
+	]
+}

@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:titanium_alloy_ingot","spacereloaded:hermetic_glass","spacereloaded:carbon_fiber","spacereloaded:steel_ingot" ],
+	"result": { "id": "spacereloaded:command_module", "count": 1 }
+}

@@ -7,6 +7,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.alex_melan.spacereloaded.SpaceReloaded;
 import org.alex_melan.spacereloaded.energy.BatteryBlockEntity;
 import org.alex_melan.spacereloaded.energy.CreativePowerBlockEntity;
+import org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity;
+import org.alex_melan.spacereloaded.machine.CrusherBlockEntity;
+import org.alex_melan.spacereloaded.machine.ElectricFurnaceBlockEntity;
 import org.alex_melan.spacereloaded.energy.RtgBlockEntity;
 import org.alex_melan.spacereloaded.energy.SolarPanelBlockEntity;
 import org.alex_melan.spacereloaded.sealing.AtmosphereControllerBlockEntity;
@@ -36,6 +39,18 @@ public final class ModBlockEntities {
             register("creative_power", new BlockEntityType<>(CreativePowerBlockEntity::new,
                     Set.of(ModBlocks.CREATIVE_POWER)));
 
+    public static final BlockEntityType<CrusherBlockEntity> CRUSHER =
+            register("crusher", new BlockEntityType<>(CrusherBlockEntity::new,
+                    Set.of(ModBlocks.CRUSHER)));
+
+    public static final BlockEntityType<ElectricFurnaceBlockEntity> ELECTRIC_FURNACE =
+            register("electric_furnace", new BlockEntityType<>(ElectricFurnaceBlockEntity::new,
+                    Set.of(ModBlocks.ELECTRIC_FURNACE)));
+
+    public static final BlockEntityType<AssemblyTableBlockEntity> ASSEMBLY_TABLE =
+            register("assembly_table", new BlockEntityType<>(AssemblyTableBlockEntity::new,
+                    Set.of(ModBlocks.ASSEMBLY_TABLE)));
+
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> register(
             String name, BlockEntityType<T> type) {
         return Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE,
@@ -49,6 +64,9 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), BATTERY);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ATMOSPHERE_CONTROLLER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CREATIVE_POWER);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CRUSHER);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ELECTRIC_FURNACE);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ASSEMBLY_TABLE);
     }
 
     private ModBlockEntities() {

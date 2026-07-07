@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:coal_dust","spacereloaded:coal_dust","spacereloaded:coal_dust","spacereloaded:coal_dust" ],
+	"result": { "id": "spacereloaded:carbon_fiber", "count": 1 }
+}

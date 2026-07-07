@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "minecraft:copper_ingot","minecraft:copper_ingot","spacereloaded:hermetic_glass","spacereloaded:steel_ingot" ],
+	"result": { "id": "spacereloaded:solar_panel", "count": 2 }
+}

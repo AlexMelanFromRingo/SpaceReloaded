@@ -1,0 +1,7 @@
+{
+	"parent": "minecraft:block/cube_column",
+	"textures": {
+		"side": "spacereloaded:block/fuel_tank_side",
+		"end": "spacereloaded:block/fuel_tank_top"
+	}
+}

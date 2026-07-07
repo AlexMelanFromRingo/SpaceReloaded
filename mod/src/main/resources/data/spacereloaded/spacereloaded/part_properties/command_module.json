@@ -1,0 +1,5 @@
+{
+	"block": "spacereloaded:command_module",
+	"mass_kg": 500.0,
+	"role": "command"
+}

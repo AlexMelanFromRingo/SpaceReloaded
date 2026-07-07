@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:hermetic_glass","spacereloaded:steel_ingot" ],
+	"result": { "id": "spacereloaded:oxygen_mask", "count": 1 }
+}

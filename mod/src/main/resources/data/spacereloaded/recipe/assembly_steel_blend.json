@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:iron_dust","spacereloaded:coal_dust","spacereloaded:coal_dust" ],
+	"result": { "id": "spacereloaded:steel_blend", "count": 1 }
+}

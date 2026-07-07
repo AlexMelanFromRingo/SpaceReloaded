@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:steel_blend",
+	"result": { "id": "spacereloaded:steel_ingot" }
+}

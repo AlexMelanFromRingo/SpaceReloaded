@@ -1,0 +1,8 @@
+{
+	"block": "spacereloaded:rocket_engine",
+	"mass_kg": 400.0,
+	"role": "engine",
+	"thrust_n": 60000.0,
+	"isp_sec": 300.0,
+	"fuel": "spacereloaded:kerolox"
+}

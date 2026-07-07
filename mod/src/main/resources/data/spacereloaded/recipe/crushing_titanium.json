@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:crushing",
+	"ingredient": "spacereloaded:raw_titanium",
+	"result": { "id": "spacereloaded:titanium_dust", "count": 2 }
+}

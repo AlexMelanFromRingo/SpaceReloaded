@@ -1,0 +1,8 @@
+{
+	"replace": false,
+	"values": [
+		"spacereloaded:titanium_ore",
+		"spacereloaded:deepslate_titanium_ore",
+		"spacereloaded:deepslate_tungsten_ore"
+	]
+}

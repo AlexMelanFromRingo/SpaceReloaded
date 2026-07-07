@@ -30,6 +30,25 @@ public final class ModItems {
                     .setAsset(OXYGEN_MASK_ASSET)
                     .build())));
 
+    // --- Материалы промышленной цепочки (US3, T040/T042) ---
+    public static final Item RAW_TITANIUM = simple("raw_titanium");
+    public static final Item RAW_TUNGSTEN = simple("raw_tungsten");
+    public static final Item TITANIUM_INGOT = simple("titanium_ingot");
+    public static final Item TUNGSTEN_INGOT = simple("tungsten_ingot");
+    public static final Item STEEL_INGOT = simple("steel_ingot");
+    public static final Item TITANIUM_ALLOY_INGOT = simple("titanium_alloy_ingot");
+    public static final Item TITANIUM_DUST = simple("titanium_dust");
+    public static final Item TUNGSTEN_DUST = simple("tungsten_dust");
+    public static final Item IRON_DUST = simple("iron_dust");
+    public static final Item COAL_DUST = simple("coal_dust");
+    /** Шихта: железная пыль + угольная пыль — полуфабрикат стали. */
+    public static final Item STEEL_BLEND = simple("steel_blend");
+    public static final Item CARBON_FIBER = simple("carbon_fiber");
+
+    private static Item simple(String name) {
+        return register(name, Item::new);
+    }
+
     private static Item register(String name, java.util.function.Function<Item.Properties, Item> factory) {
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM,
                 Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name));

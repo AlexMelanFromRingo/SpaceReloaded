@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:crushing",
+	"ingredient": "minecraft:raw_iron",
+	"result": { "id": "spacereloaded:iron_dust", "count": 2 }
+}

@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:titanium_dust",
+	"result": { "id": "spacereloaded:titanium_ingot" }
+}

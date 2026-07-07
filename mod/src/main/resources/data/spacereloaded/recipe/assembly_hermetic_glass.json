@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:steel_ingot","minecraft:glass","minecraft:glass","minecraft:glass" ],
+	"result": { "id": "spacereloaded:hermetic_glass", "count": 3 }
+}

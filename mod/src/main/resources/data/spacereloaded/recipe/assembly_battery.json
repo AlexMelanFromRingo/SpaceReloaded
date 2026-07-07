@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "minecraft:copper_ingot","minecraft:copper_ingot","spacereloaded:steel_ingot","minecraft:redstone" ],
+	"result": { "id": "spacereloaded:battery", "count": 1 }
+}

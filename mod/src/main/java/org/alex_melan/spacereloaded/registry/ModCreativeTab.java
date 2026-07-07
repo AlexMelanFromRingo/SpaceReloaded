@@ -31,6 +31,29 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.ENERGY_CABLE);
                         output.accept(ModBlocks.CREATIVE_POWER);
                         output.accept(ModItems.OXYGEN_MASK);
+                        output.accept(ModBlocks.CRUSHER);
+                        output.accept(ModBlocks.ELECTRIC_FURNACE);
+                        output.accept(ModBlocks.ASSEMBLY_TABLE);
+                        output.accept(ModBlocks.TITANIUM_ORE);
+                        output.accept(ModBlocks.DEEPSLATE_TITANIUM_ORE);
+                        output.accept(ModBlocks.DEEPSLATE_TUNGSTEN_ORE);
+                        output.accept(ModItems.RAW_TITANIUM);
+                        output.accept(ModItems.RAW_TUNGSTEN);
+                        output.accept(ModItems.TITANIUM_DUST);
+                        output.accept(ModItems.TUNGSTEN_DUST);
+                        output.accept(ModItems.IRON_DUST);
+                        output.accept(ModItems.COAL_DUST);
+                        output.accept(ModItems.STEEL_BLEND);
+                        output.accept(ModItems.TITANIUM_INGOT);
+                        output.accept(ModItems.TUNGSTEN_INGOT);
+                        output.accept(ModItems.STEEL_INGOT);
+                        output.accept(ModItems.TITANIUM_ALLOY_INGOT);
+                        output.accept(ModItems.CARBON_FIBER);
+                        output.accept(ModBlocks.ROCKET_HULL);
+                        output.accept(ModBlocks.FUEL_TANK);
+                        output.accept(ModBlocks.ROCKET_ENGINE);
+                        output.accept(ModBlocks.COMMAND_MODULE);
+                        output.accept(ModBlocks.GYROSCOPE);
                     })
                     .build());
 
