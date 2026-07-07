@@ -74,6 +74,15 @@ public record RocketData(List<Entry> blocks, double propellantKg) {
         return new RocketStructure(parts);
     }
 
+    /** Локальные позиции кресел (role=seat), отсортированы детерминированно. */
+    public java.util.List<Long> seatLocals() {
+        return blocks.stream()
+                .filter(e -> e.role().equals("seat"))
+                .map(Entry::localPos)
+                .sorted()
+                .toList();
+    }
+
     /** Локальная позиция командного модуля (кресло пилота); origin — если нет. */
     public long commandLocalPos() {
         for (Entry entry : blocks) {

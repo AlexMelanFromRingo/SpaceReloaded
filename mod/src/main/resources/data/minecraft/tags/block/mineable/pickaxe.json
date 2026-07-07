@@ -20,6 +20,9 @@
 		"spacereloaded:crusher",
 		"spacereloaded:electric_furnace",
 		"spacereloaded:assembly_table",
-		"spacereloaded:coal_generator"
+		"spacereloaded:coal_generator",
+		"spacereloaded:launch_pad",
+		"spacereloaded:assembly_pylon",
+		"spacereloaded:rocket_seat"
 	]
 }

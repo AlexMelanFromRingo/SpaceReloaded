@@ -1,0 +1,8 @@
+{
+	"variants": {
+		"facing=north": { "model": "spacereloaded:block/rocket_seat" },
+		"facing=east":  { "model": "spacereloaded:block/rocket_seat", "y": 90 },
+		"facing=south": { "model": "spacereloaded:block/rocket_seat", "y": 180 },
+		"facing=west":  { "model": "spacereloaded:block/rocket_seat", "y": 270 }
+	}
+}

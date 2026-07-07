@@ -68,6 +68,7 @@ public class RocketEntity extends Entity {
     private float sizeZ = 1;
     private float comY = 1;
     private long commandLocal;
+    private java.util.List<Long> seatLocals = java.util.List.of();
 
     public RocketEntity(EntityType<?> type, Level level) {
         super(type, level);
@@ -107,6 +108,7 @@ public class RocketEntity extends Entity {
         sizeY = maxY + 1;
         sizeZ = maxZ + 1;
         commandLocal = rocketData.commandLocalPos();
+        seatLocals = rocketData.seatLocals();
         comY = (float) PerformanceCalculator.calculate(structure, 9.81).centerOfMass().y();
         setBoundingBox(makeBoundingBox(position()));
     }
@@ -183,11 +185,16 @@ public class RocketEntity extends Entity {
         if (player.isSecondaryUseActive()) {
             return InteractionResult.PASS;
         }
-        if (!level().isClientSide() && !isVehicle()) {
-            player.startRiding(this);
+        if (!level().isClientSide()) {
+            player.startRiding(this); // canAddPassenger ограничит вместимость
             return InteractionResult.SUCCESS_SERVER;
         }
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    protected boolean canAddPassenger(Entity passenger) {
+        return getPassengers().size() < 1 + seatLocals.size(); // модуль = место пилота
     }
 
     @Override
@@ -195,9 +202,15 @@ public class RocketEntity extends Entity {
         if (!hasPassenger(passenger)) {
             return;
         }
-        double x = getX() + PackedPos.unpackX(commandLocal) - halfX() + 0.5;
-        double y = getY() + PackedPos.unpackY(commandLocal) + 0.1;
-        double z = getZ() + PackedPos.unpackZ(commandLocal) - halfZ() + 0.5;
+        // Пилот — в командном модуле, остальные — по креслам (детерминированный порядок)
+        int index = getPassengers().indexOf(passenger);
+        long seat = commandLocal;
+        if (index > 0 && index - 1 < seatLocals.size()) {
+            seat = seatLocals.get(index - 1);
+        }
+        double x = getX() + PackedPos.unpackX(seat) - halfX() + 0.5;
+        double y = getY() + PackedPos.unpackY(seat) + 0.1;
+        double z = getZ() + PackedPos.unpackZ(seat) - halfZ() + 0.5;
         moveFunction.accept(passenger, x, y, z);
     }
 

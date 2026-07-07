@@ -51,5 +51,14 @@
 	"message.spacereloaded.rocket.warning.NO_USABLE_PROPELLANT": "⚠ Нет подходящего топлива для двигателей",
 	"message.spacereloaded.rocket.warning.TWR_BELOW_ONE": "⚠ TWR меньше 1 — ракета не оторвётся",
 	"message.spacereloaded.rocket.warning.ASYMMETRIC_THRUST": "⚠ Тяга несимметрична — будет крутящий момент",
-	"entity.spacereloaded.rocket": "Ракета"
+	"entity.spacereloaded.rocket": "Ракета",
+	"block.spacereloaded.launch_pad": "Стартовая плита",
+	"block.spacereloaded.assembly_pylon": "Сборочный пилон",
+	"block.spacereloaded.rocket_seat": "Кресло",
+	"message.spacereloaded.assembly.no_pad": "Пилон должен стоять на плитах площадки или вплотную к ним",
+	"message.spacereloaded.assembly.no_parts": "Над площадкой нет деталей ракеты",
+	"message.spacereloaded.assembly.no_command": "Ракете нужен командный модуль",
+	"message.spacereloaded.assembly.multiple_command": "Командный модуль должен быть один",
+	"message.spacereloaded.assembly.disconnected": "Деталь на %s не соединена с командным модулем",
+	"message.spacereloaded.assembly.use_pylon": "Стройте ракету на стартовой площадке и жмите ПКМ по сборочному пилону"
 }

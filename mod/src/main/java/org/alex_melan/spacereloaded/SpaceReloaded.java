@@ -66,16 +66,15 @@ public class SpaceReloaded implements ModInitializer {
 			}
 		});
 		UseBlockCallback.EVENT.register((player, level, hand, hitResult) -> {
-			// Сборка ракеты: ПКМ по командному модулю (без приседания)
+			// Подсказка: сборка теперь со стартовой площадки (ПКМ по пилону)
 			BlockPos usePos = hitResult.getBlockPos();
 			if (!player.isSecondaryUseActive()
 					&& level.getBlockState(usePos).is(ModBlocks.COMMAND_MODULE)) {
-				if (level instanceof ServerLevel serverLevel
-						&& player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-					RocketInteractions.assemble(serverLevel, usePos, serverPlayer);
-					return InteractionResult.SUCCESS_SERVER;
+				if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+					serverPlayer.sendSystemMessage(net.minecraft.network.chat.Component
+							.translatable("message.spacereloaded.assembly.use_pylon"));
 				}
-				return InteractionResult.SUCCESS;
+				return InteractionResult.SUCCESS_SERVER;
 			}
 			if (level instanceof ServerLevel serverLevel) {
 				BlockPos pos = hitResult.getBlockPos();

@@ -23,6 +23,9 @@ import org.alex_melan.spacereloaded.machine.CoalGeneratorBlockEntity;
 import org.alex_melan.spacereloaded.machine.CrusherBlockEntity;
 import org.alex_melan.spacereloaded.machine.ElectricFurnaceBlockEntity;
 import org.alex_melan.spacereloaded.machine.ProcessingMachineBlock;
+import org.alex_melan.spacereloaded.rocket.AssemblyPylonBlock;
+import org.alex_melan.spacereloaded.rocket.LaunchPadBlock;
+import org.alex_melan.spacereloaded.rocket.RocketSeatBlock;
 import org.alex_melan.spacereloaded.sealing.AtmosphereControllerBlock;
 import org.alex_melan.spacereloaded.sealing.HermeticHatchBlock;
 
@@ -158,6 +161,17 @@ public final class ModBlocks {
     public static final Block GYROSCOPE = register("gyroscope", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
+
+    // --- Стартовая инфраструктура и кресло (US4, срез 2) ---
+    public static final Block LAUNCH_PAD = register("launch_pad", LaunchPadBlock::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops().noOcclusion());
+    public static final Block ASSEMBLY_PYLON = register("assembly_pylon", AssemblyPylonBlock::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops().noOcclusion());
+    public static final Block ROCKET_SEAT = register("rocket_seat", RocketSeatBlock::new,
+            BlockBehaviour.Properties.of().strength(2.0f, 6.0f).sound(SoundType.METAL)
+                    .noOcclusion());
 
     /**
      * Регистрация блока + BlockItem по контракту 26.2: id задаётся заранее

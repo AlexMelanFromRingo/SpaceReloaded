@@ -51,5 +51,14 @@
 	"message.spacereloaded.rocket.warning.NO_USABLE_PROPELLANT": "⚠ No usable propellant for these engines",
 	"message.spacereloaded.rocket.warning.TWR_BELOW_ONE": "⚠ TWR below 1 — it will not lift off",
 	"message.spacereloaded.rocket.warning.ASYMMETRIC_THRUST": "⚠ Thrust is asymmetric — expect torque",
-	"entity.spacereloaded.rocket": "Rocket"
+	"entity.spacereloaded.rocket": "Rocket",
+	"block.spacereloaded.launch_pad": "Launch Pad",
+	"block.spacereloaded.assembly_pylon": "Assembly Pylon",
+	"block.spacereloaded.rocket_seat": "Rocket Seat",
+	"message.spacereloaded.assembly.no_pad": "The pylon must stand on or next to launch pad plates",
+	"message.spacereloaded.assembly.no_parts": "No rocket parts above the pad",
+	"message.spacereloaded.assembly.no_command": "The rocket needs a command module",
+	"message.spacereloaded.assembly.multiple_command": "Only one command module allowed",
+	"message.spacereloaded.assembly.disconnected": "Part at %s is not connected to the command module",
+	"message.spacereloaded.assembly.use_pylon": "Build on a launch pad and right-click the assembly pylon"
 }

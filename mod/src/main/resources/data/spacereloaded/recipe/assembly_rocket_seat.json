@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:steel_ingot", "minecraft:leather", "minecraft:leather" ],
+	"result": { "id": "spacereloaded:rocket_seat" }
+}

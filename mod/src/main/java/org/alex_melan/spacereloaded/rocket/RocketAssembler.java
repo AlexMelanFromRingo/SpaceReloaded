@@ -42,6 +42,72 @@ public final class RocketAssembler {
     private RocketAssembler() {
     }
 
+    /**
+     * Сборка со стартовой площадки (AR-стиль): объём = клетки площадки ×
+     * высота пилона. Требования: ровно один командный модуль, все детали
+     * связаны гранями с командным модулем.
+     */
+    public static Result scanVolume(ServerLevel level, Iterable<BlockPos> padCells,
+                                    int minY, int maxY, PartPropertiesResolver resolver,
+                                    int maxBlocks) {
+        List<BlockPos> collected = new ArrayList<>();
+        Set<BlockPos> collectedSet = new HashSet<>();
+        BlockPos commandPos = null;
+        int commandCount = 0;
+
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (BlockPos cell : padCells) {
+            for (int y = minY; y <= maxY; y++) {
+                cursor.set(cell.getX(), y, cell.getZ());
+                BlockState state = level.getBlockState(cursor);
+                if (!state.is(ModTags.ROCKET_PARTS)) {
+                    continue;
+                }
+                BlockPos pos = cursor.immutable();
+                collected.add(pos);
+                collectedSet.add(pos);
+                if (collected.size() > maxBlocks) {
+                    return new Result.Error("message.spacereloaded.assembly.too_big", pos);
+                }
+                Optional<PartProperties> props = resolver.resolve(state);
+                if (props.isPresent() && props.get().role() == org.alex_melan.spacereloaded.core.rocketry.PartRole.COMMAND) {
+                    commandCount++;
+                    commandPos = pos;
+                }
+            }
+        }
+        if (collected.isEmpty()) {
+            return new Result.Error("message.spacereloaded.assembly.no_parts", padCells.iterator().next());
+        }
+        if (commandCount == 0) {
+            return new Result.Error("message.spacereloaded.assembly.no_command", collected.get(0));
+        }
+        if (commandCount > 1) {
+            return new Result.Error("message.spacereloaded.assembly.multiple_command", commandPos);
+        }
+
+        // Связность: BFS от командного модуля внутри собранного множества
+        Set<BlockPos> reachable = new HashSet<>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        queue.add(commandPos);
+        reachable.add(commandPos);
+        while (!queue.isEmpty()) {
+            BlockPos current = queue.poll();
+            for (Direction dir : Direction.values()) {
+                BlockPos neighbor = current.relative(dir);
+                if (collectedSet.contains(neighbor) && reachable.add(neighbor)) {
+                    queue.add(neighbor);
+                }
+            }
+        }
+        for (BlockPos pos : collected) {
+            if (!reachable.contains(pos)) {
+                return new Result.Error("message.spacereloaded.assembly.disconnected", pos);
+            }
+        }
+        return buildResult(level, collected, resolver, commandPos);
+    }
+
     public static Result scan(ServerLevel level, BlockPos commandPos,
                               PartPropertiesResolver resolver, int maxBlocks) {
         BlockState commandState = level.getBlockState(commandPos);
@@ -73,6 +139,11 @@ public final class RocketAssembler {
             }
         }
 
+        return buildResult(level, collected, resolver, commandPos);
+    }
+
+    private static Result buildResult(ServerLevel level, List<BlockPos> collected,
+                                      PartPropertiesResolver resolver, BlockPos commandPos) {
         // Локальные координаты — от минимального угла AABB структуры
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
@@ -94,7 +165,7 @@ public final class RocketAssembler {
             }
             long local = PackedPos.pack(pos.getX() - minX, pos.getY() - minY, pos.getZ() - minZ);
             blocks.add(new ScannedBlock(pos.immutable(), state, local, properties.get()));
-            // MVP: баки полные (см. javadoc)
+            // MVP: баки полные (честная заправка — вместе с ISRU)
             double fill = properties.get().propellantCapacityKg();
             parts.add(new PlacedPart(local, properties.get(), fill));
         }

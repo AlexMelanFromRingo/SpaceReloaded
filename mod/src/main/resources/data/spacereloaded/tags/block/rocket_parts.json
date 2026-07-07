@@ -5,6 +5,7 @@
 		"spacereloaded:fuel_tank",
 		"spacereloaded:rocket_engine",
 		"spacereloaded:command_module",
-		"spacereloaded:gyroscope"
+		"spacereloaded:gyroscope",
+		"spacereloaded:rocket_seat"
 	]
 }
