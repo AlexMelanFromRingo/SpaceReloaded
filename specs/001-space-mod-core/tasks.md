@@ -6,18 +6,18 @@
 
 ## Phase 1: Setup (каркас проекта)
 
-- [ ] T001 Многомодульный Gradle-проект: `settings.gradle` (core, mod), `gradle.properties` c версиями из research.md R1 (MC 26.2, Loader 0.19.3, Loom 1.17-SNAPSHOT, Fabric API 0.154.2+26.2, Java 25), wrapper Gradle 9.5.1
-- [ ] T002 `core/build.gradle`: java-library, JUnit 5, release=25
-- [ ] T003 `mod/build.gradle`: плагин `net.fabricmc.fabric-loom`, `splitEnvironmentSourceSets`, зависимости `minecraft`/`fabric-loader`/`fabric-api` через `implementation`, `include project(':core')`
-- [ ] T004 `fabric.mod.json` (id=spacereloaded, entrypoints main+client, depends java>=25, minecraft ~26.2), mixins-конфиги (compatibilityLevel JAVA_25), иконка-заглушка
-- [ ] T005 Каркас entrypoint'ов `SpaceReloaded.java` / `SpaceReloadedClient.java`, логгер; `./gradlew build` зелёный — коммит «скелет»
+- [X] T001 Многомодульный Gradle-проект: `settings.gradle` (core, mod), `gradle.properties` c версиями из research.md R1 (MC 26.2, Loader 0.19.3, Loom 1.17-SNAPSHOT, Fabric API 0.154.2+26.2, Java 25), wrapper Gradle 9.5.1
+- [X] T002 `core/build.gradle`: java-library, JUnit 5, release=25
+- [X] T003 `mod/build.gradle`: плагин `net.fabricmc.fabric-loom`, `splitEnvironmentSourceSets`, зависимости `minecraft`/`fabric-loader`/`fabric-api` через `implementation`, `include project(':core')`
+- [X] T004 `fabric.mod.json` (id=spacereloaded, entrypoints main+client, depends java>=25, minecraft ~26.2), mixins-конфиги (compatibilityLevel JAVA_25), иконка-заглушка
+- [X] T005 Каркас entrypoint'ов `SpaceReloaded.java` / `SpaceReloadedClient.java`, логгер; `./gradlew build` зелёный — коммит «скелет»
 
 ## Phase 2: Foundational (ядро, блокирует все истории)
 
-- [ ] T010 [P] `core/geometry`: `Vec3l` c pack/unpack в long (формат ванильного BlockPos.asLong для совместимости), `Vec3d`, `LongQueue`/`LongSet` минимальные структуры
-- [ ] T011 [P] `core/voxel`: `VoxelView`, `GasPermeability`, `ArrayVoxelGrid` (bounding box + byte[]), билдер для тестовых сцен
-- [ ] T012 Порт алгоритма из RoomCheckerPlugin → `core/sealing/GasFloodFill`: 26 направлений (сохранить массив DIRECTIONS_3D), чебышёвский радиус, статусы SEALED/LEAK/UNBOUNDED, early-exit при не-diagnostic, long-упаковка вместо объектов BlockVector3
-- [ ] T013 JUnit `GasFloodFillTest`: замкнутый куб 5×5×5 = SEALED; диагональная щель = LEAK; открытый объём = UNBOUNDED; закрытая/открытая дверь; полость 10к блоков < 200 мс; early-exit vs diagnostic
+- [X] T010 [P] `core/geometry`: `Vec3l` c pack/unpack в long (формат ванильного BlockPos.asLong для совместимости), `Vec3d`, `LongQueue`/`LongSet` минимальные структуры
+- [X] T011 [P] `core/voxel`: `VoxelView`, `GasPermeability`, `ArrayVoxelGrid` (bounding box + byte[]), билдер для тестовых сцен
+- [X] T012 Порт алгоритма из RoomCheckerPlugin → `core/sealing/GasFloodFill`: 26 направлений (сохранить массив DIRECTIONS_3D), чебышёвский радиус, статусы SEALED/LEAK/UNBOUNDED, early-exit при не-diagnostic, long-упаковка вместо объектов BlockVector3
+- [X] T013 JUnit `GasFloodFillTest`: замкнутый куб 5×5×5 = SEALED; диагональная щель = LEAK; открытый объём = UNBOUNDED; закрытая/открытая дверь; полость 10к блоков < 200 мс; early-exit vs diagnostic
 - [ ] T014 [P] `core/rocketry`: PartProperties/RocketStructure/RocketPerformance + `PerformanceCalculator` (CoM, центр тяги, момент инерции точечными массами, TWR, Δv по Циолковскому, предупреждения)
 - [ ] T015 [P] JUnit `PerformanceCalculatorTest`: Δv против аналитики (1%), CoM симметричной/асимметричной решётки, предупреждение при снятом двигателе
 - [ ] T016 [P] `core/ballistics`: BallisticIntegrator + ImpactEnergy; JUnit против аналитики свободного падения
@@ -101,6 +101,6 @@
 
 ## Статус
 
-- [ ] Phase 1 — T001…T005
-- [ ] Phase 2 — T010…T018
+- [X] Phase 1 — T001…T005 (коммит «скелет», build зелёный)
+- [ ] Phase 2 — частично: T010…T013 готовы (порт sealing + 15 тестов зелёные); осталось T014…T018
 - [ ] Остальное — в работе

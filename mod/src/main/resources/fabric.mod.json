@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "spacereloaded",
+	"version": "${version}",
+	"name": "SpaceReloaded",
+	"description": "Космическая программа: герметичные базы, ракеты из блоков с честной физикой, орбитальные станции и кинетические орбитальные удары.",
+	"authors": [
+		"Alex Melan"
+	],
+	"contact": {},
+	"license": "ARR",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"org.alex_melan.spacereloaded.SpaceReloaded"
+		],
+		"client": [
+			"org.alex_melan.spacereloaded.client.SpaceReloadedClient"
+		]
+	},
+	"mixins": [
+		"spacereloaded.mixins.json",
+		{
+			"config": "spacereloaded.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
