@@ -1,0 +1,15 @@
+{
+	"schemaVersion": 1,
+	"id": "spacereloaded-test",
+	"version": "1.0.0",
+	"name": "SpaceReloaded Gametests",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"org.alex_melan.spacereloaded.gametest.SpaceReloadedClientGameTest"
+		]
+	},
+	"depends": {
+		"spacereloaded": "*"
+	}
+}

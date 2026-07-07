@@ -201,6 +201,11 @@ public class RocketEntity extends Entity {
         return !launched && rocketData != null;
     }
 
+    /** Текущий запас топлива, кг. */
+    public double propellantKg() {
+        return flight == null ? 0 : flight.propellantKg();
+    }
+
     /** Заправка (рукав): принять до amountKg, вернуть фактически принятое. */
     public double refuel(double amountKg) {
         if (launched || structure == null || flight == null) {

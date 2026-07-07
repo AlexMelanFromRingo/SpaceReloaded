@@ -14,6 +14,7 @@ JAVA_HOME=~/.sdkman/candidates/java/25.0.3-tem ./gradlew build
 ```
 
 - `./gradlew :core:test` — юнит-тесты ядра (без Minecraft, быстрые)
+- `./gradlew :mod:runClientGametest` — E2E-стенд: реальный клиент + мир, сценарии герметичности/станков/сборки ракеты (~40 с)
 - `./gradlew :mod:build` — сборка jar мода (в `mod/build/libs/`)
 
 ## Запуск дев-клиента/сервера
