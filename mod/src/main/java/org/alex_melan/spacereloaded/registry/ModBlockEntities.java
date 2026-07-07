@@ -5,19 +5,44 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.alex_melan.spacereloaded.SpaceReloaded;
+import org.alex_melan.spacereloaded.energy.BatteryBlockEntity;
+import org.alex_melan.spacereloaded.energy.RtgBlockEntity;
+import org.alex_melan.spacereloaded.energy.SolarPanelBlockEntity;
 import org.alex_melan.spacereloaded.sealing.AtmosphereControllerBlockEntity;
+import team.reborn.energy.api.EnergyStorage;
 
 import java.util.Set;
 
 public final class ModBlockEntities {
 
     public static final BlockEntityType<AtmosphereControllerBlockEntity> ATMOSPHERE_CONTROLLER =
-            Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE,
-                    Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "atmosphere_controller"),
-                    new BlockEntityType<>(AtmosphereControllerBlockEntity::new,
-                            Set.of(ModBlocks.ATMOSPHERE_CONTROLLER)));
+            register("atmosphere_controller", new BlockEntityType<>(AtmosphereControllerBlockEntity::new,
+                    Set.of(ModBlocks.ATMOSPHERE_CONTROLLER)));
+
+    public static final BlockEntityType<SolarPanelBlockEntity> SOLAR_PANEL =
+            register("solar_panel", new BlockEntityType<>(SolarPanelBlockEntity::new,
+                    Set.of(ModBlocks.SOLAR_PANEL)));
+
+    public static final BlockEntityType<RtgBlockEntity> RTG =
+            register("rtg", new BlockEntityType<>(RtgBlockEntity::new,
+                    Set.of(ModBlocks.RTG)));
+
+    public static final BlockEntityType<BatteryBlockEntity> BATTERY =
+            register("battery", new BlockEntityType<>(BatteryBlockEntity::new,
+                    Set.of(ModBlocks.BATTERY)));
+
+    private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> register(
+            String name, BlockEntityType<T> type) {
+        return Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name), type);
+    }
 
     public static void init() {
+        // Публикация энергохранилищ в Fabric API lookup (решение D7: Team Reborn Energy)
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SOLAR_PANEL);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), RTG);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), BATTERY);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ATMOSPHERE_CONTROLLER);
     }
 
     private ModBlockEntities() {

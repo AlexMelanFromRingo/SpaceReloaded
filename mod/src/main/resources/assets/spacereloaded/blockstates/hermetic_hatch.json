@@ -1,0 +1,8 @@
+{
+	"variants": {
+		"open=true,cycling=true": { "model": "spacereloaded:block/hermetic_hatch_open" },
+		"open=true,cycling=false": { "model": "spacereloaded:block/hermetic_hatch_open" },
+		"open=false,cycling=true": { "model": "spacereloaded:block/hermetic_hatch_cycling" },
+		"open=false,cycling=false": { "model": "spacereloaded:block/hermetic_hatch" }
+	}
+}

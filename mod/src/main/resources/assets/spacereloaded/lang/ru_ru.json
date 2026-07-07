@@ -1,7 +1,15 @@
 {
+	"itemGroup.spacereloaded": "SpaceReloaded",
 	"block.spacereloaded.hull_plating": "Герметичная обшивка",
 	"block.spacereloaded.atmosphere_controller": "Контроллер атмосферы",
+	"block.spacereloaded.hermetic_glass": "Герметичное стекло",
+	"block.spacereloaded.hermetic_hatch": "Герметичный люк",
+	"block.spacereloaded.solar_panel": "Солнечная панель",
+	"block.spacereloaded.rtg": "РИТЭГ",
+	"block.spacereloaded.battery": "Аккумулятор",
+	"block.spacereloaded.energy_cable": "Энергокабель",
 	"item.spacereloaded.oxygen_mask": "Кислородная маска",
+	"message.spacereloaded.airlock_interlock": "Интерлок шлюза: другой люк открыт",
 	"death.attack.spacereloaded.vacuum": "%1$s задохнулся в вакууме",
 	"death.attack.spacereloaded.vacuum.player": "%1$s задохнулся в вакууме, сражаясь с %2$s"
 }

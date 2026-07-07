@@ -11,9 +11,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import org.alex_melan.spacereloaded.command.SpaceReloadedCommands;
+import org.alex_melan.spacereloaded.energy.CableNetworkManager;
 import org.alex_melan.spacereloaded.config.SpaceReloadedConfig;
 import org.alex_melan.spacereloaded.registry.ModBlockEntities;
 import org.alex_melan.spacereloaded.registry.ModBlocks;
+import org.alex_melan.spacereloaded.registry.ModCreativeTab;
 import org.alex_melan.spacereloaded.registry.ModItems;
 import org.alex_melan.spacereloaded.sealing.VacuumHazard;
 import org.alex_melan.spacereloaded.sealing.ZoneManager;
@@ -41,6 +43,7 @@ public class SpaceReloaded implements ModInitializer {
 		ModBlocks.init();
 		ModItems.init();
 		ModBlockEntities.init();
+		ModCreativeTab.init();
 
 		// Инвалидация зон по событиям (T024). Изменения складываются в отложенную
 		// очередь и обрабатываются в конце тика: к этому моменту BlockState уже
@@ -48,6 +51,7 @@ public class SpaceReloaded implements ModInitializer {
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
 			if (level instanceof ServerLevel serverLevel) {
 				ZoneManager.markBlockChanged(serverLevel, pos);
+				CableNetworkManager.markBlockChanged(serverLevel, pos);
 			}
 		});
 		UseBlockCallback.EVENT.register((player, level, hand, hitResult) -> {
@@ -56,6 +60,8 @@ public class SpaceReloaded implements ModInitializer {
 				// Клик мог открыть дверь на месте либо поставить блок в соседнюю ячейку
 				ZoneManager.markBlockChanged(serverLevel, pos);
 				ZoneManager.markBlockChanged(serverLevel, pos.relative(hitResult.getDirection()));
+				CableNetworkManager.markBlockChanged(serverLevel, pos);
+				CableNetworkManager.markBlockChanged(serverLevel, pos.relative(hitResult.getDirection()));
 			}
 			return InteractionResult.PASS;
 		});
@@ -63,9 +69,14 @@ public class SpaceReloaded implements ModInitializer {
 
 		ServerTickEvents.END_LEVEL_TICK.register(level -> {
 			ZoneManager.processDeferred(level);
+			CableNetworkManager.processDirty(level);
+			CableNetworkManager.tick(level);
 			VacuumHazard.tick(level);
 		});
-		ServerLifecycleEvents.SERVER_STOPPING.register(server -> ZoneManager.shutdown());
+		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+			ZoneManager.shutdown();
+			CableNetworkManager.clearAll();
+		});
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
 				SpaceReloadedCommands.register(dispatcher));

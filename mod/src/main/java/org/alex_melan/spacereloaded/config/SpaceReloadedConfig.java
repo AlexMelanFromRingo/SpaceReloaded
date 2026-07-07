@@ -28,6 +28,32 @@ public final class SpaceReloadedConfig {
     /** TTL chunk ticket'ов межпространственных операций, тики (D6). */
     public int ticketTtlTicks = 600;
 
+    // --- Энергия (US2, единицы Team Reborn Energy) ---
+    /** Выработка солнечной панели, E/тик (день, открытое небо). */
+    public long solarEnergyPerTick = 20;
+    /** Множитель панели в безатмосферном измерении (нет атмосферного ослабления). */
+    public double solarVacuumMultiplier = 1.5;
+    /** Выработка РИТЭГа, E/тик — слабо, но всегда. */
+    public long rtgEnergyPerTick = 4;
+    /** Ёмкость аккумулятора, E. */
+    public long batteryCapacity = 100_000;
+    /** Максимальный ввод/вывод аккумулятора, E/тик. */
+    public long batteryMaxTransfer = 256;
+    /** Пропускная способность кабельной сети, E/тик на сеть. */
+    public long cableThroughput = 128;
+    /** Внутренний буфер генераторов, E. */
+    public long generatorBufferCapacity = 2_000;
+    /** Потребление контроллера атмосферы, E/с (FR-009). */
+    public long controllerEnergyPerSecond = 40;
+    /** Буфер контроллера атмосферы, E. */
+    public long controllerEnergyCapacity = 4_000;
+
+    // --- Шлюзы (US2) ---
+    /** Длительность цикла выравнивания давления люка, тики. */
+    public int airlockCycleTicks = 40;
+    /** Радиус интерлока: люк не откроется, если другой открытый люк ближе (Чебышёв). */
+    public int airlockInterlockRadius = 5;
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static SpaceReloadedConfig load(Path configDir) {

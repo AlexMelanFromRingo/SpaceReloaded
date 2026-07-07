@@ -1,7 +1,15 @@
 {
+	"itemGroup.spacereloaded": "SpaceReloaded",
 	"block.spacereloaded.hull_plating": "Hull Plating",
 	"block.spacereloaded.atmosphere_controller": "Atmosphere Controller",
+	"block.spacereloaded.hermetic_glass": "Hermetic Glass",
+	"block.spacereloaded.hermetic_hatch": "Hermetic Hatch",
+	"block.spacereloaded.solar_panel": "Solar Panel",
+	"block.spacereloaded.rtg": "RTG",
+	"block.spacereloaded.battery": "Battery",
+	"block.spacereloaded.energy_cable": "Energy Cable",
 	"item.spacereloaded.oxygen_mask": "Oxygen Mask",
+	"message.spacereloaded.airlock_interlock": "Airlock interlock: another hatch is open",
 	"death.attack.spacereloaded.vacuum": "%1$s suffocated in vacuum",
 	"death.attack.spacereloaded.vacuum.player": "%1$s suffocated in vacuum whilst fighting %2$s"
 }

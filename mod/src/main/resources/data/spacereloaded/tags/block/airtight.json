@@ -2,6 +2,11 @@
 	"replace": false,
 	"values": [
 		"spacereloaded:hull_plating",
-		"spacereloaded:atmosphere_controller"
+		"spacereloaded:atmosphere_controller",
+		"spacereloaded:hermetic_glass",
+		"spacereloaded:hermetic_hatch",
+		"spacereloaded:solar_panel",
+		"spacereloaded:rtg",
+		"spacereloaded:battery"
 	]
 }

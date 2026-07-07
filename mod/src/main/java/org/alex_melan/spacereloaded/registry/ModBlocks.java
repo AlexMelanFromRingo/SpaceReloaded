@@ -9,9 +9,15 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.alex_melan.spacereloaded.SpaceReloaded;
+import org.alex_melan.spacereloaded.energy.BatteryBlockEntity;
+import org.alex_melan.spacereloaded.energy.MachineBlock;
+import org.alex_melan.spacereloaded.energy.RtgBlockEntity;
+import org.alex_melan.spacereloaded.energy.SolarPanelBlockEntity;
 import org.alex_melan.spacereloaded.sealing.AtmosphereControllerBlock;
+import org.alex_melan.spacereloaded.sealing.HermeticHatchBlock;
 
 import java.util.function.Function;
 
@@ -32,6 +38,58 @@ public final class ModBlocks {
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
                     .lightLevel(state -> 4));
+
+    /** Герметичное стекло: прозрачное, но держит атмосферу (тег airtight). */
+    public static final Block HERMETIC_GLASS = register("hermetic_glass",
+            TransparentBlock::new,
+            BlockBehaviour.Properties.of()
+                    .strength(2.5f, 8.0f)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion());
+
+    /** Герметичный люк с интерлоком — строительный элемент шлюза (T034). */
+    public static final HermeticHatchBlock HERMETIC_HATCH = register("hermetic_hatch",
+            HermeticHatchBlock::new,
+            BlockBehaviour.Properties.of()
+                    .strength(3.5f, 8.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion());
+
+    /** Солнечная панель (FR-011). */
+    public static final Block SOLAR_PANEL = register("solar_panel",
+            props -> new MachineBlock<>(props, SolarPanelBlockEntity::new,
+                    () -> ModBlockEntities.SOLAR_PANEL, SolarPanelBlockEntity::serverTick),
+            BlockBehaviour.Properties.of()
+                    .strength(2.5f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
+    /** РИТЭГ (FR-011). */
+    public static final Block RTG = register("rtg",
+            props -> new MachineBlock<>(props, RtgBlockEntity::new,
+                    () -> ModBlockEntities.RTG, RtgBlockEntity::serverTick),
+            BlockBehaviour.Properties.of()
+                    .strength(3.5f, 9.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> 7));
+
+    /** Аккумулятор (FR-010). */
+    public static final Block BATTERY = register("battery",
+            props -> new MachineBlock<>(props, BatteryBlockEntity::new,
+                    () -> ModBlockEntities.BATTERY, BatteryBlockEntity::serverTick),
+            BlockBehaviour.Properties.of()
+                    .strength(3.0f, 8.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
+    /** Энергокабель: сеть с кэшируемой топологией (T032). */
+    public static final Block ENERGY_CABLE = register("energy_cable", Block::new,
+            BlockBehaviour.Properties.of()
+                    .strength(1.5f, 5.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
 
     /**
      * Регистрация блока + BlockItem по контракту 26.2: id задаётся заранее
