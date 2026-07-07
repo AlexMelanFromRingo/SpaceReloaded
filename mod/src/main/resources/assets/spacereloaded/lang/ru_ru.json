@@ -1,0 +1,7 @@
+{
+	"block.spacereloaded.hull_plating": "Герметичная обшивка",
+	"block.spacereloaded.atmosphere_controller": "Контроллер атмосферы",
+	"item.spacereloaded.oxygen_mask": "Кислородная маска",
+	"death.attack.spacereloaded.vacuum": "%1$s задохнулся в вакууме",
+	"death.attack.spacereloaded.vacuum.player": "%1$s задохнулся в вакууме, сражаясь с %2$s"
+}

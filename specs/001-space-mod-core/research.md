@@ -62,7 +62,7 @@ CLI: `specify init --here --force --integration claude --script sh` (флаг `-
 
 | Вопрос | Куда | План по умолчанию |
 |---|---|---|
-| Стандарт энергии: жив ли Team Reborn Energy API для 26.2? | M2 (US2) | Проверить на старте M2; если нет — собственный интерфейс энергии + адаптер под TR Energy при появлении |
+| ~~Стандарт энергии~~ **РЕШЕНО (2026-07-07)**: Team Reborn Energy **5.0.0** поддерживает 26.1+ (depends `minecraft >=26.1-`, Java 25, MIT, требует fabric-transfer-api-v1) — используем его: `teamreborn:energy:5.0.0` с maven.fabricmc.net, jar-in-jar | M2 (US2) | — |
 | Точные официальные имена ticket-API (TicketType и метод add) | M3/M7 | Проверить по jar 26.2 при реализации |
 | Fabric gametest-фреймворк в 26.2 | M1 | JUnit для ядра гарантирован; gametest — бонус |
 | Формат `PalettedContainer.copy()` для снапшотов секций | M2 | Есть в ваниле; если сигнатура иная — копия через итерацию секции |

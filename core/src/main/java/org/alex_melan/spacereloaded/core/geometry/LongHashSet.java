@@ -53,6 +53,13 @@ public final class LongHashSet {
         return false;
     }
 
+    public void addAll(LongHashSet other) {
+        var it = other.iterator();
+        while (it.hasNext()) {
+            add(it.nextLong());
+        }
+    }
+
     public int size() {
         return size;
     }

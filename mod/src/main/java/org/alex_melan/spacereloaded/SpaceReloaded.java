@@ -1,6 +1,22 @@
 package org.alex_melan.spacereloaded;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import org.alex_melan.spacereloaded.command.SpaceReloadedCommands;
+import org.alex_melan.spacereloaded.config.SpaceReloadedConfig;
+import org.alex_melan.spacereloaded.registry.ModBlockEntities;
+import org.alex_melan.spacereloaded.registry.ModBlocks;
+import org.alex_melan.spacereloaded.registry.ModItems;
+import org.alex_melan.spacereloaded.sealing.VacuumHazard;
+import org.alex_melan.spacereloaded.sealing.ZoneManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,8 +24,50 @@ public class SpaceReloaded implements ModInitializer {
 	public static final String MOD_ID = "spacereloaded";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+	private static SpaceReloadedConfig config;
+
+	public static SpaceReloadedConfig config() {
+		if (config == null) {
+			config = SpaceReloadedConfig.load(FabricLoader.getInstance().getConfigDir());
+		}
+		return config;
+	}
+
 	@Override
 	public void onInitialize() {
 		LOGGER.info("SpaceReloaded: инициализация космической программы");
+		config();
+
+		ModBlocks.init();
+		ModItems.init();
+		ModBlockEntities.init();
+
+		// Инвалидация зон по событиям (T024). Изменения складываются в отложенную
+		// очередь и обрабатываются в конце тика: к этому моменту BlockState уже
+		// обновлён (в т.ч. после установки блока и открытия двери).
+		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
+			if (level instanceof ServerLevel serverLevel) {
+				ZoneManager.markBlockChanged(serverLevel, pos);
+			}
+		});
+		UseBlockCallback.EVENT.register((player, level, hand, hitResult) -> {
+			if (level instanceof ServerLevel serverLevel) {
+				BlockPos pos = hitResult.getBlockPos();
+				// Клик мог открыть дверь на месте либо поставить блок в соседнюю ячейку
+				ZoneManager.markBlockChanged(serverLevel, pos);
+				ZoneManager.markBlockChanged(serverLevel, pos.relative(hitResult.getDirection()));
+			}
+			return InteractionResult.PASS;
+		});
+		// TODO T024: взрывы — Fabric-события взрыва в 26.2 нет, потребуется mixin
+
+		ServerTickEvents.END_LEVEL_TICK.register(level -> {
+			ZoneManager.processDeferred(level);
+			VacuumHazard.tick(level);
+		});
+		ServerLifecycleEvents.SERVER_STOPPING.register(server -> ZoneManager.shutdown());
+
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+				SpaceReloadedCommands.register(dispatcher));
 	}
 }

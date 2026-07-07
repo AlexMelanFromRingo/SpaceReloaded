@@ -1,0 +1,7 @@
+{
+	"block.spacereloaded.hull_plating": "Hull Plating",
+	"block.spacereloaded.atmosphere_controller": "Atmosphere Controller",
+	"item.spacereloaded.oxygen_mask": "Oxygen Mask",
+	"death.attack.spacereloaded.vacuum": "%1$s suffocated in vacuum",
+	"death.attack.spacereloaded.vacuum.player": "%1$s suffocated in vacuum whilst fighting %2$s"
+}
