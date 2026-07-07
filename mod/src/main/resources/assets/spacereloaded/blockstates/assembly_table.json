@@ -1,3 +1,8 @@
 {
-	"variants": { "": { "model": "spacereloaded:block/assembly_table" } }
+	"variants": {
+		"facing=north": { "model": "spacereloaded:block/assembly_table" },
+		"facing=east":  { "model": "spacereloaded:block/assembly_table", "y": 90 },
+		"facing=south": { "model": "spacereloaded:block/assembly_table", "y": 180 },
+		"facing=west":  { "model": "spacereloaded:block/assembly_table", "y": 270 }
+	}
 }

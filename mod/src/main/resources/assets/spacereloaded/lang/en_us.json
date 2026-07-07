@@ -38,5 +38,18 @@
 	"block.spacereloaded.assembly_table": "Assembly Table",
 	"block.spacereloaded.coal_generator": "Coal Generator",
 	"tooltip.spacereloaded.energy": "%s / %s E",
-	"tooltip.spacereloaded.progress": "%s%%"
+	"tooltip.spacereloaded.progress": "%s%%",
+	"message.spacereloaded.assembly.not_command": "Assembly must start from a Command Module",
+	"message.spacereloaded.assembly.too_big": "Structure exceeds the block limit",
+	"message.spacereloaded.assembly.unknown_part": "Unknown rocket part at %s",
+	"message.spacereloaded.rocket.assembled": "Rocket assembled: %s blocks",
+	"message.spacereloaded.rocket.stats": "Mass %s kg (dry %s) · Thrust %s kN · TWR %s · Δv %s m/s",
+	"message.spacereloaded.rocket.mount_hint": "Right-click the rocket to board; Jump = ignition, Sneak = engine cutoff",
+	"message.spacereloaded.rocket.warning.NO_COMMAND_MODULE": "⚠ No command module",
+	"message.spacereloaded.rocket.warning.MULTIPLE_COMMAND_MODULES": "⚠ Multiple command modules",
+	"message.spacereloaded.rocket.warning.NO_ENGINE": "⚠ No engines",
+	"message.spacereloaded.rocket.warning.NO_USABLE_PROPELLANT": "⚠ No usable propellant for these engines",
+	"message.spacereloaded.rocket.warning.TWR_BELOW_ONE": "⚠ TWR below 1 — it will not lift off",
+	"message.spacereloaded.rocket.warning.ASYMMETRIC_THRUST": "⚠ Thrust is asymmetric — expect torque",
+	"entity.spacereloaded.rocket": "Rocket"
 }

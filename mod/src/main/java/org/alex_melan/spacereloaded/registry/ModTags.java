@@ -14,6 +14,10 @@ public final class ModTags {
     public static final TagKey<Block> PASSES_GAS = block("passes_gas");
     /** К чему визуально стыкуются энергокабели. */
     public static final TagKey<Block> ENERGY_CONNECTABLE = block("energy_connectable");
+    /** Проводники энергосети (кабель, колонна РИТЭГов) — образуют сеть. */
+    public static final TagKey<Block> ENERGY_CONDUIT = block("energy_conduit");
+    /** Детали, захватываемые сборкой ракеты (FR-020). */
+    public static final TagKey<Block> ROCKET_PARTS = block("rocket_parts");
 
     private static TagKey<Block> block(String name) {
         return TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name));

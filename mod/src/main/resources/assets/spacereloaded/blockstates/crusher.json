@@ -1,3 +1,8 @@
 {
-	"variants": { "": { "model": "spacereloaded:block/crusher" } }
+	"variants": {
+		"facing=north": { "model": "spacereloaded:block/crusher" },
+		"facing=east":  { "model": "spacereloaded:block/crusher", "y": 90 },
+		"facing=south": { "model": "spacereloaded:block/crusher", "y": 180 },
+		"facing=west":  { "model": "spacereloaded:block/crusher", "y": 270 }
+	}
 }

@@ -1,6 +1,7 @@
 package org.alex_melan.spacereloaded.client;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.resources.Identifier;
 import org.alex_melan.spacereloaded.SpaceReloaded;
@@ -8,6 +9,8 @@ import org.alex_melan.spacereloaded.client.gui.BatteryScreen;
 import org.alex_melan.spacereloaded.client.gui.GeneratorScreen;
 import org.alex_melan.spacereloaded.client.gui.MachineScreen;
 import org.alex_melan.spacereloaded.machine.MachineMenu;
+import org.alex_melan.spacereloaded.client.render.RocketRenderer;
+import org.alex_melan.spacereloaded.registry.ModEntities;
 import org.alex_melan.spacereloaded.registry.ModMenus;
 
 public class SpaceReloadedClient implements ClientModInitializer {
@@ -29,5 +32,7 @@ public class SpaceReloadedClient implements ClientModInitializer {
 				new MachineScreen(menu, inventory, title, ASSEMBLY_GUI, 105, 35));
 		MenuScreens.register(ModMenus.COAL_GENERATOR, GeneratorScreen::new);
 		MenuScreens.register(ModMenus.BATTERY, BatteryScreen::new);
+
+		EntityRendererRegistry.register(ModEntities.ROCKET, RocketRenderer::new);
 	}
 }

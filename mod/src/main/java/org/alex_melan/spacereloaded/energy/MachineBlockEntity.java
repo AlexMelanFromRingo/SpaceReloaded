@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.alex_melan.spacereloaded.registry.ModBlocks;
+import org.alex_melan.spacereloaded.registry.ModTags;
 import team.reborn.energy.api.EnergyStorage;
 import team.reborn.energy.api.EnergyStorageUtil;
 import team.reborn.energy.api.base.SimpleEnergyStorage;
@@ -56,7 +56,7 @@ public abstract class MachineBlockEntity extends BlockEntity {
     protected void ensureAdjacentCableNetworks(ServerLevel level) {
         for (Direction dir : Direction.values()) {
             BlockPos neighbor = getBlockPos().relative(dir);
-            if (level.getBlockState(neighbor).is(ModBlocks.ENERGY_CABLE)) {
+            if (level.getBlockState(neighbor).is(ModTags.ENERGY_CONDUIT)) {
                 CableNetworkManager.ensureNetwork(level, neighbor);
             }
         }

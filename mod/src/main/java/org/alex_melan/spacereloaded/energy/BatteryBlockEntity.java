@@ -15,12 +15,20 @@ import org.alex_melan.spacereloaded.registry.ModBlockEntities;
 /** Аккумулятор (FR-010): хранилище + визуальные уровни заряда + GUI. */
 public class BatteryBlockEntity extends MachineBlockEntity implements MenuProvider {
 
+    /**
+     * Ванильная синхронизация ContainerData режет значения до short (16 бит) —
+     * 100000 E не влезает. Пакуем int в пары слотов lo/hi по 16 бит.
+     */
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int index) {
+            int energyNow = (int) Math.min(Integer.MAX_VALUE, energy.amount);
+            int capacity = (int) Math.min(Integer.MAX_VALUE, energy.capacity);
             return switch (index) {
-                case 0 -> (int) Math.min(Integer.MAX_VALUE, energy.amount);
-                case 1 -> (int) Math.min(Integer.MAX_VALUE, energy.capacity);
+                case 0 -> energyNow & 0xFFFF;
+                case 1 -> energyNow >>> 16;
+                case 2 -> capacity & 0xFFFF;
+                case 3 -> capacity >>> 16;
                 default -> 0;
             };
         }
@@ -31,7 +39,7 @@ public class BatteryBlockEntity extends MachineBlockEntity implements MenuProvid
 
         @Override
         public int getCount() {
-            return 2;
+            return 4;
         }
     };
 

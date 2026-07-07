@@ -38,5 +38,18 @@
 	"block.spacereloaded.assembly_table": "Сборочный стол",
 	"block.spacereloaded.coal_generator": "Угольный генератор",
 	"tooltip.spacereloaded.energy": "%s / %s E",
-	"tooltip.spacereloaded.progress": "%s%%"
+	"tooltip.spacereloaded.progress": "%s%%",
+	"message.spacereloaded.assembly.not_command": "Сборка начинается с командного модуля",
+	"message.spacereloaded.assembly.too_big": "Структура превышает лимит блоков",
+	"message.spacereloaded.assembly.unknown_part": "Неизвестная деталь ракеты: %s",
+	"message.spacereloaded.rocket.assembled": "Ракета собрана: %s блоков",
+	"message.spacereloaded.rocket.stats": "Масса %s кг (сухая %s) · Тяга %s кН · TWR %s · Δv %s м/с",
+	"message.spacereloaded.rocket.mount_hint": "ПКМ по ракете — сесть; Прыжок = зажигание, Присед = отсечка двигателей",
+	"message.spacereloaded.rocket.warning.NO_COMMAND_MODULE": "⚠ Нет командного модуля",
+	"message.spacereloaded.rocket.warning.MULTIPLE_COMMAND_MODULES": "⚠ Несколько командных модулей",
+	"message.spacereloaded.rocket.warning.NO_ENGINE": "⚠ Нет двигателей",
+	"message.spacereloaded.rocket.warning.NO_USABLE_PROPELLANT": "⚠ Нет подходящего топлива для двигателей",
+	"message.spacereloaded.rocket.warning.TWR_BELOW_ONE": "⚠ TWR меньше 1 — ракета не оторвётся",
+	"message.spacereloaded.rocket.warning.ASYMMETRIC_THRUST": "⚠ Тяга несимметрична — будет крутящий момент",
+	"entity.spacereloaded.rocket": "Ракета"
 }

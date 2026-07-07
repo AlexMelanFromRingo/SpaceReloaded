@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import org.alex_melan.spacereloaded.registry.ModBlocks;
+import org.alex_melan.spacereloaded.registry.ModTags;
 import team.reborn.energy.api.EnergyStorage;
 import team.reborn.energy.api.EnergyStorageUtil;
 
@@ -28,7 +28,7 @@ public final class EnergyUtil {
     public static void ensureAdjacentCableNetworks(ServerLevel level, BlockPos pos) {
         for (Direction dir : Direction.values()) {
             BlockPos neighbor = pos.relative(dir);
-            if (level.getBlockState(neighbor).is(ModBlocks.ENERGY_CABLE)) {
+            if (level.getBlockState(neighbor).is(ModTags.ENERGY_CONDUIT)) {
                 CableNetworkManager.ensureNetwork(level, neighbor);
             }
         }

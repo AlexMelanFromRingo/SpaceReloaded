@@ -150,7 +150,8 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops());
     public static final Block ROCKET_ENGINE = register("rocket_engine", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops());
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion());
     public static final Block COMMAND_MODULE = register("command_module", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());

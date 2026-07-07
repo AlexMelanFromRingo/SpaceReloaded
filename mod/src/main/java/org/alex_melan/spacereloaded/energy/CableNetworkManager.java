@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import org.alex_melan.spacereloaded.SpaceReloaded;
-import org.alex_melan.spacereloaded.registry.ModBlocks;
+import org.alex_melan.spacereloaded.registry.ModTags;
 import team.reborn.energy.api.EnergyStorage;
 import team.reborn.energy.api.EnergyStorageUtil;
 
@@ -128,6 +128,16 @@ public final class CableNetworkManager {
         while (it.hasNext()) {
             long cable = it.nextLong();
             BlockPos cablePos = BlockPos.of(cable);
+            // Хранилище на самой клетке сети (РИТЭГ-кондуит) — тоже участник
+            EnergyStorage onCell = EnergyStorage.SIDED.find(level, cablePos, Direction.UP);
+            if (onCell != null) {
+                if (onCell.supportsExtraction() && !providers.contains(onCell)) {
+                    providers.add(onCell);
+                }
+                if (onCell.supportsInsertion() && !receivers.contains(onCell)) {
+                    receivers.add(onCell);
+                }
+            }
             for (Direction dir : Direction.values()) {
                 BlockPos neighborPos = cablePos.relative(dir);
                 if (network.cables.contains(neighborPos.asLong())) {
@@ -216,6 +226,6 @@ public final class CableNetworkManager {
         if (level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) == null) {
             return false;
         }
-        return level.getBlockState(pos).is(ModBlocks.ENERGY_CABLE);
+        return level.getBlockState(pos).is(ModTags.ENERGY_CONDUIT);
     }
 }

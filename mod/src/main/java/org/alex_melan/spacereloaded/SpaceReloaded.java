@@ -16,11 +16,13 @@ import org.alex_melan.spacereloaded.config.SpaceReloadedConfig;
 import org.alex_melan.spacereloaded.registry.ModBlockEntities;
 import org.alex_melan.spacereloaded.registry.ModBlocks;
 import org.alex_melan.spacereloaded.registry.ModCreativeTab;
+import org.alex_melan.spacereloaded.registry.ModEntities;
 import org.alex_melan.spacereloaded.registry.ModMenus;
 import org.alex_melan.spacereloaded.registry.ModRecipes;
 import org.alex_melan.spacereloaded.registry.ModRegistries;
 import org.alex_melan.spacereloaded.registry.ModWorldgen;
 import org.alex_melan.spacereloaded.registry.ModItems;
+import org.alex_melan.spacereloaded.rocket.RocketInteractions;
 import org.alex_melan.spacereloaded.sealing.VacuumHazard;
 import org.alex_melan.spacereloaded.sealing.ZoneManager;
 import org.slf4j.Logger;
@@ -52,6 +54,7 @@ public class SpaceReloaded implements ModInitializer {
 		ModMenus.init();
 		ModRegistries.init();
 		ModWorldgen.init();
+		ModEntities.init();
 
 		// Инвалидация зон по событиям (T024). Изменения складываются в отложенную
 		// очередь и обрабатываются в конце тика: к этому моменту BlockState уже
@@ -63,6 +66,17 @@ public class SpaceReloaded implements ModInitializer {
 			}
 		});
 		UseBlockCallback.EVENT.register((player, level, hand, hitResult) -> {
+			// Сборка ракеты: ПКМ по командному модулю (без приседания)
+			BlockPos usePos = hitResult.getBlockPos();
+			if (!player.isSecondaryUseActive()
+					&& level.getBlockState(usePos).is(ModBlocks.COMMAND_MODULE)) {
+				if (level instanceof ServerLevel serverLevel
+						&& player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+					RocketInteractions.assemble(serverLevel, usePos, serverPlayer);
+					return InteractionResult.SUCCESS_SERVER;
+				}
+				return InteractionResult.SUCCESS;
+			}
 			if (level instanceof ServerLevel serverLevel) {
 				BlockPos pos = hitResult.getBlockPos();
 				// Клик мог открыть дверь на месте либо поставить блок в соседнюю ячейку
