@@ -49,6 +49,31 @@ public final class ModRegistries {
         ).apply(instance, FuelEntry::new));
     }
 
+    /**
+     * Профиль небесного тела (FR-030, паттерн Ad Astra): физика измерения —
+     * данными. transition_target — id ПРОФИЛЯ, куда попадает ракета, набрав
+     * transition_altitude; координаты масштабируются отношением coordinate_scale.
+     */
+    public record PlanetProfile(
+            Identifier dimension,
+            double gravity,
+            boolean breathable,
+            double solarEfficiency,
+            double coordinateScale,
+            int transitionAltitude,
+            Optional<Identifier> transitionTarget
+    ) {
+        public static final Codec<PlanetProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Identifier.CODEC.fieldOf("dimension").forGetter(PlanetProfile::dimension),
+                Codec.DOUBLE.fieldOf("gravity").forGetter(PlanetProfile::gravity),
+                Codec.BOOL.optionalFieldOf("breathable", false).forGetter(PlanetProfile::breathable),
+                Codec.DOUBLE.optionalFieldOf("solar_efficiency", 1.0).forGetter(PlanetProfile::solarEfficiency),
+                Codec.DOUBLE.optionalFieldOf("coordinate_scale", 1.0).forGetter(PlanetProfile::coordinateScale),
+                Codec.INT.optionalFieldOf("transition_altitude", 100_000).forGetter(PlanetProfile::transitionAltitude),
+                Identifier.CODEC.optionalFieldOf("transition_target").forGetter(PlanetProfile::transitionTarget)
+        ).apply(instance, PlanetProfile::new));
+    }
+
     public static final ResourceKey<Registry<RocketPartEntry>> PART_PROPERTIES =
             ResourceKey.createRegistryKey(
                     Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "part_properties"));
@@ -57,9 +82,14 @@ public final class ModRegistries {
             ResourceKey.createRegistryKey(
                     Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "fuels"));
 
+    public static final ResourceKey<Registry<PlanetProfile>> PLANETS =
+            ResourceKey.createRegistryKey(
+                    Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "planets"));
+
     public static void init() {
         DynamicRegistries.registerSynced(PART_PROPERTIES, RocketPartEntry.CODEC);
         DynamicRegistries.registerSynced(FUELS, FuelEntry.CODEC);
+        DynamicRegistries.registerSynced(PLANETS, PlanetProfile.CODEC);
     }
 
     private ModRegistries() {

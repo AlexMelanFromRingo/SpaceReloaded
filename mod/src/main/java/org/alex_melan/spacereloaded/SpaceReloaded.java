@@ -55,6 +55,7 @@ public class SpaceReloaded implements ModInitializer {
 		ModRegistries.init();
 		ModWorldgen.init();
 		ModEntities.init();
+		org.alex_melan.spacereloaded.planet.ModTickets.init();
 
 		// Инвалидация зон по событиям (T024). Изменения складываются в отложенную
 		// очередь и обрабатываются в конце тика: к этому моменту BlockState уже
@@ -93,6 +94,7 @@ public class SpaceReloaded implements ModInitializer {
 			CableNetworkManager.processDirty(level);
 			CableNetworkManager.tick(level);
 			VacuumHazard.tick(level);
+			org.alex_melan.spacereloaded.planet.PlanetEffects.tick(level);
 		});
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
 			ZoneManager.shutdown();

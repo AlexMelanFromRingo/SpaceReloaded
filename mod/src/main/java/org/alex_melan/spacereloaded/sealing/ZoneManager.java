@@ -118,7 +118,8 @@ public final class ZoneManager {
     // ---------- Режим вакуума (debug; позже — из профиля планеты) ----------
 
     public static boolean isVacuumWorld(ServerLevel level) {
-        return levelZones(level).vacuumWorld;
+        return levelZones(level).vacuumWorld
+                || !org.alex_melan.spacereloaded.planet.PlanetManager.isBreathable(level);
     }
 
     public static void setVacuumWorld(ServerLevel level, boolean vacuum) {
@@ -179,7 +180,7 @@ public final class ZoneManager {
 
         int radius = SpaceReloaded.config().sealingMaxRadius;
         BlockPos origin = controllerPos.above();
-        RegionSnapshot snapshot = RegionSnapshot.capture(level, origin, radius, lz.vacuumWorld);
+        RegionSnapshot snapshot = RegionSnapshot.capture(level, origin, radius, isVacuumWorld(level));
         SealingRequest request = SealingRequest.fast(
                 PackedPos.pack(origin.getX(), origin.getY(), origin.getZ()), radius);
         ResourceKey<Level> dimension = level.dimension();

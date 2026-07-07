@@ -60,5 +60,7 @@
 	"message.spacereloaded.assembly.no_command": "The rocket needs a command module",
 	"message.spacereloaded.assembly.multiple_command": "Only one command module allowed",
 	"message.spacereloaded.assembly.disconnected": "Part at %s is not connected to the command module",
-	"message.spacereloaded.assembly.use_pylon": "Build on a launch pad and right-click the assembly pylon"
+	"message.spacereloaded.assembly.use_pylon": "Build on a launch pad and right-click the assembly pylon",
+	"message.spacereloaded.rocket.reached_orbit": "Orbit reached! You are on your orbital pad — build your station. Ignite again and climb to deorbit.",
+	"message.spacereloaded.rocket.reentry": "Atmospheric reentry! Hold Jump for the retro burn — touch down below 15 m/s."
 }

@@ -60,5 +60,7 @@
 	"message.spacereloaded.assembly.no_command": "Ракете нужен командный модуль",
 	"message.spacereloaded.assembly.multiple_command": "Командный модуль должен быть один",
 	"message.spacereloaded.assembly.disconnected": "Деталь на %s не соединена с командным модулем",
-	"message.spacereloaded.assembly.use_pylon": "Стройте ракету на стартовой площадке и жмите ПКМ по сборочному пилону"
+	"message.spacereloaded.assembly.use_pylon": "Стройте ракету на стартовой площадке и жмите ПКМ по сборочному пилону",
+	"message.spacereloaded.rocket.reached_orbit": "Орбита достигнута! Вы на своей орбитальной платформе — стройте станцию. Для схода с орбиты — зажигание и набор высоты.",
+	"message.spacereloaded.rocket.reentry": "Вход в атмосферу! Держите Прыжок для тормозного импульса — касание мягче 15 м/с."
 }

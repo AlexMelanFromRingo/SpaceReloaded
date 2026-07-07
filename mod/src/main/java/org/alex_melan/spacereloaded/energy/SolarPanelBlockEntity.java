@@ -42,9 +42,12 @@ public class SolarPanelBlockEntity extends MachineBlockEntity {
             return 0; // над панелью есть блоки
         }
         long base = SpaceReloaded.config().solarEnergyPerTick;
-        if (ZoneManager.isVacuumWorld(level)) {
-            return (long) (base * SpaceReloaded.config().solarVacuumMultiplier);
+        // Эффективность из профиля планеты (орбита без атмосферы — выше);
+        // debug-режим вакуума сохраняет старый множитель для тестов
+        double efficiency = org.alex_melan.spacereloaded.planet.PlanetManager.solarEfficiency(level);
+        if (ZoneManager.isVacuumWorld(level) && efficiency <= 1.0) {
+            efficiency = SpaceReloaded.config().solarVacuumMultiplier;
         }
-        return base;
+        return (long) (base * efficiency);
     }
 }

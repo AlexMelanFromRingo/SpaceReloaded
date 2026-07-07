@@ -240,7 +240,9 @@ public class RocketEntity extends Entity {
         ControlInput control = new ControlInput(jump ? 1.0 : 0.0, 0, 0, true);
         flight = new FlightState(corePos(), flight.vel(), flight.pitch(), flight.roll(),
                 flight.pitchRate(), flight.rollRate(), flight.propellantKg());
-        flight = FlightIntegrator.step(structure, flight, control, FlightEnvironment.EARTH, DT);
+        double gravity = org.alex_melan.spacereloaded.planet.PlanetManager.gravity(serverLevel);
+        flight = FlightIntegrator.step(structure, flight, control,
+                new FlightEnvironment(gravity), DT);
 
         setPos(flight.pos().x(), flight.pos().y(), flight.pos().z());
         setDeltaMovement(flight.vel().x() * DT, flight.vel().y() * DT, flight.vel().z() * DT);
@@ -249,7 +251,83 @@ public class RocketEntity extends Entity {
 
         if (flight.vel().y() <= 0 && touchesGround(serverLevel)) {
             land(serverLevel);
+            return;
         }
+
+        // Переход между измерениями: набрали высоту перехода профиля (FR-031)
+        var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(serverLevel);
+        if (profile.isPresent() && profile.get().transitionTarget().isPresent()
+                && getY() >= profile.get().transitionAltitude()) {
+            transition(serverLevel, profile.get());
+        }
+    }
+
+    /**
+     * Перенос ракеты с пассажиром в целевое измерение (T056/FR-031/FR-034):
+     * координаты масштабируются отношением coordinate_scale (AR-стиль: орбита
+     * пространственно связана с точкой старта). Прибытие на орбиту — парковка
+     * на автоплатформе (GC-стиль); прибытие в атмосферу — падение с ретро-burn.
+     */
+    private void transition(ServerLevel from, org.alex_melan.spacereloaded.registry.ModRegistries.PlanetProfile fromProfile) {
+        var targetProfile = org.alex_melan.spacereloaded.planet.PlanetManager
+                .profileById(from, fromProfile.transitionTarget().get());
+        if (targetProfile.isEmpty()) {
+            return;
+        }
+        ServerLevel target = from.getServer().getLevel(net.minecraft.resources.ResourceKey.create(
+                net.minecraft.core.registries.Registries.DIMENSION, targetProfile.get().dimension()));
+        if (target == null) {
+            return;
+        }
+        double scale = fromProfile.coordinateScale() / targetProfile.get().coordinateScale();
+        double targetX = getX() * scale;
+        double targetZ = getZ() * scale;
+        boolean toOrbit = targetProfile.get().gravity() < 5.0;
+
+        double targetY;
+        if (toOrbit) {
+            targetY = org.alex_melan.spacereloaded.planet.PlanetManager
+                    .ensureOrbitPlatform(target, targetX, targetZ);
+        } else {
+            targetY = targetProfile.get().transitionAltitude() - 20.0;
+        }
+
+        org.alex_melan.spacereloaded.planet.ModTickets.holdAround(from, blockPosition(), 2);
+        org.alex_melan.spacereloaded.planet.ModTickets.holdAround(target,
+                BlockPos.containing(targetX, targetY, targetZ), 2);
+
+        ServerPlayer pilot = getFirstPassenger() instanceof ServerPlayer sp ? sp : null;
+        ejectPassengers();
+
+        double savedPropellant = flight.propellantKg();
+        Entity moved = teleport(new net.minecraft.world.level.portal.TeleportTransition(
+                target, new Vec3(targetX, targetY, targetZ), Vec3.ZERO, 0f, 0f,
+                net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING));
+
+        if (moved instanceof RocketEntity rocket) {
+            rocket.postArrival(toOrbit, savedPropellant);
+            if (pilot != null) {
+                pilot.teleportTo(target, targetX, targetY + 1.0, targetZ,
+                        java.util.Set.of(), pilot.getYRot(), pilot.getXRot(), false);
+                pilot.startRiding(rocket, true, true);
+                pilot.sendSystemMessage(Component.translatable(toOrbit
+                        ? "message.spacereloaded.rocket.reached_orbit"
+                        : "message.spacereloaded.rocket.reentry"));
+            }
+        }
+    }
+
+    /** Настройка после прибытия (вызывается на НОВОМ экземпляре после teleport). */
+    private void postArrival(boolean parked, double propellantKg) {
+        this.flight = new FlightState(corePos(),
+                parked ? org.alex_melan.spacereloaded.core.geometry.Vec3d.ZERO
+                       : new org.alex_melan.spacereloaded.core.geometry.Vec3d(0, -5, 0),
+                0, 0, 0, 0, propellantKg);
+        this.launched = !parked;
+        entityData.set(DATA_LAUNCHED, launched);
+        entityData.set(DATA_PITCH, 0.0f);
+        entityData.set(DATA_ROLL, 0.0f);
+        setDeltaMovement(Vec3.ZERO);
     }
 
     private void tryIgnite(ServerLevel level) {

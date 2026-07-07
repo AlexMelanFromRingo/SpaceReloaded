@@ -1,0 +1,9 @@
+{
+	"dimension": "spacereloaded:earth_orbit",
+	"gravity": 1.62,
+	"breathable": false,
+	"solar_efficiency": 1.5,
+	"coordinate_scale": 8.0,
+	"transition_altitude": 260,
+	"transition_target": "spacereloaded:earth"
+}

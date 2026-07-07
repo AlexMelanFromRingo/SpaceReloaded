@@ -1,0 +1,9 @@
+{
+	"dimension": "minecraft:overworld",
+	"gravity": 9.81,
+	"breathable": true,
+	"solar_efficiency": 1.0,
+	"coordinate_scale": 1.0,
+	"transition_altitude": 450,
+	"transition_target": "spacereloaded:earth_orbit"
+}
