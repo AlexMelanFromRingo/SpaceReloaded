@@ -1,50 +1,62 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Конституция SpaceReloaded
 
-## Core Principles
+Мод для Minecraft (Fabric, MC 26.2+) о космической программе: промышленность → ракеты из блоков → орбита → планеты. Эти принципы обязательны для каждого плана, задачи и ревью в проекте.
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+## Основные принципы
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### I. Физика прежде всего (Physics-First)
+Все лётно-технические характеристики выводятся из построенной игроком структуры, а не задаются готовыми пресетами. Масса, тяга, центр масс, момент инерции, расход топлива — вычисляются по реальным моделям (уравнение Циолковского, TWR, момент силы от несимметричной тяги). Упрощения допустимы, но каждое упрощение документируется рядом с формулой: что отброшено и почему. Запрещены «магические» константы без физического обоснования в комментарии или доке.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Ядро без движка (Engine-Agnostic Core)
+Вся вычислительная логика (герметичность, баллистика, расчёт ЛТХ, энергосеть) живёт в чистых Java-модулях без единого импорта из Minecraft/Fabric. Мир передаётся в ядро через узкие интерфейсы-абстракции (снимки блоков, поставщики свойств). Fabric-слой — только адаптеры, регистрации и рендер. Это делает ядро юнит-тестируемым и переносимым между версиями игры.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### III. Событийность, а не поллинг (Event-Driven)
+Никакая тяжёлая проверка не выполняется каждый тик. Результаты (герметичные зоны, ЛТХ собранной ракеты, топология энергосети) кэшируются и инвалидируются строго по событиям: изменение блока внутри/на границе зоны, взрыв, смена BlockState двери. Быстрая проверка принадлежности события зоне (`Set.contains`) — единственное, что допустимо на горячем пути.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### IV. Дисциплина потоков (NON-NEGOTIABLE)
+Однопоточность Minecraft — закон. Правила без исключений:
+- Чтение мира для фоновых расчётов — только через **снимок (snapshot)** блоков, снятый в главном потоке сервера.
+- Тяжёлые вычисления (flood fill по 26 направлениям, пересчёт ЛТХ) — в фоновом потоке через `CompletableFuture` на выделенном executor'е.
+- Применение результатов и любые мутации мира — только в главном потоке (обратная доставка через task queue / `server.execute`).
+- Фоновый код никогда не держит ссылок на живые `World`/`Chunk`.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### V. Межпространственная целостность (Cross-Dimension Integrity)
+Объекты не исчезают на границах симуляции. Снаряд, летящий в невыгруженный чанк или другое измерение, обязан временно удержать цель загруженной через chunk ticket (`ServerWorld.getChunkManager().addTicket(...)`) на время события и освободить билет после. Попадание всегда симулируется по-настоящему: разрушения, импульс, эффекты. Каждый ticket имеет владельца и гарантированное время жизни — утечка тикетов считается багом уровня crash.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### VI. Сервер авторитетен
+Вся симуляция — на сервере. Клиент отправляет только ввод (управление ракетой, команды пушке), сервер валидирует и рассылает результат. Клиентская сторона отвечает исключительно за отрисовку и предсказание. Ни одно игровое решение не принимается на клиенте.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### VII. Тесты ядра обязательны
+Каждый модуль ядра сопровождается JUnit-тестами до или вместе с реализацией. Физика проверяется против аналитических решений (например, конечная скорость по Циолковскому при известных массах). Алгоритм герметичности — против эталонных сцен: замкнутая комната, диагональная щель, превышение радиуса, открытая дверь. PR без зелёных тестов ядра не мержится.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### VIII. Осознанный хардкор
+Игровые ограничения, требующие инженерной грамотности, — фича, а не баг. Канонические решения (не «чинить» их):
+- Flood fill герметичности использует **26 направлений**: диагональная щель в углу — утечка. Экономия на углах наказуема, как неполная рамка портала.
+- Возврат домой не бывает бесплатным: никакой «ракеты в инвентарь». Только физический посадочный модуль, топливо из местных ресурсов или новая капсула, построенная на месте.
+- Несимметричная ракета летит криво. Это правильно.
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+## Технологические ограничения
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- **Платформа**: Minecraft Java 26.2+ (деобфусцированный код, официальные имена Mojang), Fabric Loader + Fabric API. Версии тулчейна фиксируются в `gradle.properties` и обновляются осознанным коммитом.
+- **Пакет**: `org.alex_melan.spacereloaded`; mod id: `spacereloaded`.
+- **Модули**: `core` (чистая Java, без Minecraft) и `fabric` (адаптеры, рендер, регистрации). Зависимость строго однонаправленная: fabric → core.
+- **Расширяемость**: материалы, герметичные блоки, топлива и рецепты объявляются через теги и датапаки, а не хардкод — совместимость с чужими модами по умолчанию.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+## Бюджет производительности
+
+- Главный поток: суммарная стоимость логики мода ≤ 1 мс на тик в штатном режиме (без событий).
+- Пересчёт герметичной зоны — амортизированный: снятие снимка в главном потоке ≤ 1 мс, сам поиск — в фоне.
+- Ранний выход везде, где ответ бинарный: первая найденная утечка завершает поиск (кроме режима диагностики).
+- Жёсткие лимиты на размеры: радиус зоны, число блоков ракеты, число активных снарядов — константы конфига, а не «сколько получится».
+
+## Рабочий процесс
+
+- Разработка идёт по spec-kit: constitution → spec → plan → tasks → implement. Изменение требований — сначала правка спеки, потом кода.
+- Каждая фича — отдельная ветка `NNN-имя` от `main`.
+- Коммиты — рабочие срезы: проект собирается (`gradle build`) на каждом коммите в `main`.
+
+## Управление
+
+Конституция главнее любых других практик проекта. Поправки — отдельным коммитом с обоснованием и, при необходимости, планом миграции. Каждый план (`plan.md`) обязан содержать секцию «Проверка конституции» и явно объявлять отступления с обоснованием.
+
+**Version**: 1.0.0 | **Ratified**: 2026-07-07 | **Last Amended**: 2026-07-07
