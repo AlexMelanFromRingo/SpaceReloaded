@@ -69,6 +69,7 @@ public class RocketEntity extends Entity {
     private boolean launched;
     private boolean prevSprint;
     private boolean fuelOutWarned;
+    private boolean windowWarned;
     /** Беспилотный набор высоты до орбиты (запуск спутников/грузов). */
     private boolean autopilot;
     /** Фаза беспилотной посадки после прибытия «снижение» (suicide-burn-lite). */
@@ -546,8 +547,39 @@ public class RocketEntity extends Entity {
         var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(serverLevel);
         if (profile.isPresent() && !profile.get().transitionTargets().isEmpty()
                 && getY() >= profile.get().transitionAltitude()) {
-            transition(serverLevel, profile.get());
+            if (transferWindowOpen(serverLevel, profile.get(), pilot)) {
+                transition(serverLevel, profile.get());
+            }
+        } else if (getY() < (profile.map(pp -> pp.transitionAltitude()).orElse(Integer.MAX_VALUE) - 20)) {
+            windowWarned = false; // спустились — предупреждение об окне снова актуально
         }
+    }
+
+    /**
+     * Окно Гомана к выбранной цели (Phase 11). Луна/Земля всегда открыты;
+     * Марс — только в окне запуска, иначе перелёт не начинается, пилот
+     * получает предупреждение со сроком до окна.
+     */
+    private boolean transferWindowOpen(ServerLevel level,
+            org.alex_melan.spacereloaded.registry.ModRegistries.PlanetProfile fromProfile,
+            ServerPlayer pilot) {
+        var targets = fromProfile.transitionTargets();
+        var targetId = targets.get(Math.floorMod(destinationIndex, targets.size()));
+        var target = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, targetId);
+        if (target.isEmpty()
+                || org.alex_melan.spacereloaded.planet.TransferWindows.isOpen(level.getGameTime(), target.get())) {
+            return true;
+        }
+        if (!windowWarned && pilot != null) {
+            windowWarned = true;
+            long ticks = org.alex_melan.spacereloaded.planet.TransferWindows
+                    .ticksToOpen(level.getGameTime(), target.get());
+            pilot.sendOverlayMessage(Component.translatable(
+                    "message.spacereloaded.rocket.window_closed",
+                    Component.translatable("planet.spacereloaded." + targetId.getPath()),
+                    ticks / 24000L, (ticks % 24000L) / 1200L));
+        }
+        return false;
     }
 
     /**
@@ -873,8 +905,18 @@ public class RocketEntity extends Entity {
         destinationIndex = (destinationIndex + 1) % profile.get().transitionTargets().size();
         entityData.set(DATA_DESTINATION, destinationIndex);
         var target = profile.get().transitionTargets().get(destinationIndex);
-        pilot.sendOverlayMessage(Component.translatable("message.spacereloaded.rocket.destination",
-                Component.translatable("planet.spacereloaded." + target.getPath())));
+        var targetProfile = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, target);
+        Component window = Component.empty();
+        if (targetProfile.isPresent()
+                && org.alex_melan.spacereloaded.planet.TransferWindows.hasWindow(targetProfile.get())) {
+            boolean open = org.alex_melan.spacereloaded.planet.TransferWindows
+                    .isOpen(level.getGameTime(), targetProfile.get());
+            window = Component.translatable(open
+                    ? "message.spacereloaded.rocket.window_open"
+                    : "message.spacereloaded.rocket.window_wait");
+        }
+        pilot.sendOverlayMessage(Component.translatable("message.spacereloaded.rocket.destination_window",
+                Component.translatable("planet.spacereloaded." + target.getPath()), window));
     }
 
     // ---------- Прочее ----------

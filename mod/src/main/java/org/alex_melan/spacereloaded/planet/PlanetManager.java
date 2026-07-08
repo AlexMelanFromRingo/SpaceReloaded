@@ -52,6 +52,11 @@ public final class PlanetManager {
         return profileFor(level).map(ModRegistries.PlanetProfile::breathable).orElse(true);
     }
 
+    /** Состав атмосферы измерения: "air", "co2", "none" (вакуум). */
+    public static String atmosphere(ServerLevel level) {
+        return profileFor(level).map(ModRegistries.PlanetProfile::atmosphere).orElse("air");
+    }
+
     public static double solarEfficiency(ServerLevel level) {
         return profileFor(level).map(ModRegistries.PlanetProfile::solarEfficiency).orElse(1.0);
     }

@@ -1,0 +1,11 @@
+{
+	"type": "spacereloaded:mars",
+	"generator": {
+		"type": "minecraft:noise",
+		"biome_source": {
+			"type": "minecraft:fixed",
+			"biome": "spacereloaded:mars_plains"
+		},
+		"settings": "spacereloaded:mars"
+	}
+}

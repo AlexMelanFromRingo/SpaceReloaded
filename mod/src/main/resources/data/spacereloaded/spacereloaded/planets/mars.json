@@ -1,0 +1,16 @@
+{
+	"dimension": "spacereloaded:mars",
+	"gravity": 3.72,
+	"breathable": false,
+	"solar_efficiency": 0.6,
+	"coordinate_scale": 8.0,
+	"transition_altitude": 240,
+	"transition_targets": [
+		"spacereloaded:earth_orbit"
+	],
+	"arrival": "descend",
+	"atmosphere": "co2",
+	"synodic_period_ticks": 144000,
+	"window_width_ticks": 24000,
+	"window_phase_ticks": 0
+}

@@ -10,6 +10,7 @@
 		"spacereloaded:hydrolox_engine",
 		"spacereloaded:docking_clamp",
 		"spacereloaded:return_capsule",
-		"spacereloaded:cargo_hold"
+		"spacereloaded:cargo_hold",
+		"spacereloaded:methalox_engine"
 	]
 }

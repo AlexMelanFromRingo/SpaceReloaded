@@ -102,6 +102,16 @@ public final class ModBlockEntities {
                     org.alex_melan.spacereloaded.sealing.TelemetryScreenBlockEntity::new,
                     Set.of(ModBlocks.TELEMETRY_SCREEN)));
 
+    public static final BlockEntityType<org.alex_melan.spacereloaded.machine.AtmosphericCollectorBlockEntity> ATMOSPHERIC_COLLECTOR =
+            register("atmospheric_collector", new BlockEntityType<>(
+                    org.alex_melan.spacereloaded.machine.AtmosphericCollectorBlockEntity::new,
+                    Set.of(ModBlocks.ATMOSPHERIC_COLLECTOR)));
+
+    public static final BlockEntityType<org.alex_melan.spacereloaded.machine.SabatierReactorBlockEntity> SABATIER_REACTOR =
+            register("sabatier_reactor", new BlockEntityType<>(
+                    org.alex_melan.spacereloaded.machine.SabatierReactorBlockEntity::new,
+                    Set.of(ModBlocks.SABATIER_REACTOR)));
+
     public static void init() {
         // Публикация энергохранилищ в Fabric API lookup (решение D7: Team Reborn Energy)
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SOLAR_PANEL);
@@ -116,6 +126,8 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ELECTROLYZER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), REFINERY);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ORBITAL_CANNON);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ATMOSPHERIC_COLLECTOR);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SABATIER_REACTOR);
     }
 
     private ModBlockEntities() {

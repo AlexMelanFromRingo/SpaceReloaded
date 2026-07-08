@@ -62,7 +62,11 @@ public final class ModRegistries {
             double coordinateScale,
             int transitionAltitude,
             java.util.List<Identifier> transitionTargets,
-            String arrival
+            String arrival,
+            String atmosphere,
+            long synodicPeriodTicks,
+            long windowWidthTicks,
+            long windowPhaseTicks
     ) {
         public static final Codec<PlanetProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Identifier.CODEC.fieldOf("dimension").forGetter(PlanetProfile::dimension),
@@ -73,7 +77,11 @@ public final class ModRegistries {
                 Codec.INT.optionalFieldOf("transition_altitude", 100_000).forGetter(PlanetProfile::transitionAltitude),
                 Identifier.CODEC.listOf().optionalFieldOf("transition_targets", java.util.List.of())
                         .forGetter(PlanetProfile::transitionTargets),
-                Codec.STRING.optionalFieldOf("arrival", "descend").forGetter(PlanetProfile::arrival)
+                Codec.STRING.optionalFieldOf("arrival", "descend").forGetter(PlanetProfile::arrival),
+                Codec.STRING.optionalFieldOf("atmosphere", "none").forGetter(PlanetProfile::atmosphere),
+                Codec.LONG.optionalFieldOf("synodic_period_ticks", 0L).forGetter(PlanetProfile::synodicPeriodTicks),
+                Codec.LONG.optionalFieldOf("window_width_ticks", 0L).forGetter(PlanetProfile::windowWidthTicks),
+                Codec.LONG.optionalFieldOf("window_phase_ticks", 0L).forGetter(PlanetProfile::windowPhaseTicks)
         ).apply(instance, PlanetProfile::new));
     }
 

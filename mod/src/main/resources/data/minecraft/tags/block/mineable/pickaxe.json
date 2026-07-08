@@ -39,6 +39,9 @@
 		"spacereloaded:cargo_hold",
 		"spacereloaded:cargo_loader",
 		"spacereloaded:vent_grate",
-		"spacereloaded:telemetry_screen"
+		"spacereloaded:telemetry_screen",
+		"spacereloaded:methalox_engine",
+		"spacereloaded:atmospheric_collector",
+		"spacereloaded:sabatier_reactor"
 	]
 }

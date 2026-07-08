@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=north": {
+			"model": "spacereloaded:block/sabatier_reactor"
+		},
+		"facing=east": {
+			"model": "spacereloaded:block/sabatier_reactor",
+			"y": 90
+		},
+		"facing=south": {
+			"model": "spacereloaded:block/sabatier_reactor",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "spacereloaded:block/sabatier_reactor",
+			"y": 270
+		}
+	}
+}

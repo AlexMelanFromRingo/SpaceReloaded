@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:titanium_alloy_ingot",
+		"minecraft:copper_ingot",
+		"minecraft:copper_ingot",
+		"spacereloaded:hermetic_glass"
+	],
+	"result": {
+		"id": "spacereloaded:sabatier_reactor",
+		"count": 1
+	}
+}

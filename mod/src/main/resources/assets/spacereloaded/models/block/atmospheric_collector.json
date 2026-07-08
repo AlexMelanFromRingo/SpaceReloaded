@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"top": "spacereloaded:block/chem_machine_top",
+		"front": "spacereloaded:block/atmospheric_collector_front",
+		"side": "spacereloaded:block/chem_machine_side"
+	}
+}

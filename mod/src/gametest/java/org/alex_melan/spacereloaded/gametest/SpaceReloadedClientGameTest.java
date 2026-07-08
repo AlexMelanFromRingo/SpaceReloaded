@@ -66,6 +66,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testMeteor(context, sp);
             testRedstoneAirlock(context, sp);
             testTelemetryScreen(context, sp);
+            testMarsChemistry(context, sp);
         }
     }
 
@@ -707,6 +708,47 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         }
         assertThat(leakStatus == 2, "Экран должен показать УТЕЧКУ (2), получено: " + leakStatus);
         log("экран телеметрии: УТЕЧКА ✓");
+    }
+
+    // ---------- 12. Марс: реактор Сабатье + окна Гомана ----------
+
+    private void testMarsChemistry(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int sx = BX - 60;
+        moveTo(context, sp, sx - 4, BZ);
+        sp.getServer().runCommand(set(sx, BY, BZ, "spacereloaded:sabatier_reactor"));
+        sp.getServer().runCommand(set(sx + 1, BY, BZ, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(sx, BY, BZ + 1, "spacereloaded:fuel_tank"));
+        sp.getServer().runOnServer(server -> {
+            if (server.overworld().getBlockEntity(new BlockPos(sx, BY, BZ))
+                    instanceof org.alex_melan.spacereloaded.machine.SabatierReactorBlockEntity r) {
+                r.setItem(0, new ItemStack(ModItems.CARBON_DIOXIDE, 4));
+                r.setItem(1, new ItemStack(net.minecraft.world.item.Items.ICE, 4));
+            }
+        });
+        double methalox = 0;
+        for (int waited = 0; waited < 400 && methalox <= 0; waited += 20) {
+            context.waitTicks(20);
+            methalox = sp.getServer().computeOnServer(server ->
+                    server.overworld().getBlockEntity(new BlockPos(sx, BY, BZ + 1))
+                            instanceof FuelTankBlockEntity t
+                            && "spacereloaded:methalox".equals(t.fuelType()) ? t.propellantKg() : 0.0);
+        }
+        assertThat(methalox > 0, "Сабатье должен произвести метанокс в бак, получено: " + methalox);
+        log("реактор Сабатье: метанокс в баке " + methalox + " кг ✓");
+
+        // Окна Гомана: у Марса синод 144000, окно 24000, фаза 0
+        String windowCheck = sp.getServer().computeOnServer(server -> {
+            var mars = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(server.overworld(),
+                    Identifier.fromNamespaceAndPath("spacereloaded", "mars"));
+            if (mars.isEmpty()) {
+                return "нет профиля Марса";
+            }
+            boolean openNow = org.alex_melan.spacereloaded.planet.TransferWindows.isOpen(0L, mars.get());
+            boolean closedMid = !org.alex_melan.spacereloaded.planet.TransferWindows.isOpen(50000L, mars.get());
+            return (openNow && closedMid) ? "ok" : ("open0=" + openNow + " closed50k=" + closedMid);
+        });
+        assertThat(windowCheck.equals("ok"), "Окно Марса: открыто в фазе 0, закрыто в середине; получено: " + windowCheck);
+        log("окно Гомана к Марсу: открыто/закрыто по фазе ✓");
     }
 
     // ---------- Утилиты ----------

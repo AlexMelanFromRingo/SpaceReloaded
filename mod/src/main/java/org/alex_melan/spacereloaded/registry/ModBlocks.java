@@ -204,10 +204,31 @@ public final class ModBlocks {
                     .lightLevel(state -> state.getValue(
                             org.alex_melan.spacereloaded.sealing.TelemetryScreenBlock.STATUS) > 0 ? 7 : 0));
 
+    /** Атмосферный сборщик (Phase 11): сжимает CO2 из атмосферы измерения. */
+    public static final Block ATMOSPHERIC_COLLECTOR = register("atmospheric_collector",
+            props -> new org.alex_melan.spacereloaded.machine.ChemMachineBlock<>(props,
+                    org.alex_melan.spacereloaded.machine.AtmosphericCollectorBlockEntity::new,
+                    () -> ModBlockEntities.ATMOSPHERIC_COLLECTOR),
+            BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
+    /** Реактор Сабатье (Phase 11): CO2 + лёд → метанокс в соседние баки. */
+    public static final Block SABATIER_REACTOR = register("sabatier_reactor",
+            props -> new org.alex_melan.spacereloaded.machine.ChemMachineBlock<>(props,
+                    org.alex_melan.spacereloaded.machine.SabatierReactorBlockEntity::new,
+                    () -> ModBlockEntities.SABATIER_REACTOR),
+            BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
     /** Возвратная капсула (T075): лёгкий командный пост с теплозащитой. */
     public static final Block RETURN_CAPSULE = register("return_capsule", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 12.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
+
+    /** Метанокислородный двигатель: середина по тяге и Isp, топливо ISRU-Марса. */
+    public static final Block METHALOX_ENGINE = register("methalox_engine", Block::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops().noOcclusion());
 
     /** Стыковочный узел (US6): плоскость разделения ступеней ракеты. */
     public static final Block DOCKING_CLAMP = register("docking_clamp", Block::new,

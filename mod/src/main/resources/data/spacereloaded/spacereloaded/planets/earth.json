@@ -5,6 +5,9 @@
 	"solar_efficiency": 1.0,
 	"coordinate_scale": 1.0,
 	"transition_altitude": 450,
-	"transition_targets": [ "spacereloaded:earth_orbit" ],
-	"arrival": "descend"
+	"transition_targets": [
+		"spacereloaded:earth_orbit"
+	],
+	"arrival": "descend",
+	"atmosphere": "air"
 }

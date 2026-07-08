@@ -1,0 +1,132 @@
+{
+	"textures": {
+		"side": "spacereloaded:block/methalox_engine_side",
+		"bell": "spacereloaded:block/methalox_engine_bottom",
+		"top": "spacereloaded:block/machine_side",
+		"particle": "#side"
+	},
+	"elements": [
+		{
+			"from": [
+				0,
+				12,
+				0
+			],
+			"to": [
+				16,
+				16,
+				16
+			],
+			"faces": {
+				"down": {
+					"texture": "#side"
+				},
+				"up": {
+					"texture": "#top"
+				},
+				"north": {
+					"texture": "#side"
+				},
+				"south": {
+					"texture": "#side"
+				},
+				"west": {
+					"texture": "#side"
+				},
+				"east": {
+					"texture": "#side"
+				}
+			}
+		},
+		{
+			"from": [
+				5,
+				8,
+				5
+			],
+			"to": [
+				11,
+				12,
+				11
+			],
+			"faces": {
+				"north": {
+					"texture": "#side"
+				},
+				"south": {
+					"texture": "#side"
+				},
+				"west": {
+					"texture": "#side"
+				},
+				"east": {
+					"texture": "#side"
+				}
+			}
+		},
+		{
+			"from": [
+				3,
+				4,
+				3
+			],
+			"to": [
+				13,
+				8,
+				13
+			],
+			"faces": {
+				"down": {
+					"texture": "#bell"
+				},
+				"up": {
+					"texture": "#side"
+				},
+				"north": {
+					"texture": "#side"
+				},
+				"south": {
+					"texture": "#side"
+				},
+				"west": {
+					"texture": "#side"
+				},
+				"east": {
+					"texture": "#side"
+				}
+			}
+		},
+		{
+			"from": [
+				1,
+				0,
+				1
+			],
+			"to": [
+				15,
+				4,
+				15
+			],
+			"faces": {
+				"down": {
+					"texture": "#bell"
+				},
+				"up": {
+					"texture": "#side"
+				},
+				"north": {
+					"texture": "#side"
+				},
+				"south": {
+					"texture": "#side"
+				},
+				"west": {
+					"texture": "#side"
+				},
+				"east": {
+					"texture": "#side"
+				}
+			}
+		}
+	]
+}

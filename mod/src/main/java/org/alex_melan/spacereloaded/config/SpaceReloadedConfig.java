@@ -125,6 +125,22 @@ public final class SpaceReloadedConfig {
     public double meteorCraterMultiplier = 1.5;
     /** Предел радиуса кратера метеорита, блоки. */
     public int meteorMaxCraterRadius = 6;
+    // --- Химический контур Марса (Phase 11) ---
+    /** Буфер энергии сборщика/реактора, E. */
+    public long chemMachineEnergyCapacity = 8_000;
+    /** Потребление химических машин, E/тик. */
+    public long chemMachineEnergyPerTick = 10;
+    /** Тики на порцию CO2 сборщиком (co2-мир). */
+    public int collectorTicks = 80;
+    /** Множитель длительности на воздушном мире (CO2 в воздухе Земли — след). */
+    public int collectorAirPenalty = 8;
+    /** Тики на порцию метанокса реактором Сабатье. */
+    public int sabatierTicks = 120;
+    /** Метанокса за операцию, кг. */
+    public double sabatierFuelPerOp = 60.0;
+    /** Буфер топлива реактора, кг. */
+    public double sabatierBufferCapacity = 600.0;
+
     /** Метеоритного железа за удар (диапазон). */
     public int meteorIronMin = 2;
     public int meteorIronMax = 5;

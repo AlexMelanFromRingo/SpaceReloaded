@@ -1,0 +1,8 @@
+{
+	"block": "spacereloaded:methalox_engine",
+	"mass_kg": 420.0,
+	"role": "engine",
+	"thrust_n": 75000.0,
+	"isp_sec": 330.0,
+	"fuel": "spacereloaded:methalox"
+}

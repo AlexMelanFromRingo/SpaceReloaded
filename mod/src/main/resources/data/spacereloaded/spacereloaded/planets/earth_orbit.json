@@ -5,6 +5,10 @@
 	"solar_efficiency": 1.5,
 	"coordinate_scale": 8.0,
 	"transition_altitude": 260,
-	"transition_targets": [ "spacereloaded:earth", "spacereloaded:moon" ],
+	"transition_targets": [
+		"spacereloaded:earth",
+		"spacereloaded:moon",
+		"spacereloaded:mars"
+	],
 	"arrival": "platform"
 }

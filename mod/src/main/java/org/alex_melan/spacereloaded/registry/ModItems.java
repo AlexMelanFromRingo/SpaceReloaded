@@ -73,6 +73,9 @@ public final class ModItems {
             properties -> new org.alex_melan.spacereloaded.rocket.FlightProgramItem(
                     properties.stacksTo(1)));
 
+    /** Сжатый CO2 (Phase 11): собирается из атмосферы, сырьё реактора Сабатье. */
+    public static final Item CARBON_DIOXIDE = simple("carbon_dioxide");
+
     /** Метеоритное железо (US: метеориты) — падает в кратере, ISRU-ниша железа. */
     public static final Item METEORIC_IRON = simple("meteoric_iron");
 

@@ -41,6 +41,8 @@ public final class ModCreativeTab {
                         output.accept(ModItems.SPACE_SUIT_BOOTS);
                         output.accept(ModBlocks.ELECTROLYZER);
                         output.accept(ModBlocks.REFINERY);
+                        output.accept(ModBlocks.ATMOSPHERIC_COLLECTOR);
+                        output.accept(ModBlocks.SABATIER_REACTOR);
                         output.accept(ModBlocks.OIL_SHALE);
                         output.accept(ModItems.FUELING_HOSE);
                         output.accept(ModBlocks.MOON_REGOLITH);
@@ -52,6 +54,7 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.TITANIUM_ORE);
                         output.accept(ModBlocks.DEEPSLATE_TITANIUM_ORE);
                         output.accept(ModBlocks.DEEPSLATE_TUNGSTEN_ORE);
+                        output.accept(ModItems.CARBON_DIOXIDE);
                         output.accept(ModItems.METEORIC_IRON);
                         output.accept(ModItems.RAW_TITANIUM);
                         output.accept(ModItems.RAW_TUNGSTEN);
@@ -71,6 +74,7 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.COMMAND_MODULE);
                         output.accept(ModBlocks.GYROSCOPE);
                         output.accept(ModBlocks.HYDROLOX_ENGINE);
+                        output.accept(ModBlocks.METHALOX_ENGINE);
                         output.accept(ModBlocks.FUELING_PUMP);
                         output.accept(ModBlocks.ROCKET_SEAT);
                         output.accept(ModBlocks.DOCKING_CLAMP);

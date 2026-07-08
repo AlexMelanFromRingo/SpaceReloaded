@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=north": {
+			"model": "spacereloaded:block/atmospheric_collector"
+		},
+		"facing=east": {
+			"model": "spacereloaded:block/atmospheric_collector",
+			"y": 90
+		},
+		"facing=south": {
+			"model": "spacereloaded:block/atmospheric_collector",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "spacereloaded:block/atmospheric_collector",
+			"y": 270
+		}
+	}
+}
