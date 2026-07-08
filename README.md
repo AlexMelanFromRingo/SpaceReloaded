@@ -75,6 +75,8 @@ with nobody around and survive server restarts mid-air.
   every recipe rendered as cards, from crushing to the assembly table.
 - [Progression](specs/001-space-mod-core/progression.md): the full arc from
   iron to the closed interplanetary loop.
+- [Addon guide](docs/ADDONS.md): planets, fuels, rocket-part stats, recipes and
+  cross-mod airtight/gas tags are all datapack-driven, no Java required.
 - [Design docs](specs/001-space-mod-core/): spec, plan, data model, an API
   cheat sheet for Minecraft 26.2 internals, and a research-backed
   [backlog](specs/001-space-mod-core/inspiration-backlog.md) of mechanics
