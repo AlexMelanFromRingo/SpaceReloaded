@@ -1,4 +1,7 @@
 {
 	"replace": false,
-	"values": [ "spacereloaded:vacuum" ]
+	"values": [
+		"spacereloaded:vacuum",
+		"spacereloaded:exposure"
+	]
 }

@@ -22,6 +22,9 @@ public final class ModTags {
 
     /** Что электролизёр принимает как источник воды (льды). */
     public static final TagKey<Item> ELECTROLYZER_INPUT = item("electrolyzer_input");
+
+    /** Части скафандра EVA: полный сет (грудь+ноги+ботинки) защищает от среды. */
+    public static final TagKey<Item> SPACE_SUIT = item("space_suit");
     /** Сырьё перегонного куба (нефтеносный сланец). */
     public static final TagKey<Item> REFINERY_INPUT = item("refinery_input");
 

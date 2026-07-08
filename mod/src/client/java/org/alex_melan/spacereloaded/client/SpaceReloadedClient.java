@@ -43,6 +43,12 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntities.KINETIC_PROJECTILE,
 				org.alex_melan.spacereloaded.client.render.KineticProjectileRenderer::new);
 
+		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
+				org.alex_melan.spacereloaded.network.VacuumStatePayload.TYPE,
+				(payload, context) -> VacuumAmbience.setExposed(payload.exposed()));
+		net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register(
+				(handler, client) -> VacuumAmbience.setExposed(false));
+
 		HudElementRegistry.addLast(RocketHud.ID, new RocketHud());
 		HudElementRegistry.addLast(org.alex_melan.spacereloaded.client.gui.OxygenHud.ID,
 				new org.alex_melan.spacereloaded.client.gui.OxygenHud());

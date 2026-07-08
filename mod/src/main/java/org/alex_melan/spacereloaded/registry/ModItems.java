@@ -30,6 +30,24 @@ public final class ModItems {
                     .setAsset(OXYGEN_MASK_ASSET)
                     .build())));
 
+    private static final ResourceKey<EquipmentAsset> SPACE_SUIT_ASSET = ResourceKey.create(
+            EquipmentAssets.ROOT_ID,
+            Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "space_suit"));
+
+    /** Скафандр (EVA): полный сет (грудь+ноги+ботинки) + маска — защита от среды. */
+    public static final Item SPACE_SUIT_CHESTPLATE = register("space_suit_chestplate",
+            properties -> new Item(properties.stacksTo(1)
+                    .component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.CHEST)
+                            .setAsset(SPACE_SUIT_ASSET).build())));
+    public static final Item SPACE_SUIT_LEGGINGS = register("space_suit_leggings",
+            properties -> new Item(properties.stacksTo(1)
+                    .component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.LEGS)
+                            .setAsset(SPACE_SUIT_ASSET).build())));
+    public static final Item SPACE_SUIT_BOOTS = register("space_suit_boots",
+            properties -> new Item(properties.stacksTo(1)
+                    .component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.FEET)
+                            .setAsset(SPACE_SUIT_ASSET).build())));
+
     /** Баллон со сжатым кислородом: расходуется маской в вакууме, заряжается электролизёром. */
     public static final Item OXYGEN_CANISTER = register("oxygen_canister",
             properties -> new org.alex_melan.spacereloaded.sealing.OxygenCanisterItem(properties.durability(1200)));

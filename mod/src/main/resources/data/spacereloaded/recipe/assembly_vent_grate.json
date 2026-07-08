@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"minecraft:iron_bars",
+		"minecraft:iron_bars"
+	],
+	"result": {
+		"id": "spacereloaded:vent_grate",
+		"count": 4
+	}
+}

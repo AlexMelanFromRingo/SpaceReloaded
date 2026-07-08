@@ -33,6 +33,9 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.CREATIVE_POWER);
                         output.accept(ModItems.OXYGEN_MASK);
                         output.accept(ModItems.OXYGEN_CANISTER);
+                        output.accept(ModItems.SPACE_SUIT_CHESTPLATE);
+                        output.accept(ModItems.SPACE_SUIT_LEGGINGS);
+                        output.accept(ModItems.SPACE_SUIT_BOOTS);
                         output.accept(ModBlocks.ELECTROLYZER);
                         output.accept(ModBlocks.REFINERY);
                         output.accept(ModBlocks.OIL_SHALE);
@@ -69,6 +72,7 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.DOCKING_CLAMP);
                         output.accept(ModBlocks.RETURN_CAPSULE);
                         output.accept(ModBlocks.LANDING_BEACON);
+                        output.accept(ModBlocks.VENT_GRATE);
                         output.accept(ModBlocks.CARGO_HOLD);
                         output.accept(ModBlocks.CARGO_LOADER);
                         output.accept(ModBlocks.MISSION_CONTROL);

@@ -47,6 +47,9 @@ public class SpaceReloaded implements ModInitializer {
 		LOGGER.info("SpaceReloaded: инициализация космической программы");
 		config();
 
+		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.clientboundPlay().register(
+				org.alex_melan.spacereloaded.network.VacuumStatePayload.TYPE,
+				org.alex_melan.spacereloaded.network.VacuumStatePayload.CODEC);
 		ModBlocks.init();
 		ModDataComponents.init();
 		ModItems.init();
@@ -112,6 +115,7 @@ public class SpaceReloaded implements ModInitializer {
 			ZoneManager.shutdown();
 			CableNetworkManager.clearAll();
 			org.alex_melan.spacereloaded.rocket.FuelingHose.clearAll();
+			org.alex_melan.spacereloaded.sealing.VacuumHazard.clearAll();
 		});
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->

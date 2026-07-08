@@ -179,6 +179,11 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
 
+    /** Вентиляционная решётка: выглядит цельно, но газ проходит (тег passes_gas). */
+    public static final Block VENT_GRATE = register("vent_grate", Block::new,
+            BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
     /** Грузовой отсек ракеты: 15 слотов, хопперы и погрузчик. */
     public static final Block CARGO_HOLD = register("cargo_hold",
             org.alex_melan.spacereloaded.rocket.CargoHoldBlock::new,

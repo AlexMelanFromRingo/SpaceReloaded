@@ -119,6 +119,15 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         assertThat(repaired == SealingStatus.SEALED,
                 "После починки угла зона должна восстановиться, получено: " + repaired);
         log("починка угла → SEALED ✓");
+
+        // Вентрешётка: цельный на вид блок, но газ проходит (тег passes_gas)
+        sp.getServer().runCommand(set(BX + 2, BY + 4, BZ + 2, "spacereloaded:vent_grate"));
+        SealingStatus vented = waitForStatus(context, sp, 200,
+                SealingStatus.LEAK, SealingStatus.UNBOUNDED);
+        assertThat(vented == SealingStatus.LEAK || vented == SealingStatus.UNBOUNDED,
+                "Вентрешётка в стене должна давать утечку (тег passes_gas), получено: " + vented);
+        sp.getServer().runCommand(set(BX + 2, BY + 4, BZ + 2, "spacereloaded:hull_plating"));
+        log("вентрешётка → " + vented + " (тег passes_gas) ✓");
     }
 
     /** Поллинг статуса зоны до ожидаемого (пересчёты асинхронные). */

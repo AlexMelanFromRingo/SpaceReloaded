@@ -21,6 +21,16 @@ public final class ModDamageTypes {
                 .getOrThrow(VACUUM));
     }
 
+    /** Экстремальная среда (US: EVA): маска дышит, но без полного скафандра — холод/радиация. */
+    public static final ResourceKey<DamageType> EXPOSURE = ResourceKey.create(Registries.DAMAGE_TYPE,
+            Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "exposure"));
+
+    public static DamageSource exposure(ServerLevel level) {
+        return new DamageSource(level.registryAccess()
+                .lookupOrThrow(Registries.DAMAGE_TYPE)
+                .getOrThrow(EXPOSURE));
+    }
+
     private ModDamageTypes() {
     }
 }

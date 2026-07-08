@@ -1,4 +1,74 @@
 {
 	"replace": false,
-	"values": []
+	"values": [
+		"spacereloaded:vent_grate",
+		"minecraft:iron_bars",
+		"minecraft:iron_chain",
+		"minecraft:ladder",
+		"minecraft:scaffolding",
+		{
+			"id": "minecraft:copper_grate",
+			"required": false
+		},
+		{
+			"id": "minecraft:exposed_copper_grate",
+			"required": false
+		},
+		{
+			"id": "minecraft:weathered_copper_grate",
+			"required": false
+		},
+		{
+			"id": "minecraft:oxidized_copper_grate",
+			"required": false
+		},
+		{
+			"id": "minecraft:waxed_copper_grate",
+			"required": false
+		},
+		{
+			"id": "minecraft:waxed_exposed_copper_grate",
+			"required": false
+		},
+		{
+			"id": "minecraft:waxed_weathered_copper_grate",
+			"required": false
+		},
+		{
+			"id": "minecraft:waxed_oxidized_copper_grate",
+			"required": false
+		},
+		{
+			"id": "minecraft:copper_chain",
+			"required": false
+		},
+		{
+			"id": "minecraft:exposed_copper_chain",
+			"required": false
+		},
+		{
+			"id": "minecraft:weathered_copper_chain",
+			"required": false
+		},
+		{
+			"id": "minecraft:oxidized_copper_chain",
+			"required": false
+		},
+		{
+			"id": "minecraft:waxed_copper_chain",
+			"required": false
+		},
+		{
+			"id": "minecraft:waxed_exposed_copper_chain",
+			"required": false
+		},
+		{
+			"id": "minecraft:waxed_weathered_copper_chain",
+			"required": false
+		},
+		{
+			"id": "minecraft:waxed_oxidized_copper_chain",
+			"required": false
+		}
+	]
 }

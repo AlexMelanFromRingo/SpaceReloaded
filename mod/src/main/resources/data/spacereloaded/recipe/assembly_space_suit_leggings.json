@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:carbon_fiber",
+		"spacereloaded:carbon_fiber",
+		"spacereloaded:steel_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:space_suit_leggings",
+		"count": 1
+	}
+}

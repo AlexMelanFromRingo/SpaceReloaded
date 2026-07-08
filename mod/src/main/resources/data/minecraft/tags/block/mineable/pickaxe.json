@@ -37,6 +37,7 @@
 		"spacereloaded:landing_beacon",
 		"spacereloaded:mission_control",
 		"spacereloaded:cargo_hold",
-		"spacereloaded:cargo_loader"
+		"spacereloaded:cargo_loader",
+		"spacereloaded:vent_grate"
 	]
 }

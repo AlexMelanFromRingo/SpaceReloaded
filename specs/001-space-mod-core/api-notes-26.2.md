@@ -68,3 +68,6 @@ ID ванили теперь в `net.minecraft.references.{BlockIds,ItemIds,Bloc
 - `Level.isLoaded(BlockPos)` = bounds + `ChunkSource.hasChunk` (FULL). После дальнего `/tp` чанки грузятся ЛЕНИВО: `/fill`/`/setblock` в ещё не догруженной области молча отказывают («That position is not loaded») — в тестах форсировать `/forceload add` и ждать `isLoaded` поллингом.
 - `DustParticleOptions(int color, float scale)`; `ServerLevel.sendParticles(T, x, y, z, count, dx, dy, dz, speed)`.
 - `SimpleEnergyStorage` — пакет `team.reborn.energy.api.base` (поле `amount` публичное — удобно в тестах).
+- 26.2 «медное» переименование: `minecraft:chain` → `minecraft:iron_chain`; медные варианты (цепи/решётки) — `WeatheringCopperCollection`. Битая запись в теге валит ВЕСЬ тег — ванильные id в тегах писать `{"id": ..., "required": false}` либо сверять по javap Blocks.
+- Звук: миксин-точка `SoundEngine.calculateVolume(Lnet/.../SoundInstance;)F` (private, @Inject RETURN + cancellable); `SoundInstance.isRelative()` = «у уха».
+- Сеть (Fabric 6.x): `PayloadTypeRegistry.clientboundPlay().register(TYPE, CODEC)` (НЕ playS2C), `ServerPlayNetworking.send(player, payload)`, `ClientPlayNetworking.registerGlobalReceiver`.

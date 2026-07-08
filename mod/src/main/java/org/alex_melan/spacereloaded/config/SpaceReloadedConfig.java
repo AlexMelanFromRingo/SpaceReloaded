@@ -21,6 +21,8 @@ public final class SpaceReloadedConfig {
     public int vacuumCheckIntervalTicks = 10;
     /** Урон вакуума за одну проверку (полсердца). */
     public float vacuumDamage = 1.0f;
+    /** Урон среды без полного скафандра (маска дышит, но холод/радиация грызут). */
+    public float exposureDamage = 1.0f;
     /** Импульс взрывной декомпрессии, м/с на сущность у пробоины (FR-007). */
     public double decompressionImpulse = 1.5;
     /** Лимит блоков в сборке ракеты (FR-020). */
