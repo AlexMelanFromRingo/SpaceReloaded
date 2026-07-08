@@ -44,5 +44,7 @@ public class SpaceReloadedClient implements ClientModInitializer {
 				org.alex_melan.spacereloaded.client.render.KineticProjectileRenderer::new);
 
 		HudElementRegistry.addLast(RocketHud.ID, new RocketHud());
+		HudElementRegistry.addLast(org.alex_melan.spacereloaded.client.gui.OxygenHud.ID,
+				new org.alex_melan.spacereloaded.client.gui.OxygenHud());
 	}
 }

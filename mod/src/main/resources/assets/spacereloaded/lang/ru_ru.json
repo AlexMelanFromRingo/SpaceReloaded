@@ -73,6 +73,7 @@
 	"fuel.spacereloaded.empty": "пусто",
 	"fuel.spacereloaded.hydrolox": "Гидролокс",
 	"fuel.spacereloaded.kerolox": "Керолокс",
+	"hud.spacereloaded.oxygen": "O₂ %s / %s",
 	"hud.spacereloaded.rocket.altitude": "Высота %s м · Тангаж %s° · Крен %s°",
 	"hud.spacereloaded.rocket.destination": "Цель: %s",
 	"hud.spacereloaded.rocket.flight": "БОРТ · ПОЛЁТ",
@@ -144,6 +145,9 @@
 	"message.spacereloaded.pump.mode.fuel": "Колонка: ЗАПРАВКА",
 	"message.spacereloaded.pump.mode.off": "Колонка: ВЫКЛ",
 	"message.spacereloaded.rocket.assembled": "Ракета собрана: %s блоков",
+	"message.spacereloaded.rocket.autopilot_no_target": "Нет доступных целей перелёта",
+	"message.spacereloaded.rocket.autopilot_only_orbit": "Автопилот умеет только выход на орбиту (смените цель, сев в ракету: Спринт)",
+	"message.spacereloaded.rocket.autopilot_started": "Автопилот: беспилотный старт, цель — %s",
 	"message.spacereloaded.rocket.destination": "Цель: %s",
 	"message.spacereloaded.rocket.fuel_out": "⚠ Топливо исчерпано — баллистическое падение",
 	"message.spacereloaded.rocket.mount_hint": "ПКМ по ракете — сесть; Прыжок = зажигание, Присед = отсечка двигателей",
@@ -161,5 +165,6 @@
 	"planet.spacereloaded.moon": "Луна",
 	"tooltip.spacereloaded.energy": "%s / %s E",
 	"tooltip.spacereloaded.fuel": "Топливо: %s / %s кг",
+	"tooltip.spacereloaded.oxygen_canister": "Кислород: %s / %s",
 	"tooltip.spacereloaded.progress": "%s%%"
 }

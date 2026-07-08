@@ -1,7 +1,7 @@
 {
 	"parent": "minecraft:block/cube_bottom_top",
 	"textures": {
-		"top": "spacereloaded:block/launch_pad",
+		"top": "spacereloaded:block/launch_pad_top_formed",
 		"side": "spacereloaded:block/launch_pad_side",
 		"bottom": "spacereloaded:block/launch_pad_side"
 	}

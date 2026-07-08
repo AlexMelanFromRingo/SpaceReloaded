@@ -32,7 +32,7 @@ public final class ModItems {
 
     /** Баллон со сжатым кислородом: расходуется маской в вакууме, заряжается электролизёром. */
     public static final Item OXYGEN_CANISTER = register("oxygen_canister",
-            properties -> new Item(properties.durability(1200)));
+            properties -> new org.alex_melan.spacereloaded.sealing.OxygenCanisterItem(properties.durability(1200)));
 
     /** Заправочный рукав: бак → ракета (и обратно с sneak). */
     public static final Item FUELING_HOSE = register("fueling_hose",

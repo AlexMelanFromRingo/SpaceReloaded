@@ -73,6 +73,7 @@
 	"fuel.spacereloaded.empty": "empty",
 	"fuel.spacereloaded.hydrolox": "Hydrolox",
 	"fuel.spacereloaded.kerolox": "Kerolox",
+	"hud.spacereloaded.oxygen": "O₂ %s / %s",
 	"hud.spacereloaded.rocket.altitude": "Alt %s m · Pitch %s° · Roll %s°",
 	"hud.spacereloaded.rocket.destination": "Destination: %s",
 	"hud.spacereloaded.rocket.flight": "FLIGHT DECK · ASCENT",
@@ -144,6 +145,9 @@
 	"message.spacereloaded.pump.mode.fuel": "Pump: FUELING",
 	"message.spacereloaded.pump.mode.off": "Pump: OFF",
 	"message.spacereloaded.rocket.assembled": "Rocket assembled: %s blocks",
+	"message.spacereloaded.rocket.autopilot_no_target": "No transfer destinations available",
+	"message.spacereloaded.rocket.autopilot_only_orbit": "Autopilot only flies to orbit (board and press Sprint to change destination)",
+	"message.spacereloaded.rocket.autopilot_started": "Autopilot: unmanned launch, destination — %s",
 	"message.spacereloaded.rocket.destination": "Destination: %s",
 	"message.spacereloaded.rocket.fuel_out": "⚠ Propellant exhausted — ballistic fall",
 	"message.spacereloaded.rocket.mount_hint": "Right-click the rocket to board; Jump = ignition, Sneak = engine cutoff",
@@ -161,5 +165,6 @@
 	"planet.spacereloaded.moon": "Moon",
 	"tooltip.spacereloaded.energy": "%s / %s E",
 	"tooltip.spacereloaded.fuel": "Fuel: %s / %s kg",
+	"tooltip.spacereloaded.oxygen_canister": "Oxygen: %s / %s",
 	"tooltip.spacereloaded.progress": "%s%%"
 }

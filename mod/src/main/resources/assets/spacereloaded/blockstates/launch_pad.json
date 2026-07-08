@@ -1,3 +1,10 @@
 {
-	"variants": { "": { "model": "spacereloaded:block/launch_pad" } }
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/launch_pad"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/launch_pad_formed"
+		}
+	}
 }

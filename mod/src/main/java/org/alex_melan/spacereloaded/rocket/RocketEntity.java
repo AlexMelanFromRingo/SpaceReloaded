@@ -69,6 +69,8 @@ public class RocketEntity extends Entity {
     private boolean launched;
     private boolean prevSprint;
     private boolean fuelOutWarned;
+    /** Беспилотный набор высоты до орбиты (запуск спутников/грузов). */
+    private boolean autopilot;
     private int destinationIndex;
 
     // Производные размеры (сервер и клиент)
@@ -298,6 +300,16 @@ public class RocketEntity extends Entity {
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 hitPos) {
+        // Пульт: Sneak+ПКМ по припаркованной ракете — беспилотный старт (спутник)
+        if (player.getItemInHand(hand).is(org.alex_melan.spacereloaded.registry.ModItems.TARGETING_DESIGNATOR)
+                && player.isSecondaryUseActive()) {
+            if (!level().isClientSide() && isParked()
+                    && player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.sendSystemMessage(startAutopilot((ServerLevel) level()));
+                return InteractionResult.SUCCESS_SERVER;
+            }
+            return InteractionResult.SUCCESS;
+        }
         // Заправочный рукав: ПКМ — закачать из подключённого бака, sneak+ПКМ — слить
         if (player.getItemInHand(hand).is(org.alex_melan.spacereloaded.registry.ModItems.FUELING_HOSE)) {
             if (!level().isClientSide() && !launched
@@ -379,6 +391,9 @@ public class RocketEntity extends Entity {
             Input input = pilot.getLastClientInput();
             jump = input.jump();
             sprint = input.sprint();
+            autopilot = false; // ручное управление приоритетнее
+        } else if (autopilot && launched) {
+            jump = true; // беспилотный набор высоты
         }
 
         if (!launched) {
@@ -518,10 +533,42 @@ public class RocketEntity extends Entity {
                        : new org.alex_melan.spacereloaded.core.geometry.Vec3d(0, -5, 0),
                 0, 0, 0, 0, propellantKg);
         this.launched = !parked;
+        if (parked) {
+            autopilot = false;
+        }
         entityData.set(DATA_LAUNCHED, launched);
         entityData.set(DATA_PITCH, 0.0f);
         entityData.set(DATA_ROLL, 0.0f);
         setDeltaMovement(Vec3.ZERO);
+    }
+
+    /**
+     * Беспилотный старт (T-спутник): полная тяга до высоты перехода, цель —
+     * текущая (только прибытие «платформа»: снижение без пилота запрещено —
+     * автопилот v1 не умеет ретро-burn).
+     */
+    private Component startAutopilot(ServerLevel level) {
+        var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
+        if (profile.isEmpty() || profile.get().transitionTargets().isEmpty()) {
+            return Component.translatable("message.spacereloaded.rocket.autopilot_no_target");
+        }
+        var targetId = profile.get().transitionTargets()
+                .get(Math.floorMod(destinationIndex, profile.get().transitionTargets().size()));
+        var target = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, targetId);
+        if (target.isEmpty() || !"platform".equals(target.get().arrival())) {
+            return Component.translatable("message.spacereloaded.rocket.autopilot_only_orbit");
+        }
+        RocketPerformance performance = PerformanceCalculator.calculate(structure, 9.81);
+        if (performance.twr() <= 1.0 || performance.deltaV() <= 0) {
+            return Component.translatable("message.spacereloaded.rocket.warning.TWR_BELOW_ONE");
+        }
+        autopilot = true;
+        launched = true;
+        entityData.set(DATA_LAUNCHED, true);
+        flight = FlightState.atRest(corePos(), flight.propellantKg());
+        level.playSound(null, blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.NEUTRAL, 3.0f, 0.5f);
+        return Component.translatable("message.spacereloaded.rocket.autopilot_started",
+                Component.translatable("planet.spacereloaded." + targetId.getPath()));
     }
 
     private void tryIgnite(ServerLevel level) {
@@ -635,6 +682,7 @@ public class RocketEntity extends Entity {
                 e.state().is(org.alex_melan.spacereloaded.registry.ModBlocks.RETURN_CAPSULE));
         if (impactSpeed <= (hasCapsule ? CAPSULE_CRASH_SPEED : CRASH_SPEED)) {
             launched = false;
+            autopilot = false;
             entityData.set(DATA_LAUNCHED, false);
             entityData.set(DATA_PITCH, 0.0f);
             entityData.set(DATA_ROLL, 0.0f);
@@ -698,6 +746,7 @@ public class RocketEntity extends Entity {
             output.store("rocket", RocketData.CODEC, persisted);
         }
         output.putBoolean("launched", launched);
+        output.putBoolean("autopilot", autopilot);
         output.putInt("destination", destinationIndex);
         output.putDouble("vel_x", flight == null ? 0 : flight.vel().x());
         output.putDouble("vel_y", flight == null ? 0 : flight.vel().y());
@@ -723,6 +772,7 @@ public class RocketEntity extends Entity {
                     0, 0, data.propellantKg());
         });
         this.launched = input.getBooleanOr("launched", false);
+        this.autopilot = input.getBooleanOr("autopilot", false);
         this.destinationIndex = input.getIntOr("destination", 0);
         entityData.set(DATA_LAUNCHED, launched);
     }

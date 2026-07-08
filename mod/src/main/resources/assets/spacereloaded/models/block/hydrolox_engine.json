@@ -1,6 +1,6 @@
 {
 	"textures": {
-		"side": "spacereloaded:block/rocket_engine_side",
+		"side": "spacereloaded:block/hydrolox_engine_side",
 		"bell": "spacereloaded:block/hydrolox_engine_bottom",
 		"top": "spacereloaded:block/machine_side",
 		"particle": "#side"

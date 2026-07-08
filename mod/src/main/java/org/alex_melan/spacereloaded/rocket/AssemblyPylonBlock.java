@@ -19,10 +19,29 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class AssemblyPylonBlock extends Block {
 
+    public static final net.minecraft.world.level.block.state.properties.BooleanProperty FORMED =
+            net.minecraft.world.level.block.state.properties.BooleanProperty.create("formed");
+
     private static final VoxelShape SHAPE = Block.box(4, 0, 4, 12, 16, 12);
 
     public AssemblyPylonBlock(Properties properties) {
         super(properties);
+        registerDefaultState(getStateDefinition().any().setValue(FORMED, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(
+            net.minecraft.world.level.block.state.StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(FORMED);
+    }
+
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos,
+                           BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (!oldState.is(this) && level instanceof ServerLevel serverLevel) {
+            RocketInteractions.formComplex(serverLevel, pos);
+        }
     }
 
     @Override

@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Blocks;
@@ -31,6 +32,7 @@ public final class RocketInteractions {
 
     /** Сборка со стартовой площадки: ПКМ по пилону (T051, AR-стиль). */
     public static void assembleFromPylon(ServerLevel level, BlockPos pylonPos, ServerPlayer player) {
+        formComplex(level, pylonPos);
         // Низ колонны пилона
         BlockPos base = pylonPos;
         while (level.getBlockState(base.below()).is(org.alex_melan.spacereloaded.registry.ModBlocks.ASSEMBLY_PYLON)) {
@@ -83,6 +85,80 @@ public final class RocketInteractions {
         RocketAssembler.Result result = RocketAssembler.scanVolume(level, cells, minY, maxY,
                 resolver, SpaceReloaded.config().rocketMaxBlocks);
         finishAssembly(level, player, result);
+    }
+
+    /**
+     * Формирование стартового комплекса (визуальный отклик): пад ≥ 9 плит +
+     * пилон ≥ 3 блока, стоящий на паде, — вся конструкция получает FORMED=true
+     * (жёлтая разметка). Вызывается при установке плит/пилона и перед сборкой.
+     */
+    public static void formComplex(ServerLevel level, BlockPos seed) {
+        // Найти затравку-пад: сам блок, под пилоном либо сбоку от его низа
+        BlockPos padSeed = null;
+        if (level.getBlockState(seed).is(org.alex_melan.spacereloaded.registry.ModBlocks.LAUNCH_PAD)) {
+            padSeed = seed;
+        } else if (level.getBlockState(seed).is(org.alex_melan.spacereloaded.registry.ModBlocks.ASSEMBLY_PYLON)) {
+            BlockPos base = seed;
+            while (level.getBlockState(base.below()).is(org.alex_melan.spacereloaded.registry.ModBlocks.ASSEMBLY_PYLON)) {
+                base = base.below();
+            }
+            if (level.getBlockState(base.below()).is(org.alex_melan.spacereloaded.registry.ModBlocks.LAUNCH_PAD)) {
+                padSeed = base.below();
+            } else {
+                for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                    if (level.getBlockState(base.relative(dir)).is(org.alex_melan.spacereloaded.registry.ModBlocks.LAUNCH_PAD)) {
+                        padSeed = base.relative(dir);
+                        break;
+                    }
+                }
+            }
+        }
+        if (padSeed == null) {
+            return;
+        }
+        // Флудфилл плит (4 направления, как при сборке)
+        java.util.List<BlockPos> pads = new java.util.ArrayList<>();
+        java.util.Set<BlockPos> visited = new java.util.HashSet<>();
+        java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+        queue.add(padSeed.immutable());
+        visited.add(padSeed.immutable());
+        while (!queue.isEmpty() && pads.size() <= MAX_PAD_CELLS) {
+            BlockPos cell = queue.poll();
+            pads.add(cell);
+            for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                BlockPos next = cell.relative(dir);
+                if (visited.add(next)
+                        && level.getBlockState(next).is(org.alex_melan.spacereloaded.registry.ModBlocks.LAUNCH_PAD)) {
+                    queue.add(next);
+                }
+            }
+        }
+        // Колонны пилонов, стоящие на плитах
+        java.util.List<BlockPos> pylons = new java.util.ArrayList<>();
+        int tallest = 0;
+        for (BlockPos pad : pads) {
+            BlockPos cursor = pad.above();
+            int height = 0;
+            while (level.getBlockState(cursor).is(org.alex_melan.spacereloaded.registry.ModBlocks.ASSEMBLY_PYLON)) {
+                pylons.add(cursor.immutable());
+                cursor = cursor.above();
+                height++;
+            }
+            tallest = Math.max(tallest, height);
+        }
+        boolean formed = pads.size() >= 9 && tallest >= 3;
+        for (BlockPos pad : pads) {
+            BlockState state = level.getBlockState(pad);
+            if (state.getValue(LaunchPadBlock.FORMED) != formed) {
+                level.setBlock(pad, state.setValue(LaunchPadBlock.FORMED, formed), 3);
+            }
+        }
+        for (BlockPos pylon : pylons) {
+            BlockState state = level.getBlockState(pylon);
+            if (state.getValue(AssemblyPylonBlock.FORMED) != formed) {
+                level.setBlock(pylon, state.setValue(AssemblyPylonBlock.FORMED, formed), 3);
+            }
+        }
     }
 
     public static void assemble(ServerLevel level, BlockPos commandPos, ServerPlayer player) {
