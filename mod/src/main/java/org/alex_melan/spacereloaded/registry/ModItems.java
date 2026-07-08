@@ -39,6 +39,14 @@ public final class ModItems {
             properties -> new Item(properties.stacksTo(1)));
 
     // --- Материалы промышленной цепочки (US3, T040/T042) ---
+    /** Вольфрамовый лом — боеприпас орбитальной пушки (US7). */
+    public static final Item TUNGSTEN_ROD = register("tungsten_rod",
+            properties -> new Item(properties.stacksTo(16)));
+    /** Целеуказатель: метка на поверхности для наведения пушки. */
+    public static final Item TARGETING_DESIGNATOR = register("targeting_designator",
+            properties -> new org.alex_melan.spacereloaded.cannon.TargetingDesignatorItem(
+                    properties.stacksTo(1)));
+
     public static final Item RAW_TITANIUM = simple("raw_titanium");
     public static final Item RAW_TUNGSTEN = simple("raw_tungsten");
     public static final Item TITANIUM_INGOT = simple("titanium_ingot");

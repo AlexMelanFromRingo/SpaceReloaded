@@ -2,6 +2,8 @@ package org.alex_melan.spacereloaded.client;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import org.alex_melan.spacereloaded.client.gui.RocketHud;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.resources.Identifier;
 import org.alex_melan.spacereloaded.SpaceReloaded;
@@ -38,5 +40,9 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		MenuScreens.register(ModMenus.REFINERY, RefineryScreen::new);
 
 		EntityRendererRegistry.register(ModEntities.ROCKET, RocketRenderer::new);
+		EntityRendererRegistry.register(ModEntities.KINETIC_PROJECTILE,
+				org.alex_melan.spacereloaded.client.render.KineticProjectileRenderer::new);
+
+		HudElementRegistry.addLast(RocketHud.ID, new RocketHud());
 	}
 }

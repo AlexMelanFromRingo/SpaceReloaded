@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:steel_ingot","minecraft:redstone","minecraft:redstone","spacereloaded:hermetic_glass","minecraft:ender_pearl" ],
+	"result": { "id": "spacereloaded:targeting_designator", "count": 1 }
+}

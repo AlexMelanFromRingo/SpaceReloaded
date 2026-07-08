@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/cube_bottom_top",
+	"textures": {
+		"top": "spacereloaded:block/orbital_cannon_top",
+		"side": "spacereloaded:block/orbital_cannon_side",
+		"bottom": "spacereloaded:block/orbital_cannon_bottom"
+	}
+}

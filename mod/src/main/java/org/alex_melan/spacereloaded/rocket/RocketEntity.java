@@ -54,6 +54,10 @@ public class RocketEntity extends Entity {
             SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> DATA_LAUNCHED =
             SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Float> DATA_FUEL =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> DATA_DESTINATION =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.INT);
 
     private static final double DT = 0.05; // серверный тик
     private static final double CRASH_SPEED = 15.0; // м/с — жёсткая посадка
@@ -86,6 +90,8 @@ public class RocketEntity extends Entity {
         builder.define(DATA_PITCH, 0.0f);
         builder.define(DATA_ROLL, 0.0f);
         builder.define(DATA_LAUNCHED, false);
+        builder.define(DATA_FUEL, 0.0f);
+        builder.define(DATA_DESTINATION, 0);
     }
 
     /** Сервер: установить структуру после сборки (до addFreshEntity). */
@@ -93,6 +99,7 @@ public class RocketEntity extends Entity {
         this.rocketData = data;
         rebuildDerived();
         this.flight = FlightState.atRest(corePos(), data.propellantKg());
+        entityData.set(DATA_FUEL, (float) data.propellantKg());
         Tag tag = RocketData.CODEC.encodeStart(NbtOps.INSTANCE, data).getOrThrow();
         entityData.set(DATA_STRUCTURE, (CompoundTag) tag);
     }
@@ -206,6 +213,31 @@ public class RocketEntity extends Entity {
         return flight == null ? 0 : flight.propellantKg();
     }
 
+    // --- Клиентские аксессоры для HUD ---
+
+    public float clientFuelKg() {
+        return entityData.get(DATA_FUEL);
+    }
+
+    public double clientFuelCapacityKg() {
+        if (rocketData == null) {
+            return 0;
+        }
+        double capacity = 0;
+        for (RocketData.Entry entry : rocketData.blocks()) {
+            capacity += entry.capacityKg();
+        }
+        return capacity;
+    }
+
+    public boolean clientLaunched() {
+        return entityData.get(DATA_LAUNCHED);
+    }
+
+    public int clientDestinationIndex() {
+        return entityData.get(DATA_DESTINATION);
+    }
+
     /** Заправка (рукав): принять до amountKg, вернуть фактически принятое. */
     public double refuel(double amountKg) {
         if (launched || structure == null || flight == null) {
@@ -216,6 +248,7 @@ public class RocketEntity extends Entity {
         if (accepted > 0) {
             flight = new FlightState(flight.pos(), flight.vel(), flight.pitch(), flight.roll(),
                     flight.pitchRate(), flight.rollRate(), flight.propellantKg() + accepted);
+            entityData.set(DATA_FUEL, (float) flight.propellantKg());
         }
         return accepted;
     }
@@ -229,6 +262,7 @@ public class RocketEntity extends Entity {
         if (drained > 0) {
             flight = new FlightState(flight.pos(), flight.vel(), flight.pitch(), flight.roll(),
                     flight.pitchRate(), flight.rollRate(), flight.propellantKg() - drained);
+            entityData.set(DATA_FUEL, (float) flight.propellantKg());
         }
         return drained;
     }
@@ -330,6 +364,9 @@ public class RocketEntity extends Entity {
         setDeltaMovement(flight.vel().x() * DT, flight.vel().y() * DT, flight.vel().z() * DT);
         entityData.set(DATA_PITCH, (float) Math.toDegrees(flight.pitch()));
         entityData.set(DATA_ROLL, (float) Math.toDegrees(flight.roll()));
+        if (Math.abs(entityData.get(DATA_FUEL) - flight.propellantKg()) > 1.0) {
+            entityData.set(DATA_FUEL, (float) flight.propellantKg());
+        }
 
         if (flight.vel().y() <= 0 && touchesGround(serverLevel)) {
             land(serverLevel);
@@ -510,6 +547,7 @@ public class RocketEntity extends Entity {
             return;
         }
         destinationIndex = (destinationIndex + 1) % profile.get().transitionTargets().size();
+        entityData.set(DATA_DESTINATION, destinationIndex);
         var target = profile.get().transitionTargets().get(destinationIndex);
         pilot.sendOverlayMessage(Component.translatable("message.spacereloaded.rocket.destination",
                 Component.translatable("planet.spacereloaded." + target.getPath())));

@@ -56,3 +56,15 @@ ID ванили теперь в `net.minecraft.references.{BlockIds,ItemIds,Bloc
 - Рендер: `ChunkSectionLayer` вместо RenderType для террейна; Vulkan experimental; только Blaze3D-абстракции.
 - Gametest: `@net.fabricmc.fabric.api.gametest.v1.GameTest` — модуль жив для 26.2.
 - Team Reborn Energy **5.0.0**: `minecraft >=26.1-`, Java 25, зависит от `fabric-transfer-api-v1` (maven.fabricmc.net, координаты `teamreborn:energy:5.0.0`).
+
+## Дополнено при US7 (пушка/HUD)
+
+- `ResourceKey.identifier()` — НЕ `location()` (переименовано в 26.2).
+- `TicketType` флаги: `FLAG_LOADING`, `FLAG_SIMULATION`, `FLAG_PERSIST` (тикет переживает перезапуск — TicketStorage сохраняет ТОЛЬКО persist-тикеты), `FLAG_KEEP_DIMENSION_ACTIVE` (без него измерение без игроков перестаёт тикать сущности через 300 тиков — обязательно для межпространственных снарядов), `FLAG_CAN_EXPIRE_IF_UNLOADED`.
+- `BlockEntity.preRemoveSideEffects(BlockPos, BlockState)` — хук сноса блока (дроп содержимого BE); `Block.popResource(...)` на месте.
+- `BlockBehaviour.useItemOn(...)`: возврат `TRY_WITH_EMPTY_HAND` для MAIN_HAND вызывает `useWithoutItem` ДАЖЕ с предметом в руке — для «только пустой рукой» возвращать `PASS`.
+- `Block.getExplosionResistance()` — публичный геттер взрывостойкости.
+- HUD (Fabric): `HudElementRegistry.addLast(Identifier, HudElement)`; `HudElement.extractRenderState(GuiGraphicsExtractor, DeltaTracker)`; текст — `gfx.text(Font, Component, x, y, argb)`.
+- `Level.isLoaded(BlockPos)` = bounds + `ChunkSource.hasChunk` (FULL). После дальнего `/tp` чанки грузятся ЛЕНИВО: `/fill`/`/setblock` в ещё не догруженной области молча отказывают («That position is not loaded») — в тестах форсировать `/forceload add` и ждать `isLoaded` поллингом.
+- `DustParticleOptions(int color, float scale)`; `ServerLevel.sendParticles(T, x, y, z, count, dx, dy, dz, speed)`.
+- `SimpleEnergyStorage` — пакет `team.reborn.energy.api.base` (поле `amount` публичное — удобно в тестах).

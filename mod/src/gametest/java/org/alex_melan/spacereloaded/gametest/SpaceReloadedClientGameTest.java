@@ -4,11 +4,21 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
+import org.alex_melan.spacereloaded.SpaceReloaded;
+import org.alex_melan.spacereloaded.cannon.KineticProjectileEntity;
+import org.alex_melan.spacereloaded.cannon.OrbitalCannonBlockEntity;
 import org.alex_melan.spacereloaded.core.sealing.SealingStatus;
+import org.alex_melan.spacereloaded.registry.ModBlocks;
 import org.alex_melan.spacereloaded.machine.CrusherBlockEntity;
 import org.alex_melan.spacereloaded.registry.ModItems;
 import org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity;
@@ -16,6 +26,7 @@ import org.alex_melan.spacereloaded.rocket.RocketEntity;
 import org.alex_melan.spacereloaded.rocket.RocketInteractions;
 import org.alex_melan.spacereloaded.sealing.SealedZone;
 import org.alex_melan.spacereloaded.sealing.ZoneManager;
+import team.reborn.energy.api.base.SimpleEnergyStorage;
 
 import java.util.List;
 
@@ -43,13 +54,30 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testSealing(context, sp);
             testCrusher(context, sp);
             testRocketAssembly(context, sp);
+            testOrbitalCannon(context, sp);
         }
     }
 
     // ---------- 1. Герметичность ----------
 
-    /** Телепорт игрока к площадке (тикающие чанки) на обсидиановый пятачок. */
+    /**
+     * Телепорт игрока к площадке на обсидиановый пятачок. Чанки вокруг сайта
+     * форсируются и ДОжидаются: после дальнего tp область грузится лениво,
+     * и команды /fill//setblock молча отказывают («That position is not
+     * loaded») — источник флейков, пойманный этим стендом.
+     */
     private void moveTo(ClientGameTestContext context, TestSingleplayerContext sp, int x, int z) {
+        sp.getServer().runCommand(String.format("forceload add %d %d %d %d",
+                x - 16, z - 16, x + 24, z + 24));
+        boolean loaded = false;
+        for (int waited = 0; waited < 400 && !loaded; waited += 10) {
+            loaded = sp.getServer().computeOnServer(server ->
+                    server.overworld().isLoaded(new BlockPos(x, BY, z)));
+            if (!loaded) {
+                context.waitTicks(10);
+            }
+        }
+        assertThat(loaded, "Чанки площадки должны загрузиться после forceload");
         sp.getServer().runCommand(fill(x - 1, BY - 1, z - 1, x + 1, BY - 1, z + 1, "minecraft:obsidian"));
         sp.getServer().runCommand(String.format("tp @p %d %d %d", x, BY, z));
         context.waitTicks(10);
@@ -180,6 +208,63 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                 server.overworld().getBlockState(new BlockPos(rx, BY + 2, BZ)).isAir());
         assertThat(blocksGone, "Блоки ракеты должны подняться в сущность");
         log("блоки структуры изъяты из мира ✓");
+    }
+
+    // ---------- 4. Орбитальная пушка: межпространственный выстрел ----------
+
+    /**
+     * Пушка стоит НА ОРБИТЕ (spacereloaded:earth_orbit), цель — каменная
+     * платформа в оверворлде. Честная проверка US7: снаряд спавнится в целевом
+     * измерении, падает по баллистике ядра и выносит кратер по E = ½mv².
+     */
+    private void testOrbitalCannon(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int tx = BX + 120;
+        moveTo(context, sp, tx - 10, BZ);
+        // Мишень: каменная платформа 7×7 (moveTo уже форсировал чанки области)
+        sp.getServer().runCommand(fill(tx - 3, BY, BZ - 3, tx + 3, BY, BZ + 3, "minecraft:stone"));
+        context.waitTick();
+        boolean platformSolid = sp.getServer().computeOnServer(server ->
+                !server.overworld().getBlockState(new BlockPos(tx, BY, BZ)).isAir());
+        assertThat(platformSolid, "Мишень должна быть камнем ДО выстрела (иначе тест ложный)");
+
+        // Пушка на орбите: заряжаем лом, энергию и наводим напрямую через BE
+        String fired = sp.getServer().computeOnServer(server -> {
+            ServerLevel orbit = server.getLevel(ResourceKey.create(Registries.DIMENSION,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")));
+            if (orbit == null) {
+                return "нет измерения орбиты";
+            }
+            BlockPos cannonPos = new BlockPos(50, 120, 50);
+            orbit.setBlock(cannonPos, ModBlocks.ORBITAL_CANNON.defaultBlockState(), 3);
+            if (!(orbit.getBlockEntity(cannonPos) instanceof OrbitalCannonBlockEntity cannon)) {
+                return "нет BE пушки";
+            }
+            cannon.loadRod();
+            ((SimpleEnergyStorage) cannon.energyStorage()).amount =
+                    SpaceReloaded.config().cannonEnergyCapacity;
+            cannon.setTarget(GlobalPos.of(Level.OVERWORLD, new BlockPos(tx, BY, BZ)));
+            return cannon.tryFire(orbit).getString();
+        });
+        log("пушка: " + fired);
+        assertThat(fired.contains("impact"),
+                "Выстрел должен состояться (сообщение об успехе), получено: " + fired);
+
+        // Подлёт ~3.6 с; ждём кратер поллингом, следя за высотой снаряда
+        boolean crater = false;
+        for (int waited = 0; waited < 400 && !crater; waited += 20) {
+            context.waitTicks(20);
+            crater = sp.getServer().computeOnServer(server ->
+                    server.overworld().getBlockState(new BlockPos(tx, BY, BZ)).isAir());
+            double projY = sp.getServer().computeOnServer(server ->
+                    server.overworld().getEntities(
+                            EntityTypeTest.forClass(KineticProjectileEntity.class),
+                            new AABB(tx - 16, BY - 16, BZ - 16, tx + 16, BY + 600, BZ + 16),
+                            e -> true).stream()
+                            .mapToDouble(e -> e.getY()).findFirst().orElse(Double.NaN));
+            log(String.format("t=%d тиков: снаряд y=%.1f, кратер=%s", waited + 20, projY, crater));
+        }
+        assertThat(crater, "Кинетический удар должен вынести кратер в платформе");
+        log("межпространственный выстрел: кратер в оверворлде ✓");
     }
 
     // ---------- Утилиты ----------

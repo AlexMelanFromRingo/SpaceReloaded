@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:tungsten_ingot","spacereloaded:tungsten_ingot","spacereloaded:tungsten_ingot","spacereloaded:steel_ingot" ],
+	"result": { "id": "spacereloaded:tungsten_rod", "count": 2 }
+}

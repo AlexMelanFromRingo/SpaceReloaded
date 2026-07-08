@@ -68,6 +68,9 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.ROCKET_SEAT);
                         output.accept(ModBlocks.LAUNCH_PAD);
                         output.accept(ModBlocks.ASSEMBLY_PYLON);
+                        output.accept(ModBlocks.ORBITAL_CANNON);
+                        output.accept(ModItems.TUNGSTEN_ROD);
+                        output.accept(ModItems.TARGETING_DESIGNATOR);
                     })
                     .build());
 

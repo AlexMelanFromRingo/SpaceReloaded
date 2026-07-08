@@ -23,6 +23,11 @@ public final class FuelingHose {
 
     private static final Map<UUID, GlobalPos> LINKS = new HashMap<>();
 
+    /** SERVER_STOPPING: связки не должны протекать между мирами (integrated server). */
+    public static void clearAll() {
+        LINKS.clear();
+    }
+
     private FuelingHose() {
     }
 

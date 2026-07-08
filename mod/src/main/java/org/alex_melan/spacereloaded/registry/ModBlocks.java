@@ -162,6 +162,12 @@ public final class ModBlocks {
     public static final Block COMMAND_MODULE = register("command_module", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
+    /** Орбитальная кинетическая пушка (US7): работает только на орбите. */
+    public static final Block ORBITAL_CANNON = register("orbital_cannon",
+            org.alex_melan.spacereloaded.cannon.OrbitalCannonBlock::new,
+            BlockBehaviour.Properties.of().strength(6.0f, 1200.0f).sound(SoundType.NETHERITE_BLOCK)
+                    .requiresCorrectToolForDrops());
+
     /** Гидролоксовый двигатель: ниже тяга, выше Isp — для орбиты и Луны. */
     public static final Block HYDROLOX_ENGINE = register("hydrolox_engine", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)

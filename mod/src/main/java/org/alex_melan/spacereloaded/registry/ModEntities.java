@@ -32,6 +32,21 @@ public final class ModEntities {
                     .fireImmune()
                     .build(ROCKET_KEY));
 
+    public static final ResourceKey<EntityType<?>> KINETIC_PROJECTILE_KEY = ResourceKey.create(
+            Registries.ENTITY_TYPE,
+            Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "kinetic_projectile"));
+
+    /** Вольфрамовый лом в полёте (US7): большой tracking range — виден издалека. */
+    public static final EntityType<org.alex_melan.spacereloaded.cannon.KineticProjectileEntity> KINETIC_PROJECTILE =
+            Registry.register(BuiltInRegistries.ENTITY_TYPE, KINETIC_PROJECTILE_KEY,
+                    EntityType.Builder.of(org.alex_melan.spacereloaded.cannon.KineticProjectileEntity::new,
+                                    MobCategory.MISC)
+                            .sized(0.4f, 2.6f)
+                            .clientTrackingRange(24)
+                            .updateInterval(1)
+                            .fireImmune()
+                            .build(KINETIC_PROJECTILE_KEY));
+
     public static void init() {
         FabricEntityDataRegistry.register(
                 Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "compound_tag"),

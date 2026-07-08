@@ -1,0 +1,5 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [ "spacereloaded:tungsten_ingot","spacereloaded:tungsten_ingot","spacereloaded:tungsten_ingot","spacereloaded:tungsten_ingot","spacereloaded:steel_ingot","spacereloaded:steel_ingot","spacereloaded:steel_ingot","spacereloaded:titanium_alloy_ingot","spacereloaded:titanium_alloy_ingot" ],
+	"result": { "id": "spacereloaded:orbital_cannon", "count": 1 }
+}

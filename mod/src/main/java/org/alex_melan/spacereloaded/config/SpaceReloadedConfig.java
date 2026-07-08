@@ -77,6 +77,30 @@ public final class SpaceReloadedConfig {
     /** Радиус интерлока: люк не откроется, если другой открытый люк ближе (Чебышёв). */
     public int airlockInterlockRadius = 5;
 
+    // --- Орбитальная кинетическая пушка (US7) ---
+    /** Буфер энергии пушки, E. */
+    public long cannonEnergyCapacity = 200_000;
+    /** Стоимость выстрела, E (разгон лома до дульной скорости). */
+    public long cannonEnergyPerShot = 50_000;
+    /** Магазин: максимум ломов в пушке. */
+    public int cannonMaxRods = 16;
+    /** Масса вольфрамового лома, кг (~0.1 м³ вольфрама). */
+    public double cannonRodMassKg = 2000;
+    /** Высота входа снаряда в атмосферу над целью, м. */
+    public double cannonDropAltitude = 350;
+    /** Скорость, приданная пушкой (вниз), м/с. */
+    public double cannonMuzzleSpeed = 80;
+    /** Линейное сопротивление лома в атмосфере, 1/с (обтекаемый — почти 0). */
+    public double cannonDragCoeff = 0.01;
+    /** Игровой множитель радиуса кратера поверх E^(1/3)-подобия ядра. */
+    public double cannonCraterMultiplier = 2.0;
+    /** Жёсткий предел радиуса кратера, блоки (бюджет производительности). */
+    public int cannonMaxCraterRadius = 12;
+    /** Блоки с взрывостойкостью >= порога выживают в кратере (обсидиан — защита). */
+    public double cannonMaxBlockResistance = 100.0;
+    /** Кулдаун выстрела, тики (защита от случайного залпа). */
+    public int cannonCooldownTicks = 40;
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static SpaceReloadedConfig load(Path configDir) {

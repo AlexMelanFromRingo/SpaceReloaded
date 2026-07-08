@@ -109,6 +109,8 @@ public class SpaceReloaded implements ModInitializer {
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
 			ZoneManager.shutdown();
 			CableNetworkManager.clearAll();
+			org.alex_melan.spacereloaded.cannon.TargetingDesignatorItem.clearAll();
+			org.alex_melan.spacereloaded.rocket.FuelingHose.clearAll();
 		});
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
