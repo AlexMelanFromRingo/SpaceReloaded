@@ -179,6 +179,18 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
 
+    /** Грузовой отсек ракеты: 15 слотов, хопперы и погрузчик. */
+    public static final Block CARGO_HOLD = register("cargo_hold",
+            org.alex_melan.spacereloaded.rocket.CargoHoldBlock::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
+    /** Погрузчик: автоматическая погрузка/разгрузка припаркованного борта. */
+    public static final Block CARGO_LOADER = register("cargo_loader",
+            org.alex_melan.spacereloaded.rocket.CargoLoaderBlock::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
     /** Возвратная капсула (T075): лёгкий командный пост с теплозащитой. */
     public static final Block RETURN_CAPSULE = register("return_capsule", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 12.0f).sound(SoundType.METAL)

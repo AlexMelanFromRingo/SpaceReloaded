@@ -1,0 +1,5 @@
+{
+	"block": "spacereloaded:cargo_hold",
+	"mass_kg": 150.0,
+	"role": "hull"
+}

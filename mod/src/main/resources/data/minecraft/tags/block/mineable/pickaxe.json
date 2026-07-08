@@ -35,6 +35,8 @@
 		"spacereloaded:docking_clamp",
 		"spacereloaded:return_capsule",
 		"spacereloaded:landing_beacon",
-		"spacereloaded:mission_control"
+		"spacereloaded:mission_control",
+		"spacereloaded:cargo_hold",
+		"spacereloaded:cargo_loader"
 	]
 }

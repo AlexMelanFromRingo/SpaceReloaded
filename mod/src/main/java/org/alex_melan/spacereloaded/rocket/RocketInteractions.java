@@ -257,6 +257,20 @@ public final class RocketInteractions {
                 player.sendSystemMessage(Component.translatable(
                         "message.spacereloaded.rocket.mount_hint"));
 
+                // Груз из отсеков — в сущность (до изъятия блоков!)
+                java.util.List<net.minecraft.world.item.ItemStack> cargo = new java.util.ArrayList<>();
+                for (RocketAssembler.ScannedBlock block : ok.blocks()) {
+                    if (level.getBlockEntity(block.worldPos())
+                            instanceof CargoHoldBlockEntity hold) {
+                        for (int slot = 0; slot < hold.getContainerSize(); slot++) {
+                            net.minecraft.world.item.ItemStack stack = hold.getItem(slot);
+                            if (!stack.isEmpty()) {
+                                cargo.add(stack.copy());
+                            }
+                        }
+                        hold.clearContent();
+                    }
+                }
                 // Блоки — в сущность
                 for (RocketAssembler.ScannedBlock block : ok.blocks()) {
                     level.setBlock(block.worldPos(), Blocks.AIR.defaultBlockState(), LIFT_FLAGS);
@@ -272,6 +286,7 @@ public final class RocketInteractions {
                 rocket.setPos(ok.origin().getX() + sizeX / 2.0, ok.origin().getY(),
                         ok.origin().getZ() + sizeZ / 2.0);
                 rocket.setAssembly(RocketData.fromScan(ok.blocks(), performance.propellantMassKg()));
+                rocket.setCargo(cargo);
                 level.addFreshEntity(rocket);
                 level.playSound(null, ok.commandWorldPos(), SoundEvents.IRON_DOOR_OPEN,
                         SoundSource.BLOCKS, 1.5f, 0.7f);

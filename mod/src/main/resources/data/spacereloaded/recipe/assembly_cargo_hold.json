@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot",
+		"spacereloaded:titanium_alloy_ingot",
+		"minecraft:chest"
+	],
+	"result": {
+		"id": "spacereloaded:cargo_hold",
+		"count": 1
+	}
+}

@@ -76,6 +76,9 @@ public class RocketEntity extends Entity {
     /** Полётная программа: посадочный маяк (точка прибытия). */
     @org.jetbrains.annotations.Nullable
     private net.minecraft.core.GlobalPos programPad;
+    /** Груз (агрегат всех отсеков; раскладывается по ним при разборе). */
+    private final java.util.List<net.minecraft.world.item.ItemStack> cargoItems =
+            new java.util.ArrayList<>();
     private int destinationIndex;
 
     // Производные размеры (сервер и клиент)
@@ -215,6 +218,68 @@ public class RocketEntity extends Entity {
     /** Припаркована (не в полёте) — можно заправлять/разбирать. */
     public boolean isParked() {
         return !launched && rocketData != null;
+    }
+
+    /** Слоты груза: 15 на каждый грузовой отсек в структуре. */
+    public int cargoSlots() {
+        if (rocketData == null) {
+            return 0;
+        }
+        int holds = 0;
+        for (RocketData.Entry entry : rocketData.blocks()) {
+            if (entry.state().is(org.alex_melan.spacereloaded.registry.ModBlocks.CARGO_HOLD)) {
+                holds++;
+            }
+        }
+        return holds * CargoHoldBlockEntity.SLOTS;
+    }
+
+    /** Погрузка: мерж в существующие стеки, затем новые слоты. Возврат — остаток. */
+    public net.minecraft.world.item.ItemStack loadCargo(net.minecraft.world.item.ItemStack stack) {
+        if (stack.isEmpty()) {
+            return stack;
+        }
+        for (net.minecraft.world.item.ItemStack existing : cargoItems) {
+            if (net.minecraft.world.item.ItemStack.isSameItemSameComponents(existing, stack)) {
+                int room = existing.getMaxStackSize() - existing.getCount();
+                if (room > 0) {
+                    int moved = Math.min(room, stack.getCount());
+                    existing.grow(moved);
+                    stack.shrink(moved);
+                    if (stack.isEmpty()) {
+                        return net.minecraft.world.item.ItemStack.EMPTY;
+                    }
+                }
+            }
+        }
+        if (cargoItems.size() < cargoSlots()) {
+            cargoItems.add(stack.copy());
+            return net.minecraft.world.item.ItemStack.EMPTY;
+        }
+        return stack;
+    }
+
+    /** Разгрузка: последний стек (LIFO), пустой — если груза нет. */
+    public net.minecraft.world.item.ItemStack unloadCargo() {
+        if (cargoItems.isEmpty()) {
+            return net.minecraft.world.item.ItemStack.EMPTY;
+        }
+        return cargoItems.remove(cargoItems.size() - 1);
+    }
+
+    /** Всего предметов на борту (для ЦУП/тестов). */
+    public int cargoCount() {
+        return cargoItems.stream().mapToInt(net.minecraft.world.item.ItemStack::getCount).sum();
+    }
+
+    /** Сервер: загрузить груз при сборке (из отсеков-BE). */
+    public void setCargo(java.util.List<net.minecraft.world.item.ItemStack> items) {
+        cargoItems.clear();
+        for (net.minecraft.world.item.ItemStack stack : items) {
+            if (!stack.isEmpty()) {
+                cargoItems.add(stack);
+            }
+        }
     }
 
     /** Снимок структуры с ТЕКУЩИМ топливом (для стыковочных операций). */
@@ -783,7 +848,20 @@ public class RocketEntity extends Entity {
                     && level.getBlockEntity(target) instanceof FuelTankBlockEntity tank) {
                 tank.setPropellant(entry.capacityKg() * fraction, rocketFuelType());
             }
+            if (level.getBlockEntity(target) instanceof CargoHoldBlockEntity hold) {
+                for (int slot = 0; slot < hold.getContainerSize() && !cargoItems.isEmpty(); slot++) {
+                    if (hold.getItem(slot).isEmpty()) {
+                        hold.setItem(slot, cargoItems.remove(cargoItems.size() - 1));
+                    }
+                }
+            }
         }
+        // Отсеков не хватило (перегруз после стыковки) — честно высыпать
+        for (net.minecraft.world.item.ItemStack stack : cargoItems) {
+            net.minecraft.world.level.block.Block.popResource(level,
+                    blockPosition(), stack);
+        }
+        cargoItems.clear();
     }
 
     /** Циклический выбор цели перехода (список из профиля планеты). */
@@ -815,6 +893,8 @@ public class RocketEntity extends Entity {
         output.putBoolean("launched", launched);
         output.putBoolean("autopilot", autopilot);
         output.putBoolean("descent_mode", descentMode);
+        output.store("cargo", net.minecraft.world.item.ItemStack.CODEC.listOf(),
+                cargoItems.stream().filter(stack -> !stack.isEmpty()).toList());
         if (programPad != null) {
             output.putString("program_pad_dim", programPad.dimension().identifier().toString());
             output.putLong("program_pad_pos", programPad.pos().asLong());
@@ -846,6 +926,13 @@ public class RocketEntity extends Entity {
         this.launched = input.getBooleanOr("launched", false);
         this.autopilot = input.getBooleanOr("autopilot", false);
         this.descentMode = input.getBooleanOr("descent_mode", false);
+        cargoItems.clear();
+        input.read("cargo", net.minecraft.world.item.ItemStack.CODEC.listOf())
+                .ifPresent(list -> list.forEach(stack -> {
+                    if (!stack.isEmpty()) {
+                        cargoItems.add(stack);
+                    }
+                }));
         String padDim = input.getStringOr("program_pad_dim", "");
         if (!padDim.isEmpty()) {
             this.programPad = net.minecraft.core.GlobalPos.of(

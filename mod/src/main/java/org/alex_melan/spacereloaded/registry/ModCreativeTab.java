@@ -69,6 +69,8 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.DOCKING_CLAMP);
                         output.accept(ModBlocks.RETURN_CAPSULE);
                         output.accept(ModBlocks.LANDING_BEACON);
+                        output.accept(ModBlocks.CARGO_HOLD);
+                        output.accept(ModBlocks.CARGO_LOADER);
                         output.accept(ModBlocks.MISSION_CONTROL);
                         output.accept(ModItems.FLIGHT_PROGRAM);
                         output.accept(ModBlocks.LAUNCH_PAD);

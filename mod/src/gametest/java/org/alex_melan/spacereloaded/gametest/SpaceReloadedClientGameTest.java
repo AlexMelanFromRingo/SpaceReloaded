@@ -62,6 +62,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testDocking(context, sp);
             testScanAndProgram(context, sp);
             testBatteryBalancing(context, sp);
+            testCargoLoop(context, sp);
         }
     }
 
@@ -522,6 +523,66 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                 "После выравнивания заряды должны стоять на месте, было "
                         + settled[0] + "/" + settled[1] + ", стало " + later[0] + "/" + later[1]);
         log("карусели нет: заряды стабильны ✓");
+    }
+
+    // ---------- 8. Грузовой контур: сундук → погрузчик → борт → обратно ----------
+
+    private void testCargoLoop(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int cx = BX + 280;
+        moveTo(context, sp, cx - 5, BZ);
+        // Мини-ракета с грузовым отсеком + погрузчик с сундуком
+        sp.getServer().runCommand(fill(cx - 1, BY, BZ - 1, cx + 1, BY, BZ + 1, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(fill(cx - 2, BY + 1, BZ, cx - 2, BY + 5, BZ, "spacereloaded:assembly_pylon"));
+        sp.getServer().runCommand(set(cx - 2, BY, BZ, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(set(cx, BY + 1, BZ, "spacereloaded:rocket_engine"));
+        sp.getServer().runCommand(set(cx, BY + 2, BZ, "spacereloaded:cargo_hold"));
+        sp.getServer().runCommand(set(cx, BY + 3, BZ, "spacereloaded:command_module"));
+        sp.getServer().runCommand(set(cx + 3, BY, BZ, "spacereloaded:cargo_loader"));
+        sp.getServer().runCommand(set(cx + 4, BY, BZ, "minecraft:chest"));
+        context.waitTick();
+        sp.getServer().runOnServer(server -> {
+            if (server.overworld().getBlockEntity(new BlockPos(cx + 4, BY, BZ))
+                    instanceof net.minecraft.world.Container chest) {
+                chest.setItem(0, new ItemStack(ModItems.TITANIUM_INGOT, 10));
+            }
+        });
+        sp.getServer().runOnServer(server -> RocketInteractions.assembleFromPylon(
+                server.overworld(), new BlockPos(cx - 2, BY + 3, BZ),
+                server.getPlayerList().getPlayers().get(0)));
+        context.waitTicks(30); // погрузчик: раз в 10 тиков по стеку
+
+        AABB area = new AABB(cx - 8, BY - 2, BZ - 8, cx + 8, BY + 12, BZ + 8);
+        int loaded = sp.getServer().computeOnServer(server ->
+                server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                                area, RocketEntity::isParked).stream()
+                        .mapToInt(RocketEntity::cargoCount).sum());
+        assertThat(loaded == 10, "Погрузчик должен загрузить 10 слитков в борт, загружено: " + loaded);
+        log("погрузка: 10 слитков в борту ✓");
+
+        // Разгрузка обратно в сундук
+        sp.getServer().runOnServer(server -> {
+            if (server.overworld().getBlockEntity(new BlockPos(cx + 3, BY, BZ))
+                    instanceof org.alex_melan.spacereloaded.rocket.CargoLoaderBlockEntity loader) {
+                loader.cycleMode(); // LOAD -> UNLOAD
+            }
+        });
+        context.waitTicks(30);
+        int chestCount = sp.getServer().computeOnServer(server -> {
+            if (server.overworld().getBlockEntity(new BlockPos(cx + 4, BY, BZ))
+                    instanceof net.minecraft.world.Container chest) {
+                int total = 0;
+                for (int slot = 0; slot < chest.getContainerSize(); slot++) {
+                    total += chest.getItem(slot).getCount();
+                }
+                return total;
+            }
+            return 0;
+        });
+        assertThat(chestCount == 10, "Разгрузка должна вернуть 10 слитков в сундук, там: " + chestCount);
+        log("разгрузка: 10 слитков вернулись в сундук ✓");
+        sp.getServer().runOnServer(server ->
+                server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                        area, e -> true).forEach(Entity::discard));
     }
 
     // ---------- Утилиты ----------

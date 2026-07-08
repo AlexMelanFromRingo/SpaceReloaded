@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot",
+		"minecraft:hopper",
+		"minecraft:copper_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:cargo_loader",
+		"count": 1
+	}
+}

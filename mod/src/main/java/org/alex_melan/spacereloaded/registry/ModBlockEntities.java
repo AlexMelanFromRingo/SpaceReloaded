@@ -87,6 +87,16 @@ public final class ModBlockEntities {
                     org.alex_melan.spacereloaded.cannon.OrbitalCannonBlockEntity::new,
                     Set.of(ModBlocks.ORBITAL_CANNON)));
 
+    public static final BlockEntityType<org.alex_melan.spacereloaded.rocket.CargoHoldBlockEntity> CARGO_HOLD =
+            register("cargo_hold", new BlockEntityType<>(
+                    org.alex_melan.spacereloaded.rocket.CargoHoldBlockEntity::new,
+                    Set.of(ModBlocks.CARGO_HOLD)));
+
+    public static final BlockEntityType<org.alex_melan.spacereloaded.rocket.CargoLoaderBlockEntity> CARGO_LOADER =
+            register("cargo_loader", new BlockEntityType<>(
+                    org.alex_melan.spacereloaded.rocket.CargoLoaderBlockEntity::new,
+                    Set.of(ModBlocks.CARGO_LOADER)));
+
     public static void init() {
         // Публикация энергохранилищ в Fabric API lookup (решение D7: Team Reborn Energy)
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SOLAR_PANEL);
