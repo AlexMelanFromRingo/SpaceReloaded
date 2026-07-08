@@ -1,10 +1,17 @@
 {
 	"type": "minecraft:crafting_shaped",
-	"pattern": [ "III", "IFI", "SSS" ],
+	"pattern": [
+		"III",
+		"CFC",
+		"SSS"
+	],
 	"key": {
 		"I": "minecraft:iron_ingot",
+		"C": "minecraft:copper_ingot",
 		"F": "minecraft:furnace",
 		"S": "minecraft:smooth_stone"
 	},
-	"result": { "id": "spacereloaded:coal_generator" }
+	"result": {
+		"id": "spacereloaded:coal_generator"
+	}
 }

@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"minecraft:paper",
+		"minecraft:paper",
+		"minecraft:redstone",
+		"spacereloaded:steel_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:flight_program",
+		"count": 1
+	}
+}

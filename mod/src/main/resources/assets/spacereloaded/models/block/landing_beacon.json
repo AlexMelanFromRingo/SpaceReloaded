@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/cube_bottom_top",
+	"textures": {
+		"top": "spacereloaded:block/landing_beacon_top",
+		"side": "spacereloaded:block/landing_beacon_side",
+		"bottom": "spacereloaded:block/launch_pad_side"
+	}
+}

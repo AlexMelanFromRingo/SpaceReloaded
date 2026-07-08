@@ -47,6 +47,11 @@ public final class ModItems {
             properties -> new org.alex_melan.spacereloaded.cannon.TargetingDesignatorItem(
                     properties.stacksTo(1)));
 
+    /** Полётная программа: носитель маршрута для беспилотных рейсов. */
+    public static final Item FLIGHT_PROGRAM = register("flight_program",
+            properties -> new org.alex_melan.spacereloaded.rocket.FlightProgramItem(
+                    properties.stacksTo(1)));
+
     public static final Item RAW_TITANIUM = simple("raw_titanium");
     public static final Item RAW_TUNGSTEN = simple("raw_tungsten");
     public static final Item TITANIUM_INGOT = simple("titanium_ingot");

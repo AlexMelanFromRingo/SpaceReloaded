@@ -57,7 +57,11 @@ public class AssemblyPylonBlock extends Block {
             return InteractionResult.SUCCESS;
         }
         if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {
-            RocketInteractions.assembleFromPylon(serverLevel, pos, serverPlayer);
+            if (player.isSecondaryUseActive()) {
+                RocketInteractions.assembleFromPylon(serverLevel, pos, serverPlayer);
+            } else {
+                RocketInteractions.scanFromPylon(serverLevel, pos, serverPlayer);
+            }
         }
         return InteractionResult.SUCCESS_SERVER;
     }

@@ -27,6 +27,7 @@ import org.alex_melan.spacereloaded.registry.ModItems;
 import org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity;
 import org.alex_melan.spacereloaded.rocket.RocketEntity;
 import org.alex_melan.spacereloaded.rocket.RocketInteractions;
+import org.alex_melan.spacereloaded.registry.ModDataComponents;
 import org.alex_melan.spacereloaded.sealing.SealedZone;
 import org.alex_melan.spacereloaded.sealing.ZoneManager;
 import team.reborn.energy.api.base.SimpleEnergyStorage;
@@ -59,6 +60,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testRocketAssembly(context, sp);
             testOrbitalCannon(context, sp);
             testDocking(context, sp);
+            testScanAndProgram(context, sp);
         }
     }
 
@@ -390,6 +392,62 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         sp.getServer().runOnServer(server ->
                 server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
                         area, e -> true).forEach(Entity::discard));
+    }
+
+    // ---------- 6. Скан-отчёт и полётная программа ----------
+
+    private void testScanAndProgram(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int px = BX + 200;
+        moveTo(context, sp, px - 5, BZ);
+        sp.getServer().runCommand(fill(px - 1, BY, BZ - 1, px + 1, BY, BZ + 1, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(fill(px - 2, BY + 1, BZ, px - 2, BY + 4, BZ, "spacereloaded:assembly_pylon"));
+        sp.getServer().runCommand(set(px - 2, BY, BZ, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(set(px, BY + 1, BZ, "spacereloaded:rocket_engine"));
+        sp.getServer().runCommand(set(px, BY + 2, BZ, "spacereloaded:fuel_tank"));
+        sp.getServer().runCommand(set(px, BY + 3, BZ, "spacereloaded:command_module"));
+        context.waitTick();
+
+        // Скан без сборки: отчёт с TWR, блоки остаются в мире
+        String scan = sp.getServer().computeOnServer(server ->
+                RocketInteractions.scanFromPylon(server.overworld(),
+                        new BlockPos(px - 2, BY + 2, BZ),
+                        server.getPlayerList().getPlayers().get(0)).getString());
+        assertThat(scan.contains("TWR"), "Скан должен вернуть сводку с TWR, получено: " + scan);
+        boolean stillThere = sp.getServer().computeOnServer(server ->
+                !server.overworld().getBlockState(new BlockPos(px, BY + 2, BZ)).isAir());
+        assertThat(stillThere, "Скан не должен собирать ракету (блоки остаются)");
+        log("скан-отчёт: " + scan + " · блоки на месте ✓");
+
+        // Сборка + полётная программа (цель: орбита, маяк на орбите)
+        sp.getServer().runOnServer(server -> RocketInteractions.assembleFromPylon(
+                server.overworld(), new BlockPos(px - 2, BY + 2, BZ),
+                server.getPlayerList().getPlayers().get(0)));
+        context.waitTicks(5);
+        String installed = sp.getServer().computeOnServer(server -> {
+            List<RocketEntity> rockets = server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class),
+                    new AABB(px - 8, BY - 2, BZ - 8, px + 8, BY + 12, BZ + 8),
+                    RocketEntity::isParked);
+            if (rockets.isEmpty()) {
+                return "ракета не собралась";
+            }
+            ItemStack program = new ItemStack(ModItems.FLIGHT_PROGRAM);
+            program.set(ModDataComponents.PROGRAM_DESTINATION,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit"));
+            program.set(ModDataComponents.PROGRAM_PAD, GlobalPos.of(
+                    ResourceKey.create(Registries.DIMENSION,
+                            Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")),
+                    new BlockPos(60, 101, 60)));
+            return rockets.get(0).installProgram(server.overworld(), program).getString();
+        });
+        assertThat(!installed.contains("unreachable") && !installed.contains("недостижима")
+                        && !installed.contains("не собралась"),
+                "Программа должна загрузиться, получено: " + installed);
+        log("полётная программа: " + installed + " ✓");
+        sp.getServer().runOnServer(server ->
+                server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                        new AABB(px - 8, BY - 2, BZ - 8, px + 8, BY + 12, BZ + 8),
+                        e -> true).forEach(Entity::discard));
     }
 
     // ---------- Утилиты ----------

@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot",
+		"minecraft:redstone",
+		"minecraft:glowstone_dust"
+	],
+	"result": {
+		"id": "spacereloaded:landing_beacon",
+		"count": 1
+	}
+}

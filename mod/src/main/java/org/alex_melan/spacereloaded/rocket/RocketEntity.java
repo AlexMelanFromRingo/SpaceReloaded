@@ -71,6 +71,11 @@ public class RocketEntity extends Entity {
     private boolean fuelOutWarned;
     /** Беспилотный набор высоты до орбиты (запуск спутников/грузов). */
     private boolean autopilot;
+    /** Фаза беспилотной посадки после прибытия «снижение» (suicide-burn-lite). */
+    private boolean descentMode;
+    /** Полётная программа: посадочный маяк (точка прибытия). */
+    @org.jetbrains.annotations.Nullable
+    private net.minecraft.core.GlobalPos programPad;
     private int destinationIndex;
 
     // Производные размеры (сервер и клиент)
@@ -310,6 +315,16 @@ public class RocketEntity extends Entity {
             }
             return InteractionResult.SUCCESS;
         }
+        // Полётная программа: ПКМ по припаркованной — загрузить маршрут
+        if (player.getItemInHand(hand).is(org.alex_melan.spacereloaded.registry.ModItems.FLIGHT_PROGRAM)) {
+            if (!level().isClientSide() && isParked()
+                    && player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.sendSystemMessage(
+                        installProgram((ServerLevel) level(), player.getItemInHand(hand)));
+                return InteractionResult.SUCCESS_SERVER;
+            }
+            return InteractionResult.SUCCESS;
+        }
         // Заправочный рукав: ПКМ — закачать из подключённого бака, sneak+ПКМ — слить
         if (player.getItemInHand(hand).is(org.alex_melan.spacereloaded.registry.ModItems.FUELING_HOSE)) {
             if (!level().isClientSide() && !launched
@@ -393,7 +408,8 @@ public class RocketEntity extends Entity {
             sprint = input.sprint();
             autopilot = false; // ручное управление приоритетнее
         } else if (autopilot && launched) {
-            jump = true; // беспилотный набор высоты
+            // Набор высоты — полная тяга; посадка — гасить скорость свыше 12 м/с
+            jump = !descentMode || flight.vel().y() < -12.0;
         }
 
         if (!launched) {
@@ -493,10 +509,21 @@ public class RocketEntity extends Entity {
         double targetZ = getZ() * scale;
         boolean toOrbit = "platform".equals(targetProfile.get().arrival());
 
+        // Полётная программа: прибытие к посадочному маяку
+        boolean padArrival = programPad != null
+                && programPad.dimension().equals(target.dimension());
+        if (padArrival) {
+            targetX = programPad.pos().getX() + 0.5;
+            targetZ = programPad.pos().getZ() + 0.5;
+        }
+
         double targetY;
         if (toOrbit) {
-            targetY = org.alex_melan.spacereloaded.planet.PlanetManager
-                    .ensureOrbitPlatform(target, targetX, targetZ);
+            targetY = padArrival ? programPad.pos().getY() + 1
+                    : org.alex_melan.spacereloaded.planet.PlanetManager
+                            .ensureOrbitPlatform(target, targetX, targetZ);
+        } else if (padArrival) {
+            targetY = programPad.pos().getY() + 180.0;
         } else {
             targetY = Math.max(180.0, targetProfile.get().transitionAltitude() - 20.0);
         }
@@ -535,6 +562,9 @@ public class RocketEntity extends Entity {
         this.launched = !parked;
         if (parked) {
             autopilot = false;
+            descentMode = false;
+        } else if (autopilot) {
+            descentMode = true; // беспилотная посадка к маяку
         }
         entityData.set(DATA_LAUNCHED, launched);
         entityData.set(DATA_PITCH, 0.0f);
@@ -542,10 +572,45 @@ public class RocketEntity extends Entity {
         setDeltaMovement(Vec3.ZERO);
     }
 
+    /** Загрузка полётной программы: цель + посадочный маяк. */
+    public Component installProgram(ServerLevel level, net.minecraft.world.item.ItemStack program) {
+        var destination = program.get(
+                org.alex_melan.spacereloaded.registry.ModDataComponents.PROGRAM_DESTINATION);
+        var pad = program.get(
+                org.alex_melan.spacereloaded.registry.ModDataComponents.PROGRAM_PAD);
+        if (destination == null && pad == null) {
+            return Component.translatable("message.spacereloaded.program.empty");
+        }
+        if (destination != null) {
+            var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
+            int index = -1;
+            if (profile.isPresent()) {
+                var targets = profile.get().transitionTargets();
+                for (int i = 0; i < targets.size(); i++) {
+                    var target = org.alex_melan.spacereloaded.planet.PlanetManager
+                            .profileById(level, targets.get(i));
+                    if (target.isPresent() && target.get().dimension().equals(destination)) {
+                        index = i;
+                        break;
+                    }
+                }
+            }
+            if (index < 0) {
+                return Component.translatable("message.spacereloaded.program.unreachable",
+                        destination.toString());
+            }
+            destinationIndex = index;
+            entityData.set(DATA_DESTINATION, destinationIndex);
+        }
+        this.programPad = pad;
+        return Component.translatable("message.spacereloaded.program.installed",
+                FlightProgramItem.describe(program));
+    }
+
     /**
-     * Беспилотный старт (T-спутник): полная тяга до высоты перехода, цель —
-     * текущая (только прибытие «платформа»: снижение без пилота запрещено —
-     * автопилот v1 не умеет ретро-burn).
+     * Беспилотный старт (T-спутник): полная тяга до высоты перехода. Цели
+     * с прибытием «снижение» разрешены при заданном посадочном маяке —
+     * автопилот выполнит suicide-burn-lite над ним.
      */
     private Component startAutopilot(ServerLevel level) {
         var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
@@ -555,7 +620,8 @@ public class RocketEntity extends Entity {
         var targetId = profile.get().transitionTargets()
                 .get(Math.floorMod(destinationIndex, profile.get().transitionTargets().size()));
         var target = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, targetId);
-        if (target.isEmpty() || !"platform".equals(target.get().arrival())) {
+        boolean descendTarget = target.isPresent() && !"platform".equals(target.get().arrival());
+        if (target.isEmpty() || (descendTarget && programPad == null)) {
             return Component.translatable("message.spacereloaded.rocket.autopilot_only_orbit");
         }
         RocketPerformance performance = PerformanceCalculator.calculate(structure, 9.81);
@@ -683,6 +749,7 @@ public class RocketEntity extends Entity {
         if (impactSpeed <= (hasCapsule ? CAPSULE_CRASH_SPEED : CRASH_SPEED)) {
             launched = false;
             autopilot = false;
+            descentMode = false;
             entityData.set(DATA_LAUNCHED, false);
             entityData.set(DATA_PITCH, 0.0f);
             entityData.set(DATA_ROLL, 0.0f);
@@ -747,6 +814,11 @@ public class RocketEntity extends Entity {
         }
         output.putBoolean("launched", launched);
         output.putBoolean("autopilot", autopilot);
+        output.putBoolean("descent_mode", descentMode);
+        if (programPad != null) {
+            output.putString("program_pad_dim", programPad.dimension().identifier().toString());
+            output.putLong("program_pad_pos", programPad.pos().asLong());
+        }
         output.putInt("destination", destinationIndex);
         output.putDouble("vel_x", flight == null ? 0 : flight.vel().x());
         output.putDouble("vel_y", flight == null ? 0 : flight.vel().y());
@@ -773,6 +845,15 @@ public class RocketEntity extends Entity {
         });
         this.launched = input.getBooleanOr("launched", false);
         this.autopilot = input.getBooleanOr("autopilot", false);
+        this.descentMode = input.getBooleanOr("descent_mode", false);
+        String padDim = input.getStringOr("program_pad_dim", "");
+        if (!padDim.isEmpty()) {
+            this.programPad = net.minecraft.core.GlobalPos.of(
+                    net.minecraft.resources.ResourceKey.create(
+                            net.minecraft.core.registries.Registries.DIMENSION,
+                            net.minecraft.resources.Identifier.parse(padDim)),
+                    BlockPos.of(input.getLongOr("program_pad_pos", 0L)));
+        }
         this.destinationIndex = input.getIntOr("destination", 0);
         entityData.set(DATA_LAUNCHED, launched);
     }

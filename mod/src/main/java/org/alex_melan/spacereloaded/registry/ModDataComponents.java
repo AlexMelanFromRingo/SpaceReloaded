@@ -21,6 +21,18 @@ public final class ModDataComponents {
     /** Привязанная пушка: пульт дистанционно перенаводит её и стреляет. */
     public static final DataComponentType<GlobalPos> BOUND_CANNON = register("bound_cannon");
 
+    /** Полётная программа: планета назначения. */
+    public static final DataComponentType<Identifier> PROGRAM_DESTINATION =
+            Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,
+                    Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "program_destination"),
+                    new DataComponentType.Builder<Identifier>()
+                            .persistent(Identifier.CODEC)
+                            .networkSynchronized(Identifier.STREAM_CODEC)
+                            .build());
+
+    /** Полётная программа: посадочный маяк (точка прибытия). */
+    public static final DataComponentType<GlobalPos> PROGRAM_PAD = register("program_pad");
+
     private static DataComponentType<GlobalPos> register(String name) {
         return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,
                 Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name),

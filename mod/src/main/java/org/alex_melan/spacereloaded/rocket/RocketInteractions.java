@@ -31,8 +31,72 @@ public final class RocketInteractions {
     }
 
     /** Сборка со стартовой площадки: ПКМ по пилону (T051, AR-стиль). */
+    /**
+     * Скан-отчёт без сборки (AR-стиль): Δv, TWR, масса, предупреждения и
+     * оценка Δv до первой цели профиля. Возвращает сводку (для стенда).
+     */
+    public static Component scanFromPylon(ServerLevel level, BlockPos pylonPos, ServerPlayer player) {
+        formComplex(level, pylonPos);
+        RocketAssembler.Result result = scanVolumeAtPylon(level, pylonPos, player);
+        if (result == null) {
+            return Component.translatable("message.spacereloaded.assembly.no_pad");
+        }
+        switch (result) {
+            case RocketAssembler.Result.Error(String key, BlockPos pos) -> {
+                Component message = Component.translatable(key,
+                        pos.getX() + " " + pos.getY() + " " + pos.getZ());
+                player.sendSystemMessage(message);
+                return message;
+            }
+            case RocketAssembler.Result.Ok ok -> {
+                RocketPerformance performance =
+                        PerformanceCalculator.calculate(ok.structure(), 9.81);
+                Component stats = Component.translatable("message.spacereloaded.rocket.stats",
+                        String.format(Locale.ROOT, "%.0f", performance.totalMassKg()),
+                        String.format(Locale.ROOT, "%.0f", performance.dryMassKg()),
+                        String.format(Locale.ROOT, "%.0f", performance.totalThrustN() / 1000),
+                        String.format(Locale.ROOT, "%.2f", performance.twr()),
+                        String.format(Locale.ROOT, "%.0f", performance.deltaV()));
+                player.sendSystemMessage(Component.translatable(
+                        "message.spacereloaded.scan.header", ok.blocks().size()));
+                player.sendSystemMessage(stats);
+                var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
+                if (profile.isPresent()) {
+                    // Оценка: сверхминимум sqrt(2gh) + 15% на гравитационные потери
+                    double needed = 1.15 * Math.sqrt(2 * profile.get().gravity()
+                            * profile.get().transitionAltitude());
+                    player.sendSystemMessage(Component.translatable(
+                            "message.spacereloaded.scan.dv_needed",
+                            String.format(Locale.ROOT, "%.0f", needed),
+                            performance.deltaV() >= needed ? "✔" : "✘"));
+                }
+                for (PerformanceWarning warning : performance.warnings()) {
+                    player.sendSystemMessage(Component.translatable(
+                            "message.spacereloaded.rocket.warning." + warning.name()));
+                }
+                player.sendSystemMessage(Component.translatable("message.spacereloaded.scan.hint"));
+                return stats;
+            }
+        }
+    }
+
+    /** Общий каркас скана площадки от пилона (null — нет площадки). */
+    private static RocketAssembler.Result scanVolumeAtPylon(ServerLevel level, BlockPos pylonPos,
+                                                            ServerPlayer player) {
+        return runPylonScan(level, pylonPos, player);
+    }
+
     public static void assembleFromPylon(ServerLevel level, BlockPos pylonPos, ServerPlayer player) {
         formComplex(level, pylonPos);
+        RocketAssembler.Result scanned = runPylonScan(level, pylonPos, player);
+        if (scanned != null) {
+            finishAssembly(level, player, scanned);
+        }
+    }
+
+    /** Каркас: колонна пилона + флудфилл плит + скан объёма (null — нет пада). */
+    private static RocketAssembler.Result runPylonScan(ServerLevel level, BlockPos pylonPos,
+                                                       ServerPlayer player) {
         // Низ колонны пилона
         BlockPos base = pylonPos;
         while (level.getBlockState(base.below()).is(org.alex_melan.spacereloaded.registry.ModBlocks.ASSEMBLY_PYLON)) {
@@ -59,7 +123,7 @@ public final class RocketInteractions {
         }
         if (padSeed == null) {
             player.sendSystemMessage(Component.translatable("message.spacereloaded.assembly.no_pad"));
-            return;
+            return null;
         }
         // Клетки площадки: BFS по плитам в горизонтальной плоскости
         java.util.List<BlockPos> cells = new java.util.ArrayList<>();
@@ -82,9 +146,8 @@ public final class RocketInteractions {
         PartPropertiesResolver resolver = new PartPropertiesResolver(level);
         int minY = padSeed.getY() + 1;
         int maxY = padSeed.getY() + Math.max(1, height);
-        RocketAssembler.Result result = RocketAssembler.scanVolume(level, cells, minY, maxY,
+        return RocketAssembler.scanVolume(level, cells, minY, maxY,
                 resolver, SpaceReloaded.config().rocketMaxBlocks);
-        finishAssembly(level, player, result);
     }
 
     /**

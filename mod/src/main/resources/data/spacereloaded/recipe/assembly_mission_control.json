@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot",
+		"minecraft:copper_ingot",
+		"minecraft:redstone",
+		"spacereloaded:hermetic_glass"
+	],
+	"result": {
+		"id": "spacereloaded:mission_control",
+		"count": 1
+	}
+}

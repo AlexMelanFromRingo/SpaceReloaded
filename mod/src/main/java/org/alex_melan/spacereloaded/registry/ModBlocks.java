@@ -168,6 +168,17 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(6.0f, 1200.0f).sound(SoundType.NETHERITE_BLOCK)
                     .requiresCorrectToolForDrops());
 
+    /** Посадочный маяк: точка прибытия полётной программы (беспилотные рейсы). */
+    public static final Block LANDING_BEACON = register("landing_beacon", Block::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 9.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops().lightLevel(state -> 10));
+
+    /** ЦУП: телеметрия всех бортов в радиусе (v1 — отчёт в чат, GUI позже). */
+    public static final Block MISSION_CONTROL = register("mission_control",
+            org.alex_melan.spacereloaded.rocket.MissionControlBlock::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
     /** Возвратная капсула (T075): лёгкий командный пост с теплозащитой. */
     public static final Block RETURN_CAPSULE = register("return_capsule", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 12.0f).sound(SoundType.METAL)
