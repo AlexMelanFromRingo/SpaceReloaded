@@ -61,6 +61,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testOrbitalCannon(context, sp);
             testDocking(context, sp);
             testScanAndProgram(context, sp);
+            testBatteryBalancing(context, sp);
         }
     }
 
@@ -448,6 +449,79 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                 server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
                         new AABB(px - 8, BY - 2, BZ - 8, px + 8, BY + 12, BZ + 8),
                         e -> true).forEach(Entity::discard));
+    }
+
+    // ---------- 7. Батареи: выравнивание заряда в сети ----------
+
+    private void testBatteryBalancing(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int bx2 = BX + 240;
+        moveTo(context, sp, bx2 - 3, BZ);
+        // Полная батарея — кабель — пустая батарея
+        sp.getServer().runCommand(set(bx2, BY, BZ, "spacereloaded:battery"));
+        sp.getServer().runCommand(set(bx2 + 1, BY, BZ, "spacereloaded:energy_cable"));
+        sp.getServer().runCommand(set(bx2 + 2, BY, BZ, "spacereloaded:battery"));
+        context.waitTick();
+        long capacity = sp.getServer().computeOnServer(server -> {
+            var be = server.overworld().getBlockEntity(new BlockPos(bx2, BY, BZ));
+            if (be instanceof org.alex_melan.spacereloaded.energy.BatteryBlockEntity battery) {
+                var storage = (SimpleEnergyStorage) battery.energyStorage();
+                storage.amount = storage.getCapacity();
+                return storage.getCapacity();
+            }
+            return 0L;
+        });
+        assertThat(capacity > 0, "Батарея должна найтись и зарядиться");
+
+        // Ждём выравнивания (пропускная способность сети ограничена)
+        long[] amounts = {0, 0};
+        for (int waited = 0; waited < 2400; waited += 100) {
+            context.waitTicks(100);
+            long[] current = sp.getServer().computeOnServer(server -> {
+                long a = 0;
+                long b = 0;
+                if (server.overworld().getBlockEntity(new BlockPos(bx2, BY, BZ))
+                        instanceof org.alex_melan.spacereloaded.energy.BatteryBlockEntity left) {
+                    a = left.energyStorage().getAmount();
+                }
+                if (server.overworld().getBlockEntity(new BlockPos(bx2 + 2, BY, BZ))
+                        instanceof org.alex_melan.spacereloaded.energy.BatteryBlockEntity right) {
+                    b = right.energyStorage().getAmount();
+                }
+                return new long[]{a, b};
+            });
+            amounts = current;
+            if (Math.abs(amounts[0] - amounts[1]) <= capacity * 6 / 100) {
+                break;
+            }
+        }
+        long total = amounts[0] + amounts[1];
+        assertThat(Math.abs(total - capacity) <= capacity / 100,
+                "Энергия должна сохраниться (" + capacity + "), получено: " + total);
+        assertThat(Math.abs(amounts[0] - amounts[1]) <= capacity * 6 / 100,
+                "Батареи должны выровняться (гистерезис 5%), получено: "
+                        + amounts[0] + " и " + amounts[1]);
+        log("батареи выровнялись: " + amounts[0] + " / " + amounts[1] + " ✓");
+
+        // Покой после выравнивания: заряды больше не меняются (нет карусели)
+        long[] settled = amounts;
+        context.waitTicks(60);
+        long[] later = sp.getServer().computeOnServer(server -> {
+            long a = 0;
+            long b = 0;
+            if (server.overworld().getBlockEntity(new BlockPos(bx2, BY, BZ))
+                    instanceof org.alex_melan.spacereloaded.energy.BatteryBlockEntity left) {
+                a = left.energyStorage().getAmount();
+            }
+            if (server.overworld().getBlockEntity(new BlockPos(bx2 + 2, BY, BZ))
+                    instanceof org.alex_melan.spacereloaded.energy.BatteryBlockEntity right) {
+                b = right.energyStorage().getAmount();
+            }
+            return new long[]{a, b};
+        });
+        assertThat(later[0] == settled[0] && later[1] == settled[1],
+                "После выравнивания заряды должны стоять на месте, было "
+                        + settled[0] + "/" + settled[1] + ", стало " + later[0] + "/" + later[1]);
+        log("карусели нет: заряды стабильны ✓");
     }
 
     // ---------- Утилиты ----------

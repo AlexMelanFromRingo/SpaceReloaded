@@ -120,59 +120,101 @@ public final class CableNetworkManager {
         }
     }
 
+    /**
+     * Фазовая раздача (фикс «карусели» между батареями): хранилища делятся на
+     * генераторы (только отдача), потребителей (только приём) и буферы-батареи
+     * (и то и другое). Порядок: генераторы → потребители, излишек → батареи
+     * (наименее заполненная первой), дефицит → из батарей (наиболее заполненная
+     * первой). В конце буферы ВЫРАВНИВАЮТСЯ к средней доле заряда — но только
+     * при разнице долей > 5% (гистерезис против вечного перекачивания).
+     */
     private static void distributeEnergy(ServerLevel level, CableNetwork network, long budget) {
-        List<EnergyStorage> providers = new ArrayList<>();
-        List<EnergyStorage> receivers = new ArrayList<>();
+        List<EnergyStorage> sources = new ArrayList<>();
+        List<EnergyStorage> sinks = new ArrayList<>();
+        List<EnergyStorage> buffers = new ArrayList<>();
 
         var it = network.cables.iterator();
         while (it.hasNext()) {
             long cable = it.nextLong();
             BlockPos cablePos = BlockPos.of(cable);
             // Хранилище на самой клетке сети (РИТЭГ-кондуит) — тоже участник
-            EnergyStorage onCell = EnergyStorage.SIDED.find(level, cablePos, Direction.UP);
-            if (onCell != null) {
-                if (onCell.supportsExtraction() && !providers.contains(onCell)) {
-                    providers.add(onCell);
-                }
-                if (onCell.supportsInsertion() && !receivers.contains(onCell)) {
-                    receivers.add(onCell);
-                }
-            }
+            classify(EnergyStorage.SIDED.find(level, cablePos, Direction.UP),
+                    sources, sinks, buffers);
             for (Direction dir : Direction.values()) {
                 BlockPos neighborPos = cablePos.relative(dir);
                 if (network.cables.contains(neighborPos.asLong())) {
                     continue;
                 }
-                EnergyStorage storage = EnergyStorage.SIDED.find(level, neighborPos, dir.getOpposite());
-                if (storage == null) {
-                    continue;
-                }
-                if (storage.supportsExtraction() && !providers.contains(storage)) {
-                    providers.add(storage);
-                }
-                if (storage.supportsInsertion() && !receivers.contains(storage)) {
-                    receivers.add(storage);
-                }
+                classify(EnergyStorage.SIDED.find(level, neighborPos, dir.getOpposite()),
+                        sources, sinks, buffers);
             }
         }
-        if (providers.isEmpty() || receivers.isEmpty()) {
+        if (sources.isEmpty() && buffers.isEmpty()) {
             return;
         }
         try (Transaction transaction = Transaction.openOuter()) {
-            outer:
-            for (EnergyStorage provider : providers) {
-                for (EnergyStorage receiver : receivers) {
-                    if (provider == receiver) {
-                        continue;
-                    }
-                    budget -= EnergyStorageUtil.move(provider, receiver, budget, transaction);
-                    if (budget <= 0) {
-                        break outer;
-                    }
+            // 1. Генераторы кормят машины напрямую
+            budget = moveAll(sources, sinks, budget, transaction);
+            // 2. Излишек генерации — в батареи, наименее заполненная первой
+            buffers.sort(java.util.Comparator.comparingDouble(CableNetworkManager::fillFraction));
+            budget = moveAll(sources, buffers, budget, transaction);
+            // 3. Дефицит машин покрывают батареи, наиболее заполненная первой
+            java.util.Collections.reverse(buffers);
+            budget = moveAll(buffers, sinks, budget, transaction);
+            // 4. Выравнивание батарей между собой (гистерезис 5%)
+            if (buffers.size() >= 2 && budget > 0) {
+                EnergyStorage rich = buffers.get(0);
+                EnergyStorage poor = buffers.get(buffers.size() - 1);
+                double richFraction = fillFraction(rich);
+                double poorFraction = fillFraction(poor);
+                if (richFraction - poorFraction > 0.05 && poor.getCapacity() > 0) {
+                    double average = (richFraction + poorFraction) / 2.0;
+                    long toMove = (long) ((average - poorFraction) * poor.getCapacity());
+                    EnergyStorageUtil.move(rich, poor, Math.min(budget, toMove), transaction);
                 }
             }
             transaction.commit();
         }
+    }
+
+    private static void classify(EnergyStorage storage, List<EnergyStorage> sources,
+                                 List<EnergyStorage> sinks, List<EnergyStorage> buffers) {
+        if (storage == null) {
+            return;
+        }
+        boolean extracts = storage.supportsExtraction();
+        boolean inserts = storage.supportsInsertion();
+        List<EnergyStorage> bucket = extracts && inserts ? buffers
+                : extracts ? sources
+                : inserts ? sinks
+                : null;
+        if (bucket != null && !bucket.contains(storage)) {
+            bucket.add(storage);
+        }
+    }
+
+    private static double fillFraction(EnergyStorage storage) {
+        long capacity = storage.getCapacity();
+        return capacity <= 0 ? 0 : (double) storage.getAmount() / capacity;
+    }
+
+    private static long moveAll(List<EnergyStorage> from, List<EnergyStorage> to,
+                                long budget, Transaction transaction) {
+        if (budget <= 0) {
+            return 0;
+        }
+        for (EnergyStorage provider : from) {
+            for (EnergyStorage receiver : to) {
+                if (provider == receiver) {
+                    continue;
+                }
+                budget -= EnergyStorageUtil.move(provider, receiver, budget, transaction);
+                if (budget <= 0) {
+                    return 0;
+                }
+            }
+        }
+        return budget;
     }
 
     private static void dropNetworkAt(LevelNetworks ln, long pos) {
