@@ -105,6 +105,7 @@
 	"message.spacereloaded.pump.mode.off": "Колонка: ВЫКЛ",
 	"message.spacereloaded.rocket.assembled": "Ракета собрана: %s блоков",
 	"message.spacereloaded.rocket.destination": "Цель: %s",
+	"message.spacereloaded.rocket.fuel_out": "⚠ Топливо исчерпано — баллистическое падение",
 	"message.spacereloaded.rocket.mount_hint": "ПКМ по ракете — сесть; Прыжок = зажигание, Присед = отсечка двигателей",
 	"message.spacereloaded.rocket.reached_orbit": "Орбита достигнута! Вы на своей орбитальной платформе — стройте станцию. Для схода с орбиты — зажигание и набор высоты.",
 	"message.spacereloaded.rocket.reentry": "Вход в атмосферу! Держите Прыжок для тормозного импульса — касание мягче 15 м/с.",

@@ -67,6 +67,7 @@ public class RocketEntity extends Entity {
     private FlightState flight;
     private boolean launched;
     private boolean prevSprint;
+    private boolean fuelOutWarned;
     private int destinationIndex;
 
     // Производные размеры (сервер и клиент)
@@ -249,6 +250,7 @@ public class RocketEntity extends Entity {
             flight = new FlightState(flight.pos(), flight.vel(), flight.pitch(), flight.roll(),
                     flight.pitchRate(), flight.rollRate(), flight.propellantKg() + accepted);
             entityData.set(DATA_FUEL, (float) flight.propellantKg());
+            fuelOutWarned = false;
         }
         return accepted;
     }
@@ -368,6 +370,38 @@ public class RocketEntity extends Entity {
             entityData.set(DATA_FUEL, (float) flight.propellantKg());
         }
 
+        // T056: полётные ticket'ы (persist + keep-dimension-active) — полёт
+        // завершится и без игрока рядом, и после перезапуска сервера
+        if (tickCount % 20 == 1) {
+            org.alex_melan.spacereloaded.planet.ModTickets.holdStrike(serverLevel, blockPosition(), 1);
+        }
+
+        double speedNow = new Vec3(flight.vel().x(), flight.vel().y(), flight.vel().z()).length();
+        // T062: топливо кончилось — дальше только честная баллистика
+        if (flight.propellantKg() <= 0.5 && !fuelOutWarned) {
+            fuelOutWarned = true;
+            if (pilot != null) {
+                pilot.sendOverlayMessage(Component.translatable("message.spacereloaded.rocket.fuel_out"));
+            }
+        }
+        // Эффекты: факел двигателя при тяге, плазменный след на скорости
+        if (jump && flight.propellantKg() > 0) {
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.FLAME,
+                    getX(), getY() - 0.2, getZ(), 6, halfX() * 0.4, 0.2, halfZ() * 0.4, 0.02);
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE,
+                    getX(), getY() - 0.5, getZ(), 3, halfX() * 0.5, 0.3, halfZ() * 0.5, 0.02);
+        }
+        if (speedNow > 40) {
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.FLAME,
+                    getX(), getY() + (flight.vel().y() > 0 ? sizeY : 0.0), getZ(),
+                    8, halfX() * 0.5, 0.4, halfZ() * 0.5, 0.05);
+        }
+
+        // T055: интерпенетрация ведущих граней корпуса (бок/верх) — крушение
+        if (hullCollides(serverLevel)) {
+            crashInto(serverLevel);
+            return;
+        }
         if (flight.vel().y() <= 0 && touchesGround(serverLevel)) {
             land(serverLevel);
             return;
@@ -493,6 +527,66 @@ public class RocketEntity extends Entity {
     }
 
     /**
+     * T055: проверка интерпенетрации ведущих граней корпуса с миром.
+     * Семплируются только блоки грани по направлению скорости (низ —
+     * отдельно в {@link #touchesGround}): дёшево и ловит боковой снос
+     * в скалу и взлёт в перекрытие.
+     */
+    private boolean hullCollides(ServerLevel level) {
+        var vel = flight.vel();
+        boolean px = vel.x() > 2;
+        boolean nx = vel.x() < -2;
+        boolean pz = vel.z() > 2;
+        boolean nz = vel.z() < -2;
+        boolean py = vel.y() > 2;
+        if (!(px || nx || pz || nz || py)) {
+            return false;
+        }
+        int maxX = (int) sizeX - 1;
+        int maxY = (int) sizeY - 1;
+        int maxZ = (int) sizeZ - 1;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (RocketData.Entry entry : rocketData.blocks()) {
+            int lx = PackedPos.unpackX(entry.localPos());
+            int ly = PackedPos.unpackY(entry.localPos());
+            int lz = PackedPos.unpackZ(entry.localPos());
+            boolean leading = (px && lx == maxX) || (nx && lx == 0)
+                    || (pz && lz == maxZ) || (nz && lz == 0)
+                    || (py && ly == maxY);
+            if (!leading) {
+                continue;
+            }
+            cursor.set(
+                    (int) Math.floor(getX() - halfX() + lx + 0.5),
+                    (int) Math.floor(getY() + ly + 0.5),
+                    (int) Math.floor(getZ() - halfZ() + lz + 0.5));
+            BlockState state = level.getBlockState(cursor);
+            if (!state.isAir() && !state.getCollisionShape(level, cursor).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Крушение (T055): разрушения из кинетической энергии E = ½mv²
+     * (масса — честная стартовая из ядра), через штатный explosion-pipeline
+     * (в отличие от кратера пушки — тут именно взрыв конструкции с топливом).
+     */
+    private void crashInto(ServerLevel level) {
+        double speed = new Vec3(flight.vel().x(), flight.vel().y(), flight.vel().z()).length();
+        double massKg = PerformanceCalculator.calculate(structure, 9.81).totalMassKg();
+        double energyJ = org.alex_melan.spacereloaded.core.ballistics.ImpactEnergy
+                .kineticEnergyJ(massKg, speed);
+        float power = (float) Math.clamp(org.alex_melan.spacereloaded.core.ballistics.ImpactEnergy
+                .craterRadiusBlocks(energyJ), 2.0, 8.0);
+        ejectPassengers();
+        disassembleInto(level);
+        level.explode(this, getX(), getY() + comY, getZ(), power, Level.ExplosionInteraction.BLOCK);
+        discard();
+    }
+
+    /**
      * Касание земли: мягко — ракета остаётся собранной сущностью (парковка,
      * как в AR/GC); жёстко — разбор с взрывом. Разбор вручную: sneak+ПКМ.
      */
@@ -509,11 +603,7 @@ public class RocketEntity extends Entity {
                     SoundSource.NEUTRAL, 2.0f, 0.8f);
             return;
         }
-        ejectPassengers();
-        disassembleInto(level);
-        float power = (float) Math.min(4.0, impactSpeed / 5.0);
-        level.explode(this, getX(), getY(), getZ(), power, Level.ExplosionInteraction.BLOCK);
-        discard();
+        crashInto(level);
     }
 
     /** Разбор в блоки: остаток топлива честно возвращается в баки (US6). */

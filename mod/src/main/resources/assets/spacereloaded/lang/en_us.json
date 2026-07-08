@@ -105,6 +105,7 @@
 	"message.spacereloaded.pump.mode.off": "Pump: OFF",
 	"message.spacereloaded.rocket.assembled": "Rocket assembled: %s blocks",
 	"message.spacereloaded.rocket.destination": "Destination: %s",
+	"message.spacereloaded.rocket.fuel_out": "⚠ Propellant exhausted — ballistic fall",
 	"message.spacereloaded.rocket.mount_hint": "Right-click the rocket to board; Jump = ignition, Sneak = engine cutoff",
 	"message.spacereloaded.rocket.reached_orbit": "Orbit reached! You are on your orbital pad — build your station. Ignite again and climb to deorbit.",
 	"message.spacereloaded.rocket.reentry": "Atmospheric reentry! Hold Jump for the retro burn — touch down below 15 m/s.",
