@@ -38,6 +38,7 @@
 		"spacereloaded:mission_control",
 		"spacereloaded:cargo_hold",
 		"spacereloaded:cargo_loader",
-		"spacereloaded:vent_grate"
+		"spacereloaded:vent_grate",
+		"spacereloaded:telemetry_screen"
 	]
 }

@@ -80,6 +80,7 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.CARGO_HOLD);
                         output.accept(ModBlocks.CARGO_LOADER);
                         output.accept(ModBlocks.MISSION_CONTROL);
+                        output.accept(ModBlocks.TELEMETRY_SCREEN);
                         output.accept(ModItems.FLIGHT_PROGRAM);
                         output.accept(ModBlocks.LAUNCH_PAD);
                         output.accept(ModBlocks.ASSEMBLY_PYLON);

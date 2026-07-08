@@ -65,6 +65,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testCargoLoop(context, sp);
             testMeteor(context, sp);
             testRedstoneAirlock(context, sp);
+            testTelemetryScreen(context, sp);
         }
     }
 
@@ -672,6 +673,40 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                         .getValue(org.alex_melan.spacereloaded.sealing.HermeticHatchBlock.OPEN));
         assertThat(closed, "Люк должен закрыться при снятии сигнала");
         log("шлюз: снятие сигнала закрыло люк ✓");
+    }
+
+    // ---------- 11. Экран телеметрии: статус зоны ----------
+
+    private void testTelemetryScreen(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int tsx = BX - 30;
+        moveTo(context, sp, tsx - 4, BZ);
+        // Герметичный куб + экран рядом
+        sp.getServer().runCommand(fill(tsx, BY, BZ, tsx + 4, BY + 4, BZ + 4, "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(fill(tsx + 1, BY + 1, BZ + 1, tsx + 3, BY + 3, BZ + 3, "minecraft:air"));
+        sp.getServer().runCommand(set(tsx + 2, BY + 1, BZ + 2, "spacereloaded:atmosphere_controller"));
+        sp.getServer().runCommand(set(tsx + 1, BY + 1, BZ + 2, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(tsx + 6, BY + 1, BZ + 2, "spacereloaded:telemetry_screen"));
+        // Ждём: зона SEALED, экран показывает status=1
+        int sealedStatus = 0;
+        for (int waited = 0; waited < 300 && sealedStatus != 1; waited += 10) {
+            context.waitTicks(10);
+            sealedStatus = sp.getServer().computeOnServer(server ->
+                    server.overworld().getBlockState(new BlockPos(tsx + 6, BY + 1, BZ + 2))
+                            .getValue(org.alex_melan.spacereloaded.sealing.TelemetryScreenBlock.STATUS));
+        }
+        assertThat(sealedStatus == 1, "Экран должен показать ЗАМКНУТО (1), получено: " + sealedStatus);
+        log("экран телеметрии: ЗАМКНУТО ✓");
+        // Пробить куб — экран должен переключиться на УТЕЧКУ (2)
+        sp.getServer().runCommand(set(tsx + 2, BY + 4, BZ + 2, "minecraft:air"));
+        int leakStatus = 0;
+        for (int waited = 0; waited < 300 && leakStatus != 2; waited += 10) {
+            context.waitTicks(10);
+            leakStatus = sp.getServer().computeOnServer(server ->
+                    server.overworld().getBlockState(new BlockPos(tsx + 6, BY + 1, BZ + 2))
+                            .getValue(org.alex_melan.spacereloaded.sealing.TelemetryScreenBlock.STATUS));
+        }
+        assertThat(leakStatus == 2, "Экран должен показать УТЕЧКУ (2), получено: " + leakStatus);
+        log("экран телеметрии: УТЕЧКА ✓");
     }
 
     // ---------- Утилиты ----------

@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:hermetic_glass",
+		"minecraft:redstone",
+		"minecraft:copper_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:telemetry_screen",
+		"count": 1
+	}
+}

@@ -196,6 +196,14 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
 
+    /** Экран телеметрии: настенная панель, светится по статусу зоны. */
+    public static final Block TELEMETRY_SCREEN = register("telemetry_screen",
+            org.alex_melan.spacereloaded.sealing.TelemetryScreenBlock::new,
+            BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(
+                            org.alex_melan.spacereloaded.sealing.TelemetryScreenBlock.STATUS) > 0 ? 7 : 0));
+
     /** Возвратная капсула (T075): лёгкий командный пост с теплозащитой. */
     public static final Block RETURN_CAPSULE = register("return_capsule", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 12.0f).sound(SoundType.METAL)

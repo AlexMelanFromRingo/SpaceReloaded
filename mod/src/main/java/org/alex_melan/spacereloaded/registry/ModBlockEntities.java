@@ -97,6 +97,11 @@ public final class ModBlockEntities {
                     org.alex_melan.spacereloaded.rocket.CargoLoaderBlockEntity::new,
                     Set.of(ModBlocks.CARGO_LOADER)));
 
+    public static final BlockEntityType<org.alex_melan.spacereloaded.sealing.TelemetryScreenBlockEntity> TELEMETRY_SCREEN =
+            register("telemetry_screen", new BlockEntityType<>(
+                    org.alex_melan.spacereloaded.sealing.TelemetryScreenBlockEntity::new,
+                    Set.of(ModBlocks.TELEMETRY_SCREEN)));
+
     public static void init() {
         // Публикация энергохранилищ в Fabric API lookup (решение D7: Team Reborn Energy)
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SOLAR_PANEL);
