@@ -20,8 +20,7 @@ actual part masses, and a lopsided rocket tips over on ascent.
 </p>
 
 <p align="center">
-  <b>📖 <a href="https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html">Recipe book</a></b>
-  — every recipe rendered as cards, from crushing to the assembly table.
+  <b><a href="https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html">Recipe book</a></b>: every recipe rendered as cards, from crushing to the assembly table.
 </p>
 
 ## What it does
@@ -88,7 +87,7 @@ Requires JDK 25 (Temurin).
 ```bash
 ./gradlew build                     # everything plus unit tests
 ./gradlew :core:test                # physics core tests, no Minecraft
-./gradlew :mod:runClientGametest    # E2E rig: real client, 6 scenarios, ~60 s
+./gradlew :mod:runClientGametest    # E2E rig: real client, 12 scenarios, ~3 min
 ./gradlew :mod:runClient            # dev client
 ```
 

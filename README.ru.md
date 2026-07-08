@@ -20,8 +20,7 @@
 </p>
 
 <p align="center">
-  <b>📖 <a href="https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html">Книга рецептов</a></b>
-  — все рецепты карточками, от дробления до сборочного стола.
+  <b><a href="https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html">Книга рецептов</a></b>: все рецепты карточками, от дробления до сборочного стола.
 </p>
 
 ## Что внутри
@@ -91,7 +90,7 @@
 ```bash
 ./gradlew build                     # всё плюс юнит-тесты
 ./gradlew :core:test                # тесты физического ядра, без Minecraft
-./gradlew :mod:runClientGametest    # E2E-стенд: реальный клиент, 6 сценариев, ~60 с
+./gradlew :mod:runClientGametest    # E2E-стенд: реальный клиент, 12 сценариев, ~3 мин
 ./gradlew :mod:runClient            # дев-клиент
 ```
 
