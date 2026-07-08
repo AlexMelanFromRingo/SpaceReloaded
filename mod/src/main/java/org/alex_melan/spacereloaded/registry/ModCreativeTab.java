@@ -33,6 +33,9 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.CREATIVE_POWER);
                         output.accept(ModItems.OXYGEN_MASK);
                         output.accept(ModItems.OXYGEN_CANISTER);
+                        output.accept(ModItems.LEAK_SCANNER);
+                        output.accept(ModItems.EMPTY_CAN);
+                        output.accept(ModItems.CANNED_RATION);
                         output.accept(ModItems.SPACE_SUIT_CHESTPLATE);
                         output.accept(ModItems.SPACE_SUIT_LEGGINGS);
                         output.accept(ModItems.SPACE_SUIT_BOOTS);

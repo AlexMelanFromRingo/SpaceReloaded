@@ -64,6 +64,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testBatteryBalancing(context, sp);
             testCargoLoop(context, sp);
             testMeteor(context, sp);
+            testRedstoneAirlock(context, sp);
         }
     }
 
@@ -113,6 +114,12 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         assertThat(leaked == SealingStatus.LEAK || leaked == SealingStatus.UNBOUNDED,
                 "Диагональная щель должна давать утечку, получено: " + leaked);
         log("диагональная щель → " + leaked + " ✓");
+        int leakPts = sp.getServer().computeOnServer(server -> {
+            var zone = ZoneManager.zoneAt(server.overworld(), new BlockPos(BX + 2, BY + 1, BZ + 2));
+            return zone == null ? 0 : zone.leakPoints().size();
+        });
+        assertThat(leakPts > 0, "Сканер: у утечки должны быть точки пробоя, получено: " + leakPts);
+        log("точки пробоя для сканера: " + leakPts + " ✓");
 
         // Починка — снова герметичен
         sp.getServer().runCommand(set(BX + 4, BY + 4, BZ + 4, "spacereloaded:hull_plating"));
@@ -637,6 +644,34 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                         EntityTypeTest.forClass(net.minecraft.world.entity.item.ItemEntity.class),
                         new AABB(mx - 12, BY - 12, BZ - 12, mx + 12, BY + 12, BZ + 12),
                         e -> true).forEach(net.minecraft.world.entity.Entity::discard));
+    }
+
+    // ---------- 10. Шлюз по редстоуну ----------
+
+    private void testRedstoneAirlock(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int ax = BX + 360;
+        moveTo(context, sp, ax - 5, BZ);
+        sp.getServer().runCommand(set(ax, BY, BZ, "spacereloaded:hermetic_hatch"));
+        context.waitTick();
+        // Подать сигнал — редстоун-блок вплотную
+        sp.getServer().runCommand(set(ax + 1, BY, BZ, "minecraft:redstone_block"));
+        boolean opened = false;
+        for (int waited = 0; waited < 120 && !opened; waited += 10) {
+            context.waitTicks(10);
+            opened = sp.getServer().computeOnServer(server ->
+                    server.overworld().getBlockState(new BlockPos(ax, BY, BZ))
+                            .getValue(org.alex_melan.spacereloaded.sealing.HermeticHatchBlock.OPEN));
+        }
+        assertThat(opened, "Люк должен открыться по редстоун-сигналу");
+        log("шлюз: редстоун открыл люк ✓");
+        // Снять сигнал — мгновенное закрытие
+        sp.getServer().runCommand(set(ax + 1, BY, BZ, "minecraft:air"));
+        context.waitTicks(10);
+        boolean closed = sp.getServer().computeOnServer(server ->
+                !server.overworld().getBlockState(new BlockPos(ax, BY, BZ))
+                        .getValue(org.alex_melan.spacereloaded.sealing.HermeticHatchBlock.OPEN));
+        assertThat(closed, "Люк должен закрыться при снятии сигнала");
+        log("шлюз: снятие сигнала закрыло люк ✓");
     }
 
     // ---------- Утилиты ----------

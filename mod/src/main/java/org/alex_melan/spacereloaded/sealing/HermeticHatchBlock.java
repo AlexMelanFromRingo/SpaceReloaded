@@ -88,21 +88,53 @@ public class HermeticHatchBlock extends Block {
         if (anyCycling) {
             return InteractionResult.SUCCESS_SERVER; // цикл уже идёт
         }
-        if (findOpenHatchNearby(serverLevel, pos, group)) {
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.sendOverlayMessage(
-                        Component.translatable("message.spacereloaded.airlock_interlock"));
-            }
-            level.playSound(null, pos, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 0.5f, 1.6f);
-            return InteractionResult.SUCCESS_SERVER;
+        if (!beginCycle(serverLevel, pos, group) && player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.sendOverlayMessage(
+                    Component.translatable("message.spacereloaded.airlock_interlock"));
         }
-        // Цикл выравнивания давления — вся группа мигает, тикаем по кликнутому блоку
+        return InteractionResult.SUCCESS_SERVER;
+    }
+
+    /**
+     * Запуск цикла выравнивания давления (общий для ПКМ и редстоуна).
+     * @return false, если интерлок не пустил (рядом открыт другой люк)
+     */
+    private boolean beginCycle(ServerLevel level, BlockPos pos, List<BlockPos> group) {
+        if (findOpenHatchNearby(level, pos, group)) {
+            level.playSound(null, pos, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 0.5f, 1.6f);
+            return false;
+        }
         for (BlockPos member : group) {
-            serverLevel.setBlock(member, serverLevel.getBlockState(member).setValue(CYCLING, true), 3);
+            level.setBlock(member, level.getBlockState(member).setValue(CYCLING, true), 3);
         }
         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.6f, 1.4f);
-        serverLevel.scheduleTick(pos, this, SpaceReloaded.config().airlockCycleTicks);
-        return InteractionResult.SUCCESS_SERVER;
+        level.scheduleTick(pos, this, SpaceReloaded.config().airlockCycleTicks);
+        return true;
+    }
+
+    /**
+     * Редстоун-управление шлюзом (UX-обвязка): сигнал открывает группу через
+     * цикл (с интерлоком), снятие сигнала — мгновенно закрывает. Клик по люку
+     * работает как прежде; редстоун — для автоматики шлюзовых камер.
+     */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block sourceBlock,
+                                   net.minecraft.world.level.redstone.Orientation orientation,
+                                   boolean movedByPiston) {
+        super.neighborChanged(state, level, pos, sourceBlock, orientation, movedByPiston);
+        if (level.isClientSide() || !(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        boolean powered = serverLevel.hasNeighborSignal(pos);
+        boolean open = state.getValue(OPEN);
+        boolean cycling = state.getValue(CYCLING);
+        List<BlockPos> group = collectGroup(serverLevel, pos);
+        if (powered && !open && !cycling) {
+            beginCycle(serverLevel, pos, group);
+        } else if (!powered && open) {
+            setGroup(serverLevel, group, false, false);
+            serverLevel.playSound(null, pos, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 1.0f, 1.0f);
+        }
     }
 
     @Override

@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"minecraft:redstone",
+		"spacereloaded:hermetic_glass",
+		"minecraft:copper_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:leak_scanner",
+		"count": 1
+	}
+}

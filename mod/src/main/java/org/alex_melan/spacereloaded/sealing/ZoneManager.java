@@ -115,6 +115,20 @@ public final class ZoneManager {
         return levelZones(level).zones.get(controllerPos);
     }
 
+    /** Ближайшая зона к точке (по контроллеру) в пределах радиуса — для сканера. */
+    public static SealedZone nearestZone(ServerLevel level, BlockPos pos, int radius) {
+        SealedZone best = null;
+        double bestSq = (double) radius * radius;
+        for (var entry : levelZones(level).zones.entrySet()) {
+            double distSq = entry.getKey().distSqr(pos);
+            if (distSq <= bestSq) {
+                bestSq = distSq;
+                best = entry.getValue();
+            }
+        }
+        return best;
+    }
+
     // ---------- Режим вакуума (debug; позже — из профиля планеты) ----------
 
     public static boolean isVacuumWorld(ServerLevel level) {
@@ -236,8 +250,14 @@ public final class ZoneManager {
         if (zone != null && error == null) {
             boolean wasSealed = zone.isSealed();
             removeFromIndex(lz, zone);
+            org.alex_melan.spacereloaded.core.geometry.LongHashSet leaks =
+                    new org.alex_melan.spacereloaded.core.geometry.LongHashSet(
+                            computation.result().leakPoints().size()
+                                    + computation.result().escapePoints().size() + 1);
+            leaks.addAll(computation.result().leakPoints());
+            leaks.addAll(computation.result().escapePoints());
             zone.update(computation.result().status(), computation.result().volume(),
-                    computation.footprint());
+                    computation.footprint(), leaks);
             addToIndex(lz, zone);
 
             BlockEntity blockEntity = level.getBlockEntity(controllerPos);

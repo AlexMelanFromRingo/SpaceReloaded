@@ -8,6 +8,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.component.UseRemainder;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.equipment.Equippable;
@@ -72,6 +75,20 @@ public final class ModItems {
 
     /** Метеоритное железо (US: метеориты) — падает в кратере, ISRU-ниша железа. */
     public static final Item METEORIC_IRON = simple("meteoric_iron");
+
+    /** Пустая консервная банка — тара для рационов (возвращается после еды). */
+    public static final Item EMPTY_CAN = simple("empty_can");
+
+    /** Консервированный рацион: сытная еда для дальних миссий, оставляет банку. */
+    public static final Item CANNED_RATION = register("canned_ration", properties -> new Item(properties
+            .stacksTo(16)
+            .food(new FoodProperties.Builder().nutrition(8).saturationModifier(0.9f).build())
+            .component(DataComponents.USE_REMAINDER, new UseRemainder(new ItemStackTemplate(EMPTY_CAN)))));
+
+    /** Сканер утечек (обвязка герметичности): указывает на пробой в зоне. */
+    public static final Item LEAK_SCANNER = register("leak_scanner",
+            properties -> new org.alex_melan.spacereloaded.sealing.LeakScannerItem(
+                    properties.stacksTo(1)));
 
     public static final Item RAW_TITANIUM = simple("raw_titanium");
     public static final Item RAW_TUNGSTEN = simple("raw_tungsten");

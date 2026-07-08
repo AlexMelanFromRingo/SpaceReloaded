@@ -1,0 +1,12 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"ingredients": [
+		"spacereloaded:empty_can",
+		"minecraft:cooked_beef",
+		"minecraft:cooked_beef"
+	],
+	"result": {
+		"id": "spacereloaded:canned_ration",
+		"count": 1
+	}
+}

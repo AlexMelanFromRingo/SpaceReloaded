@@ -15,6 +15,8 @@ public final class SealedZone {
     private LongHashSet volume = new LongHashSet(1);
     /** Все индексируемые ячейки: объём + 26-граница + точки утечки. */
     private LongHashSet footprint = new LongHashSet(1);
+    /** Точки пробоя (LEAK/UNBOUNDED) — куда указывает сканер утечек. */
+    private LongHashSet leakPoints = new LongHashSet(1);
 
     public SealedZone(BlockPos controllerPos) {
         this.controllerPos = controllerPos;
@@ -40,10 +42,16 @@ public final class SealedZone {
         return footprint;
     }
 
-    void update(SealingStatus status, LongHashSet volume, LongHashSet footprint) {
+    public LongHashSet leakPoints() {
+        return leakPoints;
+    }
+
+    void update(SealingStatus status, LongHashSet volume, LongHashSet footprint,
+                LongHashSet leakPoints) {
         this.status = status;
         this.volume = volume;
         this.footprint = footprint;
+        this.leakPoints = leakPoints;
     }
 
     /** Граница зоны: непроницаемые 26-соседи всех ячеек объёма. Считается в фоне. */
