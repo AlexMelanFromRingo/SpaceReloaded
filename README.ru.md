@@ -73,7 +73,7 @@
 
 ## Документация
 
-- [Игровой гайд](docs/GUIDE.ru.md): управление, заправка, кислород,
+- [Игровой гайд](https://alexmelanfromringo.github.io/SpaceReloaded/): управление, заправка, кислород,
   стыковка, беспилотные рейсы, пушка.
 - [Книга рецептов](https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html):
   все рецепты карточками, от дробления до сборочного стола.

@@ -70,7 +70,7 @@ with nobody around and survive server restarts mid-air.
 
 ## Documentation
 
-- [Player guide](docs/GUIDE.ru.md): controls, fueling, oxygen, docking,
+- [Player guide](https://alexmelanfromringo.github.io/SpaceReloaded/): controls, fueling, oxygen, docking,
   unmanned flights, the cannon (Russian).
 - [Recipe book](https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html):
   every recipe rendered as cards, from crushing to the assembly table.
