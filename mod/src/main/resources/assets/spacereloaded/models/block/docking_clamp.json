@@ -1,0 +1,7 @@
+{
+	"parent": "minecraft:block/cube_column",
+	"textures": {
+		"end": "spacereloaded:block/docking_clamp_end",
+		"side": "spacereloaded:block/docking_clamp_side"
+	}
+}

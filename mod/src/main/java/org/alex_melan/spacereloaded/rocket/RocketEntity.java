@@ -209,6 +209,32 @@ public class RocketEntity extends Entity {
         return !launched && rocketData != null;
     }
 
+    /** Снимок структуры с ТЕКУЩИМ топливом (для стыковочных операций). */
+    public RocketData rocketDataForDocking() {
+        return new RocketData(rocketData.blocks(), flight == null ? 0 : flight.propellantKg());
+    }
+
+    /** Локальный Y стыковочного узла в ячейке клика (допуск ±1), если есть. */
+    private java.util.OptionalInt clampCellAt(Vec3 hitPos) {
+        if (rocketData == null) {
+            return java.util.OptionalInt.empty();
+        }
+        int lx = (int) Math.floor(hitPos.x - (getX() - halfX()));
+        int ly = (int) Math.floor(hitPos.y - getY());
+        int lz = (int) Math.floor(hitPos.z - (getZ() - halfZ()));
+        for (RocketData.Entry entry : rocketData.blocks()) {
+            if (!entry.role().equals("clamp")) {
+                continue;
+            }
+            if (Math.abs(PackedPos.unpackX(entry.localPos()) - lx) <= 1
+                    && Math.abs(PackedPos.unpackY(entry.localPos()) - ly) <= 1
+                    && Math.abs(PackedPos.unpackZ(entry.localPos()) - lz) <= 1) {
+                return java.util.OptionalInt.of(PackedPos.unpackY(entry.localPos()));
+            }
+        }
+        return java.util.OptionalInt.empty();
+    }
+
     /** Текущий запас топлива, кг. */
     public double propellantKg() {
         return flight == null ? 0 : flight.propellantKg();
@@ -285,8 +311,20 @@ public class RocketEntity extends Entity {
             return InteractionResult.SUCCESS;
         }
         if (player.isSecondaryUseActive()) {
-            // Sneak+ПКМ по припаркованной ракете — разобрать в блоки
+            // Sneak+ПКМ: по стыковочному узлу — расстыковка/стыковка (US6),
+            // по остальному корпусу — разобрать в блоки
             if (!level().isClientSide() && !launched && rocketData != null) {
+                var clampCell = clampCellAt(hitPos);
+                if (clampCell.isPresent() && player instanceof ServerPlayer serverPlayer) {
+                    int clampY = clampCell.getAsInt();
+                    boolean hasLower = rocketData.blocks().stream()
+                            .anyMatch(e -> PackedPos.unpackY(e.localPos()) < clampY);
+                    Component result = hasLower
+                            ? DockingSystem.undock((ServerLevel) level(), this, clampY)
+                            : DockingSystem.dock((ServerLevel) level(), this, clampY);
+                    serverPlayer.sendSystemMessage(result);
+                    return InteractionResult.SUCCESS_SERVER;
+                }
                 ejectPassengers();
                 disassembleInto((ServerLevel) level());
                 discard();

@@ -168,6 +168,11 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(6.0f, 1200.0f).sound(SoundType.NETHERITE_BLOCK)
                     .requiresCorrectToolForDrops());
 
+    /** Стыковочный узел (US6): плоскость разделения ступеней ракеты. */
+    public static final Block DOCKING_CLAMP = register("docking_clamp", Block::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
     /** Гидролоксовый двигатель: ниже тяга, выше Isp — для орбиты и Луны. */
     public static final Block HYDROLOX_ENGINE = register("hydrolox_engine", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)

@@ -1,0 +1,5 @@
+{
+	"block": "spacereloaded:docking_clamp",
+	"mass_kg": 300.0,
+	"role": "clamp"
+}

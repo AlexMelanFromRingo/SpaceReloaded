@@ -10,6 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.entity.EntityTypeTest;
@@ -57,6 +58,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testCrusher(context, sp);
             testRocketAssembly(context, sp);
             testOrbitalCannon(context, sp);
+            testDocking(context, sp);
         }
     }
 
@@ -300,6 +302,94 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         }
         assertThat(remoteCrater, "Дистанционный выстрел должен вынести кратер");
         log("пульт: привязка + дистанционный выстрел ✓");
+    }
+
+    // ---------- 5. Стыковка: расстыковка/стыковка по узлу (US6) ----------
+
+    private void testDocking(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int dx = BX + 160;
+        moveTo(context, sp, dx - 5, BZ);
+        // Двухступенчатая: [двигатель|бак|кресло] + узел + [бак|модуль]
+        sp.getServer().runCommand(fill(dx - 1, BY, BZ - 1, dx + 1, BY, BZ + 1, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(fill(dx - 2, BY + 1, BZ, dx - 2, BY + 7, BZ, "spacereloaded:assembly_pylon"));
+        sp.getServer().runCommand(set(dx - 2, BY, BZ, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(set(dx, BY + 1, BZ, "spacereloaded:rocket_engine"));
+        sp.getServer().runCommand(set(dx, BY + 2, BZ, "spacereloaded:fuel_tank"));
+        sp.getServer().runCommand(set(dx, BY + 3, BZ, "spacereloaded:rocket_seat"));
+        sp.getServer().runCommand(set(dx, BY + 4, BZ, "spacereloaded:docking_clamp"));
+        sp.getServer().runCommand(set(dx, BY + 5, BZ, "spacereloaded:fuel_tank"));
+        sp.getServer().runCommand(set(dx, BY + 6, BZ, "spacereloaded:command_module"));
+        context.waitTick();
+        sp.getServer().runOnServer(server -> {
+            if (server.overworld().getBlockEntity(new BlockPos(dx, BY + 2, BZ))
+                    instanceof FuelTankBlockEntity tank) {
+                tank.setPropellant(1000.0, "spacereloaded:kerolox");
+            }
+            if (server.overworld().getBlockEntity(new BlockPos(dx, BY + 5, BZ))
+                    instanceof FuelTankBlockEntity tank) {
+                tank.setPropellant(1000.0, "spacereloaded:kerolox");
+            }
+        });
+        sp.getServer().runOnServer(server -> RocketInteractions.assembleFromPylon(
+                server.overworld(), new BlockPos(dx - 2, BY + 4, BZ),
+                server.getPlayerList().getPlayers().get(0)));
+        context.waitTicks(5);
+
+        AABB area = new AABB(dx - 10, BY - 2, BZ - 10, dx + 10, BY + 16, BZ + 10);
+        // Расстыковка по узлу
+        String undockResult = sp.getServer().computeOnServer(server -> {
+            List<RocketEntity> rockets = server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class), area, RocketEntity::isParked);
+            if (rockets.size() != 1) {
+                return "ожидалась 1 ракета, найдено " + rockets.size();
+            }
+            RocketEntity rocket = rockets.get(0);
+            int clampY = org.alex_melan.spacereloaded.rocket.DockingSystem
+                    .clampLocalY(rocket.rocketDataForDocking()).orElse(-1);
+            if (clampY < 0) {
+                return "узел не найден в структуре";
+            }
+            return org.alex_melan.spacereloaded.rocket.DockingSystem
+                    .undock(server.overworld(), rocket, clampY).getString();
+        });
+        context.waitTicks(5);
+        List<RocketEntity> split = sp.getServer().computeOnServer(server ->
+                server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                        area, RocketEntity::isParked));
+        assertThat(split.size() == 2, "После расстыковки должно быть 2 аппарата ("
+                + undockResult + "), найдено: " + split.size());
+        log("расстыковка: " + undockResult + " ✓");
+
+        // Стыковка обратно: у носителя узел — нижний ряд (ниже ничего)
+        String dockResult = sp.getServer().computeOnServer(server -> {
+            List<RocketEntity> rockets = server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class), area, RocketEntity::isParked);
+            for (RocketEntity candidate : rockets) {
+                var clamp = org.alex_melan.spacereloaded.rocket.DockingSystem
+                        .clampLocalY(candidate.rocketDataForDocking());
+                if (clamp.isPresent()) {
+                    return org.alex_melan.spacereloaded.rocket.DockingSystem
+                            .dock(server.overworld(), candidate, clamp.getAsInt()).getString();
+                }
+            }
+            return "носитель с узлом не найден";
+        });
+        context.waitTicks(5);
+        List<RocketEntity> merged = sp.getServer().computeOnServer(server ->
+                server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                        area, RocketEntity::isParked));
+        assertThat(merged.size() == 1, "После стыковки должен остаться 1 аппарат ("
+                + dockResult + "), найдено: " + merged.size());
+        double fuel = sp.getServer().computeOnServer(server ->
+                server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                        area, RocketEntity::isParked).get(0).propellantKg());
+        assertThat(Math.abs(fuel - 2000.0) < 1.0,
+                "Топливо после стыковки должно суммироваться (2000 кг), получено: " + fuel);
+        log("стыковка: " + dockResult + " · топливо " + fuel + " кг ✓");
+        // Убрать аппарат, чтобы не мешал будущим сценариям
+        sp.getServer().runOnServer(server ->
+                server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                        area, e -> true).forEach(Entity::discard));
     }
 
     // ---------- Утилиты ----------
