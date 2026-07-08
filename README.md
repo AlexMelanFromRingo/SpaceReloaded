@@ -1,0 +1,92 @@
+# SpaceReloaded
+
+[![build](https://github.com/AlexMelanFromRingo/SpaceReloaded/actions/workflows/build.yml/badge.svg)](https://github.com/AlexMelanFromRingo/SpaceReloaded/actions/workflows/build.yml)
+![Minecraft 26.2](https://img.shields.io/badge/Minecraft-26.2-62b47a)
+![Fabric](https://img.shields.io/badge/loader-Fabric-dbd0b4)
+![Java 25](https://img.shields.io/badge/Java-25-e76f00)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+Space exploration for Minecraft 26.2 built around one rule: **the physics are
+real**. Rockets are entities assembled from blocks you placed yourself.
+Delta-v comes from the Tsiolkovsky equation, thrust-to-weight is computed from
+actual part masses, and a lopsided rocket tips over on ascent.
+
+[Документация на русском](README.ru.md)
+
+## What it does
+
+- **Free-form rockets.** Build any shape on a launch pad, right-click the
+  assembly pylon and the structure lifts off as a single entity. Mass, thrust,
+  center of mass and moment come from the real blocks. TWR below 1 stays on
+  the pad. Fuel is drawn from the actual tank blocks you filled.
+- **Two propellants with different characters.** Kerolox (dense, high thrust)
+  is refined from oil shale; hydrolox (high specific impulse) is electrolyzed
+  from ice. Engines burn one type — a mixed stack won't assemble.
+- **Hermetic sealing that takes geometry seriously.** Room checking is a
+  26-direction flood fill: a diagonal corner gap is a leak, exactly like an
+  incomplete portal frame. Airlocks interlock, breaches cause decompression
+  that drags you toward the hole.
+- **Earth orbit and the Moon.** Coordinate-scaled dimensions (1:8), an orbital
+  platform per launch site, ISRU refueling on the Moon (ice → hydrolox +
+  oxygen for your canisters).
+- **Docking.** A docking clamp block marks the separation plane: undock a
+  parked stack into carrier + lander, fly the lander down, refuel, return and
+  dock — radius capture, no pixel-perfect parking. Propellant splits and
+  merges by real tank capacity.
+- **Unmanned flights.** Write a flight program (destination + landing beacon),
+  upload it to a parked rocket, trigger the launch remotely. The autopilot
+  climbs, transfers and lands on the beacon with a terminal retro-burn.
+- **Orbital kinetic bombardment.** A cannon that only works in orbit fires
+  tungsten rods along an honest entry trajectory. Crater size comes from
+  E = ½mv² with cube-root scaling; obsidian-class blocks and water survive.
+  Aim and fire remotely with a bound designator from any dimension.
+- **Energy.** Team Reborn Energy units: coal generators to bootstrap, solar
+  (×1.5 in vacuum), RTGs for the shadowed side, cable networks, batteries.
+- **A guided progression.** Sixteen advancements walk you from the first steel
+  ingot to closing the interplanetary loop. See
+  [progression](specs/001-space-mod-core/progression.md) for the full arc.
+
+## No teleport magic
+
+Rockets never turn into inventory items. Returning home means refueling via
+ISRU, docking with your carrier, or building a titanium return capsule that
+survives touchdown up to 25 m/s. Cross-dimension events (kinetic strikes,
+unmanned flights) hold auto-expiring chunk tickets — flights finish even with
+nobody around, and survive server restarts mid-air.
+
+## Building from source
+
+Requires JDK 25 (Temurin).
+
+```bash
+./gradlew build                     # everything + unit tests
+./gradlew :core:test                # physics core tests, no Minecraft
+./gradlew :mod:runClientGametest    # E2E rig: real client, 6 scenarios, ~60 s
+./gradlew :mod:runClient            # dev client
+```
+
+The jar lands in `mod/build/libs/`.
+
+## Architecture
+
+- `core/` — pure Java physics: flood fill, Tsiolkovsky/TWR calculator, flight
+  integrator with gyro feedforward, ballistics. No Minecraft imports, unit
+  tested.
+- `mod/` — the Fabric layer: entities, machines, dimensions, networking.
+  Parts, fuels and planets are datapack registries — addon packs can add
+  planets or engines with JSON only.
+- Server-authoritative everywhere; sealing recalculation runs on background
+  threads over palette snapshots taken on the main thread.
+- The E2E rig (`mod/src/gametest/`) boots a real client and runs sealing,
+  industry, assembly, cross-dimension bombardment, docking and flight-program
+  scenarios on every change.
+
+Design docs live in [`specs/001-space-mod-core/`](specs/001-space-mod-core/):
+spec, plan, data model, progression, an API cheat sheet for Minecraft 26.2
+internals, and a research-backed
+[backlog](specs/001-space-mod-core/inspiration-backlog.md) of mechanics
+adapted from Advanced Rocketry and Galacticraft.
+
+## License
+
+[MIT](LICENSE).
