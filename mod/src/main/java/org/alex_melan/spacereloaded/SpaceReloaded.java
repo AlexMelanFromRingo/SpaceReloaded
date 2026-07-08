@@ -16,6 +16,7 @@ import org.alex_melan.spacereloaded.config.SpaceReloadedConfig;
 import org.alex_melan.spacereloaded.registry.ModBlockEntities;
 import org.alex_melan.spacereloaded.registry.ModBlocks;
 import org.alex_melan.spacereloaded.registry.ModCreativeTab;
+import org.alex_melan.spacereloaded.registry.ModDataComponents;
 import org.alex_melan.spacereloaded.registry.ModEntities;
 import org.alex_melan.spacereloaded.registry.ModMenus;
 import org.alex_melan.spacereloaded.registry.ModRecipes;
@@ -47,6 +48,7 @@ public class SpaceReloaded implements ModInitializer {
 		config();
 
 		ModBlocks.init();
+		ModDataComponents.init();
 		ModItems.init();
 		ModBlockEntities.init();
 		ModCreativeTab.init();
@@ -109,7 +111,6 @@ public class SpaceReloaded implements ModInitializer {
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
 			ZoneManager.shutdown();
 			CableNetworkManager.clearAll();
-			org.alex_melan.spacereloaded.cannon.TargetingDesignatorItem.clearAll();
 			org.alex_melan.spacereloaded.rocket.FuelingHose.clearAll();
 		});
 

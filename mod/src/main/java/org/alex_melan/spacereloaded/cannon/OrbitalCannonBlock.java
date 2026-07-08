@@ -55,8 +55,8 @@ public class OrbitalCannonBlock extends MachineBlock<OrbitalCannonBlockEntity> {
             }
             return InteractionResult.SUCCESS_SERVER;
         }
-        // Целеуказатель: перенести метку в пушку
-        GlobalPos mark = TargetingDesignatorItem.mark(serverPlayer);
+        // Целеуказатель: перенести метку с пульта в пушку
+        GlobalPos mark = TargetingDesignatorItem.mark(stack);
         if (mark == null) {
             serverPlayer.sendSystemMessage(
                     Component.translatable("message.spacereloaded.cannon.no_mark"));

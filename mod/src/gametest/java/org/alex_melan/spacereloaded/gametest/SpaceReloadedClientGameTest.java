@@ -17,6 +17,8 @@ import net.minecraft.world.phys.AABB;
 import org.alex_melan.spacereloaded.SpaceReloaded;
 import org.alex_melan.spacereloaded.cannon.KineticProjectileEntity;
 import org.alex_melan.spacereloaded.cannon.OrbitalCannonBlockEntity;
+import org.alex_melan.spacereloaded.cannon.TargetingDesignatorItem;
+import org.alex_melan.spacereloaded.registry.ModDataComponents;
 import org.alex_melan.spacereloaded.core.sealing.SealingStatus;
 import org.alex_melan.spacereloaded.registry.ModBlocks;
 import org.alex_melan.spacereloaded.machine.CrusherBlockEntity;
@@ -265,6 +267,39 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         }
         assertThat(crater, "Кинетический удар должен вынести кратер в платформе");
         log("межпространственный выстрел: кратер в оверворлде ✓");
+
+        // --- 4b. Пульт: привязка к пушке + дистанционный выстрел из другого измерения
+        sp.getServer().runCommand(fill(tx - 3, BY, BZ - 3, tx + 3, BY, BZ + 3, "minecraft:stone"));
+        context.waitTicks(60); // кулдаун пушки
+        String remote = sp.getServer().computeOnServer(server -> {
+            ServerLevel orbit = server.getLevel(ResourceKey.create(Registries.DIMENSION,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")));
+            BlockPos cannonPos = new BlockPos(50, 120, 50);
+            if (orbit == null
+                    || !(orbit.getBlockEntity(cannonPos) instanceof OrbitalCannonBlockEntity cannon)) {
+                return "нет пушки";
+            }
+            cannon.loadRod();
+            // Пульт: привязка + метка как data-компоненты предмета
+            ItemStack designator = new ItemStack(ModItems.TARGETING_DESIGNATOR);
+            designator.set(ModDataComponents.BOUND_CANNON,
+                    GlobalPos.of(orbit.dimension(), cannonPos));
+            designator.set(ModDataComponents.TARGET_MARK,
+                    GlobalPos.of(Level.OVERWORLD, new BlockPos(tx, BY, BZ)));
+            TargetingDesignatorItem.remoteRetarget(server, designator);
+            return TargetingDesignatorItem.remoteFire(server, designator).getString();
+        });
+        log("пульт: " + remote);
+        assertThat(remote.contains("impact"),
+                "Дистанционный выстрел с пульта должен состояться, получено: " + remote);
+        boolean remoteCrater = false;
+        for (int waited = 0; waited < 400 && !remoteCrater; waited += 20) {
+            context.waitTicks(20);
+            remoteCrater = sp.getServer().computeOnServer(server ->
+                    server.overworld().getBlockState(new BlockPos(tx, BY, BZ)).isAir());
+        }
+        assertThat(remoteCrater, "Дистанционный выстрел должен вынести кратер");
+        log("пульт: привязка + дистанционный выстрел ✓");
     }
 
     // ---------- Утилиты ----------
