@@ -5,6 +5,7 @@
 ![Fabric](https://img.shields.io/badge/loader-Fabric-dbd0b4)
 ![Java 25](https://img.shields.io/badge/Java-25-e76f00)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![книга рецептов](https://img.shields.io/badge/книга%20рецептов-онлайн-6fd5e8)](https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html)
 
 Космос для Minecraft 26.2 с одним правилом: **физика настоящая**. Ракета
 собирается в сущность из блоков, которые вы поставили сами. Запас скорости
@@ -16,6 +17,11 @@
 <p align="center">
   <img src="docs/img/creative-tab.png" width="46%" alt="Креативная вкладка SpaceReloaded">
   <img src="docs/img/airlock.png" width="52%" alt="Шлюз с интерлоком гермолюков">
+</p>
+
+<p align="center">
+  <b>📖 <a href="https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html">Книга рецептов</a></b>
+  — все рецепты карточками, от дробления до сборочного стола.
 </p>
 
 ## Что внутри

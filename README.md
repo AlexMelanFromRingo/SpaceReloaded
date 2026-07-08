@@ -5,6 +5,7 @@
 ![Fabric](https://img.shields.io/badge/loader-Fabric-dbd0b4)
 ![Java 25](https://img.shields.io/badge/Java-25-e76f00)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![recipe book](https://img.shields.io/badge/recipe%20book-online-6fd5e8)](https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html)
 
 Space exploration for Minecraft 26.2 built around one rule: **the physics are
 real**. Rockets are entities assembled from blocks you placed yourself.
@@ -16,6 +17,11 @@ actual part masses, and a lopsided rocket tips over on ascent.
 <p align="center">
   <img src="docs/img/creative-tab.png" width="46%" alt="SpaceReloaded creative tab">
   <img src="docs/img/airlock.png" width="52%" alt="Airlock with interlocked hermetic hatches">
+</p>
+
+<p align="center">
+  <b>📖 <a href="https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html">Recipe book</a></b>
+  — every recipe rendered as cards, from crushing to the assembly table.
 </p>
 
 ## What it does
