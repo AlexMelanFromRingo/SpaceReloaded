@@ -7,8 +7,13 @@
 	"authors": [
 		"Alex Melan"
 	],
-	"contact": {},
-	"license": "ARR",
+	"contact": {
+		"homepage": "https://github.com/AlexMelanFromRingo/SpaceReloaded",
+		"sources": "https://github.com/AlexMelanFromRingo/SpaceReloaded",
+		"issues": "https://github.com/AlexMelanFromRingo/SpaceReloaded/issues"
+	},
+	"icon": "assets/spacereloaded/icon.png",
+	"license": "MIT",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
