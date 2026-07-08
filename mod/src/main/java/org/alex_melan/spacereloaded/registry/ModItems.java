@@ -70,6 +70,9 @@ public final class ModItems {
             properties -> new org.alex_melan.spacereloaded.rocket.FlightProgramItem(
                     properties.stacksTo(1)));
 
+    /** Метеоритное железо (US: метеориты) — падает в кратере, ISRU-ниша железа. */
+    public static final Item METEORIC_IRON = simple("meteoric_iron");
+
     public static final Item RAW_TITANIUM = simple("raw_titanium");
     public static final Item RAW_TUNGSTEN = simple("raw_tungsten");
     public static final Item TITANIUM_INGOT = simple("titanium_ingot");

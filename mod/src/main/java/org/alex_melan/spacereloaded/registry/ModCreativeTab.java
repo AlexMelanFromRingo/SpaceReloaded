@@ -49,6 +49,7 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.TITANIUM_ORE);
                         output.accept(ModBlocks.DEEPSLATE_TITANIUM_ORE);
                         output.accept(ModBlocks.DEEPSLATE_TUNGSTEN_ORE);
+                        output.accept(ModItems.METEORIC_IRON);
                         output.accept(ModItems.RAW_TITANIUM);
                         output.accept(ModItems.RAW_TUNGSTEN);
                         output.accept(ModItems.TITANIUM_DUST);

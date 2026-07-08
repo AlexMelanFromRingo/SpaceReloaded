@@ -1,0 +1,7 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:meteoric_iron",
+	"result": {
+		"id": "minecraft:iron_ingot"
+	}
+}

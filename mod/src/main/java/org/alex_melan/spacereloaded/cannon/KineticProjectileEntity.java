@@ -4,13 +4,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
@@ -125,38 +122,11 @@ public class KineticProjectileEntity extends Entity {
     private void impact(ServerLevel level, Vec3 at) {
         double speed = Math.sqrt(velocity.x() * velocity.x()
                 + velocity.y() * velocity.y() + velocity.z() * velocity.z());
-        double energyJ = ImpactEnergy.kineticEnergyJ(massKg, speed);
         var config = SpaceReloaded.config();
-        int radius = (int) Math.min(config.cannonMaxCraterRadius,
-                Math.round(ImpactEnergy.craterRadiusBlocks(energyJ) * config.cannonCraterMultiplier));
-
-        BlockPos center = BlockPos.containing(at);
-        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-        int radiusSq = radius * radius;
-        for (int dx = -radius; dx <= radius; dx++) {
-            for (int dy = -radius; dy <= radius; dy++) {
-                for (int dz = -radius; dz <= radius; dz++) {
-                    if (dx * dx + dy * dy + dz * dz > radiusSq) {
-                        continue;
-                    }
-                    cursor.setWithOffset(center, dx, dy, dz);
-                    BlockState blockState = level.getBlockState(cursor);
-                    if (blockState.isAir()
-                            || blockState.getDestroySpeed(level, cursor) < 0
-                            || !blockState.getFluidState().isEmpty()
-                            || blockState.getBlock().getExplosionResistance()
-                                    >= SpaceReloaded.config().cannonMaxBlockResistance) {
-                        continue; // бедрок, жидкости и обсидиан-класс выживают
-                    }
-                    level.setBlock(cursor, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
-                }
-            }
-        }
-        // Взрыв NONE: блоки уже вынес кратер, взрыв даёт урон/отброс/звук/частицы
-        level.explode(this, at.x, at.y, at.z, Math.min(10.0f, radius),
-                Level.ExplosionInteraction.NONE);
-        level.playSound(null, center, SoundEvents.GENERIC_EXPLODE.value(),
-                SoundSource.BLOCKS, 8.0f, 0.5f);
+        int radius = org.alex_melan.spacereloaded.impact.ImpactCrater.carve(level, this, at,
+                massKg, speed, config.cannonCraterMultiplier, config.cannonMaxCraterRadius,
+                config.cannonMaxBlockResistance);
+        double energyJ = ImpactEnergy.kineticEnergyJ(massKg, speed);
         SpaceReloaded.LOGGER.info("Кинетический удар: {} кг на {} м/с = {} МДж, кратер r={}",
                 Math.round(massKg), Math.round(speed), Math.round(energyJ / 1.0e6), radius);
         discard();

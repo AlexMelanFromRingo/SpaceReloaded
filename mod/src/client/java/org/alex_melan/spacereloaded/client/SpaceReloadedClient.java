@@ -42,6 +42,8 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntities.ROCKET, RocketRenderer::new);
 		EntityRendererRegistry.register(ModEntities.KINETIC_PROJECTILE,
 				org.alex_melan.spacereloaded.client.render.KineticProjectileRenderer::new);
+		EntityRendererRegistry.register(ModEntities.METEOR,
+				org.alex_melan.spacereloaded.client.render.MeteorRenderer::new);
 
 		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
 				org.alex_melan.spacereloaded.network.VacuumStatePayload.TYPE,

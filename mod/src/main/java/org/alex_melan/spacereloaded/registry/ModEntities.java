@@ -47,6 +47,21 @@ public final class ModEntities {
                             .fireImmune()
                             .build(KINETIC_PROJECTILE_KEY));
 
+    public static final ResourceKey<EntityType<?>> METEOR_KEY = ResourceKey.create(
+            Registries.ENTITY_TYPE,
+            Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "meteor"));
+
+    /** Метеорит: падающая огненная сущность (US: метеориты). */
+    public static final EntityType<org.alex_melan.spacereloaded.impact.MeteorEntity> METEOR =
+            Registry.register(BuiltInRegistries.ENTITY_TYPE, METEOR_KEY,
+                    EntityType.Builder.of(org.alex_melan.spacereloaded.impact.MeteorEntity::new,
+                                    MobCategory.MISC)
+                            .sized(1.2f, 1.2f)
+                            .clientTrackingRange(24)
+                            .updateInterval(1)
+                            .fireImmune()
+                            .build(METEOR_KEY));
+
     public static void init() {
         FabricEntityDataRegistry.register(
                 Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "compound_tag"),

@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:crushing",
+	"ingredient": "spacereloaded:meteoric_iron",
+	"result": {
+		"id": "spacereloaded:iron_dust",
+		"count": 3
+	}
+}

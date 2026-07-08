@@ -63,6 +63,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testScanAndProgram(context, sp);
             testBatteryBalancing(context, sp);
             testCargoLoop(context, sp);
+            testMeteor(context, sp);
         }
     }
 
@@ -592,6 +593,50 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         sp.getServer().runOnServer(server ->
                 server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
                         area, e -> true).forEach(Entity::discard));
+    }
+
+    // ---------- 9. Метеорит: падение, кратер, метеоритное железо ----------
+
+    private void testMeteor(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int mx = BX + 320;
+        moveTo(context, sp, mx - 5, BZ);
+        sp.getServer().runCommand(fill(mx - 3, BY, BZ - 3, mx + 3, BY, BZ + 3, "minecraft:stone"));
+        context.waitTick();
+        boolean solid = sp.getServer().computeOnServer(server ->
+                !server.overworld().getBlockState(new BlockPos(mx, BY, BZ)).isAir());
+        assertThat(solid, "Мишень должна быть камнем до метеорита");
+
+        // Спавним метеорит прямо над платформой (логика удара не зависит от измерения)
+        sp.getServer().runOnServer(server -> {
+            org.alex_melan.spacereloaded.impact.MeteorEntity meteor =
+                    new org.alex_melan.spacereloaded.impact.MeteorEntity(
+                            org.alex_melan.spacereloaded.registry.ModEntities.METEOR, server.overworld());
+            meteor.setPos(mx + 0.5, BY + 60, BZ + 0.5);
+            meteor.configure(800, new net.minecraft.world.phys.Vec3(0, -55, 0));
+            server.overworld().addFreshEntity(meteor);
+        });
+        boolean crater = false;
+        for (int waited = 0; waited < 300 && !crater; waited += 20) {
+            context.waitTicks(20);
+            crater = sp.getServer().computeOnServer(server ->
+                    server.overworld().getBlockState(new BlockPos(mx, BY, BZ)).isAir());
+        }
+        assertThat(crater, "Метеорит должен вынести кратер в платформе");
+
+        context.waitTicks(20); // предметы оседают
+        int iron = sp.getServer().computeOnServer(server ->
+                server.overworld().getEntities(
+                        EntityTypeTest.forClass(net.minecraft.world.entity.item.ItemEntity.class),
+                        new AABB(mx - 12, BY - 12, BZ - 12, mx + 12, BY + 12, BZ + 12),
+                        e -> e.getItem().is(ModItems.METEORIC_IRON)).stream()
+                        .mapToInt(e -> e.getItem().getCount()).sum());
+        assertThat(iron >= 2, "Метеорит должен оставить метеоритное железо, найдено: " + iron);
+        log("метеорит: кратер + " + iron + " метеоритного железа ✓");
+        sp.getServer().runOnServer(server ->
+                server.overworld().getEntities(
+                        EntityTypeTest.forClass(net.minecraft.world.entity.item.ItemEntity.class),
+                        new AABB(mx - 12, BY - 12, BZ - 12, mx + 12, BY + 12, BZ + 12),
+                        e -> true).forEach(net.minecraft.world.entity.Entity::discard));
     }
 
     // ---------- Утилиты ----------
