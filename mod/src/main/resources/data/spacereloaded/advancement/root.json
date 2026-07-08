@@ -1,0 +1,35 @@
+{
+	"criteria": {
+		"iron": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "minecraft:iron_ingot"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:command_module"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.root.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.root.description"
+		},
+		"frame": "task",
+		"background": "minecraft:gui/advancements/backgrounds/stone",
+		"show_toast": false,
+		"announce_to_chat": false
+	},
+	"requirements": [
+		[
+			"iron"
+		]
+	],
+	"sends_telemetry_event": false
+}

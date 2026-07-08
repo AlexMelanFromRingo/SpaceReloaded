@@ -168,6 +168,11 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(6.0f, 1200.0f).sound(SoundType.NETHERITE_BLOCK)
                     .requiresCorrectToolForDrops());
 
+    /** Возвратная капсула (T075): лёгкий командный пост с теплозащитой. */
+    public static final Block RETURN_CAPSULE = register("return_capsule", Block::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 12.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
     /** Стыковочный узел (US6): плоскость разделения ступеней ракеты. */
     public static final Block DOCKING_CLAMP = register("docking_clamp", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)

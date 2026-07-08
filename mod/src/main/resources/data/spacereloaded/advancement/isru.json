@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"electrolyzer": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:electrolyzer"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:electrolyzer"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.isru.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.isru.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"electrolyzer"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:moon"
+}

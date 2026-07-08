@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"pylon": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:assembly_pylon"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:assembly_pylon"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.launch_site.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.launch_site.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"pylon"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:rocketry"
+}

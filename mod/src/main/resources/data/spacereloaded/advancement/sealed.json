@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"controller": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:atmosphere_controller"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:atmosphere_controller"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.sealed.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.sealed.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"controller"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:steel"
+}

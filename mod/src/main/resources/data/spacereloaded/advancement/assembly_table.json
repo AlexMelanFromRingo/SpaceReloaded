@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"table": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:assembly_table"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:assembly_table"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.assembly_table.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.assembly_table.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"table"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:root"
+}

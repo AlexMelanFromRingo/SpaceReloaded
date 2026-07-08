@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"clamp": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:docking_clamp"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:docking_clamp"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.docking.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.docking.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"clamp"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:orbit"
+}

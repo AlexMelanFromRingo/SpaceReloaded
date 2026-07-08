@@ -67,6 +67,7 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.FUELING_PUMP);
                         output.accept(ModBlocks.ROCKET_SEAT);
                         output.accept(ModBlocks.DOCKING_CLAMP);
+                        output.accept(ModBlocks.RETURN_CAPSULE);
                         output.accept(ModBlocks.LAUNCH_PAD);
                         output.accept(ModBlocks.ASSEMBLY_PYLON);
                         output.accept(ModBlocks.ORBITAL_CANNON);

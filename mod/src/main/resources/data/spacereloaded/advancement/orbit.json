@@ -1,0 +1,29 @@
+{
+	"criteria": {
+		"orbit": {
+			"trigger": "minecraft:changed_dimension",
+			"conditions": {
+				"to": "spacereloaded:earth_orbit"
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:command_module"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.orbit.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.orbit.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"orbit"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:launch_site"
+}

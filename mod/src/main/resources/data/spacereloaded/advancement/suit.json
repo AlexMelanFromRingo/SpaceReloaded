@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"mask": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:oxygen_mask"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:oxygen_mask"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.suit.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.suit.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"mask"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:sealed"
+}

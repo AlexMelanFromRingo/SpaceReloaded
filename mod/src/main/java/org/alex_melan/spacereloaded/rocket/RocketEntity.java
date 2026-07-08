@@ -61,6 +61,7 @@ public class RocketEntity extends Entity {
 
     private static final double DT = 0.05; // серверный тик
     private static final double CRASH_SPEED = 15.0; // м/с — жёсткая посадка
+    private static final double CAPSULE_CRASH_SPEED = 25.0; // капсула: теплозащита+амортизация
 
     private RocketData rocketData;
     private RocketStructure structure;
@@ -630,7 +631,9 @@ public class RocketEntity extends Entity {
      */
     private void land(ServerLevel level) {
         double impactSpeed = new Vec3(flight.vel().x(), flight.vel().y(), flight.vel().z()).length();
-        if (impactSpeed <= CRASH_SPEED) {
+        boolean hasCapsule = rocketData.blocks().stream().anyMatch(e ->
+                e.state().is(org.alex_melan.spacereloaded.registry.ModBlocks.RETURN_CAPSULE));
+        if (impactSpeed <= (hasCapsule ? CAPSULE_CRASH_SPEED : CRASH_SPEED)) {
             launched = false;
             entityData.set(DATA_LAUNCHED, false);
             entityData.set(DATA_PITCH, 0.0f);

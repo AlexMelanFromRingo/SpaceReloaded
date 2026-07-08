@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"cannon": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:orbital_cannon"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:orbital_cannon"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.cannon.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.cannon.description"
+		},
+		"frame": "challenge"
+	},
+	"requirements": [
+		[
+			"cannon"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:orbit"
+}

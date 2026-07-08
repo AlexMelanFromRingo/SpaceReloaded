@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"refinery": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:refinery"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:refinery"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.kerolox.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.kerolox.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"refinery"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:steel"
+}

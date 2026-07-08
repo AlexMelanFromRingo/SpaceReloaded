@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"capsule": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:return_capsule"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:return_capsule"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.capsule.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.capsule.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"capsule"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:orbit"
+}

@@ -1,0 +1,38 @@
+{
+	"criteria": {
+		"from_orbit": {
+			"trigger": "minecraft:changed_dimension",
+			"conditions": {
+				"to": "minecraft:overworld",
+				"from": "spacereloaded:earth_orbit"
+			}
+		},
+		"from_moon": {
+			"trigger": "minecraft:changed_dimension",
+			"conditions": {
+				"to": "minecraft:overworld",
+				"from": "spacereloaded:moon"
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:return_capsule"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.home.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.home.description"
+		},
+		"frame": "challenge"
+	},
+	"requirements": [
+		[
+			"from_orbit",
+			"from_moon"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:capsule"
+}

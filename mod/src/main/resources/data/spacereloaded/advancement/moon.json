@@ -1,0 +1,29 @@
+{
+	"criteria": {
+		"moon": {
+			"trigger": "minecraft:changed_dimension",
+			"conditions": {
+				"to": "spacereloaded:moon"
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:moon_regolith"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.moon.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.moon.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"moon"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:orbit"
+}

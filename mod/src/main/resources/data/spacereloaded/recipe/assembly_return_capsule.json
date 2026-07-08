@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:titanium_alloy_ingot",
+		"spacereloaded:titanium_alloy_ingot",
+		"spacereloaded:titanium_ingot",
+		"spacereloaded:titanium_ingot",
+		"spacereloaded:hermetic_glass"
+	],
+	"result": {
+		"id": "spacereloaded:return_capsule",
+		"count": 1
+	}
+}

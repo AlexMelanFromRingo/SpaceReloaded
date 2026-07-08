@@ -1,0 +1,5 @@
+{
+	"block": "spacereloaded:return_capsule",
+	"mass_kg": 250.0,
+	"role": "command"
+}

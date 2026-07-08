@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"battery": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:battery"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:battery"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.power.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.power.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"battery"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:steel"
+}

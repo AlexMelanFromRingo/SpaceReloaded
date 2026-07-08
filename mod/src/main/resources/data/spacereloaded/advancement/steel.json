@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"steel": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:steel_ingot"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:steel_ingot"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.steel.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.steel.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"steel"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:assembly_table"
+}

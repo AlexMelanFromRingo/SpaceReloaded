@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"engine": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:rocket_engine"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:rocket_engine"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.rocketry.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.rocketry.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"engine"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:kerolox"
+}
