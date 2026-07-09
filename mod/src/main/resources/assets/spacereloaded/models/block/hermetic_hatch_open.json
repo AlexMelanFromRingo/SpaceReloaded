@@ -1,4 +1,6 @@
 {
-	"parent": "minecraft:block/cube_all",
-	"textures": { "all": "spacereloaded:block/hermetic_hatch_open" }
+	"textures": {
+		"particle": "spacereloaded:block/hermetic_hatch_open"
+	},
+	"elements": []
 }

@@ -69,6 +69,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testMarsChemistry(context, sp);
             testOrbitalNetwork(context, sp);
             testDeepSpace(context, sp);
+            testNavigation(context, sp);
         }
     }
 
@@ -255,6 +256,28 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         boolean platformSolid = sp.getServer().computeOnServer(server ->
                 !server.overworld().getBlockState(new BlockPos(tx, BY, BZ)).isAir());
         assertThat(platformSolid, "Мишень должна быть камнем ДО выстрела (иначе тест ложный)");
+
+        // Самообстрел запрещён: свежая пушка, цель в её собственном измерении
+        String selfShot = sp.getServer().computeOnServer(server -> {
+            ServerLevel orbit = server.getLevel(ResourceKey.create(Registries.DIMENSION,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")));
+            if (orbit == null) {
+                return "нет измерения орбиты";
+            }
+            BlockPos cannonPos = new BlockPos(50, 120, 50);
+            orbit.setBlock(cannonPos, ModBlocks.ORBITAL_CANNON.defaultBlockState(), 3);
+            if (!(orbit.getBlockEntity(cannonPos) instanceof OrbitalCannonBlockEntity cannon)) {
+                return "нет BE пушки";
+            }
+            cannon.loadRod();
+            ((SimpleEnergyStorage) cannon.energyStorage()).amount =
+                    SpaceReloaded.config().cannonEnergyCapacity;
+            cannon.setTarget(GlobalPos.of(orbit.dimension(), new BlockPos(55, 100, 55)));
+            return cannon.tryFire(orbit).getString();
+        });
+        assertThat(selfShot.contains("own dimension"),
+                "Пушка не должна бить по своему измерению, получено: " + selfShot);
+        log("пушка: самообстрел запрещён ✓");
 
         // Пушка на орбите: заряжаем лом, энергию и наводим напрямую через BE
         String fired = sp.getServer().computeOnServer(server -> {
@@ -879,6 +902,33 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         });
         assertThat(checks.equals("ok"), "Тепло/пояс астероидов; получено: " + checks);
         log("тепловая модель + профиль пояса астероидов ✓");
+    }
+
+    // ---------- 15. Навигация: цель где угодно, маршрут по хопам ----------
+
+    private void testNavigation(ClientGameTestContext context, TestSingleplayerContext sp) {
+        String result = sp.getServer().computeOnServer(server -> {
+            var access = server.overworld().registryAccess();
+            var ids = org.alex_melan.spacereloaded.planet.Navigation.planetIds(access);
+            Identifier earth = Identifier.fromNamespaceAndPath("spacereloaded", "earth");
+            Identifier orbit = Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit");
+            Identifier mars = Identifier.fromNamespaceAndPath("spacereloaded", "mars");
+            boolean listOk = ids.contains(earth) && ids.contains(mars) && ids.size() >= 4;
+            // Земля → Марс: первый хоп орбита
+            var hop1 = org.alex_melan.spacereloaded.planet.Navigation.nextHop(access, earth, mars);
+            // Орбита → Марс: сразу Марс
+            var hop2 = org.alex_melan.spacereloaded.planet.Navigation.nextHop(access, orbit, mars);
+            // Уже на месте — маршрута нет
+            var hop3 = org.alex_melan.spacereloaded.planet.Navigation.nextHop(access, mars, mars);
+            boolean routeOk = orbit.equals(hop1) && mars.equals(hop2) && hop3 == null;
+            // Обратно: Марс → Земля через орбиту
+            var back = org.alex_melan.spacereloaded.planet.Navigation.nextHop(access, mars, earth);
+            boolean backOk = orbit.equals(back);
+            return (listOk && routeOk && backOk) ? "ok"
+                    : ("list=" + listOk + " hop1=" + hop1 + " hop2=" + hop2 + " hop3=" + hop3 + " back=" + back);
+        });
+        assertThat(result.equals("ok"), "Навигация по хопам; получено: " + result);
+        log("навигация: Земля → орбита → Марс и обратно ✓");
     }
 
     // ---------- Утилиты ----------

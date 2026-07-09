@@ -101,6 +101,17 @@ public class OrbitalCannonBlockEntity extends MachineBlockEntity {
         if (targetLevel == null) {
             return Component.translatable("message.spacereloaded.cannon.no_target");
         }
+        // Орудие бьёт вниз, по поверхности ЧУЖОГО измерения: нельзя стрелять
+        // по собственной орбите (иначе станция расстреливает сама себя)
+        if (targetLevel.dimension().equals(level.dimension())) {
+            return Component.translatable("message.spacereloaded.cannon.same_dimension");
+        }
+        boolean targetIsPlatform = PlanetManager.profileFor(targetLevel)
+                .map(profile -> "platform".equals(profile.arrival()))
+                .orElse(false);
+        if (targetIsPlatform) {
+            return Component.translatable("message.spacereloaded.cannon.orbital_target");
+        }
 
         rods--;
         energy.amount -= config.cannonEnergyPerShot;

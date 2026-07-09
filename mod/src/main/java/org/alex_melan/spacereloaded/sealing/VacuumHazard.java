@@ -97,6 +97,9 @@ public final class VacuumHazard {
 
     /** Баллоны (US6): маска дышит из первого заряженного баллона в инвентаре. */
     private static boolean consumeOxygen(net.minecraft.world.entity.player.Player player) {
+        if (player.getAbilities().instabuild) {
+            return true; // креатив дышит бесплатно, баллоны не расходуются
+        }
         var inventory = player.getInventory();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             var stack = inventory.getItem(i);

@@ -63,6 +63,15 @@ public class RocketEntity extends Entity {
     private static final double CRASH_SPEED = 15.0; // м/с — жёсткая посадка
     private static final double CAPSULE_CRASH_SPEED = 25.0; // капсула: теплозащита+амортизация
 
+    /**
+     * Клиентская интерполяция (26.2): сервер шлёт позицию раз в 2 тика, без
+     * сглаживания ракета дёргается, а пассажир прыгает вместе с ней
+     * (positionRider берёт координаты аппарата). Обработчик сглаживает
+     * позицию между пакетами; ванильный Entity.getInterpolation() = null.
+     */
+    private final net.minecraft.world.entity.InterpolationHandler interpolation =
+            new net.minecraft.world.entity.InterpolationHandler(this);
+
     private RocketData rocketData;
     private RocketStructure structure;
     private FlightState flight;
@@ -185,6 +194,11 @@ public class RocketEntity extends Entity {
         }
         return new AABB(pos.x - sizeX / 2.0, pos.y, pos.z - sizeZ / 2.0,
                 pos.x + sizeX / 2.0, pos.y + sizeY, pos.z + sizeZ / 2.0);
+    }
+
+    @Override
+    public net.minecraft.world.entity.InterpolationHandler getInterpolation() {
+        return interpolation;
     }
 
     @Override
@@ -483,7 +497,11 @@ public class RocketEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide() || rocketData == null) {
+        if (level().isClientSide()) {
+            interpolation.interpolate(); // плавное движение аппарата и пассажира
+            return;
+        }
+        if (rocketData == null) {
             return;
         }
         ServerLevel serverLevel = (ServerLevel) level();
@@ -570,8 +588,9 @@ public class RocketEntity extends Entity {
         var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(serverLevel);
         if (profile.isPresent() && !profile.get().transitionTargets().isEmpty()
                 && getY() >= profile.get().transitionAltitude()) {
-            if (transferWindowOpen(serverLevel, profile.get(), pilot)) {
-                transition(serverLevel, profile.get());
+            var hop = nextHop(serverLevel);
+            if (hop != null && transferWindowOpen(serverLevel, hop, pilot)) {
+                transition(serverLevel, profile.get(), hop);
             }
         } else if (getY() < (profile.map(pp -> pp.transitionAltitude()).orElse(Integer.MAX_VALUE) - 20)) {
             windowWarned = false; // спустились — предупреждение об окне снова актуально
@@ -584,10 +603,7 @@ public class RocketEntity extends Entity {
      * получает предупреждение со сроком до окна.
      */
     private boolean transferWindowOpen(ServerLevel level,
-            org.alex_melan.spacereloaded.registry.ModRegistries.PlanetProfile fromProfile,
-            ServerPlayer pilot) {
-        var targets = fromProfile.transitionTargets();
-        var targetId = targets.get(Math.floorMod(destinationIndex, targets.size()));
+            net.minecraft.resources.Identifier targetId, ServerPlayer pilot) {
         var target = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, targetId);
         if (target.isEmpty()) {
             return true;
@@ -622,9 +638,9 @@ public class RocketEntity extends Entity {
      * пространственно связана с точкой старта). Прибытие на орбиту — парковка
      * на автоплатформе (GC-стиль); прибытие в атмосферу — падение с ретро-burn.
      */
-    private void transition(ServerLevel from, org.alex_melan.spacereloaded.registry.ModRegistries.PlanetProfile fromProfile) {
-        var targets = fromProfile.transitionTargets();
-        var targetId = targets.get(Math.floorMod(destinationIndex, targets.size()));
+    private void transition(ServerLevel from,
+            org.alex_melan.spacereloaded.registry.ModRegistries.PlanetProfile fromProfile,
+            net.minecraft.resources.Identifier targetId) {
         var targetProfile = org.alex_melan.spacereloaded.planet.PlanetManager
                 .profileById(from, targetId);
         if (targetProfile.isEmpty()) {
@@ -766,11 +782,10 @@ public class RocketEntity extends Entity {
      */
     private Component startAutopilot(ServerLevel level) {
         var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
-        if (profile.isEmpty() || profile.get().transitionTargets().isEmpty()) {
+        var targetId = nextHop(level);
+        if (profile.isEmpty() || targetId == null) {
             return Component.translatable("message.spacereloaded.rocket.autopilot_no_target");
         }
-        var targetId = profile.get().transitionTargets()
-                .get(Math.floorMod(destinationIndex, profile.get().transitionTargets().size()));
         var target = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, targetId);
         boolean descendTarget = target.isPresent() && !"platform".equals(target.get().arrival());
         if (target.isEmpty() || (descendTarget && programPad == null)) {
@@ -960,28 +975,57 @@ public class RocketEntity extends Entity {
         cargoItems.clear();
     }
 
-    /** Циклический выбор цели перехода (список из профиля планеты). */
+    /** Финальная цель (id записи планеты) по синхронизированному индексу. */
+    private net.minecraft.resources.Identifier finalDestination(ServerLevel level) {
+        var ids = org.alex_melan.spacereloaded.planet.Navigation.planetIds(level.registryAccess());
+        return ids.isEmpty() ? null : ids.get(Math.floorMod(destinationIndex, ids.size()));
+    }
+
+    /** Ближайший хоп к финальной цели, либо null (уже на месте / нет маршрута). */
+    private net.minecraft.resources.Identifier nextHop(ServerLevel level) {
+        var access = level.registryAccess();
+        var from = org.alex_melan.spacereloaded.planet.Navigation.entryIdFor(access, level.dimension().identifier());
+        var to = finalDestination(level);
+        return org.alex_melan.spacereloaded.planet.Navigation.nextHop(access, from, to);
+    }
+
+    /** Циклический выбор цели перехода: ЛЮБАЯ планета реестра, не только сосед. */
     private void cycleDestination(ServerLevel level, ServerPlayer pilot) {
-        var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
-        if (profile.isEmpty() || profile.get().transitionTargets().size() <= 1) {
+        var access = level.registryAccess();
+        var ids = org.alex_melan.spacereloaded.planet.Navigation.planetIds(access);
+        var here = org.alex_melan.spacereloaded.planet.Navigation.entryIdFor(access, level.dimension().identifier());
+        if (ids.size() <= 1) {
             return;
         }
-        destinationIndex = (destinationIndex + 1) % profile.get().transitionTargets().size();
+        // Пропускаем планету, на которой стоим
+        for (int step = 0; step < ids.size(); step++) {
+            destinationIndex = (destinationIndex + 1) % ids.size();
+            if (!ids.get(destinationIndex).equals(here)) {
+                break;
+            }
+        }
         entityData.set(DATA_DESTINATION, destinationIndex);
-        var target = profile.get().transitionTargets().get(destinationIndex);
-        var targetProfile = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, target);
+
+        var target = ids.get(destinationIndex);
+        var hop = org.alex_melan.spacereloaded.planet.Navigation.nextHop(access, here, target);
         Component window = Component.empty();
-        if (targetProfile.isPresent()
-                && org.alex_melan.spacereloaded.planet.TransferWindows.hasWindow(targetProfile.get())) {
-            boolean open = org.alex_melan.spacereloaded.planet.TransferWindows
-                    .isOpen(level.getGameTime(), targetProfile.get());
-            window = Component.translatable(open
-                    ? "message.spacereloaded.rocket.window_open"
-                    : "message.spacereloaded.rocket.window_wait");
+        if (hop != null) {
+            var hopProfile = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, hop);
+            if (hopProfile.isPresent()
+                    && org.alex_melan.spacereloaded.planet.TransferWindows.hasWindow(hopProfile.get())) {
+                boolean open = org.alex_melan.spacereloaded.planet.TransferWindows
+                        .isOpen(level.getGameTime(), hopProfile.get());
+                window = Component.translatable(open
+                        ? "message.spacereloaded.rocket.window_open"
+                        : "message.spacereloaded.rocket.window_wait");
+            }
+        } else {
+            window = Component.translatable("message.spacereloaded.rocket.no_route");
         }
         pilot.sendOverlayMessage(Component.translatable("message.spacereloaded.rocket.destination_window",
                 Component.translatable("planet.spacereloaded." + target.getPath()), window));
     }
+
 
     // ---------- Прочее ----------
 

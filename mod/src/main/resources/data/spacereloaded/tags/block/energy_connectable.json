@@ -10,6 +10,12 @@
 		"spacereloaded:crusher",
 		"spacereloaded:electric_furnace",
 		"spacereloaded:assembly_table",
-		"spacereloaded:coal_generator"
+		"spacereloaded:coal_generator",
+		"spacereloaded:electrolyzer",
+		"spacereloaded:refinery",
+		"spacereloaded:orbital_cannon",
+		"spacereloaded:atmospheric_collector",
+		"spacereloaded:sabatier_reactor",
+		"spacereloaded:rectenna"
 	]
 }

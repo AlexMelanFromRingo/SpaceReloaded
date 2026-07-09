@@ -8,7 +8,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.alex_melan.spacereloaded.SpaceReloaded;
-import org.alex_melan.spacereloaded.registry.ModRegistries;
 import org.alex_melan.spacereloaded.rocket.RocketEntity;
 
 import java.util.List;
@@ -81,22 +80,14 @@ public class RocketHud implements HudElement {
                 : "hud.spacereloaded.rocket.hint_parked"), x, y, MUTED);
     }
 
-    /** Имя цели перелёта из синхронизированного реестра планет. */
+    /** Имя финальной цели: индекс по полному списку планет (как на сервере). */
     private Component destinationName(Minecraft mc, RocketEntity rocket) {
-        Identifier here = mc.level.dimension().identifier();
-        for (ModRegistries.PlanetProfile profile
-                : mc.level.registryAccess().lookupOrThrow(ModRegistries.PLANETS)) {
-            if (!profile.dimension().equals(here)) {
-                continue;
-            }
-            List<Identifier> targets = profile.transitionTargets();
-            if (targets.isEmpty()) {
-                break;
-            }
-            Identifier target = targets.get(
-                    Math.floorMod(rocket.clientDestinationIndex(), targets.size()));
-            return Component.translatable("planet.spacereloaded." + target.getPath());
+        var ids = org.alex_melan.spacereloaded.planet.Navigation.planetIds(mc.level.registryAccess());
+        if (ids.isEmpty()) {
+            return Component.translatable("hud.spacereloaded.rocket.no_destination");
         }
-        return Component.translatable("hud.spacereloaded.rocket.no_destination");
+        Identifier target = ids.get(Math.floorMod(rocket.clientDestinationIndex(), ids.size()));
+        return Component.translatable("planet.spacereloaded." + target.getPath());
     }
+
 }
