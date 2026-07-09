@@ -24,20 +24,51 @@
 			"argument": {
 				"type": "minecraft:add",
 				"argument1": {
-					"type": "minecraft:y_clamped_gradient",
-					"from_y": 40,
-					"to_y": 104,
-					"from_value": 1.1,
-					"to_value": -1.1
+					"type": "minecraft:add",
+					"argument1": {
+						"type": "minecraft:y_clamped_gradient",
+						"from_y": 40,
+						"to_y": 120,
+						"from_value": 1.5,
+						"to_value": -1.5
+					},
+					"argument2": {
+						"type": "minecraft:mul",
+						"argument1": 0.8,
+						"argument2": {
+							"type": "minecraft:noise",
+							"noise": "spacereloaded:mars_relief",
+							"xz_scale": 0.55,
+							"y_scale": 0.0
+						}
+					}
 				},
 				"argument2": {
-					"type": "minecraft:mul",
-					"argument1": 0.28,
+					"type": "minecraft:add",
+					"argument1": {
+						"type": "minecraft:clamp",
+						"input": {
+							"type": "minecraft:mul",
+							"argument1": 3.0,
+							"argument2": {
+								"type": "minecraft:noise",
+								"noise": "spacereloaded:mars_mesa",
+								"xz_scale": 0.25,
+								"y_scale": 0.0
+							}
+						},
+						"min": -0.34,
+						"max": 0.34
+					},
 					"argument2": {
-						"type": "minecraft:noise",
-						"noise": "minecraft:jagged",
-						"xz_scale": 0.35,
-						"y_scale": 0.0
+						"type": "minecraft:mul",
+						"argument1": 0.22,
+						"argument2": {
+							"type": "minecraft:noise",
+							"noise": "spacereloaded:mars_dunes",
+							"xz_scale": 2.2,
+							"y_scale": 0.0
+						}
 					}
 				}
 			}
@@ -64,6 +95,22 @@
 				"if_true": {
 					"type": "minecraft:stone_depth",
 					"add_surface_depth": false,
+					"offset": 0,
+					"secondary_depth_range": 0,
+					"surface_type": "floor"
+				},
+				"then_run": {
+					"type": "minecraft:block",
+					"result_state": {
+						"Name": "minecraft:red_sand"
+					}
+				}
+			},
+			{
+				"type": "minecraft:condition",
+				"if_true": {
+					"type": "minecraft:stone_depth",
+					"add_surface_depth": false,
 					"offset": 3,
 					"secondary_depth_range": 0,
 					"surface_type": "floor"
@@ -71,7 +118,7 @@
 				"then_run": {
 					"type": "minecraft:block",
 					"result_state": {
-						"Name": "spacereloaded:moon_regolith"
+						"Name": "minecraft:red_sandstone"
 					}
 				}
 			}

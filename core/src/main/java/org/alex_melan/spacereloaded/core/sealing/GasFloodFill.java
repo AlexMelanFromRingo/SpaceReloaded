@@ -41,6 +41,11 @@ public final class GasFloodFill {
             {-1, 1, 1}, {-1, 1, -1}, {-1, -1, 1}, {-1, -1, -1}
     };
 
+    /** Классические 6 направлений: угловая щель воздух не выпускает (конфиг). */
+    static final int[][] DIRECTIONS_ORTHOGONAL = {
+            {1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}
+    };
+
     private GasFloodFill() {
     }
 
@@ -64,12 +69,13 @@ public final class GasFloodFill {
         queue.enqueue(origin);
 
         int blocksVisited = 0;
+        int[][] directions = request.diagonalLeaks() ? DIRECTIONS_3D : DIRECTIONS_ORTHOGONAL;
 
         while (!queue.isEmpty()) {
             long current = queue.dequeue();
             blocksVisited++;
 
-            for (int[] dir : DIRECTIONS_3D) {
+            for (int[] dir : directions) {
                 long neighbor = PackedPos.offset(current, dir[0], dir[1], dir[2]);
 
                 if (visited.contains(neighbor)) {

@@ -51,7 +51,8 @@ public final class SpaceReloadedCommands {
         // Снимок в главном потоке, полная диагностика в фоне, ответ обратно (принцип IV)
         RegionSnapshot snapshot = RegionSnapshot.capture(level, pos, radius, ZoneManager.isVacuumWorld(level));
         SealingRequest request = SealingRequest.diagnostic(
-                PackedPos.pack(pos.getX(), pos.getY(), pos.getZ()), radius);
+                PackedPos.pack(pos.getX(), pos.getY(), pos.getZ()), radius,
+                SpaceReloaded.config().sealingDiagonalLeaks);
 
         CompletableFuture
                 .supplyAsync(() -> GasFloodFill.analyze(snapshot, request), ZoneManager.executor())

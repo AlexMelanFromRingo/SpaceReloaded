@@ -15,6 +15,12 @@ import java.nio.file.Path;
 public final class SpaceReloadedConfig {
     /** Лимит радиуса герметичной зоны (метрика Чебышёва). */
     public int sealingMaxRadius = 32;
+    /**
+     * true — заливка по 26 направлениям: газ уходит через диагональную щель,
+     * углы обязаны быть заложены (замысел мода). false — классические
+     * 6 направлений: строить проще, угловой блок больше не нужен.
+     */
+    public boolean sealingDiagonalLeaks = true;
     /** Максимум одновременных фоновых пересчётов зон (FR-051). */
     public int sealingMaxConcurrentJobs = 2;
     /** Тик-интервал проверки удушья сущностей вне зон. */
@@ -81,27 +87,27 @@ public final class SpaceReloadedConfig {
 
     // --- Орбитальная кинетическая пушка (US7) ---
     /** Буфер энергии пушки, E. */
-    public long cannonEnergyCapacity = 200_000;
+    public long cannonEnergyCapacity = 400_000;
     /** Стоимость выстрела, E (разгон лома до дульной скорости). */
-    public long cannonEnergyPerShot = 50_000;
+    public long cannonEnergyPerShot = 150_000;
     /** Магазин: максимум ломов в пушке. */
     public int cannonMaxRods = 16;
     /** Масса вольфрамового лома, кг (~0.1 м³ вольфрама). */
     public double cannonRodMassKg = 2000;
     /** Высота входа снаряда в атмосферу над целью, м. */
-    public double cannonDropAltitude = 350;
+    public double cannonDropAltitude = 2400;
     /** Скорость, приданная пушкой (вниз), м/с. */
-    public double cannonMuzzleSpeed = 80;
+    public double cannonMuzzleSpeed = 1500;
     /** Линейное сопротивление лома в атмосфере, 1/с (обтекаемый — почти 0). */
     public double cannonDragCoeff = 0.01;
     /** Игровой множитель радиуса кратера поверх E^(1/3)-подобия ядра. */
-    public double cannonCraterMultiplier = 2.0;
+    public double cannonCraterMultiplier = 1.0;
     /** Жёсткий предел радиуса кратера, блоки (бюджет производительности). */
-    public int cannonMaxCraterRadius = 12;
+    public int cannonMaxCraterRadius = 16;
     /** Блоки с взрывостойкостью >= порога выживают в кратере (обсидиан — защита). */
     public double cannonMaxBlockResistance = 100.0;
     /** Кулдаун выстрела, тики (защита от случайного залпа). */
-    public int cannonCooldownTicks = 40;
+    public int cannonCooldownTicks = 200;
 
     // --- Метеориты (backlog AR/GC) ---
     /** Метеоритные дожди на безатмосферных телах включены. */

@@ -19,12 +19,22 @@ public final class ModWorldgen {
     public static final ResourceKey<PlacedFeature> ORE_TUNGSTEN = placed("ore_tungsten");
     public static final ResourceKey<PlacedFeature> OIL_SHALE = placed("oil_shale");
 
+    /** Ударный кратер безатмосферного тела: рельеф, а не разрушение. */
+    public static final net.minecraft.world.level.levelgen.feature.Feature<
+            net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> CRATER =
+            new org.alex_melan.spacereloaded.worldgen.CraterFeature(
+                    net.minecraft.world.level.levelgen.feature.configurations
+                            .NoneFeatureConfiguration.CODEC);
+
     private static ResourceKey<PlacedFeature> placed(String name) {
         return ResourceKey.create(Registries.PLACED_FEATURE,
                 Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name));
     }
 
     public static void init() {
+        net.minecraft.core.Registry.register(
+                net.minecraft.core.registries.BuiltInRegistries.FEATURE,
+                Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "crater"), CRATER);
         BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(),
                 GenerationStep.Decoration.UNDERGROUND_ORES, ORE_TITANIUM);
         BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(),

@@ -196,7 +196,8 @@ public final class ZoneManager {
         BlockPos origin = controllerPos.above();
         RegionSnapshot snapshot = RegionSnapshot.capture(level, origin, radius, isVacuumWorld(level));
         SealingRequest request = SealingRequest.fast(
-                PackedPos.pack(origin.getX(), origin.getY(), origin.getZ()), radius);
+                PackedPos.pack(origin.getX(), origin.getY(), origin.getZ()), radius,
+                SpaceReloaded.config().sealingDiagonalLeaks);
         ResourceKey<Level> dimension = level.dimension();
 
         CompletableFuture

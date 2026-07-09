@@ -70,6 +70,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testOrbitalNetwork(context, sp);
             testDeepSpace(context, sp);
             testNavigation(context, sp);
+            testPlanetTerrain(context, sp);
         }
     }
 
@@ -256,6 +257,8 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         boolean platformSolid = sp.getServer().computeOnServer(server ->
                 !server.overworld().getBlockState(new BlockPos(tx, BY, BZ)).isAir());
         assertThat(platformSolid, "Мишень должна быть камнем ДО выстрела (иначе тест ложный)");
+        // Кратер r≈13 и взрыв силой 10: игрока уводим за радиус поражения
+        sp.getServer().runCommand(String.format("tp @p %d %d %d", tx - 30, BY, BZ));
 
         // Самообстрел запрещён: свежая пушка, цель в её собственном измерении
         String selfShot = sp.getServer().computeOnServer(server -> {
@@ -320,7 +323,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
 
         // --- 4b. Пульт: привязка к пушке + дистанционный выстрел из другого измерения
         sp.getServer().runCommand(fill(tx - 3, BY, BZ - 3, tx + 3, BY, BZ + 3, "minecraft:stone"));
-        context.waitTicks(60); // кулдаун пушки
+        context.waitTicks(220); // кулдаун пушки (200 тиков)
         String remote = sp.getServer().computeOnServer(server -> {
             ServerLevel orbit = server.getLevel(ResourceKey.create(Registries.DIMENSION,
                     Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")));
@@ -984,4 +987,53 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
     private static void log(String message) {
         System.out.println("[SpaceReloaded Test] " + message);
     }
+
+    // ---------- 18. Рельеф планет: не плоскость ----------
+
+    private void testPlanetTerrain(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int[] moonRelief = sp.getServer().computeOnServer(server -> reliefSpan(server, "moon"));
+        assertThat(moonRelief[1] - moonRelief[0] >= 10,
+                "Луна должна иметь рельеф, перепад высот всего "
+                        + (moonRelief[1] - moonRelief[0]) + " блоков");
+        log("рельеф Луны: перепад " + (moonRelief[1] - moonRelief[0]) + " блоков ✓");
+
+        int[] marsRelief = sp.getServer().computeOnServer(server -> reliefSpan(server, "mars"));
+        assertThat(marsRelief[1] - marsRelief[0] >= 10,
+                "Марс должен иметь рельеф, перепад высот всего "
+                        + (marsRelief[1] - marsRelief[0]) + " блоков");
+        log("рельеф Марса: перепад " + (marsRelief[1] - marsRelief[0]) + " блоков ✓");
+
+        // Марсианская поверхность — не лунный реголит
+        String marsTop = sp.getServer().computeOnServer(server -> {
+            ServerLevel mars = server.getLevel(ResourceKey.create(Registries.DIMENSION,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "mars")));
+            int y = mars.getChunk(0, 0).getHeight(
+                    net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, 0, 0);
+            return mars.getBlockState(new BlockPos(0, y, 0)).getBlock().getName().getString();
+        });
+        assertThat(!marsTop.contains("еголит") && !marsTop.toLowerCase().contains("regolith"),
+                "На Марсе не должно быть лунного реголита, найдено: " + marsTop);
+        log("поверхность Марса: " + marsTop + " ✓");
+    }
+
+    /** Мин/макс высоты поверхности по сетке 65×65 вокруг начала координат. */
+    private static int[] reliefSpan(net.minecraft.server.MinecraftServer server, String planet) {
+        ServerLevel level = server.getLevel(ResourceKey.create(Registries.DIMENSION,
+                Identifier.fromNamespaceAndPath("spacereloaded", planet)));
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        for (int x = -32; x <= 32; x += 8) {
+            for (int z = -32; z <= 32; z += 8) {
+                // ВАЖНО: Level.getHeight не грузит чанк и молча отдаёт minY —
+                // высоту спрашиваем у сгенерированного чанка, иначе тест ложно зелёный
+                int height = level.getChunk(x >> 4, z >> 4).getHeight(
+                        net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE,
+                        x & 15, z & 15);
+                min = Math.min(min, height);
+                max = Math.max(max, height);
+            }
+        }
+        return new int[]{min, max};
+    }
+
 }

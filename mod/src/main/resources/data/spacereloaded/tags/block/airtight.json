@@ -7,6 +7,12 @@
 		"spacereloaded:hermetic_hatch",
 		"spacereloaded:solar_panel",
 		"spacereloaded:rtg",
-		"spacereloaded:battery"
+		"spacereloaded:battery",
+		"spacereloaded:energy_cable",
+		"spacereloaded:electrolyzer",
+		"spacereloaded:refinery",
+		"spacereloaded:fuel_tank",
+		"spacereloaded:sabatier_reactor",
+		"spacereloaded:atmospheric_collector"
 	]
 }

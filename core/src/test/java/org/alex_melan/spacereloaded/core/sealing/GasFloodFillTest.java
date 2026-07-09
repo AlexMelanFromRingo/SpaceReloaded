@@ -100,6 +100,21 @@ class GasFloodFillTest {
                 "через открытую дверь заполнение выходит в вакуум");
     }
 
+    /**
+     * Классическая схема из конфига: та же угловая щель, но 6 направлений —
+     * комната герметична. Строить проще, замысел мода отключён осознанно.
+     */
+    @Test
+    void diagonalCornerGapSealedInOrthogonalMode() {
+        ArrayVoxelGrid grid = sealedRoom().set(8, 8, 8, VACUUM).build();
+
+        assertEquals(SealingStatus.LEAK,
+                GasFloodFill.analyze(grid, SealingRequest.fast(at(5, 5, 5), 16, true)).status());
+        assertEquals(SealingStatus.SEALED,
+                GasFloodFill.analyze(grid, SealingRequest.fast(at(5, 5, 5), 16, false)).status(),
+                "по 6 направлениям диагональная щель не выпускает газ");
+    }
+
     @Test
     void invalidOriginReported() {
         SealingResult result = GasFloodFill.analyze(sealedRoom().build(),
