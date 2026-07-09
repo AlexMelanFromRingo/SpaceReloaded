@@ -33,6 +33,21 @@ public final class ModDataComponents {
     /** Полётная программа: посадочный маяк (точка прибытия). */
     public static final DataComponentType<GlobalPos> PROGRAM_PAD = register("program_pad");
 
+    /** Частота (канал) ключа связи — прошивается в ЦУПе. */
+    public static final DataComponentType<Integer> KEY_FREQUENCY = registerInt("key_frequency");
+
+    /** Частота, записанная в полётную программу при отметке защищённого маяка. */
+    public static final DataComponentType<Integer> PROGRAM_FREQUENCY = registerInt("program_frequency");
+
+    private static DataComponentType<Integer> registerInt(String name) {
+        return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,
+                Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name),
+                new DataComponentType.Builder<Integer>()
+                        .persistent(com.mojang.serialization.Codec.INT)
+                        .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.INT)
+                        .build());
+    }
+
     private static DataComponentType<GlobalPos> register(String name) {
         return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,
                 Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name),

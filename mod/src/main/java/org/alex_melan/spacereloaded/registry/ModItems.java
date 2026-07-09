@@ -68,6 +68,10 @@ public final class ModItems {
             properties -> new org.alex_melan.spacereloaded.cannon.TargetingDesignatorItem(
                     properties.stacksTo(1)));
 
+    /** Ключ связи (Phase 12 CTF): частота-канал для защиты маяков и перехвата. */
+    public static final Item FREQUENCY_KEY = register("frequency_key",
+            properties -> new org.alex_melan.spacereloaded.network.FrequencyKeyItem(properties.stacksTo(1)));
+
     /** Полётная программа: носитель маршрута для беспилотных рейсов. */
     public static final Item FLIGHT_PROGRAM = register("flight_program",
             properties -> new org.alex_melan.spacereloaded.rocket.FlightProgramItem(

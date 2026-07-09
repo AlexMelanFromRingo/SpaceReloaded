@@ -220,6 +220,17 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
 
+    /** Тарелка-перехватчик (Phase 12 CTF): уводит грузы с открытого канала на свою площадку. */
+    public static final Block INTERCEPTOR_DISH = register("interceptor_dish",
+            org.alex_melan.spacereloaded.network.InterceptorDishBlock::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
+    /** Спутник (Phase 12): полезная нагрузка ракеты; на орбите разворачивается в узел связи. */
+    public static final Block SATELLITE = register("satellite", Block::new,
+            BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops().noOcclusion());
+
     /** Возвратная капсула (T075): лёгкий командный пост с теплозащитой. */
     public static final Block RETURN_CAPSULE = register("return_capsule", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 12.0f).sound(SoundType.METAL)

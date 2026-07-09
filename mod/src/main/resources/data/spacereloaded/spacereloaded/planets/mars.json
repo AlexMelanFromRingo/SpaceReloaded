@@ -12,5 +12,6 @@
 	"atmosphere": "co2",
 	"synodic_period_ticks": 144000,
 	"window_width_ticks": 24000,
-	"window_phase_ticks": 0
+	"window_phase_ticks": 0,
+	"requires_coverage": true
 }

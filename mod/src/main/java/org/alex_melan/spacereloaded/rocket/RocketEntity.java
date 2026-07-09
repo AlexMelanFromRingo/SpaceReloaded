@@ -77,6 +77,7 @@ public class RocketEntity extends Entity {
     /** Полётная программа: посадочный маяк (точка прибытия). */
     @org.jetbrains.annotations.Nullable
     private net.minecraft.core.GlobalPos programPad;
+    private int programFrequency;
     /** Груз (агрегат всех отсеков; раскладывается по ним при разборе). */
     private final java.util.List<net.minecraft.world.item.ItemStack> cargoItems =
             new java.util.ArrayList<>();
@@ -219,6 +220,19 @@ public class RocketEntity extends Entity {
     /** Припаркована (не в полёте) — можно заправлять/разбирать. */
     public boolean isParked() {
         return !launched && rocketData != null;
+    }
+
+    /** Есть ли спутниковая полезная нагрузка (Phase 12). */
+    public boolean hasSatellite() {
+        if (rocketData == null) {
+            return false;
+        }
+        for (RocketData.Entry entry : rocketData.blocks()) {
+            if (entry.state().is(org.alex_melan.spacereloaded.registry.ModBlocks.SATELLITE)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Слоты груза: 15 на каждый грузовой отсек в структуре. */
@@ -566,8 +580,19 @@ public class RocketEntity extends Entity {
         var targets = fromProfile.transitionTargets();
         var targetId = targets.get(Math.floorMod(destinationIndex, targets.size()));
         var target = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, targetId);
-        if (target.isEmpty()
-                || org.alex_melan.spacereloaded.planet.TransferWindows.isOpen(level.getGameTime(), target.get())) {
+        if (target.isEmpty()) {
+            return true;
+        }
+        // Покрытие: беспилотный межпланетный рейс требует спутника на орбите вылета
+        boolean unmanned = autopilot && pilot == null;
+        if (!org.alex_melan.spacereloaded.network.Logistics.coverageSatisfied(
+                level.getServer(), level.dimension(), target.get(), unmanned)) {
+            org.alex_melan.spacereloaded.SpaceReloaded.LOGGER.info(
+                    "Беспилотный рейс к {} отклонён: нет спутникового покрытия на {}",
+                    targetId, level.dimension().identifier());
+            return false;
+        }
+        if (org.alex_melan.spacereloaded.planet.TransferWindows.isOpen(level.getGameTime(), target.get())) {
             return true;
         }
         if (!windowWarned && pilot != null) {
@@ -639,6 +664,27 @@ public class RocketEntity extends Entity {
 
         if (moved instanceof RocketEntity rocket) {
             rocket.postArrival(toOrbit, savedPropellant);
+            // Спутник: развёртывание на орбите ТОЛЬКО для беспилотного борта
+            // (иначе экипаж и груз погибли бы вместе с аппаратом) — запись покрытия
+            if (toOrbit && rocket.hasSatellite() && pilot == null) {
+                org.alex_melan.spacereloaded.network.SpaceNetworkState.get(target.getServer())
+                        .addCoverage(target.dimension());
+                target.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
+                        rocket.getX(), rocket.getY() + 1.5, rocket.getZ(), 40, 1.0, 1.0, 1.0, 0.05);
+                target.playSound(null, rocket.blockPosition(),
+                        net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE,
+                        net.minecraft.sounds.SoundSource.BLOCKS, 2.0f, 1.4f);
+                if (pilot != null) {
+                    pilot.teleportTo(target, targetX, targetY + 1.0, targetZ,
+                            java.util.Set.of(), pilot.getYRot(), pilot.getXRot(), false);
+                    pilot.sendSystemMessage(Component.translatable(
+                            "message.spacereloaded.satellite.deployed",
+                            org.alex_melan.spacereloaded.network.SpaceNetworkState.get(target.getServer())
+                                    .coverage(target.dimension())));
+                }
+                rocket.discard();
+                return;
+            }
             if (pilot != null) {
                 pilot.teleportTo(target, targetX, targetY + 1.0, targetZ,
                         java.util.Set.of(), pilot.getYRot(), pilot.getXRot(), false);
@@ -700,6 +746,8 @@ public class RocketEntity extends Entity {
             entityData.set(DATA_DESTINATION, destinationIndex);
         }
         this.programPad = pad;
+        this.programFrequency = program.getOrDefault(
+                org.alex_melan.spacereloaded.registry.ModDataComponents.PROGRAM_FREQUENCY, 0);
         return Component.translatable("message.spacereloaded.program.installed",
                 FlightProgramItem.describe(program));
     }
@@ -724,6 +772,15 @@ public class RocketEntity extends Entity {
         RocketPerformance performance = PerformanceCalculator.calculate(structure, 9.81);
         if (performance.twr() <= 1.0 || performance.deltaV() <= 0) {
             return Component.translatable("message.spacereloaded.rocket.warning.TWR_BELOW_ONE");
+        }
+        // Защищённая маршрутизация: разрешаем адрес доставки (аутентификация/перехват)
+        if (programPad != null) {
+            var routed = org.alex_melan.spacereloaded.network.SecureRouting.resolve(
+                    level.getServer(), programPad, programFrequency);
+            if (routed.authFailed()) {
+                return Component.translatable("message.spacereloaded.routing.auth_failed");
+            }
+            programPad = routed.destination();
         }
         autopilot = true;
         launched = true;
@@ -941,6 +998,7 @@ public class RocketEntity extends Entity {
             output.putString("program_pad_dim", programPad.dimension().identifier().toString());
             output.putLong("program_pad_pos", programPad.pos().asLong());
         }
+        output.putInt("program_frequency", programFrequency);
         output.putInt("destination", destinationIndex);
         output.putDouble("vel_x", flight == null ? 0 : flight.vel().x());
         output.putDouble("vel_y", flight == null ? 0 : flight.vel().y());
@@ -983,6 +1041,7 @@ public class RocketEntity extends Entity {
                             net.minecraft.resources.Identifier.parse(padDim)),
                     BlockPos.of(input.getLongOr("program_pad_pos", 0L)));
         }
+        this.programFrequency = input.getIntOr("program_frequency", 0);
         this.destinationIndex = input.getIntOr("destination", 0);
         entityData.set(DATA_LAUNCHED, launched);
     }

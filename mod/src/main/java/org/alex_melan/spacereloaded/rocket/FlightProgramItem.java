@@ -46,6 +46,15 @@ public class FlightProgramItem extends Item {
         }
         GlobalPos pad = GlobalPos.of(level.dimension(), context.getClickedPos().immutable());
         context.getItemInHand().set(ModDataComponents.PROGRAM_PAD, pad);
+        // Аутентификация: частота пишется в программу, ТОЛЬКО если у игрока есть
+        // ключ связи с каналом этого маяка (секрет — ключ, а не доступ к маяку).
+        int beaconFreq = org.alex_melan.spacereloaded.network.SpaceNetworkState.get(level.getServer())
+                .beaconFrequency(pad);
+        int programFreq = 0;
+        if (beaconFreq != 0 && hasKey(player, beaconFreq)) {
+            programFreq = beaconFreq;
+        }
+        context.getItemInHand().set(ModDataComponents.PROGRAM_FREQUENCY, programFreq);
         player.sendSystemMessage(Component.translatable(
                 "message.spacereloaded.program.pad_set",
                 pad.pos().toShortString(), pad.dimension().identifier().toString()));
@@ -83,6 +92,19 @@ public class FlightProgramItem extends Item {
             serverPlayer.sendSystemMessage(describe(stack));
         }
         return InteractionResult.SUCCESS_SERVER;
+    }
+
+    /** Есть ли у игрока ключ связи с нужным каналом (аутентификация доставки). */
+    private static boolean hasKey(ServerPlayer player, int frequency) {
+        var inv = player.getInventory();
+        for (int slot = 0; slot < inv.getContainerSize(); slot++) {
+            ItemStack stack = inv.getItem(slot);
+            if (stack.is(org.alex_melan.spacereloaded.registry.ModItems.FREQUENCY_KEY)
+                    && stack.getOrDefault(ModDataComponents.KEY_FREQUENCY, 0) == frequency) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Ключ локализации планеты: earth_orbit/moon/... из id измерения. */

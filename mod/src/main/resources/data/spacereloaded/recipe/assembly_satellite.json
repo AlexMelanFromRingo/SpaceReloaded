@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:solar_panel",
+		"spacereloaded:solar_panel",
+		"minecraft:redstone",
+		"spacereloaded:hermetic_glass"
+	],
+	"result": {
+		"id": "spacereloaded:satellite",
+		"count": 1
+	}
+}

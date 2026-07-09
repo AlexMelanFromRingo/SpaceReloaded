@@ -78,6 +78,7 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.FUELING_PUMP);
                         output.accept(ModBlocks.ROCKET_SEAT);
                         output.accept(ModBlocks.DOCKING_CLAMP);
+                        output.accept(ModBlocks.SATELLITE);
                         output.accept(ModBlocks.RETURN_CAPSULE);
                         output.accept(ModBlocks.LANDING_BEACON);
                         output.accept(ModBlocks.VENT_GRATE);
@@ -86,6 +87,8 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.MISSION_CONTROL);
                         output.accept(ModBlocks.TELEMETRY_SCREEN);
                         output.accept(ModItems.FLIGHT_PROGRAM);
+                        output.accept(ModItems.FREQUENCY_KEY);
+                        output.accept(ModBlocks.INTERCEPTOR_DISH);
                         output.accept(ModBlocks.LAUNCH_PAD);
                         output.accept(ModBlocks.ASSEMBLY_PYLON);
                         output.accept(ModBlocks.ORBITAL_CANNON);

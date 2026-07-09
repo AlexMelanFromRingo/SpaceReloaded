@@ -111,6 +111,7 @@ public class SpaceReloaded implements ModInitializer {
 			VacuumHazard.tick(level);
 			org.alex_melan.spacereloaded.planet.PlanetEffects.tick(level);
 			org.alex_melan.spacereloaded.impact.MeteorManager.tick(level);
+			org.alex_melan.spacereloaded.network.MarsClimate.tick(level);
 		});
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
 			ZoneManager.shutdown();

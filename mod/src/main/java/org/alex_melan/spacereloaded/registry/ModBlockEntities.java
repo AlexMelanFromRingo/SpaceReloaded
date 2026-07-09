@@ -112,6 +112,11 @@ public final class ModBlockEntities {
                     org.alex_melan.spacereloaded.machine.SabatierReactorBlockEntity::new,
                     Set.of(ModBlocks.SABATIER_REACTOR)));
 
+    public static final BlockEntityType<org.alex_melan.spacereloaded.network.InterceptorDishBlockEntity> INTERCEPTOR_DISH =
+            register("interceptor_dish", new BlockEntityType<>(
+                    org.alex_melan.spacereloaded.network.InterceptorDishBlockEntity::new,
+                    Set.of(ModBlocks.INTERCEPTOR_DISH)));
+
     public static void init() {
         // Публикация энергохранилищ в Fabric API lookup (решение D7: Team Reborn Energy)
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SOLAR_PANEL);

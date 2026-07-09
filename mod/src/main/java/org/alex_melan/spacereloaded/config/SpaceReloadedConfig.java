@@ -141,6 +141,19 @@ public final class SpaceReloadedConfig {
     /** Буфер топлива реактора, кг. */
     public double sabatierBufferCapacity = 600.0;
 
+    // --- Пылевые бури Марса (Phase 12) ---
+    public boolean dustStormsEnabled = true;
+    /** Интервал проверки старта бури, тики. */
+    public int dustStormCheckInterval = 600;
+    /** Шанс начать бурю за проверку. */
+    public double dustStormChance = 0.05;
+    /** Длительность бури, тики. */
+    public int dustStormDurationTicks = 2400;
+    /** Множитель солнечной эффективности в бурю (режет ~90%). */
+    public double dustStormSolarMultiplier = 0.1;
+    /** Абразивный урон бури за тик-проверку (незащищённым вне зоны). */
+    public float dustStormDamage = 1.0f;
+
     /** Метеоритного железа за удар (диапазон). */
     public int meteorIronMin = 2;
     public int meteorIronMax = 5;
@@ -188,6 +201,15 @@ public final class SpaceReloadedConfig {
         }
         if (meteorCheckIntervalTicks < 1) {
             throw new IllegalArgumentException("meteorCheckIntervalTicks должен быть >= 1");
+        }
+        if (dustStormCheckInterval < 1) {
+            throw new IllegalArgumentException("dustStormCheckInterval должен быть >= 1");
+        }
+        if (dustStormChance < 0 || dustStormChance > 1) {
+            throw new IllegalArgumentException("dustStormChance должен быть в [0, 1]");
+        }
+        if (dustStormDurationTicks < 1) {
+            throw new IllegalArgumentException("dustStormDurationTicks должен быть >= 1");
         }
         if (meteorChancePerCheck < 0 || meteorChancePerCheck > 1) {
             throw new IllegalArgumentException("meteorChancePerCheck должен быть в [0, 1]");

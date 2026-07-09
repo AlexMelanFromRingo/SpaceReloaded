@@ -86,7 +86,7 @@ public final class VacuumHazard {
     }
 
     /** Полный сет EVA: грудь+ноги+ботинки из тега space_suit. */
-    private static boolean hasFullSuit(net.minecraft.world.entity.player.Player player) {
+    public static boolean hasFullSuit(net.minecraft.world.entity.player.Player player) {
         return player.getItemBySlot(EquipmentSlot.CHEST)
                         .is(org.alex_melan.spacereloaded.registry.ModTags.SPACE_SUIT)
                 && player.getItemBySlot(EquipmentSlot.LEGS)

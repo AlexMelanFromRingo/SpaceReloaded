@@ -1,0 +1,15 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot",
+		"minecraft:iron_bars",
+		"minecraft:redstone",
+		"spacereloaded:hermetic_glass",
+		"minecraft:ender_eye"
+	],
+	"result": {
+		"id": "spacereloaded:interceptor_dish",
+		"count": 1
+	}
+}

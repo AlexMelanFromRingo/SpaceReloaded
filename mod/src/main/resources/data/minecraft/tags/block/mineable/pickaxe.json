@@ -42,6 +42,8 @@
 		"spacereloaded:telemetry_screen",
 		"spacereloaded:methalox_engine",
 		"spacereloaded:atmospheric_collector",
-		"spacereloaded:sabatier_reactor"
+		"spacereloaded:sabatier_reactor",
+		"spacereloaded:satellite",
+		"spacereloaded:interceptor_dish"
 	]
 }

@@ -48,6 +48,9 @@ public class SolarPanelBlockEntity extends MachineBlockEntity {
         if (ZoneManager.isVacuumWorld(level) && efficiency <= 1.0) {
             efficiency = SpaceReloaded.config().solarVacuumMultiplier;
         }
+        if (org.alex_melan.spacereloaded.network.MarsClimate.stormActive(level)) {
+            efficiency *= SpaceReloaded.config().dustStormSolarMultiplier; // буря глушит панели
+        }
         return (long) (base * efficiency);
     }
 }

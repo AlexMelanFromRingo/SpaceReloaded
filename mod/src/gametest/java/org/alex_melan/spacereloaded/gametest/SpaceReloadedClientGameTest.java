@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -27,7 +28,6 @@ import org.alex_melan.spacereloaded.registry.ModItems;
 import org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity;
 import org.alex_melan.spacereloaded.rocket.RocketEntity;
 import org.alex_melan.spacereloaded.rocket.RocketInteractions;
-import org.alex_melan.spacereloaded.registry.ModDataComponents;
 import org.alex_melan.spacereloaded.sealing.SealedZone;
 import org.alex_melan.spacereloaded.sealing.ZoneManager;
 import team.reborn.energy.api.base.SimpleEnergyStorage;
@@ -67,6 +67,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testRedstoneAirlock(context, sp);
             testTelemetryScreen(context, sp);
             testMarsChemistry(context, sp);
+            testOrbitalNetwork(context, sp);
         }
     }
 
@@ -749,6 +750,83 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         });
         assertThat(windowCheck.equals("ok"), "Окно Марса: открыто в фазе 0, закрыто в середине; получено: " + windowCheck);
         log("окно Гомана к Марсу: открыто/закрыто по фазе ✓");
+    }
+
+    // ---------- 13. Орбитальная сеть: покрытие, маршрутизация, бури ----------
+
+    private void testOrbitalNetwork(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int nx = BX - 90;
+        moveTo(context, sp, nx - 4, BZ);
+        // Живая тарелка-перехватчик в загруженном чанке (resolve проверяет живой блок)
+        sp.getServer().runCommand(set(nx, BY, BZ, "spacereloaded:interceptor_dish"));
+        sp.getServer().runOnServer(server -> {
+            if (server.overworld().getBlockEntity(new BlockPos(nx, BY, BZ))
+                    instanceof org.alex_melan.spacereloaded.network.InterceptorDishBlockEntity dish) {
+                dish.setListenFrequency(0); // регистрируется как перехватчик открытых каналов
+            }
+        });
+        context.waitTick();
+
+        String result = sp.getServer().computeOnServer(server -> {
+            var net = org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server);
+            var orbit = ResourceKey.create(Registries.DIMENSION,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit"));
+            var moon = ResourceKey.create(Registries.DIMENSION,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "moon"));
+            var mars = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(server.overworld(),
+                    Identifier.fromNamespaceAndPath("spacereloaded", "mars"));
+            if (mars.isEmpty()) {
+                return "нет профиля Марса";
+            }
+            // Покрытие + гейт логистики
+            net.addCoverage(orbit);
+            boolean cov = net.hasCoverage(orbit) && !net.hasCoverage(moon);
+            boolean gateOpen = org.alex_melan.spacereloaded.network.Logistics
+                    .coverageSatisfied(server, orbit, mars.get(), true);
+            boolean gateBlocked = !org.alex_melan.spacereloaded.network.Logistics
+                    .coverageSatisfied(server, moon, mars.get(), true);
+            boolean mannedExempt = org.alex_melan.spacereloaded.network.Logistics
+                    .coverageSatisfied(server, moon, mars.get(), false);
+            // Аутентификация: защищённый маяк
+            GlobalPos beacon = GlobalPos.of(Level.OVERWORLD, new BlockPos(10, 64, 10));
+            net.secureBeacon(beacon, 777);
+            var authOk = org.alex_melan.spacereloaded.network.SecureRouting.resolve(server, beacon, 777);
+            var authFail = org.alex_melan.spacereloaded.network.SecureRouting.resolve(server, beacon, 111);
+            boolean auth = beacon.equals(authOk.destination()) && !authOk.authFailed()
+                    && authFail.destination() == null && authFail.authFailed();
+            // Перехват открытого канала ЖИВЫМ дишем в том же измерении
+            GlobalPos openBeacon = GlobalPos.of(Level.OVERWORLD, new BlockPos(nx + 5, BY, BZ));
+            GlobalPos dishPos = GlobalPos.of(Level.OVERWORLD, new BlockPos(nx, BY, BZ));
+            var hijack = org.alex_melan.spacereloaded.network.SecureRouting.resolve(server, openBeacon, 0);
+            boolean intercepted = dishPos.equals(hijack.destination()) && hijack.intercepted();
+            // Межпространственный перехват невозможен (диш в оверворлде, маяк на Луне)
+            GlobalPos moonBeacon = GlobalPos.of(moon, new BlockPos(60, 101, 60));
+            var noHijack = org.alex_melan.spacereloaded.network.SecureRouting.resolve(server, moonBeacon, 0);
+            boolean dimSafe = moonBeacon.equals(noHijack.destination()) && !noHijack.intercepted();
+            // Буря активна в окне, гаснет после
+            long t = server.overworld().getGameTime();
+            net.startStorm(Level.OVERWORLD, t + 100);
+            boolean storm = net.stormActive(Level.OVERWORLD, t) && !net.stormActive(Level.OVERWORLD, t + 200);
+            // КРИТИЧНО: стейт сериализуется в NBT (GlobalPos-ключи ломали сохранение)
+            var enc = org.alex_melan.spacereloaded.network.SpaceNetworkState.CODEC
+                    .encodeStart(NbtOps.INSTANCE, net).result();
+            boolean persist = enc.isPresent();
+            if (persist) {
+                var dec = org.alex_melan.spacereloaded.network.SpaceNetworkState.CODEC
+                        .parse(NbtOps.INSTANCE, enc.get()).result();
+                persist = dec.isPresent() && dec.get().hasCoverage(orbit)
+                        && dec.get().beaconFrequency(beacon) == 777;
+            }
+
+            return (cov && gateOpen && gateBlocked && mannedExempt && auth && intercepted
+                    && dimSafe && storm && persist)
+                    ? "ok"
+                    : ("cov=" + cov + " gate=" + gateOpen + "/" + gateBlocked + " manned=" + mannedExempt
+                       + " auth=" + auth + " intercept=" + intercepted + " dimSafe=" + dimSafe
+                       + " storm=" + storm + " persist=" + persist);
+        });
+        assertThat(result.equals("ok"), "Орбитальная сеть; получено: " + result);
+        log("орбитальная сеть: покрытие, гейт, защита+живой перехват, буря, персист NBT ✓");
     }
 
     // ---------- Утилиты ----------
