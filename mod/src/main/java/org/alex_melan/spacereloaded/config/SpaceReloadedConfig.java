@@ -141,6 +141,14 @@ public final class SpaceReloadedConfig {
     /** Буфер топлива реактора, кг. */
     public double sabatierBufferCapacity = 600.0;
 
+    // --- Тепловая модель (Phase 14) ---
+    /** Комфортная температура базы, °C (нулевая доп-нагрузка климат-контроля). */
+    public double thermalComfort = 20.0;
+    /** Масштаб теплопотерь: при |T−комфорт| = scale энергия контроллера ×2. */
+    public double thermalLoadScale = 120.0;
+    /** Энергия ректенны за один энергоспутник, E/тик (чистое небо). */
+    public long rectennaEnergyPerSat = 30;
+
     // --- Пылевые бури Марса (Phase 12) ---
     public boolean dustStormsEnabled = true;
     /** Интервал проверки старта бури, тики. */

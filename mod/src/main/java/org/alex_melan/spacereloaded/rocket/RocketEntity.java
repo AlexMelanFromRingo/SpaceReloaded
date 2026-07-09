@@ -222,17 +222,26 @@ public class RocketEntity extends Entity {
         return !launched && rocketData != null;
     }
 
-    /** Есть ли спутниковая полезная нагрузка (Phase 12). */
-    public boolean hasSatellite() {
+    private boolean hasPayload(net.minecraft.world.level.block.Block block) {
         if (rocketData == null) {
             return false;
         }
         for (RocketData.Entry entry : rocketData.blocks()) {
-            if (entry.state().is(org.alex_melan.spacereloaded.registry.ModBlocks.SATELLITE)) {
+            if (entry.state().is(block)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** Есть ли спутниковая полезная нагрузка связи (Phase 12). */
+    public boolean hasSatellite() {
+        return hasPayload(org.alex_melan.spacereloaded.registry.ModBlocks.SATELLITE);
+    }
+
+    /** Есть ли энергоспутник (Phase 14). */
+    public boolean hasPowerSatellite() {
+        return hasPayload(org.alex_melan.spacereloaded.registry.ModBlocks.POWER_SATELLITE);
     }
 
     /** Слоты груза: 15 на каждый грузовой отсек в структуре. */
@@ -664,24 +673,22 @@ public class RocketEntity extends Entity {
 
         if (moved instanceof RocketEntity rocket) {
             rocket.postArrival(toOrbit, savedPropellant);
-            // Спутник: развёртывание на орбите ТОЛЬКО для беспилотного борта
-            // (иначе экипаж и груз погибли бы вместе с аппаратом) — запись покрытия
-            if (toOrbit && rocket.hasSatellite() && pilot == null) {
-                org.alex_melan.spacereloaded.network.SpaceNetworkState.get(target.getServer())
-                        .addCoverage(target.dimension());
+            // Спутник/энергоспутник: развёртывание на орбите ТОЛЬКО беспилотно
+            // (иначе экипаж и груз погибли бы вместе с аппаратом)
+            boolean payload = rocket.hasSatellite() || rocket.hasPowerSatellite();
+            if (toOrbit && payload && pilot == null) {
+                var network = org.alex_melan.spacereloaded.network.SpaceNetworkState.get(target.getServer());
+                if (rocket.hasSatellite()) {
+                    network.addCoverage(target.dimension());
+                }
+                if (rocket.hasPowerSatellite()) {
+                    network.addPowerSat(target.dimension());
+                }
                 target.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
                         rocket.getX(), rocket.getY() + 1.5, rocket.getZ(), 40, 1.0, 1.0, 1.0, 0.05);
                 target.playSound(null, rocket.blockPosition(),
                         net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE,
                         net.minecraft.sounds.SoundSource.BLOCKS, 2.0f, 1.4f);
-                if (pilot != null) {
-                    pilot.teleportTo(target, targetX, targetY + 1.0, targetZ,
-                            java.util.Set.of(), pilot.getYRot(), pilot.getXRot(), false);
-                    pilot.sendSystemMessage(Component.translatable(
-                            "message.spacereloaded.satellite.deployed",
-                            org.alex_melan.spacereloaded.network.SpaceNetworkState.get(target.getServer())
-                                    .coverage(target.dimension())));
-                }
                 rocket.discard();
                 return;
             }

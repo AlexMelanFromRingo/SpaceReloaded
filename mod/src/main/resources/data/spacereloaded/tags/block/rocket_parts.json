@@ -12,6 +12,7 @@
 		"spacereloaded:return_capsule",
 		"spacereloaded:cargo_hold",
 		"spacereloaded:methalox_engine",
-		"spacereloaded:satellite"
+		"spacereloaded:satellite",
+		"spacereloaded:power_satellite"
 	]
 }

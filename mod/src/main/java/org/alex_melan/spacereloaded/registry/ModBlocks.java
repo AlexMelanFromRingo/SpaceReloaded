@@ -226,6 +226,22 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
 
+    /** Астероидный камень (Phase 14): порода пояса астероидов, при добыче даёт металлы/лёд. */
+    public static final Block ASTEROID_STONE = register("asteroid_stone", Block::new,
+            BlockBehaviour.Properties.of().strength(4.0f, 4.0f).sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops());
+
+    /** Энергоспутник (Phase 14): на орбите добавляет мощность для наземных ректенн. */
+    public static final Block POWER_SATELLITE = register("power_satellite", Block::new,
+            BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops().noOcclusion());
+
+    /** Ректенна (Phase 14): принимает энергию с энергоспутников при чистом небе. */
+    public static final Block RECTENNA = register("rectenna",
+            props -> new org.alex_melan.spacereloaded.energy.RectennaBlock(props),
+            BlockBehaviour.Properties.of().strength(3.0f, 6.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
     /** Спутник (Phase 12): полезная нагрузка ракеты; на орбите разворачивается в узел связи. */
     public static final Block SATELLITE = register("satellite", Block::new,
             BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.METAL)

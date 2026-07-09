@@ -13,5 +13,7 @@
 	"synodic_period_ticks": 144000,
 	"window_width_ticks": 24000,
 	"window_phase_ticks": 0,
-	"requires_coverage": true
+	"requires_coverage": true,
+	"temperature": -60,
+	"temperature_amplitude": 25
 }

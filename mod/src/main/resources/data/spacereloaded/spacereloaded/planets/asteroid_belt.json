@@ -1,0 +1,15 @@
+{
+	"dimension": "spacereloaded:asteroid_belt",
+	"gravity": 0.49,
+	"breathable": false,
+	"solar_efficiency": 1.6,
+	"coordinate_scale": 8.0,
+	"transition_altitude": 200,
+	"transition_targets": [
+		"spacereloaded:earth_orbit"
+	],
+	"arrival": "platform",
+	"atmosphere": "none",
+	"temperature": -180,
+	"temperature_amplitude": 0
+}

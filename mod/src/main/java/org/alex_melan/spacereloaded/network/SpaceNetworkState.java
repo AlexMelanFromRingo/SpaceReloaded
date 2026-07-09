@@ -41,6 +41,8 @@ public class SpaceNetworkState extends SavedData {
                     .optionalFieldOf("coverage", Map.of()).forGetter(s -> s.coverage),
             Codec.unboundedMap(Level.RESOURCE_KEY_CODEC, Codec.LONG)
                     .optionalFieldOf("storm_until", Map.of()).forGetter(s -> s.stormUntil),
+            Codec.unboundedMap(Level.RESOURCE_KEY_CODEC, Codec.INT)
+                    .optionalFieldOf("power_sats", Map.of()).forGetter(s -> s.powerSats),
             PosEntry.CODEC.listOf().optionalFieldOf("beacon_frequency", List.of())
                     .forGetter(s -> toList(s.beaconFrequency)),
             PosEntry.CODEC.listOf().optionalFieldOf("interceptors", List.of())
@@ -58,15 +60,19 @@ public class SpaceNetworkState extends SavedData {
     /** Перехватчики: позиция дишa (и приёмник) → слушаемый канал (0 = открытые). */
     private final Map<GlobalPos, Integer> interceptors;
 
+    private final Map<ResourceKey<Level>, Integer> powerSats;
+
     public SpaceNetworkState() {
-        this(Map.of(), Map.of(), List.of(), List.of());
+        this(Map.of(), Map.of(), Map.of(), List.of(), List.of());
     }
 
     private SpaceNetworkState(Map<ResourceKey<Level>, Integer> coverage,
                              Map<ResourceKey<Level>, Long> stormUntil,
+                             Map<ResourceKey<Level>, Integer> powerSats,
                              List<PosEntry> beaconFrequency, List<PosEntry> interceptors) {
         this.coverage = new HashMap<>(coverage);
         this.stormUntil = new HashMap<>(stormUntil);
+        this.powerSats = new HashMap<>(powerSats);
         this.beaconFrequency = fromList(beaconFrequency);
         this.interceptors = fromList(interceptors);
     }
@@ -100,6 +106,17 @@ public class SpaceNetworkState extends SavedData {
 
     public boolean hasCoverage(ResourceKey<Level> dimension) {
         return coverage(dimension) > 0;
+    }
+
+    // --- Энергоспутники (Phase 14) ---
+
+    public int powerSats(ResourceKey<Level> orbit) {
+        return powerSats.getOrDefault(orbit, 0);
+    }
+
+    public void addPowerSat(ResourceKey<Level> orbit) {
+        powerSats.merge(orbit, 1, Integer::sum);
+        setDirty();
     }
 
     // --- Пылевые бури ---

@@ -9,5 +9,7 @@
 		"spacereloaded:earth_orbit"
 	],
 	"arrival": "descend",
-	"atmosphere": "air"
+	"atmosphere": "air",
+	"temperature": 15,
+	"temperature_amplitude": 10
 }

@@ -67,7 +67,9 @@ public final class ModRegistries {
             long synodicPeriodTicks,
             long windowWidthTicks,
             long windowPhaseTicks,
-            boolean requiresCoverage
+            boolean requiresCoverage,
+            double temperature,
+            double temperatureAmplitude
     ) {
         public static final Codec<PlanetProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Identifier.CODEC.fieldOf("dimension").forGetter(PlanetProfile::dimension),
@@ -83,7 +85,9 @@ public final class ModRegistries {
                 Codec.LONG.optionalFieldOf("synodic_period_ticks", 0L).forGetter(PlanetProfile::synodicPeriodTicks),
                 Codec.LONG.optionalFieldOf("window_width_ticks", 0L).forGetter(PlanetProfile::windowWidthTicks),
                 Codec.LONG.optionalFieldOf("window_phase_ticks", 0L).forGetter(PlanetProfile::windowPhaseTicks),
-                Codec.BOOL.optionalFieldOf("requires_coverage", false).forGetter(PlanetProfile::requiresCoverage)
+                Codec.BOOL.optionalFieldOf("requires_coverage", false).forGetter(PlanetProfile::requiresCoverage),
+                Codec.DOUBLE.optionalFieldOf("temperature", 20.0).forGetter(PlanetProfile::temperature),
+                Codec.DOUBLE.optionalFieldOf("temperature_amplitude", 0.0).forGetter(PlanetProfile::temperatureAmplitude)
         ).apply(instance, PlanetProfile::new));
     }
 

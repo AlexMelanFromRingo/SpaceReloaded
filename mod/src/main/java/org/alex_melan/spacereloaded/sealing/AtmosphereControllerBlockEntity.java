@@ -46,7 +46,9 @@ public class AtmosphereControllerBlockEntity extends MachineBlockEntity {
         }
         ensureAdjacentCableNetworks(level);
 
-        long cost = SpaceReloaded.config().controllerEnergyPerSecond;
+        // Тепловая нагрузка: горячее/холодное тело поднимает расход климат-контроля
+        long cost = (long) Math.ceil(SpaceReloaded.config().controllerEnergyPerSecond
+                * org.alex_melan.spacereloaded.network.Thermal.climateLoadFactor(level));
         if (energy.amount >= cost) {
             energy.amount -= cost;
             powered = true;

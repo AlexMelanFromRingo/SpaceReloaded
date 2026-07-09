@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:solar_panel",
+		"spacereloaded:solar_panel",
+		"spacereloaded:solar_panel",
+		"spacereloaded:titanium_alloy_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:power_satellite",
+		"count": 1
+	}
+}

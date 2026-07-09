@@ -68,6 +68,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testTelemetryScreen(context, sp);
             testMarsChemistry(context, sp);
             testOrbitalNetwork(context, sp);
+            testDeepSpace(context, sp);
         }
     }
 
@@ -827,6 +828,57 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         });
         assertThat(result.equals("ok"), "Орбитальная сеть; получено: " + result);
         log("орбитальная сеть: покрытие, гейт, защита+живой перехват, буря, персист NBT ✓");
+    }
+
+    // ---------- 14. Тепловая модель, энергоспутники, пояс астероидов ----------
+
+    private void testDeepSpace(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int rx = BX - 120;
+        moveTo(context, sp, rx - 4, BZ);
+        // Ректенна: без энергоспутников молчит, с ними — генерирует
+        sp.getServer().runCommand(set(rx, BY, BZ, "spacereloaded:rectenna"));
+        context.waitTicks(30);
+        long before = sp.getServer().computeOnServer(server ->
+                server.overworld().getBlockEntity(new BlockPos(rx, BY, BZ))
+                        instanceof org.alex_melan.spacereloaded.energy.RectennaBlockEntity r
+                        ? r.energyStorage().getAmount() : -1L);
+        assertThat(before == 0, "Ректенна без энергоспутников не должна генерировать, получено: " + before);
+
+        var orbitKey = "spacereloaded:earth_orbit";
+        sp.getServer().runOnServer(server -> {
+            var net = org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server);
+            var orbit = ResourceKey.create(Registries.DIMENSION,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit"));
+            net.addPowerSat(orbit);
+            net.addPowerSat(orbit);
+        });
+        long after = 0;
+        for (int waited = 0; waited < 100 && after <= 0; waited += 20) {
+            context.waitTicks(20);
+            after = sp.getServer().computeOnServer(server ->
+                    server.overworld().getBlockEntity(new BlockPos(rx, BY, BZ))
+                            instanceof org.alex_melan.spacereloaded.energy.RectennaBlockEntity r
+                            ? r.energyStorage().getAmount() : 0L);
+        }
+        assertThat(after > 0, "Ректенна с 2 энергоспутниками должна генерировать, получено: " + after);
+        log("энергоспутники: ректенна " + after + " E при 2 спутниках ✓");
+
+        // Тепловая модель + профиль пояса астероидов (даёт worldgen загрузиться корректно)
+        String checks = sp.getServer().computeOnServer(server -> {
+            var moon = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(server.overworld(),
+                    Identifier.fromNamespaceAndPath("spacereloaded", "moon"));
+            var belt = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(server.overworld(),
+                    Identifier.fromNamespaceAndPath("spacereloaded", "asteroid_belt"));
+            boolean thermal = moon.isPresent() && Math.abs(moon.get().temperature() + 20) < 0.01
+                    && Math.abs(moon.get().temperatureAmplitude() - 130) < 0.01;
+            double load = org.alex_melan.spacereloaded.network.Thermal.climateLoadFactor(server.overworld());
+            boolean loadOk = load >= 1.0 && Double.isFinite(load);
+            boolean beltOk = belt.isPresent() && Math.abs(belt.get().gravity() - 0.49) < 0.01;
+            return (thermal && loadOk && beltOk) ? "ok"
+                    : ("thermal=" + thermal + " load=" + load + " belt=" + beltOk);
+        });
+        assertThat(checks.equals("ok"), "Тепло/пояс астероидов; получено: " + checks);
+        log("тепловая модель + профиль пояса астероидов ✓");
     }
 
     // ---------- Утилиты ----------

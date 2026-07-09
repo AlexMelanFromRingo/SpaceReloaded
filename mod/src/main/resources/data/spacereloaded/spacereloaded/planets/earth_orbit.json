@@ -8,7 +8,10 @@
 	"transition_targets": [
 		"spacereloaded:earth",
 		"spacereloaded:moon",
-		"spacereloaded:mars"
+		"spacereloaded:mars",
+		"spacereloaded:asteroid_belt"
 	],
-	"arrival": "platform"
+	"arrival": "platform",
+	"temperature": -100,
+	"temperature_amplitude": 0
 }

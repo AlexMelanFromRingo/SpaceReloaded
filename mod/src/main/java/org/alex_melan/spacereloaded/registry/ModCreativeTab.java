@@ -79,6 +79,9 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.ROCKET_SEAT);
                         output.accept(ModBlocks.DOCKING_CLAMP);
                         output.accept(ModBlocks.SATELLITE);
+                        output.accept(ModBlocks.POWER_SATELLITE);
+                        output.accept(ModBlocks.RECTENNA);
+                        output.accept(ModBlocks.ASTEROID_STONE);
                         output.accept(ModBlocks.RETURN_CAPSULE);
                         output.accept(ModBlocks.LANDING_BEACON);
                         output.accept(ModBlocks.VENT_GRATE);
