@@ -699,6 +699,40 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                         .getValue(org.alex_melan.spacereloaded.sealing.HermeticHatchBlock.OPEN));
         assertThat(closed, "Люк должен закрыться при снятии сигнала");
         log("шлюз: снятие сигнала закрыло люк ✓");
+
+        // Дверь 2×2 открывается РУКОЙ целиком: регрессия на неверный neighborChanged,
+        // из-за которого setBlock по соседу группы читался как «сигнал снят»
+        int gx = ax + 12;
+        sp.getServer().runCommand(fill(gx, BY, BZ, gx + 1, BY + 1, BZ, "spacereloaded:hermetic_hatch"));
+        context.waitTick();
+        sp.getServer().runOnServer(server -> {
+            ServerLevel overworld = server.overworld();
+            BlockPos hit = new BlockPos(gx, BY, BZ);
+            overworld.getBlockState(hit).useWithoutItem(overworld,
+                    server.getPlayerList().getPlayers().getFirst(),
+                    new net.minecraft.world.phys.BlockHitResult(
+                            net.minecraft.world.phys.Vec3.atCenterOf(hit),
+                            net.minecraft.core.Direction.NORTH, hit, false));
+        });
+        int openCount = 0;
+        for (int waited = 0; waited < 160 && openCount < 4; waited += 10) {
+            context.waitTicks(10);
+            openCount = sp.getServer().computeOnServer(server -> {
+                int open = 0;
+                for (int dx = 0; dx <= 1; dx++) {
+                    for (int dy = 0; dy <= 1; dy++) {
+                        if (server.overworld().getBlockState(new BlockPos(gx + dx, BY + dy, BZ))
+                                .getValue(org.alex_melan.spacereloaded.sealing.HermeticHatchBlock.OPEN)) {
+                            open++;
+                        }
+                    }
+                }
+                return open;
+            });
+        }
+        assertThat(openCount == 4,
+                "Дверь 2×2 должна открыться целиком по ПКМ, открыто блоков: " + openCount);
+        log("шлюз: дверь 2×2 открылась рукой целиком ✓");
     }
 
     // ---------- 11. Экран телеметрии: статус зоны ----------

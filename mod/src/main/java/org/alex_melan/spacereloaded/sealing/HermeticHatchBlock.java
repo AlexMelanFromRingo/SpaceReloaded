@@ -46,6 +46,12 @@ public class HermeticHatchBlock extends Block {
 
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty CYCLING = BooleanProperty.create("cycling");
+    /**
+     * Запомненный редстоун-сигнал (как у ванильной двери). Без него любое
+     * обновление соседа — включая наш собственный setBlock по членам группы —
+     * выглядит как «сигнал снят» и мгновенно захлопывает открытую дверь.
+     */
+    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
     /** Максимум люков в группе-«двери» (2×2 проём). */
     private static final int MAX_GROUP = 4;
@@ -54,12 +60,19 @@ public class HermeticHatchBlock extends Block {
         super(properties);
         registerDefaultState(getStateDefinition().any()
                 .setValue(OPEN, false)
-                .setValue(CYCLING, false));
+                .setValue(CYCLING, false)
+                .setValue(POWERED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(OPEN, CYCLING);
+        builder.add(OPEN, CYCLING, POWERED);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext context) {
+        return defaultBlockState().setValue(POWERED,
+                context.getLevel().hasNeighborSignal(context.getClickedPos()));
     }
 
     @Override
@@ -116,6 +129,11 @@ public class HermeticHatchBlock extends Block {
      * Редстоун-управление шлюзом (UX-обвязка): сигнал открывает группу через
      * цикл (с интерлоком), снятие сигнала — мгновенно закрывает. Клик по люку
      * работает как прежде; редстоун — для автоматики шлюзовых камер.
+     *
+     * <p>Реагируем только на ФРОНТ сигнала (POWERED != hasNeighborSignal).
+     * Иначе setBlock с UPDATE_NEIGHBORS по соседнему люку группы приходит сюда
+     * как «сигнала нет, а дверь открыта» и захлопывает её: дверь 2×2
+     * открывалась одним блоком или ни одним, и только рычаг держал её открытой.
      */
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block sourceBlock,
@@ -125,9 +143,18 @@ public class HermeticHatchBlock extends Block {
         if (level.isClientSide() || !(level instanceof ServerLevel serverLevel)) {
             return;
         }
+        BlockState current = serverLevel.getBlockState(pos);
+        if (!(current.getBlock() instanceof HermeticHatchBlock)) {
+            return;
+        }
         boolean powered = serverLevel.hasNeighborSignal(pos);
-        boolean open = state.getValue(OPEN);
-        boolean cycling = state.getValue(CYCLING);
+        if (powered == current.getValue(POWERED)) {
+            return; // сигнал не менялся: обновление соседа нас не касается
+        }
+        serverLevel.setBlock(pos, current.setValue(POWERED, powered), Block.UPDATE_CLIENTS);
+
+        boolean open = current.getValue(OPEN);
+        boolean cycling = current.getValue(CYCLING);
         List<BlockPos> group = collectGroup(serverLevel, pos);
         if (powered && !open && !cycling) {
             beginCycle(serverLevel, pos, group);
