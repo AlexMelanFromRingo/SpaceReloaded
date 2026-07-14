@@ -1,0 +1,8 @@
+{
+	"replace": false,
+	"values": [
+		"spacereloaded:kerolox", "spacereloaded:flowing_kerolox",
+		"spacereloaded:hydrolox", "spacereloaded:flowing_hydrolox",
+		"spacereloaded:methalox", "spacereloaded:flowing_methalox"
+	]
+}

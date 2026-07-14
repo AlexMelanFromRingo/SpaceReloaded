@@ -283,6 +283,17 @@ public final class ModBlocks {
     public static final Block MOON_STONE = register("moon_stone", Block::new,
             BlockBehaviour.Properties.of().strength(2.0f, 7.0f).requiresCorrectToolForDrops()
                     .sound(SoundType.DEEPSLATE));
+    /** Лунный ильменит: главный источник титана после первого полёта. */
+    public static final Block MOON_TITANIUM_ORE = register("moon_titanium_ore", Block::new,
+            BlockBehaviour.Properties.of()
+                    .strength(3.5f, 3.0f)
+                    .requiresCorrectToolForDrops());
+    /** Марсианские жилы вольфрама: снаряды и орудия дешевле не станут. */
+    public static final Block MARS_TUNGSTEN_ORE = register("mars_tungsten_ore", Block::new,
+            BlockBehaviour.Properties.of()
+                    .strength(4.5f, 3.0f)
+                    .requiresCorrectToolForDrops());
+
     public static final Block MOON_ICE = register("moon_ice", Block::new,
             BlockBehaviour.Properties.of().strength(1.2f).requiresCorrectToolForDrops()
                     .sound(SoundType.GLASS));

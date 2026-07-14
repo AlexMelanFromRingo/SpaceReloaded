@@ -139,6 +139,25 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ATMOSPHERIC_COLLECTOR);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SABATIER_REACTOR);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), RECTENNA);
+
+        // Топливо как жидкость: бак виден трубам соседних модов (Fabric Transfer API)
+        net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.SIDED.registerForBlockEntity(
+                (be, direction) -> be.fluidStorage(), FUEL_TANK);
+        for (var propellant : org.alex_melan.spacereloaded.fluid.ModFluids.all()) {
+            // Полное ведро отдаёт топливо и превращается в пустое
+            net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.ITEM.registerForItems(
+                    (stack, context) -> new net.fabricmc.fabric.api.transfer.v1.fluid.base
+                            .FullItemFluidStorage(context, net.minecraft.world.item.Items.BUCKET,
+                            net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant.of(propellant.source()),
+                            net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET),
+                    propellant.bucket());
+            // Пустое ведро принимает топливо и становится полным
+            net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.combinedItemApiProvider(
+                    net.minecraft.world.item.Items.BUCKET).register(context ->
+                    new net.fabricmc.fabric.api.transfer.v1.fluid.base.EmptyItemFluidStorage(
+                            context, propellant.bucket(), propellant.source(),
+                            net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET));
+        }
     }
 
     private ModBlockEntities() {

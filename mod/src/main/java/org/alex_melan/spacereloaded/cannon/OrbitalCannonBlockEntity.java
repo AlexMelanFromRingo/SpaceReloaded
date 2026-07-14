@@ -146,6 +146,27 @@ public class OrbitalCannonBlockEntity extends MachineBlockEntity {
                 aim.getX(), aim.getY(), aim.getZ(), etaText);
     }
 
+    /** Сколько тиков ещё перезаряжается; 0 — готова. */
+    public int cooldownRemaining(ServerLevel level) {
+        long elapsed = level.getGameTime() - lastFireGameTime;
+        long left = SpaceReloaded.config().cannonCooldownTicks - elapsed;
+        return (int) Math.clamp(left, 0, Integer.MAX_VALUE);
+    }
+
+    /** Снимок для терминала наведения. */
+    public org.alex_melan.spacereloaded.network.CannonStatePayload snapshot(ServerLevel level) {
+        var config = SpaceReloaded.config();
+        BlockPos targetPos = target == null ? BlockPos.ZERO : target.pos();
+        Identifier targetDim = target == null
+                ? Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "none")
+                : target.dimension().identifier();
+        return new org.alex_melan.spacereloaded.network.CannonStatePayload(
+                getBlockPos(), level.dimension().identifier(),
+                rods, config.cannonMaxRods, energy.amount, config.cannonEnergyCapacity,
+                config.cannonEnergyPerShot, cooldownRemaining(level),
+                targetPos, targetDim, target != null);
+    }
+
     /** Статус для ПКМ без предметов, когда стрелять нельзя/нечем. */
     public Component status() {
         var config = SpaceReloaded.config();

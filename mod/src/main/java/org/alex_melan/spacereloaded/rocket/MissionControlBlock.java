@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * ЦУП (v1): ПКМ — телеметрия всех бортов в радиусе 64 блока: статус,
- * топливо, высота. Реальные данные честной физики; экраны-GUI — позже.
+ * ЦУП: ПКМ — телеметрия всех бортов в радиусе 64 блока (статус, топливо,
+ * высота); Sneak+ПКМ — карта полёта. Данные из честной физики.
  */
 public class MissionControlBlock extends Block {
 
@@ -37,6 +37,11 @@ public class MissionControlBlock extends Block {
         if (!(level instanceof ServerLevel serverLevel)
                 || !(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResult.PASS;
+        }
+        if (player.isSecondaryUseActive()) {
+            org.alex_melan.spacereloaded.network.ModNetworking.sendPlanetMap(
+                    serverLevel.getServer(), serverPlayer);
+            return InteractionResult.SUCCESS_SERVER;
         }
         List<RocketEntity> rockets = serverLevel.getEntities(
                 EntityTypeTest.forClass(RocketEntity.class),

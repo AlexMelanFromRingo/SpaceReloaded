@@ -50,7 +50,9 @@ public class SpaceReloaded implements ModInitializer {
 		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.clientboundPlay().register(
 				org.alex_melan.spacereloaded.network.VacuumStatePayload.TYPE,
 				org.alex_melan.spacereloaded.network.VacuumStatePayload.CODEC);
+		org.alex_melan.spacereloaded.network.ModNetworking.init();
 		ModBlocks.init();
+		org.alex_melan.spacereloaded.fluid.ModFluids.init();
 		ModDataComponents.init();
 		ModItems.init();
 		ModBlockEntities.init();

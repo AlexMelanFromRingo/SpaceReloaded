@@ -40,8 +40,16 @@ public final class PlanetManager {
 
     /** Профиль по id записи реестра (для transition_target). */
     public static Optional<ModRegistries.PlanetProfile> profileById(ServerLevel level, Identifier id) {
-        Registry<ModRegistries.PlanetProfile> registry = registry(level);
-        return Optional.ofNullable(registry.getValue(id));
+        return profileById(level.registryAccess(), id);
+    }
+
+    /**
+     * То же, но по голому реестру: реестр планет синхронизируется на клиент,
+     * поэтому карта полёта считается там же, без единого лишнего пакета.
+     */
+    public static Optional<ModRegistries.PlanetProfile> profileById(
+            net.minecraft.core.RegistryAccess access, Identifier id) {
+        return Optional.ofNullable(access.lookupOrThrow(ModRegistries.PLANETS).getValue(id));
     }
 
     public static double gravity(ServerLevel level) {

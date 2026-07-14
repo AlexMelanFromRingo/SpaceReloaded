@@ -94,4 +94,24 @@ public final class Navigation {
         }
         return null;
     }
+
+    /**
+     * Полный маршрут from -> to по прыжкам, включая обе конечные точки.
+     * Пустой список, если пути нет. Годится и клиенту: реестр планет синхронный.
+     */
+    public static List<Identifier> route(RegistryAccess access, Identifier from, Identifier to) {
+        List<Identifier> path = new java.util.ArrayList<>();
+        path.add(from);
+        Identifier current = from;
+        // Планет заведомо меньше сотни; счётчик — предохранитель от цикла в датапаке
+        for (int guard = 0; guard < 64 && !current.equals(to); guard++) {
+            Identifier hop = nextHop(access, current, to);
+            if (hop == null) {
+                return List.of();
+            }
+            path.add(hop);
+            current = hop;
+        }
+        return current.equals(to) ? List.copyOf(path) : List.of();
+    }
 }

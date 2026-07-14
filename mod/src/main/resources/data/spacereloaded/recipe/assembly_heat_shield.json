@@ -1,0 +1,15 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:meteoric_iron",
+		"spacereloaded:meteoric_iron",
+		"spacereloaded:meteoric_iron",
+		"spacereloaded:meteoric_iron",
+		"spacereloaded:carbon_fiber",
+		"spacereloaded:carbon_fiber"
+	],
+	"result": {
+		"id": "spacereloaded:heat_shield",
+		"count": 1
+	}
+}

@@ -16,13 +16,26 @@ public class FuelTankBlockEntity extends BlockEntity {
 
     /** Должна совпадать с propellant_capacity_kg в part_properties/fuel_tank.json. */
     public static final double CAPACITY_KG = 2000.0;
+    /**
+     * Ниже этого остаток считается нулём. Капля топлива Transfer API это доли
+     * грамма (напр. керолокс 24/81000 кг); без порога слив трубой оставлял бы
+     * долю капли, из-за которой бак читался пустым, но был заперт на своём типе.
+     */
+    private static final double MIN_PROPELLANT_KG = 1.0e-3;
 
     private double propellantKg;
     /** Тип топлива в баке; пустая строка — бак пуст и примет любой. */
     private String fuelType = "";
+    /** Тот же бак глазами Fabric Transfer API: трубы соседних модов. */
+    private final org.alex_melan.spacereloaded.fluid.FuelTankFluidStorage fluidStorage =
+            new org.alex_melan.spacereloaded.fluid.FuelTankFluidStorage(this);
 
     public FuelTankBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUEL_TANK, pos, state);
+    }
+
+    public org.alex_melan.spacereloaded.fluid.FuelTankFluidStorage fluidStorage() {
+        return fluidStorage;
     }
 
     public double propellantKg() {
@@ -40,6 +53,7 @@ public class FuelTankBlockEntity extends BlockEntity {
     public void setPropellant(double value, String type) {
         propellantKg = Math.clamp(value, 0, CAPACITY_KG);
         fuelType = propellantKg > 0 ? type : "";
+        normalizeResidue();
         setChanged();
     }
 
@@ -60,11 +74,30 @@ public class FuelTankBlockEntity extends BlockEntity {
     public double drain(double amountKg) {
         double drained = Math.min(amountKg, propellantKg);
         propellantKg -= drained;
-        if (propellantKg <= 0) {
-            fuelType = "";
-        }
+        normalizeResidue();
         setChanged();
         return drained;
+    }
+
+    /**
+     * Остаток меньше одной капли текущего топлива это округление Transfer API,
+     * а не топливо: обнуляем и снимаем тип. Иначе бак читается пустым
+     * ({@code getAmount()==0}), но заперт на своём типе и не принимает другой.
+     */
+    private void normalizeResidue() {
+        if (propellantKg <= 0) {
+            propellantKg = 0;
+            fuelType = "";
+            return;
+        }
+        var propellant = org.alex_melan.spacereloaded.fluid.ModFluids.byFuelId(fuelType);
+        double oneDroplet = propellant == null ? MIN_PROPELLANT_KG
+                : propellant.kgPerBucket()
+                        / net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET;
+        if (propellantKg < oneDroplet) {
+            propellantKg = 0;
+            fuelType = "";
+        }
     }
 
     @Override

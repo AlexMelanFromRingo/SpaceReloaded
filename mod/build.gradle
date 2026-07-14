@@ -20,6 +20,15 @@ loom {
 	}
 }
 
+repositories {
+	// Jade распространяется через Modrinth Maven; Loom его не инъектит
+	maven {
+		name = 'Modrinth'
+		url = 'https://api.modrinth.com/maven'
+		content { includeGroup 'maven.modrinth' }
+	}
+}
+
 fabricApi {
 	configureTests {
 		createSourceSet = true
@@ -38,6 +47,12 @@ dependencies {
 	// Стандарт энергии Fabric-экосистемы (решение D7, MIT): 5.0.0 = линия 26.1+
 	implementation "teamreborn:energy:${project.tr_energy_version}"
 	include "teamreborn:energy:${project.tr_energy_version}"
+
+	// Мягкая зависимость: плагин Jade грузится только если Jade установлен.
+	// 26.2 деобфусцирован, ремап не нужен -> обычный compileOnly, не modCompileOnly
+	// (entrypoint "jade" в fabric.mod.json), поэтому в jar её не кладём
+	compileOnly "maven.modrinth:jade:${project.jade_version}"
+	clientCompileOnly "maven.modrinth:jade:${project.jade_version}"
 
 	// Вычислительное ядро (чистая Java, без Minecraft) — кладётся внутрь jar мода (jar-in-jar)
 	api project(':core')

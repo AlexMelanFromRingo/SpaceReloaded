@@ -45,7 +45,9 @@ public final class RocketInteractions {
             case RocketAssembler.Result.Error(String key, BlockPos pos) -> {
                 Component message = Component.translatable(key,
                         pos.getX() + " " + pos.getY() + " " + pos.getZ());
-                player.sendSystemMessage(message);
+                net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,
+                        new org.alex_melan.spacereloaded.network.ScanReportPayload(
+                                0, 0, 0, 0, 0, 0, 0, java.util.List.of(), key));
                 return message;
             }
             case RocketAssembler.Result.Ok ok -> {
@@ -57,24 +59,17 @@ public final class RocketInteractions {
                         String.format(Locale.ROOT, "%.0f", performance.totalThrustN() / 1000),
                         String.format(Locale.ROOT, "%.2f", performance.twr()),
                         String.format(Locale.ROOT, "%.0f", performance.deltaV()));
-                player.sendSystemMessage(Component.translatable(
-                        "message.spacereloaded.scan.header", ok.blocks().size()));
-                player.sendSystemMessage(stats);
                 var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
-                if (profile.isPresent()) {
-                    // Оценка: сверхминимум sqrt(2gh) + 15% на гравитационные потери
-                    double needed = 1.15 * Math.sqrt(2 * profile.get().gravity()
-                            * profile.get().transitionAltitude());
-                    player.sendSystemMessage(Component.translatable(
-                            "message.spacereloaded.scan.dv_needed",
-                            String.format(Locale.ROOT, "%.0f", needed),
-                            performance.deltaV() >= needed ? "✔" : "✘"));
-                }
-                for (PerformanceWarning warning : performance.warnings()) {
-                    player.sendSystemMessage(Component.translatable(
-                            "message.spacereloaded.rocket.warning." + warning.name()));
-                }
-                player.sendSystemMessage(Component.translatable("message.spacereloaded.scan.hint"));
+                // Оценка: сверхминимум sqrt(2gh) + 15% на гравитационные потери
+                double needed = profile.map(p -> 1.15 * Math.sqrt(
+                        2 * p.gravity() * p.transitionAltitude())).orElse(0.0);
+                java.util.List<String> warnings = performance.warnings().stream()
+                        .map(PerformanceWarning::name).toList();
+                net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,
+                        new org.alex_melan.spacereloaded.network.ScanReportPayload(
+                                ok.blocks().size(), performance.totalMassKg(),
+                                performance.dryMassKg(), performance.totalThrustN(),
+                                performance.twr(), performance.deltaV(), needed, warnings, ""));
                 return stats;
             }
         }

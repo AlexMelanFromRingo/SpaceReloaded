@@ -21,6 +21,10 @@
 		],
 		"client": [
 			"org.alex_melan.spacereloaded.client.SpaceReloadedClient"
+		],
+		"jade": [
+			"org.alex_melan.spacereloaded.compat.JadePlugin",
+			"org.alex_melan.spacereloaded.compat.JadeClientPlugin"
 		]
 	},
 	"mixins": [

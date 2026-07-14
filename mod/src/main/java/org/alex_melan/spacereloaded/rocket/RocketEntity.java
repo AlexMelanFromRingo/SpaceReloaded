@@ -989,6 +989,25 @@ public class RocketEntity extends Entity {
         return org.alex_melan.spacereloaded.planet.Navigation.nextHop(access, from, to);
     }
 
+    /**
+     * Прямой выбор цели с карты полёта.
+     *
+     * @return false, если такой планеты нет или это планета под ногами
+     */
+    public boolean setDestination(ServerLevel level, net.minecraft.resources.Identifier target) {
+        var access = level.registryAccess();
+        var ids = org.alex_melan.spacereloaded.planet.Navigation.planetIds(access);
+        int index = ids.indexOf(target);
+        var here = org.alex_melan.spacereloaded.planet.Navigation
+                .entryIdFor(access, level.dimension().identifier());
+        if (index < 0 || target.equals(here)) {
+            return false;
+        }
+        destinationIndex = index;
+        entityData.set(DATA_DESTINATION, destinationIndex);
+        return true;
+    }
+
     /** Циклический выбор цели перехода: ЛЮБАЯ планета реестра, не только сосед. */
     private void cycleDestination(ServerLevel level, ServerPlayer pilot) {
         var access = level.registryAccess();

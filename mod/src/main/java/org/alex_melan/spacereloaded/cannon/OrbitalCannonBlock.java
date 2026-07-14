@@ -18,7 +18,7 @@ import org.alex_melan.spacereloaded.registry.ModItems;
 
 /**
  * Блок орбитальной пушки: ПКМ ломом — зарядить, ПКМ целеуказателем — навести
- * на его метку, ПКМ пустой рукой — выстрел (или статус, если не готова).
+ * на его метку, ПКМ пустой рукой — открыть терминал наведения и огня.
  */
 public class OrbitalCannonBlock extends MachineBlock<OrbitalCannonBlockEntity> {
 
@@ -77,11 +77,10 @@ public class OrbitalCannonBlock extends MachineBlock<OrbitalCannonBlockEntity> {
         }
         if (level.getBlockEntity(pos) instanceof OrbitalCannonBlockEntity cannon
                 && player instanceof ServerPlayer serverPlayer) {
-            if (player.isSecondaryUseActive()) {
-                serverPlayer.sendSystemMessage(cannon.status());
-            } else {
-                serverPlayer.sendSystemMessage(cannon.tryFire((ServerLevel) level));
-            }
+            // Пустая рука открывает терминал: стрельба — кнопкой в нём,
+            // случайный клик по пушке больше не отправляет лом на планету
+            net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(
+                    serverPlayer, cannon.snapshot((ServerLevel) level));
         }
         return InteractionResult.SUCCESS_SERVER;
     }

@@ -31,9 +31,12 @@ actual part masses, and a lopsided rocket tips over on ascent.
   the pad. Fuel is drawn from the actual tank blocks you filled. A plain
   click gives you a scan report first: delta-v, TWR and a verdict on whether
   the stack reaches orbit.
-- **Two propellants with different characters.** Kerolox (dense, high thrust)
+- **Three propellants with different characters.** Kerolox (dense, high thrust)
   is refined from oil shale; hydrolox (high specific impulse) is electrolyzed
-  from ice. Engines burn one type, so a mixed stack won't assemble.
+  from ice; methalox is made on Mars from atmospheric CO2. Engines burn one
+  type, so a mixed stack won't assemble. Each propellant is a real fluid with
+  its own bucket and its own density, exposed to other mods through the Fabric
+  Transfer API.
 - **Hermetic sealing that takes geometry seriously.** Room checking is a
   26-direction flood fill: a diagonal corner gap counts as a leak, exactly
   like an incomplete portal frame. Airlocks interlock. A breach causes
@@ -56,6 +59,13 @@ actual part masses, and a lopsided rocket tips over on ascent.
 - **Energy.** Team Reborn Energy units: coal generators to bootstrap, solar
   panels (x1.5 in vacuum), RTGs for the shadowed side, cable networks,
   batteries.
+- **Every body pays for the trip.** Earth carries just enough titanium and
+  tungsten for the first rocket and suit. The real titanium is lunar ilmenite,
+  the tungsten sits in deep Martian veins, and meteoric iron exists only in the
+  asteroid belt, where the return capsule's heat shield comes from.
+- **Screens, not chat spam.** The scan report, the cannon terminal and a flight
+  map drawn from the transition graph are proper panels. Jade is supported as a
+  soft dependency: look at a machine to read energy, fuel and rod count.
 - **A guided progression.** Sixteen advancements walk you from the first
   steel ingot to closing the interplanetary loop.
 

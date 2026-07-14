@@ -263,3 +263,16 @@ my_spacereloaded_addon/
 Это обычная разработка мода на Fabric. Порог низкий: регистрации идут по единому
 шаблону, а физику можно дёргать из движка-независимого модуля `core/`. Исходники
 и точки расширения — на [GitHub](https://github.com/AlexMelanFromRingo/SpaceReloaded).
+
+## Fluids and the flight map
+
+Propellants are real fluids. A datapack cannot register a `Fluid` (it is a code
+registry), but an add-on mod can: register a source and a flowing fluid, a
+`LiquidBlock` and a `BucketItem`, then map the fluid to a fuel id. Note that
+`LiquidBlock`'s constructor asks the fluid for its source and flowing instances
+immediately, so fill those references before you construct the block.
+
+The flight map needs nothing from you. It lays bodies out by their hop distance
+from Earth using the `transition_targets` graph, so a planet added by a datapack
+appears on the map, with its gravity, atmosphere and transfer window, the moment
+its profile loads.

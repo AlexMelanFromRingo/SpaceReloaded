@@ -21,6 +21,12 @@ public final class ModCreativeTab {
                     .title(Component.translatable("itemGroup.spacereloaded"))
                     .icon(() -> new ItemStack(ModBlocks.ATMOSPHERE_CONTROLLER))
                     .displayItems((parameters, output) -> {
+                        output.accept(ModBlocks.MOON_TITANIUM_ORE);
+                        output.accept(ModBlocks.MARS_TUNGSTEN_ORE);
+                        output.accept(ModItems.HEAT_SHIELD);
+                        for (var propellant : org.alex_melan.spacereloaded.fluid.ModFluids.all()) {
+                            output.accept(propellant.bucket());
+                        }
                         output.accept(ModBlocks.HULL_PLATING);
                         output.accept(ModBlocks.HERMETIC_GLASS);
                         output.accept(ModBlocks.HERMETIC_HATCH);

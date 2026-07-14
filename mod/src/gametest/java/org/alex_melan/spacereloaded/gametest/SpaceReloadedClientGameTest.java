@@ -71,6 +71,8 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testDeepSpace(context, sp);
             testNavigation(context, sp);
             testPlanetTerrain(context, sp);
+            testPropellantFluids(context, sp);
+            testBodyExclusiveOres(context, sp);
         }
     }
 
@@ -1034,6 +1036,165 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             }
         }
         return new int[]{min, max};
+    }
+
+
+    // ---------- 19. Топливо как жидкость: трубы, вёдра, транзакции ----------
+
+    private void testPropellantFluids(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int fx = BX + 400;
+        moveTo(context, sp, fx - 5, BZ);
+        sp.getServer().runCommand(set(fx, BY, BZ, "spacereloaded:fuel_tank"));
+        context.waitTick();
+
+        var kerolox = org.alex_melan.spacereloaded.fluid.ModFluids.KEROLOX;
+        long bucket = net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET;
+
+        // Через lookup, как это сделает труба соседнего мода
+        double afterInsert = sp.getServer().computeOnServer(server -> {
+            var storage = net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.SIDED.find(
+                    server.overworld(), new BlockPos(fx, BY, BZ), null);
+            if (storage == null) {
+                return -1.0;
+            }
+            try (var transaction = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
+                storage.insert(net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant.of(kerolox.source()),
+                        bucket, transaction);
+                transaction.commit();
+            }
+            return ((FuelTankBlockEntity) server.overworld()
+                    .getBlockEntity(new BlockPos(fx, BY, BZ))).propellantKg();
+        });
+        assertThat(Math.abs(afterInsert - kerolox.kgPerBucket()) < 0.01,
+                "Ведро керолокса = " + kerolox.kgPerBucket() + " кг, получено: " + afterInsert);
+        log("жидкость: ведро керолокса залилось как " + afterInsert + " кг ✓");
+
+        // Чужое топливо в занятый бак не лезет
+        long mixed = sp.getServer().computeOnServer(server -> {
+            var storage = net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.SIDED.find(
+                    server.overworld(), new BlockPos(fx, BY, BZ), null);
+            try (var transaction = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
+                long accepted = storage.insert(
+                        net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant.of(
+                                org.alex_melan.spacereloaded.fluid.ModFluids.HYDROLOX.source()),
+                        bucket, transaction);
+                transaction.abort();
+                return accepted;
+            }
+        });
+        assertThat(mixed == 0, "Смешивание топлив запрещено, принято капель: " + mixed);
+        log("жидкость: смешивание топлив отвергнуто ✓");
+
+        // Откат транзакции обязан вернуть бак в прежнее состояние
+        double afterAbort = sp.getServer().computeOnServer(server -> {
+            var storage = net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.SIDED.find(
+                    server.overworld(), new BlockPos(fx, BY, BZ), null);
+            try (var transaction = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
+                storage.extract(net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant.of(kerolox.source()),
+                        bucket, transaction);
+                transaction.abort();
+            }
+            return ((FuelTankBlockEntity) server.overworld()
+                    .getBlockEntity(new BlockPos(fx, BY, BZ))).propellantKg();
+        });
+        assertThat(Math.abs(afterAbort - kerolox.kgPerBucket()) < 0.01,
+                "Откат транзакции должен вернуть топливо, осталось: " + afterAbort);
+        log("жидкость: откат транзакции не потерял топливо ✓");
+
+        // И слив до нуля через commit
+        double afterExtract = sp.getServer().computeOnServer(server -> {
+            var storage = net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.SIDED.find(
+                    server.overworld(), new BlockPos(fx, BY, BZ), null);
+            try (var transaction = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
+                storage.extract(net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant.of(kerolox.source()),
+                        bucket, transaction);
+                transaction.commit();
+            }
+            return ((FuelTankBlockEntity) server.overworld()
+                    .getBlockEntity(new BlockPos(fx, BY, BZ))).propellantKg();
+        });
+        assertThat(afterExtract < 0.01, "Бак должен опустеть, осталось: " + afterExtract);
+        log("жидкость: слив в трубу опустошил бак ✓");
+
+        // Регрессия: неровный (не кратный капле) остаток не должен «залипать»
+        // и запирать бак на своём типе после полного слива трубой
+        String afterUneven = sp.getServer().computeOnServer(server -> {
+            var tank = (FuelTankBlockEntity) server.overworld().getBlockEntity(new BlockPos(fx, BY, BZ));
+            tank.setPropellant(999.99977, kerolox.fuelId()); // заведомо не кратно капле
+            var storage = net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.SIDED.find(
+                    server.overworld(), new BlockPos(fx, BY, BZ), null);
+            try (var transaction = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
+                storage.extract(net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant.of(kerolox.source()),
+                        Long.MAX_VALUE, transaction);
+                transaction.commit();
+            }
+            return tank.fuelType() + "|" + tank.propellantKg();
+        });
+        assertThat(afterUneven.startsWith("|"),
+                "После полного слива бак должен освободить тип, получено: " + afterUneven);
+        log("жидкость: неровный остаток не запер бак (" + afterUneven + ") ✓");
+
+        // И после освобождения бак принимает ДРУГОЕ топливо
+        double reused = sp.getServer().computeOnServer(server -> {
+            var storage = net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.SIDED.find(
+                    server.overworld(), new BlockPos(fx, BY, BZ), null);
+            try (var transaction = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
+                long accepted = storage.insert(net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant.of(
+                        org.alex_melan.spacereloaded.fluid.ModFluids.HYDROLOX.source()), bucket, transaction);
+                transaction.abort();
+                return accepted;
+            }
+        });
+        assertThat(reused > 0, "Освободившийся бак должен принять другое топливо, принято: " + reused);
+        log("жидкость: освободившийся бак сменил тип ✓");
+        sp.getServer().runCommand(set(fx, BY, BZ, "minecraft:air"));
+    }
+
+    // ---------- 20. Прогрессия: у каждого тела свой металл ----------
+
+    private void testBodyExclusiveOres(ClientGameTestContext context, TestSingleplayerContext sp) {
+        // Лут пояса грузится: один "minecraft:air" в entries валил ВСЮ таблицу,
+        // и астероидный камень молча не давал ничего
+        boolean beltLoot = sp.getServer().computeOnServer(server -> !server.reloadableRegistries()
+                .getLootTable(ModBlocks.ASTEROID_STONE.getLootTable().orElseThrow())
+                .equals(net.minecraft.world.level.storage.loot.LootTable.EMPTY));
+        assertThat(beltLoot, "Лут-таблица астероидного камня должна парситься");
+        log("прогрессия: лут пояса загружен ✓");
+
+        int moonTitanium = sp.getServer().computeOnServer(server ->
+                countOre(server, "moon", ModBlocks.MOON_TITANIUM_ORE));
+        assertThat(moonTitanium > 0, "На Луне должен генерироваться титан, найдено: " + moonTitanium);
+        log("прогрессия: лунный титан, жил " + moonTitanium + " блоков ✓");
+
+        int marsTungsten = sp.getServer().computeOnServer(server ->
+                countOre(server, "mars", ModBlocks.MARS_TUNGSTEN_ORE));
+        assertThat(marsTungsten > 0, "На Марсе должен генерироваться вольфрам, найдено: " + marsTungsten);
+        log("прогрессия: марсианский вольфрам, жил " + marsTungsten + " блоков ✓");
+    }
+
+    /** Сколько блоков руды в 3x3 чанках вокруг начала координат тела. */
+    private static int countOre(net.minecraft.server.MinecraftServer server, String planet,
+                                net.minecraft.world.level.block.Block ore) {
+        ServerLevel level = server.getLevel(ResourceKey.create(Registries.DIMENSION,
+                Identifier.fromNamespaceAndPath("spacereloaded", planet)));
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        int found = 0;
+        for (int chunkX = -1; chunkX <= 1; chunkX++) {
+            for (int chunkZ = -1; chunkZ <= 1; chunkZ++) {
+                level.getChunk(chunkX, chunkZ); // форсируем генерацию, не полагаемся на кэш
+            }
+        }
+        for (int x = -24; x < 24; x++) {
+            for (int z = -24; z < 24; z++) {
+                for (int y = 2; y < 90; y++) {
+                    cursor.set(x, y, z);
+                    if (level.getBlockState(cursor).is(ore)) {
+                        found++;
+                    }
+                }
+            }
+        }
+        return found;
     }
 
 }

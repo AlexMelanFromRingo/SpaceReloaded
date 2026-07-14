@@ -110,6 +110,8 @@ public final class ModItems {
     /** Шихта: железная пыль + угольная пыль — полуфабрикат стали. */
     public static final Item STEEL_BLEND = simple("steel_blend");
     public static final Item CARBON_FIBER = simple("carbon_fiber");
+    /** Абляционный экран возвратной капсулы: только из метеоритного железа. */
+    public static final Item HEAT_SHIELD = simple("heat_shield");
 
     private static Item simple(String name) {
         return register(name, Item::new);

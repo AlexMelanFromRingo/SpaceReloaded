@@ -57,7 +57,10 @@ public class CraterFeature extends Feature<NoneFeatureConfiguration> {
                 }
                 int x = origin.getX() + dx;
                 int z = origin.getZ() + dz;
+                // getHeight(OCEAN_FLOOR_WG) это первый ВОЗДУХ над грунтом; сам
+                // верхний твёрдый блок лежит на единицу ниже
                 int surface = level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, x, z);
+                int top = surface - 1;
 
                 if (distance <= radius) {
                     // Параболическая чаша: глубже к центру, сходит на нет к кромке
@@ -66,22 +69,23 @@ public class CraterFeature extends Feature<NoneFeatureConfiguration> {
                     if (bowl <= 0) {
                         continue;
                     }
-                    for (int y = surface; y > surface - bowl; y--) {
+                    for (int y = top; y > top - bowl; y--) {
                         cursor.set(x, y, z);
                         if (isTerrain(level, cursor)) {
                             level.setBlock(cursor, air, 2);
                             placed = true;
                         }
                     }
-                    cursor.set(x, surface - bowl, z);
+                    cursor.set(x, top - bowl, z);
                     if (isTerrain(level, cursor)) {
                         level.setBlock(cursor, regolith, 2); // дно засыпано выбросом
                     }
                 } else {
-                    // Вал: выброшенная порода, тонким кольцом и тем ниже, чем дальше
+                    // Вал: выброшенная порода лежит НА грунте (с блока surface),
+                    // тонким кольцом и тем ниже, чем дальше от кромки
                     double falloff = 1.0 - (distance - radius) / RIM_WIDTH;
                     int rise = (int) Math.round(rimHeight * falloff);
-                    for (int y = surface + 1; y <= surface + rise; y++) {
+                    for (int y = surface; y < surface + rise; y++) {
                         cursor.set(x, y, z);
                         if (level.getBlockState(cursor).isAir()) {
                             level.setBlock(cursor, regolith, 2);
