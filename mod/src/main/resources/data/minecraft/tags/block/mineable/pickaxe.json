@@ -49,6 +49,7 @@
 		"spacereloaded:rectenna",
 		"spacereloaded:asteroid_stone",
 		"spacereloaded:moon_titanium_ore",
-		"spacereloaded:mars_tungsten_ore"
+		"spacereloaded:mars_tungsten_ore",
+		"spacereloaded:stage_separator"
 	]
 }

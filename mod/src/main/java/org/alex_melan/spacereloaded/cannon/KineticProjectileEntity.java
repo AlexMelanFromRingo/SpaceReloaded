@@ -35,7 +35,11 @@ public class KineticProjectileEntity extends Entity {
     private static final double DT = 0.05;
 
     private double massKg = 2000;
-    private double dragCoeff = 0.01;
+    /** Полёт 2.0 (FR-082): квадратичное сопротивление — C_d и площадь сечения, м². */
+    private double cd = 0.1;
+    private double areaM2 = 0.03;
+    /** Режим наведения в момент выстрела (FR-093): фиксируется, спутник после выстрела не влияет. */
+    private boolean guided;
     private org.alex_melan.spacereloaded.core.geometry.Vec3d velocity =
             org.alex_melan.spacereloaded.core.geometry.Vec3d.ZERO;
     /** Колонна предупреждения над точкой прицеливания (FR-044). */
@@ -47,12 +51,19 @@ public class KineticProjectileEntity extends Entity {
     }
 
     /** Сервер: параметры выстрела (до addFreshEntity). */
-    public void configure(double massKg, double dragCoeff, Vec3 initialVelocity, BlockPos warningPos) {
+    public void configure(double massKg, double cd, double areaM2, Vec3 initialVelocity,
+                          BlockPos warningPos, boolean guided) {
         this.massKg = massKg;
-        this.dragCoeff = dragCoeff;
+        this.cd = cd;
+        this.areaM2 = areaM2;
+        this.guided = guided;
         this.velocity = new org.alex_melan.spacereloaded.core.geometry.Vec3d(
                 initialVelocity.x, initialVelocity.y, initialVelocity.z);
         this.warningPos = warningPos.immutable();
+    }
+
+    public boolean isGuided() {
+        return guided;
     }
 
     @Override
@@ -68,12 +79,13 @@ public class KineticProjectileEntity extends Entity {
         ServerLevel level = (ServerLevel) level();
 
         Vec3 from = position();
+        // Сопротивление — по плотности атмосферы измерения на текущей высоте (FR-082)
         BallisticIntegrator.State state = BallisticIntegrator.step(
                 new BallisticIntegrator.State(
                         new org.alex_melan.spacereloaded.core.geometry.Vec3d(getX(), getY(), getZ()),
                         velocity),
-                new ProjectileSpec(massKg, dragCoeff),
-                PlanetManager.gravity(level), DT);
+                new ProjectileSpec(massKg, cd, areaM2),
+                PlanetManager.gravity(level), PlanetManager.aero(level).density(getY()), DT);
         velocity = state.vel();
         Vec3 to = new Vec3(state.pos().x(), state.pos().y(), state.pos().z());
 
@@ -140,7 +152,9 @@ public class KineticProjectileEntity extends Entity {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         output.putDouble("mass_kg", massKg);
-        output.putDouble("drag", dragCoeff);
+        output.putDouble("cd", cd);
+        output.putDouble("area", areaM2);
+        output.putBoolean("guided", guided);
         output.putDouble("vel_x", velocity.x());
         output.putDouble("vel_y", velocity.y());
         output.putDouble("vel_z", velocity.z());
@@ -149,8 +163,11 @@ public class KineticProjectileEntity extends Entity {
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
+        var config = SpaceReloaded.config();
         massKg = input.getDoubleOr("mass_kg", 2000);
-        dragCoeff = input.getDoubleOr("drag", 0.01);
+        cd = input.getDoubleOr("cd", config.cannonRodDragCoefficient);
+        areaM2 = input.getDoubleOr("area", config.cannonRodAreaM2);
+        guided = input.getBooleanOr("guided", false);
         velocity = new org.alex_melan.spacereloaded.core.geometry.Vec3d(
                 input.getDoubleOr("vel_x", 0),
                 input.getDoubleOr("vel_y", -80),

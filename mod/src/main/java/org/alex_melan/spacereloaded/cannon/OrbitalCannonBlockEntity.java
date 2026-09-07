@@ -123,15 +123,25 @@ public class OrbitalCannonBlockEntity extends MachineBlockEntity {
         // persist + keep-dimension-active — измерение без игроков тикает
         ModTickets.holdStrike(targetLevel, aim, 2);
 
+        // Полёт 2.0 (FR-090, D16): наведение по спутниковому покрытию цели; без него —
+        // случайное смещение равномерно по кругу рассеивания. Режим фиксируется сейчас.
+        boolean guided = isGuidedFor(level, targetLevel);
+        var random = level.getRandom();
+        org.alex_melan.spacereloaded.core.ballistics.StrikeSolution solution =
+                org.alex_melan.spacereloaded.core.ballistics.StrikeSolution.solve(
+                        random.nextDouble(), random.nextDouble(), guided,
+                        config.cannonGuidedSpreadBlocks, config.cannonUnguidedSpreadBlocks);
+
         double spawnY = aim.getY() + config.cannonDropAltitude;
         KineticProjectileEntity projectile = new KineticProjectileEntity(
                 ModEntities.KINETIC_PROJECTILE, targetLevel);
-        projectile.setPos(aim.getX() + 0.5, spawnY, aim.getZ() + 0.5);
-        projectile.configure(config.cannonRodMassKg, config.cannonDragCoeff,
-                new Vec3(0, -config.cannonMuzzleSpeed, 0), aim);
+        projectile.setPos(aim.getX() + 0.5 + solution.offsetX(), spawnY,
+                aim.getZ() + 0.5 + solution.offsetZ());
+        projectile.configure(config.cannonRodMassKg, config.cannonRodDragCoefficient,
+                config.cannonRodAreaM2, new Vec3(0, -config.cannonMuzzleSpeed, 0), aim, guided);
         targetLevel.addFreshEntity(projectile);
 
-        // Предупреждение внизу: гром за секунды до удара (FR-044)
+        // Предупреждение внизу: гром за секунды до удара (FR-044) — по метке, не по точке удара
         targetLevel.playSound(null, aim, SoundEvents.LIGHTNING_BOLT_THUNDER,
                 SoundSource.WEATHER, 8.0f, 0.6f);
         level.playSound(null, getBlockPos(), SoundEvents.WITHER_SHOOT,
@@ -140,10 +150,21 @@ public class OrbitalCannonBlockEntity extends MachineBlockEntity {
         double eta = BallisticIntegrator.etaToAltitude(spawnY, -config.cannonMuzzleSpeed,
                 aim.getY(), PlanetManager.gravity(targetLevel));
         String etaText = Double.isNaN(eta) ? "?" : String.valueOf(Math.round(eta));
-        SpaceReloaded.LOGGER.info("Пушка {}: выстрел по {} в {}, подлёт ~{} с",
-                getBlockPos(), aim, target.dimension().identifier(), etaText);
-        return Component.translatable("message.spacereloaded.cannon.fired",
-                aim.getX(), aim.getY(), aim.getZ(), etaText);
+        SpaceReloaded.LOGGER.info("Пушка {}: выстрел по {} в {}, подлёт ~{} с, наведение {}, смещение {} бл.",
+                getBlockPos(), aim, target.dimension().identifier(), etaText,
+                guided ? "спутниковое" : "нет", String.format(java.util.Locale.ROOT, "%.1f",
+                        solution.offsetDistance()));
+        return Component.translatable("message.spacereloaded.cannon.fired_mode",
+                aim.getX(), aim.getY(), aim.getZ(), etaText,
+                Component.translatable(guided
+                        ? "message.spacereloaded.cannon.mode.guided"
+                        : "message.spacereloaded.cannon.mode.unguided"));
+    }
+
+    /** Наводимый ли лом по цели: спутниковое покрытие целевого измерения (FR-090). */
+    private static boolean isGuidedFor(ServerLevel level, ServerLevel targetLevel) {
+        return org.alex_melan.spacereloaded.network.SpaceNetworkState.get(level.getServer())
+                .hasCoverage(targetLevel.dimension());
     }
 
     /** Сколько тиков ещё перезаряжается; 0 — готова. */
@@ -153,18 +174,36 @@ public class OrbitalCannonBlockEntity extends MachineBlockEntity {
         return (int) Math.clamp(left, 0, Integer.MAX_VALUE);
     }
 
-    /** Снимок для терминала наведения. */
+    /**
+     * Снимок для терминала наведения. Полёт 2.0 (FR-091): режим наведения по
+     * покрытию цели, радиус рассеивания и прогноз удара по атмосфере целевого тела.
+     */
     public org.alex_melan.spacereloaded.network.CannonStatePayload snapshot(ServerLevel level) {
         var config = SpaceReloaded.config();
         BlockPos targetPos = target == null ? BlockPos.ZERO : target.pos();
         Identifier targetDim = target == null
                 ? Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "none")
                 : target.dimension().identifier();
+        boolean guided = false;
+        double impactSpeed = 0;
+        double impactEnergyMJ = 0;
+        ServerLevel targetLevel = target == null ? null : level.getServer().getLevel(target.dimension());
+        if (targetLevel != null) {
+            guided = isGuidedFor(level, targetLevel);
+            var forecast = BallisticIntegrator.impactForecast(
+                    new org.alex_melan.spacereloaded.core.ballistics.ProjectileSpec(
+                            config.cannonRodMassKg, config.cannonRodDragCoefficient, config.cannonRodAreaM2),
+                    config.cannonDropAltitude, config.cannonMuzzleSpeed,
+                    PlanetManager.gravity(targetLevel), PlanetManager.aero(targetLevel), target.pos().getY());
+            impactSpeed = forecast.impactSpeedMs();
+            impactEnergyMJ = forecast.impactEnergyJ() / 1.0e6;
+        }
+        double spread = guided ? config.cannonGuidedSpreadBlocks : config.cannonUnguidedSpreadBlocks;
         return new org.alex_melan.spacereloaded.network.CannonStatePayload(
                 getBlockPos(), level.dimension().identifier(),
                 rods, config.cannonMaxRods, energy.amount, config.cannonEnergyCapacity,
                 config.cannonEnergyPerShot, cooldownRemaining(level),
-                targetPos, targetDim, target != null);
+                targetPos, targetDim, target != null, guided, spread, impactSpeed, impactEnergyMJ);
     }
 
     /** Статус для ПКМ без предметов, когда стрелять нельзя/нечем. */

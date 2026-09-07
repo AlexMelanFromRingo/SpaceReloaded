@@ -58,10 +58,13 @@ public class MeteorEntity extends Entity {
         }
         ServerLevel level = (ServerLevel) level();
         Vec3 from = position();
+        // Полёт 2.0 (FR-082): квадратичное сопротивление той же моделью атмосферы
+        // (на безатмосферных телах, где падают метеориты, плотность 0 — чистая баллистика)
+        var config = SpaceReloaded.config();
         BallisticIntegrator.State state = BallisticIntegrator.step(
                 new BallisticIntegrator.State(new Vec3d(getX(), getY(), getZ()), velocity),
-                new ProjectileSpec(massKg, SpaceReloaded.config().meteorDragCoeff),
-                PlanetManager.gravity(level), DT);
+                new ProjectileSpec(massKg, config.meteorDragCoefficient, config.meteorAreaM2),
+                PlanetManager.gravity(level), PlanetManager.aero(level).density(getY()), DT);
         velocity = state.vel();
         Vec3 to = new Vec3(state.pos().x(), state.pos().y(), state.pos().z());
 

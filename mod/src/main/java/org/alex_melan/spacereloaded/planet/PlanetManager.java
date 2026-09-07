@@ -70,6 +70,21 @@ public final class PlanetManager {
     }
 
     /**
+     * Аэродинамический профиль атмосферы измерения (Полёт 2.0, плотность/высота шкалы);
+     * без профиля или без плотности — вакуум. Состав газа — {@link #atmosphere(ServerLevel)}.
+     */
+    public static org.alex_melan.spacereloaded.core.atmosphere.AtmosphereProfile aero(ServerLevel level) {
+        return profileFor(level)
+                .map(profile -> profile.aero().toCore())
+                .orElse(org.alex_melan.spacereloaded.core.atmosphere.AtmosphereProfile.VACUUM);
+    }
+
+    /** Среда полёта ядра: гравитация + атмосфера измерения. */
+    public static org.alex_melan.spacereloaded.core.rocketry.FlightEnvironment environment(ServerLevel level) {
+        return new org.alex_melan.spacereloaded.core.rocketry.FlightEnvironment(gravity(level), aero(level));
+    }
+
+    /**
      * Стартовая платформа на орбите (механика Galacticraft): первое прибытие
      * на участок создаёт площадку 9×9, дальше игрок достраивает станцию сам.
      *

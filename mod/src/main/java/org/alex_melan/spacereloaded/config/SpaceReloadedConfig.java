@@ -98,8 +98,6 @@ public final class SpaceReloadedConfig {
     public double cannonDropAltitude = 2400;
     /** Скорость, приданная пушкой (вниз), м/с. */
     public double cannonMuzzleSpeed = 1500;
-    /** Линейное сопротивление лома в атмосфере, 1/с (обтекаемый — почти 0). */
-    public double cannonDragCoeff = 0.01;
     /** Игровой множитель радиуса кратера поверх E^(1/3)-подобия ядра. */
     public double cannonCraterMultiplier = 1.0;
     /** Жёсткий предел радиуса кратера, блоки (бюджет производительности). */
@@ -125,8 +123,6 @@ public final class SpaceReloadedConfig {
     /** Мин/макс горизонтальный отступ от игрока, м. */
     public int meteorMinHorizontal = 10;
     public int meteorHorizontalRange = 44;
-    /** Сопротивление метеорита (обтекаемый — почти нет). */
-    public double meteorDragCoeff = 0.01;
     /** Множитель радиуса кратера метеорита. */
     public double meteorCraterMultiplier = 1.5;
     /** Предел радиуса кратера метеорита, блоки. */
@@ -173,6 +169,48 @@ public final class SpaceReloadedConfig {
     public int meteorIronMax = 5;
     /** Блоки взрывостойкости ≥ порога переживают удар метеорита (обсидиан-бункер). */
     public double meteorMaxBlockResistance = 100.0;
+
+    // --- Полёт 2.0: ориентация (US2) ---
+    /** Предел командуемого наклона, градусы — граница модели малых углов и неповёрнутой коллизии. */
+    public double attitudeMaxDeg = 45.0;
+    /** Скорость роста командуемого угла при удержании клавиши и возврата при отпускании, °/с. */
+    public double attitudeRateDegPerSec = 30.0;
+
+    // --- Полёт 2.0: аэродинамика (US3) ---
+    /** C_d ракеты: блочная ракета — тупое тело, между конусом (0.3) и кубом (1.05). */
+    public double rocketDragCoefficient = 0.5;
+    /** C_d вольфрамового лома: заострённое тело, теряет проценты скорости в атмосфере. */
+    public double cannonRodDragCoefficient = 0.1;
+    /** Площадь сечения лома, м² (Ø ≈ 0.2 м при массе 2 т вольфрама). */
+    public double cannonRodAreaM2 = 0.03;
+    /** C_d метеорита: неправильное тело. */
+    public double meteorDragCoefficient = 1.0;
+    /** Площадь сечения метеорита, м². */
+    public double meteorAreaM2 = 1.0;
+    /**
+     * Порог индекса нагрева √ρ·v³ (закон Саттона-Грейвса без коэффициента и радиуса
+     * затупления — они свёрнуты сюда): 6·10⁶ ≈ 176 м/с у поверхности Земли, штатный
+     * подъём к высоте перехода (~120 м/с) не греет.
+     */
+    public double reentryHeatIndexThreshold = 6.0e6;
+    /** Урон экипажу за интервал при превышении порога нагрева без возвратной капсулы в стеке. */
+    public float reentryHeatDamage = 2.0f;
+    /** Интервал урона нагрева, тики (делитель тик-цикла — обязан быть >= 1). */
+    public int reentryHeatIntervalTicks = 20;
+    /** Порог скоростного напора ½ρv² для предупреждения скан-отчёта, Па (~239 м/с у поверхности Земли). */
+    public double maxDynamicPressurePa = 35_000.0;
+
+    // --- Полёт 2.0: ступени (US1) ---
+    /** Импульс раздвигания частей при отделении ступени, Н·с: Δv каждой части = J/m, суммарный импульс сохраняется. */
+    public double stageSeparationImpulseNs = 3000.0;
+    /** Предельное время жизни обломка ступени, тики — предохранитель от вечного падения (принцип V). */
+    public int stageDebrisMaxTicks = 6000;
+
+    // --- Полёт 2.0: точность орудия (US4) ---
+    /** Радиус рассеивания наводимого лома (есть спутниковое покрытие целевого измерения), блоки. */
+    public double cannonGuidedSpreadBlocks = 0.5;
+    /** Радиус рассеивания без спутникового покрытия целевого измерения, блоки («разброс до N»). */
+    public double cannonUnguidedSpreadBlocks = 10.0;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -236,6 +274,40 @@ public final class SpaceReloadedConfig {
         }
         if (meteorIronMax < meteorIronMin || meteorIronMin < 0) {
             throw new IllegalArgumentException("meteorIronMax должен быть >= meteorIronMin >= 0");
+        }
+        // Полёт 2.0
+        if (attitudeMaxDeg < 5 || attitudeMaxDeg > 60) {
+            throw new IllegalArgumentException("attitudeMaxDeg должен быть в [5, 60]");
+        }
+        if (attitudeRateDegPerSec < 1 || attitudeRateDegPerSec > 180) {
+            throw new IllegalArgumentException("attitudeRateDegPerSec должен быть в [1, 180]");
+        }
+        if (rocketDragCoefficient < 0 || rocketDragCoefficient > 3
+                || cannonRodDragCoefficient < 0 || cannonRodDragCoefficient > 3
+                || meteorDragCoefficient < 0 || meteorDragCoefficient > 3) {
+            throw new IllegalArgumentException("коэффициенты сопротивления должны быть в [0, 3]");
+        }
+        if (cannonRodAreaM2 <= 0 || cannonRodAreaM2 > 10 || meteorAreaM2 <= 0 || meteorAreaM2 > 50) {
+            throw new IllegalArgumentException("cannonRodAreaM2 в (0, 10], meteorAreaM2 в (0, 50]");
+        }
+        if (reentryHeatIndexThreshold <= 0 || maxDynamicPressurePa <= 0) {
+            throw new IllegalArgumentException("reentryHeatIndexThreshold и maxDynamicPressurePa должны быть > 0");
+        }
+        if (reentryHeatDamage < 0 || reentryHeatDamage > 40) {
+            throw new IllegalArgumentException("reentryHeatDamage должен быть в [0, 40]");
+        }
+        if (reentryHeatIntervalTicks < 1) {
+            throw new IllegalArgumentException("reentryHeatIntervalTicks должен быть >= 1");
+        }
+        if (stageSeparationImpulseNs < 0 || stageSeparationImpulseNs > 1_000_000) {
+            throw new IllegalArgumentException("stageSeparationImpulseNs должен быть в [0, 1e6]");
+        }
+        if (stageDebrisMaxTicks < 20) {
+            throw new IllegalArgumentException("stageDebrisMaxTicks должен быть >= 20");
+        }
+        if (cannonGuidedSpreadBlocks < 0 || cannonGuidedSpreadBlocks > 4
+                || cannonUnguidedSpreadBlocks < 0 || cannonUnguidedSpreadBlocks > 64) {
+            throw new IllegalArgumentException("cannonGuidedSpreadBlocks в [0, 4], cannonUnguidedSpreadBlocks в [0, 64]");
         }
     }
 }

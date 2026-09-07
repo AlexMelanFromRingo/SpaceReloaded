@@ -87,12 +87,35 @@ public class SpaceReloadedClient implements ClientModInitializer {
 						new org.alex_melan.spacereloaded.client.gui.PlanetMapScreen(payload)));
 
 		registerPlanetMapKey();
+		registerStageKey();
 		net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register(
 				(handler, client) -> VacuumAmbience.setExposed(false));
 
 		HudElementRegistry.addLast(RocketHud.ID, new RocketHud());
 		HudElementRegistry.addLast(org.alex_melan.spacereloaded.client.gui.OxygenHud.ID,
 				new org.alex_melan.spacereloaded.client.gui.OxygenHud());
+	}
+
+	/**
+	 * Клавиша отделения ступени (по умолчанию X, Полёт 2.0): шлёт пустой C2S-пакет,
+	 * только если игрок сидит в ракете; право пилота проверяет сервер.
+	 */
+	private void registerStageKey() {
+		net.minecraft.client.KeyMapping key = net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
+				.registerKeyMapping(new net.minecraft.client.KeyMapping(
+						"key.spacereloaded.stage",
+						com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM,
+						org.lwjgl.glfw.GLFW.GLFW_KEY_X,
+						net.minecraft.client.KeyMapping.Category.GAMEPLAY));
+		net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			while (key.consumeClick()) {
+				if (client.player != null
+						&& client.player.getVehicle() instanceof org.alex_melan.spacereloaded.rocket.RocketEntity) {
+					net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(
+							new org.alex_melan.spacereloaded.network.StageSeparatePayload());
+				}
+			}
+		});
 	}
 
 	/** Клавиша карты полёта (по умолчанию M): работает где угодно, не только в ракете. */

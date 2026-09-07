@@ -14,8 +14,8 @@ import org.alex_melan.spacereloaded.network.CannonStatePayload;
  */
 public class CannonTerminalScreen extends Screen {
 
-    private static final int PANEL_W = 240;
-    private static final int PANEL_H = 150;
+    private static final int PANEL_W = 260;
+    private static final int PANEL_H = 178;
     private static final int BG = 0xE00E1418;
     private static final int FRAME = 0xFF2A3A40;
     private static final int ACCENT = 0xFF6FD5E8;
@@ -126,6 +126,21 @@ public class CannonTerminalScreen extends Screen {
         gfx.text(font, Component.translatable("screen.spacereloaded.cannon.target", target),
                 x + 12, row, state.hasTarget() ? TEXT : MUTED);
         row += line;
+
+        // Полёт 2.0 (FR-091): режим наведения и прогноз удара по атмосфере цели
+        if (state.hasTarget()) {
+            gfx.text(font, Component.translatable(state.guided()
+                            ? "screen.spacereloaded.cannon.guidance_sat"
+                            : "screen.spacereloaded.cannon.guidance_none",
+                            String.format(java.util.Locale.ROOT, "%.0f", Math.ceil(state.spreadBlocks()))),
+                    x + 12, row, state.guided() ? GOOD : WARN);
+            row += line;
+            gfx.text(font, Component.translatable("screen.spacereloaded.cannon.impact",
+                            String.format(java.util.Locale.ROOT, "%.0f", state.impactSpeedMs()),
+                            String.format(java.util.Locale.ROOT, "%.2f", state.impactEnergyMJ() / 1000.0)),
+                    x + 12, row, MUTED);
+            row += line;
+        }
 
         Component reload = state.cooldownTicks() == 0
                 ? Component.translatable("screen.spacereloaded.cannon.ready")

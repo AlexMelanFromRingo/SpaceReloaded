@@ -31,6 +31,19 @@ public final class ModDamageTypes {
                 .getOrThrow(EXPOSURE));
     }
 
+    /**
+     * Входной нагрев (Полёт 2.0, FR-083): плазма при входе в атмосферу без теплозащиты.
+     * Броня не спасает (тег bypasses_armor) — спасает только возвратная капсула в стеке.
+     */
+    public static final ResourceKey<DamageType> REENTRY_HEAT = ResourceKey.create(Registries.DAMAGE_TYPE,
+            Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "reentry_heat"));
+
+    public static DamageSource reentryHeat(ServerLevel level) {
+        return new DamageSource(level.registryAccess()
+                .lookupOrThrow(Registries.DAMAGE_TYPE)
+                .getOrThrow(REENTRY_HEAT));
+    }
+
     private ModDamageTypes() {
     }
 }

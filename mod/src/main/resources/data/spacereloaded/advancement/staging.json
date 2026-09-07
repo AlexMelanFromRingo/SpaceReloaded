@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"separator": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:stage_separator"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:stage_separator"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.staging.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.staging.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"separator"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:rocketry"
+}

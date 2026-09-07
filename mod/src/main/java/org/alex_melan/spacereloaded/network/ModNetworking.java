@@ -40,9 +40,13 @@ public final class ModNetworking {
                 OpenPlanetMapPayload.TYPE, OpenPlanetMapPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(
                 SetDestinationPayload.TYPE, SetDestinationPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(
+                StageSeparatePayload.TYPE, StageSeparatePayload.CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(CannonActionPayload.TYPE,
                 (payload, context) -> handleCannonAction(payload, context.player()));
+        ServerPlayNetworking.registerGlobalReceiver(StageSeparatePayload.TYPE,
+                (payload, context) -> handleStageSeparate(context.player()));
         ServerPlayNetworking.registerGlobalReceiver(OpenPlanetMapPayload.TYPE,
                 (payload, context) -> handlePlanetMapRequest(context.server(), context.player()));
         ServerPlayNetworking.registerGlobalReceiver(SetDestinationPayload.TYPE,
@@ -64,6 +68,15 @@ public final class ModNetworking {
             player.sendSystemMessage(cannon.tryFire(level));
         }
         ServerPlayNetworking.send(player, cannon.snapshot(level));
+    }
+
+    /** Отделение ступени (Полёт 2.0): только пилот своего борта; ответ — в оверлей. */
+    private static void handleStageSeparate(ServerPlayer player) {
+        if (!(player.getVehicle() instanceof RocketEntity rocket)
+                || rocket.getFirstPassenger() != player) {
+            return; // попутчик в кресле ступени не отбрасывает
+        }
+        player.sendOverlayMessage(rocket.requestStageSeparation(player));
     }
 
     /** Открыть игроку карту полёта (клавиша, ЦУП). */

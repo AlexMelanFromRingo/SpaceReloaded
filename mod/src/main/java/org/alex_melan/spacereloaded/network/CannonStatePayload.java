@@ -12,13 +12,18 @@ import org.alex_melan.spacereloaded.SpaceReloaded;
  * Состояние орудия для терминала (замена простыни в чате): сервер шлёт снимок,
  * клиент открывает или обновляет экран.
  *
+ * <p>Полёт 2.0 (FR-091): {@code guided} — есть спутниковое покрытие цели,
+ * {@code spreadBlocks} — радиус рассеивания режима, {@code impactSpeedMs} и
+ * {@code impactEnergyMJ} — прогноз удара по атмосфере целевого тела.
+ *
  * @param targetDim пустой идентификатор пути = цель не назначена
  */
 public record CannonStatePayload(BlockPos cannonPos, Identifier cannonDim,
                                  int rods, int maxRods, long energy, long energyCapacity,
                                  long energyPerShot, int cooldownTicks,
                                  BlockPos target, Identifier targetDim,
-                                 boolean hasTarget) implements CustomPacketPayload {
+                                 boolean hasTarget, boolean guided, double spreadBlocks,
+                                 double impactSpeedMs, double impactEnergyMJ) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<CannonStatePayload> TYPE =
             new CustomPacketPayload.Type<>(
@@ -37,6 +42,10 @@ public record CannonStatePayload(BlockPos cannonPos, Identifier cannonDim,
                 BlockPos.STREAM_CODEC.encode(buf, payload.target());
                 Identifier.STREAM_CODEC.encode(buf, payload.targetDim());
                 ByteBufCodecs.BOOL.encode(buf, payload.hasTarget());
+                ByteBufCodecs.BOOL.encode(buf, payload.guided());
+                ByteBufCodecs.DOUBLE.encode(buf, payload.spreadBlocks());
+                ByteBufCodecs.DOUBLE.encode(buf, payload.impactSpeedMs());
+                ByteBufCodecs.DOUBLE.encode(buf, payload.impactEnergyMJ());
             },
             buf -> new CannonStatePayload(
                     BlockPos.STREAM_CODEC.decode(buf),
@@ -49,7 +58,11 @@ public record CannonStatePayload(BlockPos cannonPos, Identifier cannonDim,
                     ByteBufCodecs.VAR_INT.decode(buf),
                     BlockPos.STREAM_CODEC.decode(buf),
                     Identifier.STREAM_CODEC.decode(buf),
-                    ByteBufCodecs.BOOL.decode(buf)));
+                    ByteBufCodecs.BOOL.decode(buf),
+                    ByteBufCodecs.BOOL.decode(buf),
+                    ByteBufCodecs.DOUBLE.decode(buf),
+                    ByteBufCodecs.DOUBLE.decode(buf),
+                    ByteBufCodecs.DOUBLE.decode(buf)));
 
     @Override
     public CustomPacketPayload.Type<CannonStatePayload> type() {

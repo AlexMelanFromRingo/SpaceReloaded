@@ -13,6 +13,7 @@
 		"spacereloaded:cargo_hold",
 		"spacereloaded:methalox_engine",
 		"spacereloaded:satellite",
-		"spacereloaded:power_satellite"
+		"spacereloaded:power_satellite",
+		"spacereloaded:stage_separator"
 	]
 }

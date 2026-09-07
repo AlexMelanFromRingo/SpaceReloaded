@@ -11,5 +11,8 @@
 	"arrival": "descend",
 	"atmosphere": "air",
 	"temperature": 15,
-	"temperature_amplitude": 10
+	"temperature_amplitude": 10,
+	"atmosphere_density": 1.225,
+	"scale_height": 110.0,
+	"datum_y": 63.0
 }

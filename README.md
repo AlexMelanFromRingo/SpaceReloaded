@@ -31,6 +31,22 @@ actual part masses, and a lopsided rocket tips over on ascent.
   the pad. Fuel is drawn from the actual tank blocks you filled. A plain
   click gives you a scan report first: delta-v, TWR and a verdict on whether
   the stack reaches orbit.
+- **Multi-stage rockets.** A stage separator block splits the stack into
+  stages. The scan report gives delta-v per stage from sequential Tsiolkovsky
+  terms (upper stages ride as dead mass), only the active stage burns, and a
+  key press or the autopilot drops the spent stage. The dropped stage is a
+  real object: it falls, crashes with E = ½mv², or survives a soft touchdown
+  as a reusable booster.
+- **Attitude control and gravity turns.** WASD tilts the rocket toward where
+  the pilot looks, up to 45 degrees, and the gyroscope's PD loop follows the
+  command. Tilted thrust buys horizontal speed, so spent stages fall
+  downrange instead of onto the pad. No gyroscope, no control.
+- **Atmospheres that push back.** Earth and Mars carry an exponential density
+  profile. Quadratic drag acts on rockets, tungsten rods and meteors alike,
+  a coasting rocket settles at terminal velocity, and entry heating follows
+  Sutton-Graves: without a return capsule in the stack the crew burns. The
+  scan report replaces the sqrt(2gh) guess with a numerical ascent simulation
+  that reports the real delta-v cost and peak dynamic pressure.
 - **Three propellants with different characters.** Kerolox (dense, high thrust)
   is refined from oil shale; hydrolox (high specific impulse) is electrolyzed
   from ice; methalox is made on Mars from atmospheric CO2. Engines burn one
@@ -55,7 +71,11 @@ actual part masses, and a lopsided rocket tips over on ascent.
 - **Orbital kinetic bombardment.** A cannon that only works in orbit fires
   tungsten rods along an honest entry trajectory. Crater size comes from
   E = ½mv² with cube-root scaling; obsidian-class blocks and water survive.
-  Aim and fire remotely with a bound designator from any dimension.
+  Aim and fire remotely with a bound designator from any dimension. Accuracy
+  depends on your satellites: with coverage over the target dimension the rod
+  lands within a block, without it the impact scatters inside a configurable
+  radius. The terminal shows the guidance mode and forecasts impact speed
+  through the target body's atmosphere.
 - **Energy.** Team Reborn Energy units: coal generators to bootstrap, solar
   panels (x1.5 in vacuum), RTGs for the shadowed side, cable networks,
   batteries.

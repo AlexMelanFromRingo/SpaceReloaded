@@ -50,9 +50,35 @@ public final class ModRegistries {
     }
 
     /**
+     * Аэродинамический профиль атмосферы тела (Полёт 2.0, FR-080): плотность у
+     * поверхности, высота шкалы (в игровых метрах) и уровень отсчёта. Поля лежат
+     * в JSON профиля планеты плоско (MapCodec), без вложенного объекта.
+     */
+    public record AtmosphereSpec(double density, double scaleHeight, double datumY) {
+        public static final com.mojang.serialization.MapCodec<AtmosphereSpec> MAP_CODEC =
+                RecordCodecBuilder.mapCodec(instance -> instance.group(
+                        Codec.doubleRange(0.0, 50.0).optionalFieldOf("atmosphere_density", 0.0)
+                                .forGetter(AtmosphereSpec::density),
+                        Codec.doubleRange(1.0, 100_000.0).optionalFieldOf("scale_height", 110.0)
+                                .forGetter(AtmosphereSpec::scaleHeight),
+                        Codec.DOUBLE.optionalFieldOf("datum_y", 63.0).forGetter(AtmosphereSpec::datumY)
+                ).apply(instance, AtmosphereSpec::new));
+
+        public static final AtmosphereSpec VACUUM = new AtmosphereSpec(0.0, 110.0, 63.0);
+
+        public org.alex_melan.spacereloaded.core.atmosphere.AtmosphereProfile toCore() {
+            return density <= 0
+                    ? org.alex_melan.spacereloaded.core.atmosphere.AtmosphereProfile.VACUUM
+                    : new org.alex_melan.spacereloaded.core.atmosphere.AtmosphereProfile(
+                            density, scaleHeight, datumY);
+        }
+    }
+
+    /**
      * Профиль небесного тела (FR-030, паттерн Ad Astra): физика измерения —
      * данными. transition_target — id ПРОФИЛЯ, куда попадает ракета, набрав
      * transition_altitude; координаты масштабируются отношением coordinate_scale.
+     * {@code aero} — плотность/высота шкалы атмосферы (FR-080); без полей — вакуум.
      */
     public record PlanetProfile(
             Identifier dimension,
@@ -69,7 +95,8 @@ public final class ModRegistries {
             long windowPhaseTicks,
             boolean requiresCoverage,
             double temperature,
-            double temperatureAmplitude
+            double temperatureAmplitude,
+            AtmosphereSpec aero
     ) {
         public static final Codec<PlanetProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Identifier.CODEC.fieldOf("dimension").forGetter(PlanetProfile::dimension),
@@ -87,7 +114,8 @@ public final class ModRegistries {
                 Codec.LONG.optionalFieldOf("window_phase_ticks", 0L).forGetter(PlanetProfile::windowPhaseTicks),
                 Codec.BOOL.optionalFieldOf("requires_coverage", false).forGetter(PlanetProfile::requiresCoverage),
                 Codec.DOUBLE.optionalFieldOf("temperature", 20.0).forGetter(PlanetProfile::temperature),
-                Codec.DOUBLE.optionalFieldOf("temperature_amplitude", 0.0).forGetter(PlanetProfile::temperatureAmplitude)
+                Codec.DOUBLE.optionalFieldOf("temperature_amplitude", 0.0).forGetter(PlanetProfile::temperatureAmplitude),
+                AtmosphereSpec.MAP_CODEC.forGetter(PlanetProfile::aero)
         ).apply(instance, PlanetProfile::new));
     }
 

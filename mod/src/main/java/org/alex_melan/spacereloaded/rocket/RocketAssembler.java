@@ -199,6 +199,19 @@ public final class RocketAssembler {
             parts.add(new PlacedPart(local, props, fill));
         }
 
-        return new Result.Ok(blocks, origin, new RocketStructure(parts), commandPos.immutable());
+        RocketStructure structure = new RocketStructure(parts);
+        // Полёт 2.0 (FR-062): ступени — разделитель ниже командного модуля, под каждой
+        // плоскостью есть детали, остаток после отсечения связан с командным модулем
+        long commandLocal = PackedPos.pack(commandPos.getX() - minX,
+                commandPos.getY() - minY, commandPos.getZ() - minZ);
+        var stageError = org.alex_melan.spacereloaded.core.rocketry.StageLayout
+                .validate(structure, commandLocal);
+        if (stageError.isPresent()) {
+            long local = stageError.get().packedPos();
+            return new Result.Error("message.spacereloaded.assembly." + stageError.get().key(),
+                    new BlockPos(minX + PackedPos.unpackX(local), minY + PackedPos.unpackY(local),
+                            minZ + PackedPos.unpackZ(local)));
+        }
+        return new Result.Ok(blocks, origin, structure, commandPos.immutable());
     }
 }

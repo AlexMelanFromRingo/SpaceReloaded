@@ -142,6 +142,46 @@ def heat_shield():
     save(image, "item/heat_shield.png")
 
 
+def stage_separator():
+    """Разделитель ступеней: тёмное стальное кольцо с оранжевыми пироболтами,
+    торец — силовая плита с крестовиной и центральным проёмом."""
+    steel = (0x4A, 0x4E, 0x55)
+    light = (0x6C, 0x72, 0x7A)
+    dark = (0x2E, 0x31, 0x36)
+    bolt = (0xE0, 0x7A, 0x1E)
+    rng = random.Random(0x5EA)
+    side = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            base = light if 6 <= y <= 9 else steel
+            n = rng.randint(-8, 8)
+            side.putpixel((x, y), tuple(max(0, min(255, c + n)) for c in base) + (255,))
+    for y in (5, 10):
+        for x in range(16):
+            side.putpixel((x, y), dark + (255,))
+    for bx in (2, 6, 10, 14):
+        for dy in (7, 8):
+            for dx in (0, 1):
+                side.putpixel(((bx + dx) % 16, dy), bolt + (255,))
+    save(side, "block/stage_separator_side.png")
+
+    end = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            n = rng.randint(-6, 6)
+            end.putpixel((x, y), tuple(max(0, min(255, c + n)) for c in steel) + (255,))
+    for i in range(16):
+        for c in (7, 8):
+            end.putpixel((i, c), light + (255,))
+            end.putpixel((c, i), light + (255,))
+    for y in range(5, 11):
+        for x in range(5, 11):
+            end.putpixel((x, y), dark + (255,))
+    for x, y in ((1, 1), (14, 1), (1, 14), (14, 14)):
+        end.putpixel((x, y), bolt + (255,))
+    save(end, "block/stage_separator_end.png")
+
+
 def main():
     print("руды:")
     transplant_ore(mod("block/moon_stone.png"), vanilla("block/stone.png"),
@@ -158,6 +198,7 @@ def main():
     for name, color in FUELS.items():
         fuel_bucket(color, name)
     heat_shield()
+    stage_separator()
 
 
 if __name__ == "__main__":

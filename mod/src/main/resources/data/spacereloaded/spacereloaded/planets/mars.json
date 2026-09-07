@@ -15,5 +15,8 @@
 	"window_phase_ticks": 0,
 	"requires_coverage": true,
 	"temperature": -60,
-	"temperature_amplitude": 25
+	"temperature_amplitude": 25,
+	"atmosphere_density": 0.02,
+	"scale_height": 150.0,
+	"datum_y": 64.0
 }

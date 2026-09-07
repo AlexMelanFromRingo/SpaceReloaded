@@ -68,6 +68,13 @@ public final class VacuumHazard {
             if (insideZone) {
                 continue;
             }
+            // Кабина ракеты: командный модуль или возвратная капсула — герметичный
+            // отсек с собственной атмосферой, экипаж в кресле дышит без маски
+            // (снаружи, на обломке или в стеке без модуля — вакуум как есть)
+            if (entity.getVehicle() instanceof org.alex_melan.spacereloaded.rocket.RocketEntity rocket
+                    && rocket.hasPressurizedCabin()) {
+                continue;
+            }
             if (entity.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.OXYGEN_MASK)) {
                 if (!(entity instanceof net.minecraft.world.entity.player.Player player)) {
                     continue; // мобы в маске дышат бесплатно (нет инвентаря)

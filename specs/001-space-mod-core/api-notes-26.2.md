@@ -72,3 +72,16 @@ ID ванили теперь в `net.minecraft.references.{BlockIds,ItemIds,Bloc
 - Звук: миксин-точка `SoundEngine.calculateVolume(Lnet/.../SoundInstance;)F` (private, @Inject RETURN + cancellable); `SoundInstance.isRelative()` = «у уха».
 - Сеть (Fabric 6.x): `PayloadTypeRegistry.clientboundPlay().register(TYPE, CODEC)` (НЕ playS2C), `ServerPlayNetworking.send(player, payload)`, `ClientPlayNetworking.registerGlobalReceiver`.
 - Конфиг-делители тик-циклов (`getGameTime() % config.interval`) ОБЯЗАНЫ валидироваться `>= 1`: `long % 0` → ArithmeticException валит весь ServerTickEvents-обработчик (нет try/catch) на первом тике. Все интервалы/диапазоны в SpaceReloadedConfig.validate() (философия «жёсткие лимиты = константы конфига»).
+
+## Дополнено при Полёте 2.0 (002-staged-flight-physics, 2026-09-06)
+
+- `net.minecraft.world.entity.player.Input` — запись `(forward, backward, left, right, jump, shift, sprint)`; `ServerPlayer.getLastClientInput()` / `setLastClientInput(Input)` (клиент шлёт пакет только при изменении клавиш — серверное значение держится, стенд может его подменять).
+- `Player.rideTick()` на сервере: `wantsToStopRiding()` = `isShiftKeyDown()` → `stopRiding()` (единственный серверный путь ссаживания по вводу; остальные — удаление аппарата, `ServerPlayer.teleport`, `setGameMode`, `PlayerList.remove`, тег `dismounts_underwater`).
+- Клиентский gametest-стенд: серверный `player.startRiding(rocket, true, true)` держится только до конца текущей серверной задачи — на следующем тике игрок уже не пассажир (sneak=false, аппарат жив, id тот же; причина не найдена по байткоду 26.2, вероятно клиентская сторона харнесса). Стенд сажает пилота заново каждый тик и подаёт ввод `setLastClientInput(...)`; в игре реальные игроки летают штатно.
+- `Entity.startRiding(Entity, boolean force, boolean)` — трёхаргументная форма; `getYHeadRot()/setYHeadRot(float)` есть на `Entity`.
+- Yaw Minecraft: 0 = юг (+Z), рост по часовой; forward = (−sin, cos), right = (−cos, −sin) — для «наклонить туда, куда смотрю».
+- `RecordCodecBuilder.group` — не больше 16 полей; вложенный `MapCodec.forGetter` (плоские JSON-поля) экономит слоты (`PlanetProfile.aero`).
+- `StreamCodec.unit(T)` — пустой C2S-пакет (отделение ступени).
+- `Codec.doubleRange(min, max)` — валидация диапазонов датапак-полей прямо в кодеке.
+- Fabric client gametest: `TestInput.holdKey/pressKey/holdKeyFor/lookAt` есть, но стенд управляет ракетой серверными методами — надёжнее под Xvfb.
+- `SoundEvents.GENERIC_EXPLODE` — `Holder`, звук через `.value()`; `ParticleTypes.SOUL_FIRE_FLAME/POOF` для плазмы и разделения.

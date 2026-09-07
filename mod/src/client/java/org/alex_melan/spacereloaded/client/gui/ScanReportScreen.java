@@ -8,10 +8,14 @@ import org.alex_melan.spacereloaded.network.ScanReportPayload;
 
 import java.util.Locale;
 
-/** Скан-отчёт стартового комплекса: те же цифры, но читаемые. */
+/**
+ * Скан-отчёт стартового комплекса: те же цифры, но читаемые. Полёт 2.0:
+ * строки ступеней (Δv, TWR на зажигании) и результат моделирования подъёма
+ * (достигнет ли высоты перехода, Δv до неё, апогей, пиковый скоростной напор).
+ */
 public class ScanReportScreen extends Screen {
 
-    private static final int PANEL_W = 260;
+    private static final int PANEL_W = 280;
     private static final int BG = 0xE00E1418;
     private static final int FRAME = 0xFF2A3A40;
     private static final int ACCENT = 0xFF6FD5E8;
@@ -27,8 +31,23 @@ public class ScanReportScreen extends Screen {
         this.report = report;
     }
 
+    private int lineStep() {
+        return font.lineHeight + 4;
+    }
+
+    private boolean multiStage() {
+        return report.stages().size() > 1;
+    }
+
     private int panelHeight() {
-        return 122 + report.warnings().size() * (font.lineHeight + 2);
+        if (!report.error().isEmpty()) {
+            return 90;
+        }
+        int lines = 6;                                   // блоки, масса, тяга, TWR, Δv, вердикт
+        lines += multiStage() ? 1 + report.stages().size() : 0;
+        lines += 2;                                      // подъём + напор
+        return 10 + lineStep() + 4 + lines * lineStep() + 6
+                + report.warnings().size() * (font.lineHeight + 2) + 34;
     }
 
     @Override
@@ -50,7 +69,7 @@ public class ScanReportScreen extends Screen {
         gfx.outline(x, y, PANEL_W, panelH, FRAME);
 
         gfx.text(font, getTitle(), x + 12, y + 10, ACCENT);
-        int line = font.lineHeight + 4;
+        int line = lineStep();
         int row = y + 10 + line + 4;
 
         if (!report.error().isEmpty()) {
@@ -74,10 +93,38 @@ public class ScanReportScreen extends Screen {
                 x + 12, row, liftsOff ? GOOD : WARN);
         row += line;
 
-        boolean enough = report.requiredDeltaV() <= 0 || report.deltaV() >= report.requiredDeltaV();
+        boolean enough = report.ascentReached();
         gfx.text(font, Component.translatable("screen.spacereloaded.scan.dv",
                         fmt(report.deltaV()), fmt(report.requiredDeltaV())),
                 x + 12, row, enough ? GOOD : WARN);
+        row += line;
+
+        // Ступени (Полёт 2.0): только для многоступенчатого стека
+        if (multiStage()) {
+            gfx.text(font, Component.translatable("screen.spacereloaded.scan.stages",
+                    report.stages().size()), x + 12, row, MUTED);
+            row += line;
+            for (ScanReportPayload.StageLine stage : report.stages()) {
+                gfx.text(font, Component.translatable("screen.spacereloaded.scan.stage_line",
+                                stage.index() + 1, fmt(stage.deltaV()),
+                                String.format(Locale.ROOT, "%.2f", stage.twr())),
+                        x + 20, row, stage.hasEngines() ? TEXT : WARN);
+                row += line;
+            }
+        }
+
+        // Моделирование подъёма и скоростной напор
+        gfx.text(font, Component.translatable(enough
+                        ? "screen.spacereloaded.scan.ascent_ok"
+                        : "screen.spacereloaded.scan.ascent_fail",
+                        fmt(report.ascentApexM()), fmt(report.ascentDeltaV())),
+                x + 12, row, enough ? GOOD : WARN);
+        row += line;
+        gfx.text(font, Component.translatable(report.maxQExceeded()
+                        ? "screen.spacereloaded.scan.max_q_warn"
+                        : "screen.spacereloaded.scan.max_q",
+                        String.format(Locale.ROOT, "%.1f", report.maxQPa() / 1000.0)),
+                x + 12, row, report.maxQExceeded() ? WARN : MUTED);
         row += line + 2;
 
         Component verdict = !liftsOff

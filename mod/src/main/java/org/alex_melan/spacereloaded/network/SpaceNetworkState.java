@@ -108,6 +108,16 @@ public class SpaceNetworkState extends SavedData {
         return coverage(dimension) > 0;
     }
 
+    /** Прямая установка числа узлов покрытия (стенд, админ-команды); 0 удаляет запись. */
+    public void setCoverage(ResourceKey<Level> dimension, int nodes) {
+        if (nodes <= 0) {
+            coverage.remove(dimension);
+        } else {
+            coverage.put(dimension, nodes);
+        }
+        setDirty();
+    }
+
     // --- Энергоспутники (Phase 14) ---
 
     public int powerSats(ResourceKey<Level> orbit) {

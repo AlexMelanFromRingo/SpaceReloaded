@@ -58,8 +58,29 @@ public class RocketEntity extends Entity {
             SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> DATA_DESTINATION =
             SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.INT);
+    // Полёт 2.0: ступени (US1)
+    private static final EntityDataAccessor<Integer> DATA_STAGE =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_STAGE_COUNT =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> DATA_STAGE_FUEL =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> DATA_DELTA_V =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
+    // Полёт 2.0: ориентация (US2)
+    private static final EntityDataAccessor<Float> DATA_CMD_PITCH =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> DATA_CMD_ROLL =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Boolean> DATA_HAS_GYRO =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
+    // Полёт 2.0: входной нагрев (US3)
+    private static final EntityDataAccessor<Boolean> DATA_HEATING =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final double DT = 0.05; // серверный тик
+    /** Остаток топлива ступени, ниже которого она считается выгоревшей (кг). */
+    private static final double STAGE_EMPTY_KG = 0.5;
     private static final double CRASH_SPEED = 15.0; // м/с — жёсткая посадка
     private static final double CAPSULE_CRASH_SPEED = 25.0; // капсула: теплозащита+амортизация
 
@@ -92,6 +113,24 @@ public class RocketEntity extends Entity {
             new java.util.ArrayList<>();
     private int destinationIndex;
 
+    // --- Полёт 2.0: ступени (D11/D15) ---
+    /** Раскладка ступеней текущей структуры; пересчитывается в rebuildDerived. */
+    private org.alex_melan.spacereloaded.core.rocketry.StageLayout layout;
+    /** Активная (нижняя оставшаяся) ступень. */
+    private int activeStage;
+    /** Топливо по ступеням, кг; {@code flight.propellantKg()} зеркалит активную. */
+    private double[] stagePropellant = new double[0];
+    /** Кэш активного вида структуры для интегратора; сбрасывается при смене ступени/заправке. */
+    private RocketStructure activeView;
+    /** Аэродинамическое тело активного вида (кэш вместе с activeView). */
+    private org.alex_melan.spacereloaded.core.atmosphere.DragBody activeDrag;
+    /** Обломок ступени: без экипажа, двигатели заглушены, предельное время жизни. */
+    private boolean debris;
+    private int debrisTicks;
+    /** Команда ориентации пилота (D14); без пилота — вертикаль; не сохраняется. */
+    private org.alex_melan.spacereloaded.core.rocketry.AttitudeCommand attitude =
+            org.alex_melan.spacereloaded.core.rocketry.AttitudeCommand.LEVEL;
+
     // Производные размеры (сервер и клиент)
     private float sizeX = 1;
     private float sizeY = 2;
@@ -115,20 +154,44 @@ public class RocketEntity extends Entity {
         builder.define(DATA_LAUNCHED, false);
         builder.define(DATA_FUEL, 0.0f);
         builder.define(DATA_DESTINATION, 0);
+        builder.define(DATA_STAGE, 0);
+        builder.define(DATA_STAGE_COUNT, 1);
+        builder.define(DATA_STAGE_FUEL, 0.0f);
+        builder.define(DATA_DELTA_V, 0.0f);
+        builder.define(DATA_CMD_PITCH, 0.0f);
+        builder.define(DATA_CMD_ROLL, 0.0f);
+        builder.define(DATA_HAS_GYRO, false);
+        builder.define(DATA_HEATING, false);
     }
 
-    /** Сервер: установить структуру после сборки (до addFreshEntity). */
+    /** Сервер: установить структуру после сборки (до addFreshEntity); топливо — по ёмкости ступеней. */
     public void setAssembly(RocketData data) {
+        setAssembly(data, null);
+    }
+
+    /**
+     * Сервер: структура + честное топливо по ступеням (суммы баков из скана).
+     *
+     * @param propellantByStage топливо каждой ступени снизу вверх; null — распределить
+     *                          суммарное {@code data.propellantKg()} по ёмкости ступеней
+     */
+    public void setAssembly(RocketData data, double[] propellantByStage) {
         this.rocketData = data;
         rebuildDerived();
-        this.flight = FlightState.atRest(corePos(), data.propellantKg());
-        entityData.set(DATA_FUEL, (float) data.propellantKg());
+        this.activeStage = 0;
+        this.stagePropellant = propellantByStage != null && propellantByStage.length == layout.stageCount()
+                ? propellantByStage.clone()
+                : layout.distributeByCapacity(data.propellantKg());
+        this.flight = FlightState.atRest(corePos(), stagePropellant[activeStage]);
+        syncStageData();
         Tag tag = RocketData.CODEC.encodeStart(NbtOps.INSTANCE, data).getOrThrow();
         entityData.set(DATA_STRUCTURE, (CompoundTag) tag);
     }
 
     private void rebuildDerived() {
         structure = rocketData.toStructure();
+        layout = org.alex_melan.spacereloaded.core.rocketry.StageLayout.of(structure);
+        activeView = null;
         int maxX = 0;
         int maxY = 0;
         int maxZ = 0;
@@ -183,6 +246,207 @@ public class RocketEntity extends Entity {
 
     public float comY() {
         return comY;
+    }
+
+    // ---------- Ступени (Полёт 2.0, US1) ----------
+
+    public int activeStage() {
+        return activeStage;
+    }
+
+    public int stageCount() {
+        return layout == null ? 1 : layout.stageCount();
+    }
+
+    /** Топливо ступени, кг (0 для несуществующего индекса). */
+    public double stagePropellantKg(int stage) {
+        return stage >= 0 && stage < stagePropellant.length ? stagePropellant[stage] : 0;
+    }
+
+    /** Обломок ступени (без экипажа, летит по баллистике до удара/утилизации). */
+    public boolean isDebris() {
+        return debris;
+    }
+
+    org.alex_melan.spacereloaded.core.rocketry.StageLayout layout() {
+        return layout;
+    }
+
+    RocketData rocketData() {
+        return rocketData;
+    }
+
+    FlightState flightState() {
+        return flight;
+    }
+
+    double[] stagePropellantSnapshot() {
+        return stagePropellant.clone();
+    }
+
+    /** Суммарное топливо всех ступеней, кг. */
+    private double totalPropellant() {
+        double total = 0;
+        for (double kg : stagePropellant) {
+            total += kg;
+        }
+        return total;
+    }
+
+    /** Активный вид структуры для интегратора (D11): кэш до смены ступени/заправки. */
+    private RocketStructure currentView() {
+        if (activeView == null) {
+            activeView = layout.activeView(activeStage, stagePropellant);
+            activeDrag = activeView.dragBody(org.alex_melan.spacereloaded.SpaceReloaded.config().rocketDragCoefficient);
+        }
+        return activeView;
+    }
+
+    /** Аэродинамическое тело оставшегося стека (габариты активного вида, C_d из конфига). */
+    private org.alex_melan.spacereloaded.core.atmosphere.DragBody currentDrag() {
+        currentView();
+        return activeDrag == null ? org.alex_melan.spacereloaded.core.atmosphere.DragBody.NONE : activeDrag;
+    }
+
+    /**
+     * Герметичная кабина: командный модуль (или возвратная капсула — тоже role=command)
+     * в оставшемся стеке — экипаж в креслах дышит без маски (замечание плейтеста:
+     * «персонаж просто задыхается в космосе» — в закрытой капсуле не должен).
+     */
+    public boolean hasPressurizedCabin() {
+        if (rocketData == null || debris) {
+            return false;
+        }
+        for (RocketData.Entry entry : rocketData.blocks()) {
+            if (entry.role().equals("command")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Теплозащита стека (FR-083): возвратная капсула в конструкции. */
+    private boolean hasReturnCapsule() {
+        return rocketData != null && rocketData.blocks().stream().anyMatch(e ->
+                e.state().is(org.alex_melan.spacereloaded.registry.ModBlocks.RETURN_CAPSULE));
+    }
+
+    public boolean clientHeating() {
+        return entityData.get(DATA_HEATING);
+    }
+
+    /** Ступень детали по её локальной позиции (для разборки: чья доля топлива). */
+    private int stageOf(long localPos) {
+        for (var stage : layout.stages()) {
+            for (var part : stage.parts()) {
+                if (part.packedPos() == localPos) {
+                    return stage.index();
+                }
+            }
+        }
+        return activeStage;
+    }
+
+    private FlightState withPropellant(FlightState state, double propellantKg) {
+        return new FlightState(state.pos(), state.vel(), state.pitch(), state.roll(),
+                state.pitchRate(), state.rollRate(), propellantKg);
+    }
+
+    /** Синхронизация полей ступеней и топлива на клиент (HUD). */
+    private void syncStageData() {
+        entityData.set(DATA_STAGE, activeStage);
+        entityData.set(DATA_STAGE_COUNT, stageCount());
+        entityData.set(DATA_STAGE_FUEL, (float) stagePropellantKg(activeStage));
+        entityData.set(DATA_FUEL, (float) totalPropellant());
+        // Управление ориентацией есть только при гиродине в оставшемся стеке (FR-071)
+        boolean gyro = false;
+        if (layout != null) {
+            for (int i = activeStage; i < layout.stageCount() && !gyro; i++) {
+                for (var part : layout.stage(i).parts()) {
+                    if (part.properties().gyroTorqueNm() > 0) {
+                        gyro = true;
+                        break;
+                    }
+                }
+            }
+        }
+        entityData.set(DATA_HAS_GYRO, gyro);
+    }
+
+    /** Остаток Δv стека (сумма ступеней от активной), м/с — для HUD, раз в 10 тиков. */
+    private double remainingDeltaV(double gravity) {
+        var report = org.alex_melan.spacereloaded.core.rocketry.StagedPerformance
+                .calculate(layout, stagePropellant, gravity > 0 ? gravity : 9.81);
+        double total = 0;
+        for (int i = activeStage; i < report.stages().size(); i++) {
+            total += report.stages().get(i).deltaV();
+        }
+        return total;
+    }
+
+    /**
+     * Верхний стек после отделения ступени (вызывается {@link StageSeparation}):
+     * новая структура с нормализованными координатами, новая позиция сущности,
+     * топливо оставшихся ступеней и приращение скорости от импульса разделения.
+     */
+    void applyRemainingStack(RocketData remaining, Vec3 newPos, double[] remainingStages,
+                             org.alex_melan.spacereloaded.core.geometry.Vec3d deltaVel) {
+        this.rocketData = remaining;
+        rebuildDerived();
+        this.activeStage = 0;
+        this.stagePropellant = remainingStages.length == layout.stageCount()
+                ? remainingStages.clone() : layout.distributeByCapacity(remaining.propellantKg());
+        setPos(newPos.x, newPos.y, newPos.z);
+        this.flight = new FlightState(corePos(), flight.vel().add(deltaVel), flight.pitch(), flight.roll(),
+                flight.pitchRate(), flight.rollRate(), stagePropellant[0]);
+        this.fuelOutWarned = false;
+        syncStageData();
+        Tag tag = RocketData.CODEC.encodeStart(NbtOps.INSTANCE, remaining).getOrThrow();
+        entityData.set(DATA_STRUCTURE, (CompoundTag) tag);
+        // Кресла отброшенной ступени ушли вместе с ней: лишние пассажиры — за борт (честно)
+        java.util.List<Entity> riders = new java.util.ArrayList<>(getPassengers());
+        for (int i = riders.size() - 1; i >= 1 + seatLocals.size(); i--) {
+            riders.get(i).stopRiding();
+        }
+    }
+
+    /** Обломок ступени: летит без экипажа с унаследованной ориентацией и скоростью. */
+    void markDebris(org.alex_melan.spacereloaded.core.geometry.Vec3d velocity, double pitch, double roll) {
+        this.debris = true;
+        this.debrisTicks = 0;
+        this.launched = true;
+        this.autopilot = false;
+        this.descentMode = false;
+        entityData.set(DATA_LAUNCHED, true);
+        this.flight = new FlightState(corePos(), velocity, pitch, roll, 0, 0, stagePropellant[activeStage]);
+        entityData.set(DATA_PITCH, (float) Math.toDegrees(pitch));
+        entityData.set(DATA_ROLL, (float) Math.toDegrees(roll));
+    }
+
+    /**
+     * Команда пилота на отделение ступени (FR-065): только первый пассажир,
+     * только в полёте, только при наличии нижней ступени.
+     */
+    public Component requestStageSeparation(ServerPlayer player) {
+        if (getFirstPassenger() != player) {
+            return Component.translatable("message.spacereloaded.stage.not_pilot");
+        }
+        if (!launched || level().isClientSide()) {
+            return Component.translatable("message.spacereloaded.stage.not_launched");
+        }
+        if (activeStage >= stageCount() - 1) {
+            return Component.translatable("message.spacereloaded.stage.last");
+        }
+        return StageSeparation.separate((ServerLevel) level(), this);
+    }
+
+    /** Стенд: задать скорость полёта (м/с). */
+    public void setFlightVelocity(Vec3 velocity) {
+        if (flight != null) {
+            flight = new FlightState(flight.pos(),
+                    new org.alex_melan.spacereloaded.core.geometry.Vec3d(velocity.x, velocity.y, velocity.z),
+                    flight.pitch(), flight.roll(), flight.pitchRate(), flight.rollRate(), flight.propellantKg());
+        }
     }
 
     // ---------- Геометрия ----------
@@ -320,9 +584,13 @@ public class RocketEntity extends Entity {
         }
     }
 
-    /** Снимок структуры с ТЕКУЩИМ топливом (для стыковочных операций). */
+    /**
+     * Снимок структуры с ТЕКУЩИМ суммарным топливом (для стыковочных операций).
+     * Упрощение (D15): после стыковки/расстыковки топливо перераспределяется
+     * по ёмкости ступеней каждой части.
+     */
     public RocketData rocketDataForDocking() {
-        return new RocketData(rocketData.blocks(), flight == null ? 0 : flight.propellantKg());
+        return new RocketData(rocketData.blocks(), flight == null ? 0 : totalPropellant());
     }
 
     /** Локальный Y стыковочного узла в ячейке клика (допуск ±1), если есть. */
@@ -346,9 +614,9 @@ public class RocketEntity extends Entity {
         return java.util.OptionalInt.empty();
     }
 
-    /** Текущий запас топлива, кг. */
+    /** Текущий запас топлива всех ступеней, кг. */
     public double propellantKg() {
-        return flight == null ? 0 : flight.propellantKg();
+        return flight == null ? 0 : totalPropellant();
     }
 
     // --- Клиентские аксессоры для HUD ---
@@ -376,32 +644,77 @@ public class RocketEntity extends Entity {
         return entityData.get(DATA_DESTINATION);
     }
 
-    /** Заправка (рукав): принять до amountKg, вернуть фактически принятое. */
+    public int clientStage() {
+        return entityData.get(DATA_STAGE);
+    }
+
+    public int clientStageCount() {
+        return entityData.get(DATA_STAGE_COUNT);
+    }
+
+    public float clientStageFuelKg() {
+        return entityData.get(DATA_STAGE_FUEL);
+    }
+
+    /** Остаток Δv стека (сумма ступеней от активной), м/с. */
+    public float clientDeltaV() {
+        return entityData.get(DATA_DELTA_V);
+    }
+
+    public float clientCmdPitchDeg() {
+        return entityData.get(DATA_CMD_PITCH);
+    }
+
+    public float clientCmdRollDeg() {
+        return entityData.get(DATA_CMD_ROLL);
+    }
+
+    /** Есть ли гиродин в оставшемся стеке — иначе команды ориентации не действуют. */
+    public boolean clientHasGyro() {
+        return entityData.get(DATA_HAS_GYRO);
+    }
+
+    /**
+     * Заправка (рукав/колонна): принять до amountKg, вернуть фактически принятое.
+     * Топливо раскладывается по ступеням пропорционально свободной ёмкости
+     * (магистраль заполняет все баки, порядок не важен).
+     */
     public double refuel(double amountKg) {
         if (launched || structure == null || flight == null) {
             return 0;
         }
-        double capacity = structure.totalPropellantCapacityKg();
-        double accepted = Math.clamp(amountKg, 0, Math.max(0, capacity - flight.propellantKg()));
+        double free = 0;
+        for (int i = 0; i < stagePropellant.length; i++) {
+            free += Math.max(0, layout.stage(i).propellantCapacityKg() - stagePropellant[i]);
+        }
+        double accepted = Math.clamp(amountKg, 0, free);
         if (accepted > 0) {
-            flight = new FlightState(flight.pos(), flight.vel(), flight.pitch(), flight.roll(),
-                    flight.pitchRate(), flight.rollRate(), flight.propellantKg() + accepted);
-            entityData.set(DATA_FUEL, (float) flight.propellantKg());
+            for (int i = 0; i < stagePropellant.length; i++) {
+                double room = Math.max(0, layout.stage(i).propellantCapacityKg() - stagePropellant[i]);
+                stagePropellant[i] += accepted * room / free;
+            }
+            flight = withPropellant(flight, stagePropellant[activeStage]);
+            activeView = null;
+            syncStageData();
             fuelOutWarned = false;
         }
         return accepted;
     }
 
-    /** Слив (рукав): отдать до amountKg. */
+    /** Слив (рукав/колонна): отдать до amountKg, пропорционально остаткам ступеней. */
     public double drain(double amountKg) {
         if (launched || flight == null) {
             return 0;
         }
-        double drained = Math.clamp(amountKg, 0, flight.propellantKg());
+        double total = totalPropellant();
+        double drained = Math.clamp(amountKg, 0, total);
         if (drained > 0) {
-            flight = new FlightState(flight.pos(), flight.vel(), flight.pitch(), flight.roll(),
-                    flight.pitchRate(), flight.rollRate(), flight.propellantKg() - drained);
-            entityData.set(DATA_FUEL, (float) flight.propellantKg());
+            for (int i = 0; i < stagePropellant.length; i++) {
+                stagePropellant[i] -= drained * stagePropellant[i] / total;
+            }
+            flight = withPropellant(flight, stagePropellant[activeStage]);
+            activeView = null;
+            syncStageData();
         }
         return drained;
     }
@@ -413,7 +726,7 @@ public class RocketEntity extends Entity {
                 && player.isSecondaryUseActive()) {
             if (!level().isClientSide() && isParked()
                     && player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.sendSystemMessage(startAutopilot((ServerLevel) level()));
+                serverPlayer.sendSystemMessage(launchUnmanned((ServerLevel) level()));
                 return InteractionResult.SUCCESS_SERVER;
             }
             return InteractionResult.SUCCESS;
@@ -472,6 +785,9 @@ public class RocketEntity extends Entity {
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
+        if (debris) {
+            return false; // на падающий обломок не сесть
+        }
         return getPassengers().size() < 1 + seatLocals.size(); // модуль = место пилота
     }
 
@@ -526,25 +842,73 @@ public class RocketEntity extends Entity {
             }
             prevSprint = sprint;
             if (jump) {
-                tryIgnite(serverLevel);
+                ignite(serverLevel);
             }
             return;
         }
         prevSprint = sprint;
 
-        ControlInput control = new ControlInput(jump ? 1.0 : 0.0, 0, 0, true);
+        // Обломок ступени (FR-067): тяги нет; предельное время жизни — предохранитель
+        if (debris) {
+            jump = false;
+            if (++debrisTicks > org.alex_melan.spacereloaded.SpaceReloaded.config().stageDebrisMaxTicks) {
+                discard();
+                return;
+            }
+        }
+        // Автопилот (FR-065): активная ступень выгорела — отделить и лететь дальше
+        if (autopilot && pilot == null && activeStage < stageCount() - 1
+                && stagePropellant[activeStage] <= STAGE_EMPTY_KG) {
+            StageSeparation.separate(serverLevel, this);
+            return;
+        }
+
+        // Полёт 2.0 (FR-070, D14): наклон относительно взгляда пилота — отрабатывают гиродины.
+        // Minecraft: yaw 0 = юг (+Z), рост yaw — по часовой; forward = (−sin, cos), right = (−cos, −sin)
+        double tiltX = 0;
+        double tiltZ = 0;
+        if (pilot != null) {
+            Input steer = pilot.getLastClientInput();
+            double forward = (steer.forward() ? 1 : 0) - (steer.backward() ? 1 : 0);
+            double right = (steer.right() ? 1 : 0) - (steer.left() ? 1 : 0);
+            if (forward != 0 || right != 0) {
+                double yaw = Math.toRadians(pilot.getYHeadRot());
+                tiltX = -Math.sin(yaw) * forward - Math.cos(yaw) * right;
+                tiltZ = Math.cos(yaw) * forward - Math.sin(yaw) * right;
+            }
+        }
+        var config = org.alex_melan.spacereloaded.SpaceReloaded.config();
+        attitude = pilot == null
+                ? org.alex_melan.spacereloaded.core.rocketry.AttitudeCommand.LEVEL
+                : attitude.step(tiltX, tiltZ, DT, config.attitudeRateDegPerSec, config.attitudeMaxDeg);
+        entityData.set(DATA_CMD_PITCH, (float) attitude.pitchDeg());
+        entityData.set(DATA_CMD_ROLL, (float) attitude.rollDeg());
+
+        ControlInput control = new ControlInput(jump ? 1.0 : 0.0, attitude.pitchRad(), attitude.rollRad(), true);
         flight = new FlightState(corePos(), flight.vel(), flight.pitch(), flight.roll(),
-                flight.pitchRate(), flight.rollRate(), flight.propellantKg());
-        double gravity = org.alex_melan.spacereloaded.planet.PlanetManager.gravity(serverLevel);
-        flight = FlightIntegrator.step(structure, flight, control,
-                new FlightEnvironment(gravity), DT);
+                flight.pitchRate(), flight.rollRate(), stagePropellant[activeStage]);
+        // Среда: гравитация + атмосфера тела (FR-080); сопротивление по габаритам стека (FR-081)
+        FlightEnvironment env = org.alex_melan.spacereloaded.planet.PlanetManager.environment(serverLevel);
+        double gravity = env.gravity();
+        // D11: интегратор видит активный вид — тяга и баки только активной ступени
+        flight = FlightIntegrator.step(currentView(), flight, control, env, DT, currentDrag());
+        stagePropellant[activeStage] = flight.propellantKg();
 
         setPos(flight.pos().x(), flight.pos().y(), flight.pos().z());
         setDeltaMovement(flight.vel().x() * DT, flight.vel().y() * DT, flight.vel().z() * DT);
         entityData.set(DATA_PITCH, (float) Math.toDegrees(flight.pitch()));
         entityData.set(DATA_ROLL, (float) Math.toDegrees(flight.roll()));
-        if (Math.abs(entityData.get(DATA_FUEL) - flight.propellantKg()) > 1.0) {
-            entityData.set(DATA_FUEL, (float) flight.propellantKg());
+        if (Math.abs(entityData.get(DATA_STAGE_FUEL) - flight.propellantKg()) > 1.0) {
+            syncStageData();
+        }
+        if (tickCount % 10 == 0) {
+            entityData.set(DATA_DELTA_V, (float) remainingDeltaV(gravity));
+        }
+        // Ниже границы мира (пустота орбиты, потерянный обломок) — утилизация, не вечный объект
+        if (getY() < serverLevel.getMinY() - 64) {
+            ejectPassengers();
+            discard();
+            return;
         }
 
         // T056: полётные ticket'ы (persist + keep-dimension-active) — полёт
@@ -554,11 +918,35 @@ public class RocketEntity extends Entity {
         }
 
         double speedNow = new Vec3(flight.vel().x(), flight.vel().y(), flight.vel().z()).length();
-        // T062: топливо кончилось — дальше только честная баллистика
-        if (flight.propellantKg() <= 0.5 && !fuelOutWarned) {
+
+        // Входной нагрев (FR-083): √ρ·v³ выше порога — плазма; без капсулы экипаж горит
+        double heatIndex = org.alex_melan.spacereloaded.core.rocketry.Aerothermal
+                .heatIndex(env.density(getY()), speedNow);
+        boolean heating = heatIndex > config.reentryHeatIndexThreshold;
+        if (heating != entityData.get(DATA_HEATING)) {
+            entityData.set(DATA_HEATING, heating);
+        }
+        if (heating) {
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.SOUL_FIRE_FLAME,
+                    getX(), getY() + (flight.vel().y() > 0 ? sizeY : 0.0), getZ(),
+                    12, halfX() * 0.6, 0.5, halfZ() * 0.6, 0.08);
+            if (!hasReturnCapsule() && tickCount % config.reentryHeatIntervalTicks == 0) {
+                for (Entity passenger : List.copyOf(getPassengers())) {
+                    if (passenger instanceof net.minecraft.world.entity.LivingEntity living) {
+                        living.hurtServer(serverLevel,
+                                org.alex_melan.spacereloaded.registry.ModDamageTypes.reentryHeat(serverLevel),
+                                config.reentryHeatDamage);
+                    }
+                }
+            }
+        }
+        // T062: топливо кончилось — дальше только честная баллистика (или отделение ступени)
+        if (flight.propellantKg() <= STAGE_EMPTY_KG && !fuelOutWarned) {
             fuelOutWarned = true;
             if (pilot != null) {
-                pilot.sendOverlayMessage(Component.translatable("message.spacereloaded.rocket.fuel_out"));
+                pilot.sendOverlayMessage(Component.translatable(activeStage < stageCount() - 1
+                        ? "message.spacereloaded.stage.burnout"
+                        : "message.spacereloaded.rocket.fuel_out"));
             }
         }
         // Эффекты: факел двигателя при тяге, плазменный след на скорости
@@ -682,13 +1070,14 @@ public class RocketEntity extends Entity {
         ServerPlayer pilot = getFirstPassenger() instanceof ServerPlayer sp ? sp : null;
         ejectPassengers();
 
-        double savedPropellant = flight.propellantKg();
+        double[] savedStages = stagePropellant.clone();
+        int savedActive = activeStage;
         Entity moved = teleport(new net.minecraft.world.level.portal.TeleportTransition(
                 target, new Vec3(targetX, targetY, targetZ), Vec3.ZERO, 0f, 0f,
                 net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING));
 
         if (moved instanceof RocketEntity rocket) {
-            rocket.postArrival(toOrbit, savedPropellant);
+            rocket.postArrival(toOrbit, savedStages, savedActive);
             // Спутник/энергоспутник: развёртывание на орбите ТОЛЬКО беспилотно
             // (иначе экипаж и груз погибли бы вместе с аппаратом)
             boolean payload = rocket.hasSatellite() || rocket.hasPowerSatellite();
@@ -720,11 +1109,16 @@ public class RocketEntity extends Entity {
     }
 
     /** Настройка после прибытия (вызывается на НОВОМ экземпляре после teleport). */
-    private void postArrival(boolean parked, double propellantKg) {
+    private void postArrival(boolean parked, double[] stages, int active) {
+        if (layout != null && stages.length == layout.stageCount()) {
+            this.stagePropellant = stages.clone();
+            this.activeStage = Math.clamp(active, 0, layout.stageCount() - 1);
+            this.activeView = null;
+        }
         this.flight = new FlightState(corePos(),
                 parked ? org.alex_melan.spacereloaded.core.geometry.Vec3d.ZERO
                        : new org.alex_melan.spacereloaded.core.geometry.Vec3d(0, -5, 0),
-                0, 0, 0, 0, propellantKg);
+                0, 0, 0, 0, stagePropellantKg(activeStage));
         this.launched = !parked;
         if (parked) {
             autopilot = false;
@@ -736,6 +1130,7 @@ public class RocketEntity extends Entity {
         entityData.set(DATA_PITCH, 0.0f);
         entityData.set(DATA_ROLL, 0.0f);
         setDeltaMovement(Vec3.ZERO);
+        syncStageData();
     }
 
     /** Загрузка полётной программы: цель + посадочный маяк. */
@@ -780,7 +1175,10 @@ public class RocketEntity extends Entity {
      * с прибытием «снижение» разрешены при заданном посадочном маяке —
      * автопилот выполнит suicide-burn-lite над ним.
      */
-    private Component startAutopilot(ServerLevel level) {
+    public Component launchUnmanned(ServerLevel level) {
+        if (!isParked() || debris) {
+            return Component.translatable("message.spacereloaded.rocket.autopilot_no_target");
+        }
         var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
         var targetId = nextHop(level);
         if (profile.isEmpty() || targetId == null) {
@@ -791,8 +1189,7 @@ public class RocketEntity extends Entity {
         if (target.isEmpty() || (descendTarget && programPad == null)) {
             return Component.translatable("message.spacereloaded.rocket.autopilot_only_orbit");
         }
-        RocketPerformance performance = PerformanceCalculator.calculate(structure, 9.81);
-        if (performance.twr() <= 1.0 || performance.deltaV() <= 0) {
+        if (!canLiftOff()) {
             return Component.translatable("message.spacereloaded.rocket.warning.TWR_BELOW_ONE");
         }
         // Защищённая маршрутизация: разрешаем адрес доставки (аутентификация/перехват)
@@ -806,28 +1203,49 @@ public class RocketEntity extends Entity {
         }
         autopilot = true;
         launched = true;
+        fuelOutWarned = false;
         entityData.set(DATA_LAUNCHED, true);
-        flight = FlightState.atRest(corePos(), flight.propellantKg());
+        flight = FlightState.atRest(corePos(), stagePropellantKg(activeStage));
         level.playSound(null, blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.NEUTRAL, 3.0f, 0.5f);
         return Component.translatable("message.spacereloaded.rocket.autopilot_started",
                 Component.translatable("planet.spacereloaded." + targetId.getPath()));
     }
 
-    private void tryIgnite(ServerLevel level) {
-        RocketPerformance performance = PerformanceCalculator.calculate(structure, 9.81);
-        if (performance.twr() <= 1.0 || performance.deltaV() <= 0) {
+    /** Активная ступень оторвёт стек от земли и есть чем лететь (TWR > 1, Δv стека > 0). */
+    private boolean canLiftOff() {
+        var report = org.alex_melan.spacereloaded.core.rocketry.StagedPerformance
+                .calculate(layout, stagePropellant, 9.81);
+        return report.stages().get(activeStage).twr() > 1.0 && remainingDeltaV(9.81) > 0;
+    }
+
+    /**
+     * Зажигание (пилот — Прыжок; стенд — напрямую): честная проверка TWR активной
+     * ступени и наличия топлива.
+     *
+     * @return true, если борт перешёл в полёт
+     */
+    public boolean ignite(ServerLevel level) {
+        if (launched || debris || layout == null) {
+            return false;
+        }
+        var report = org.alex_melan.spacereloaded.core.rocketry.StagedPerformance
+                .calculate(layout, stagePropellant, 9.81);
+        double twr = report.stages().get(activeStage).twr();
+        if (twr <= 1.0 || remainingDeltaV(9.81) <= 0) {
             if (getFirstPassenger() instanceof ServerPlayer pilot) {
                 pilot.sendOverlayMessage(Component.translatable(
-                        performance.twr() <= 1.0
+                        twr <= 1.0
                                 ? "message.spacereloaded.rocket.warning.TWR_BELOW_ONE"
                                 : "message.spacereloaded.rocket.warning.NO_USABLE_PROPELLANT"));
             }
-            return;
+            return false;
         }
         launched = true;
+        fuelOutWarned = false;
         entityData.set(DATA_LAUNCHED, true);
-        flight = FlightState.atRest(corePos(), flight.propellantKg());
+        flight = FlightState.atRest(corePos(), stagePropellantKg(activeStage));
         level.playSound(null, blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.NEUTRAL, 3.0f, 0.5f);
+        return true;
     }
 
     private org.alex_melan.spacereloaded.core.geometry.Vec3d corePos() {
@@ -920,16 +1338,16 @@ public class RocketEntity extends Entity {
      */
     private void land(ServerLevel level) {
         double impactSpeed = new Vec3(flight.vel().x(), flight.vel().y(), flight.vel().z()).length();
-        boolean hasCapsule = rocketData.blocks().stream().anyMatch(e ->
-                e.state().is(org.alex_melan.spacereloaded.registry.ModBlocks.RETURN_CAPSULE));
+        boolean hasCapsule = hasReturnCapsule();
         if (impactSpeed <= (hasCapsule ? CAPSULE_CRASH_SPEED : CRASH_SPEED)) {
             launched = false;
             autopilot = false;
             descentMode = false;
+            debris = false; // мягко севший обломок — обычный припаркованный аппарат (FR-067)
             entityData.set(DATA_LAUNCHED, false);
             entityData.set(DATA_PITCH, 0.0f);
             entityData.set(DATA_ROLL, 0.0f);
-            flight = FlightState.atRest(corePos(), flight.propellantKg());
+            flight = FlightState.atRest(corePos(), stagePropellantKg(activeStage));
             setDeltaMovement(Vec3.ZERO);
             level.playSound(null, blockPosition(), SoundEvents.IRON_DOOR_CLOSE,
                     SoundSource.NEUTRAL, 2.0f, 0.8f);
@@ -943,12 +1361,12 @@ public class RocketEntity extends Entity {
         int baseX = (int) Math.round(getX() - halfX());
         int baseY = (int) Math.round(getY());
         int baseZ = (int) Math.round(getZ() - halfZ());
-        double totalCapacity = 0;
-        for (RocketData.Entry entry : rocketData.blocks()) {
-            totalCapacity += entry.capacityKg();
+        // Доля заправки — своей ступени (баки верхних ступеней могут быть полны при пустой нижней)
+        double[] fraction = new double[stagePropellant.length];
+        for (int i = 0; i < fraction.length; i++) {
+            double capacity = layout.stage(i).propellantCapacityKg();
+            fraction[i] = capacity <= 0 ? 0 : Math.clamp(stagePropellant[i] / capacity, 0, 1);
         }
-        double fraction = totalCapacity <= 0 ? 0
-                : Math.clamp(flight.propellantKg() / totalCapacity, 0, 1);
         for (RocketData.Entry entry : rocketData.blocks()) {
             BlockPos target = new BlockPos(
                     baseX + PackedPos.unpackX(entry.localPos()),
@@ -957,7 +1375,9 @@ public class RocketEntity extends Entity {
             level.setBlock(target, entry.state(), 3);
             if (entry.capacityKg() > 0
                     && level.getBlockEntity(target) instanceof FuelTankBlockEntity tank) {
-                tank.setPropellant(entry.capacityKg() * fraction, rocketFuelType());
+                int stage = stageOf(entry.localPos());
+                double share = stage < fraction.length ? fraction[stage] : 0;
+                tank.setPropellant(entry.capacityKg() * share, rocketFuelType());
             }
             if (level.getBlockEntity(target) instanceof CargoHoldBlockEntity hold) {
                 for (int slot = 0; slot < hold.getContainerSize() && !cargoItems.isEmpty(); slot++) {
@@ -1056,9 +1476,15 @@ public class RocketEntity extends Entity {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         if (rocketData != null) {
-            RocketData persisted = new RocketData(rocketData.blocks(), flight.propellantKg());
+            RocketData persisted = new RocketData(rocketData.blocks(), totalPropellant());
             output.store("rocket", RocketData.CODEC, persisted);
+            // Полёт 2.0 (FR-068): ступени переживают выгрузку и рестарт
+            output.putInt("stage_active", activeStage);
+            output.store("stage_propellant", com.mojang.serialization.Codec.DOUBLE.listOf(),
+                    java.util.stream.DoubleStream.of(stagePropellant).boxed().toList());
         }
+        output.putBoolean("debris", debris);
+        output.putInt("debris_ticks", debrisTicks);
         output.putBoolean("launched", launched);
         output.putBoolean("autopilot", autopilot);
         output.putBoolean("descent_mode", descentMode);
@@ -1084,6 +1510,14 @@ public class RocketEntity extends Entity {
             rebuildDerived();
             Tag tag = RocketData.CODEC.encodeStart(NbtOps.INSTANCE, data).getOrThrow();
             entityData.set(DATA_STRUCTURE, (CompoundTag) tag);
+            // Ступени: сохранённые остатки либо (старое сохранение) — по ёмкости ступеней
+            var stages = input.read("stage_propellant", com.mojang.serialization.Codec.DOUBLE.listOf());
+            if (stages.isPresent() && stages.get().size() == layout.stageCount()) {
+                this.stagePropellant = stages.get().stream().mapToDouble(Double::doubleValue).toArray();
+            } else {
+                this.stagePropellant = layout.distributeByCapacity(data.propellantKg());
+            }
+            this.activeStage = Math.clamp(input.getIntOr("stage_active", 0), 0, layout.stageCount() - 1);
             this.flight = new FlightState(corePos(),
                     new org.alex_melan.spacereloaded.core.geometry.Vec3d(
                             input.getDoubleOr("vel_x", 0),
@@ -1091,8 +1525,11 @@ public class RocketEntity extends Entity {
                             input.getDoubleOr("vel_z", 0)),
                     input.getDoubleOr("pitch_rad", 0),
                     input.getDoubleOr("roll_rad", 0),
-                    0, 0, data.propellantKg());
+                    0, 0, stagePropellant[activeStage]);
+            syncStageData();
         });
+        this.debris = input.getBooleanOr("debris", false);
+        this.debrisTicks = input.getIntOr("debris_ticks", 0);
         this.launched = input.getBooleanOr("launched", false);
         this.autopilot = input.getBooleanOr("autopilot", false);
         this.descentMode = input.getBooleanOr("descent_mode", false);

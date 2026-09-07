@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot",
+		"spacereloaded:titanium_alloy_ingot",
+		"minecraft:gunpowder"
+	],
+	"result": {
+		"id": "spacereloaded:stage_separator",
+		"count": 1
+	}
+}

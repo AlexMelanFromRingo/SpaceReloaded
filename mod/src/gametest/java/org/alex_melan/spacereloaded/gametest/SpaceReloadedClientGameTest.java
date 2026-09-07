@@ -73,7 +73,546 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testPlanetTerrain(context, sp);
             testPropellantFluids(context, sp);
             testBodyExclusiveOres(context, sp);
+            testStaging(context, sp);
+            testAttitude(context, sp);
+            testAtmosphere(context, sp);
+            testStrikeGuidance(context, sp);
         }
+    }
+
+    // ---------- 25. Точность орбитального удара (Полёт 2.0, US4) ----------
+
+    /**
+     * Без спутникового покрытия цели лом рассеивается в круге из конфига, с покрытием
+     * ложится в метку; терминал показывает режим и прогноз скорости удара.
+     */
+    private void testStrikeGuidance(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int gx = BX + 680;
+        moveTo(context, sp, gx - 10, BZ);
+        // Мишень 41×41 из камня — хватает на кратер r≈13 со смещением до 10; игрок в стороне
+        sp.getServer().runCommand(fill(gx - 20, BY, BZ - 20, gx + 20, BY, BZ + 20, "minecraft:stone"));
+        context.waitTick();
+        sp.getServer().runCommand(String.format("tp @p %d %d %d", gx - 45, BY, BZ));
+        BlockPos cannonPos = new BlockPos(70, 120, 70);
+        double unguidedSpread = SpaceReloaded.config().cannonUnguidedSpreadBlocks;
+
+        // Без покрытия: терминал честно предупреждает, лом уходит с рассеиванием
+        String unguided = sp.getServer().computeOnServer(server -> fireAt(server, cannonPos, gx, 0));
+        assertThat(unguided.startsWith("ok"), "Ненаводимый выстрел: " + unguided);
+        assertThat(unguided.contains("guided=false"), "Снимок терминала: без покрытия режим ненаводимый: " + unguided);
+        assertThat(unguided.contains("impact"), "Выстрел должен состояться: " + unguided);
+        double[] hit = waitForCrater(context, sp, gx);
+        assertThat(hit[0] >= 0, "Ненаводимый лом должен оставить кратер в мишени");
+        assertThat(hit[0] <= unguidedSpread + 1.5,
+                "Смещение ненаводимого удара в пределах разброса " + unguidedSpread + ", получено " + hit[0]);
+        log(String.format("без покрытия: смещение удара %.1f бл. (разброс до %.0f) ✓", hit[0], unguidedSpread));
+
+        // С покрытием: восстановить мишень, дождаться перезарядки, выстрел ложится в метку
+        sp.getServer().runCommand(fill(gx - 20, BY, BZ - 20, gx + 20, BY, BZ + 20, "minecraft:stone"));
+        context.waitTicks(220);
+        String guided = sp.getServer().computeOnServer(server -> fireAt(server, cannonPos, gx, 1));
+        assertThat(guided.startsWith("ok"), "Наводимый выстрел: " + guided);
+        assertThat(guided.contains("guided=true"), "Снимок терминала: с покрытием режим спутниковый: " + guided);
+        double[] guidedHit = waitForCrater(context, sp, gx);
+        assertThat(guidedHit[0] >= 0 && guidedHit[0] <= 1.5,
+                "Наводимый удар ложится в метку (≤ 1.5 бл.), получено " + guidedHit[0]);
+        log(String.format("по спутнику: смещение удара %.1f бл. ✓", guidedHit[0]));
+
+        sp.getServer().runOnServer(server -> org.alex_melan.spacereloaded.network.SpaceNetworkState
+                .get(server).setCoverage(Level.OVERWORLD, 0));
+    }
+
+    /** Пушка на орбите с полным зарядом бьёт по (gx, BY, BZ) при заданном покрытии оверворлда. */
+    private static String fireAt(net.minecraft.server.MinecraftServer server, BlockPos cannonPos,
+                                 int gx, int coverage) {
+        ServerLevel orbit = server.getLevel(ResourceKey.create(Registries.DIMENSION,
+                Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")));
+        if (orbit == null) {
+            return "нет измерения орбиты";
+        }
+        org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server).setCoverage(Level.OVERWORLD, coverage);
+        orbit.setBlock(cannonPos, ModBlocks.ORBITAL_CANNON.defaultBlockState(), 3);
+        if (!(orbit.getBlockEntity(cannonPos) instanceof OrbitalCannonBlockEntity cannon)) {
+            return "нет BE пушки";
+        }
+        cannon.loadRod();
+        ((SimpleEnergyStorage) cannon.energyStorage()).amount = SpaceReloaded.config().cannonEnergyCapacity;
+        cannon.setTarget(GlobalPos.of(Level.OVERWORLD, new BlockPos(gx, BY, BZ)));
+        var snapshot = cannon.snapshot(orbit);
+        String fired = cannon.tryFire(orbit).getString();
+        return "ok guided=" + snapshot.guided() + " spread=" + snapshot.spreadBlocks()
+                + " impact=" + Math.round(snapshot.impactSpeedMs()) + " | " + fired;
+    }
+
+    /**
+     * Ждёт кратер в мишени и возвращает {смещение центра кратера от метки, число блоков воздуха}.
+     * Центр — центроид блоков воздуха в плоскости мишени.
+     */
+    private double[] waitForCrater(ClientGameTestContext context, TestSingleplayerContext sp, int gx) {
+        for (int waited = 0; waited < 400; waited += 20) {
+            context.waitTicks(20);
+            double[] result = sp.getServer().computeOnServer(server -> {
+                ServerLevel level = server.overworld();
+                BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+                double sumX = 0;
+                double sumZ = 0;
+                int air = 0;
+                for (int x = gx - 20; x <= gx + 20; x++) {
+                    for (int z = BZ - 20; z <= BZ + 20; z++) {
+                        cursor.set(x, BY, z);
+                        if (level.getBlockState(cursor).isAir()) {
+                            sumX += x;
+                            sumZ += z;
+                            air++;
+                        }
+                    }
+                }
+                if (air == 0) {
+                    return new double[] {-1, 0};
+                }
+                return new double[] {Math.hypot(sumX / air - gx, sumZ / air - BZ), air};
+            });
+            if (result[0] >= 0) {
+                log(String.format("кратер: %d блоков воздуха, центр в %.1f бл. от метки", (int) result[1], result[0]));
+                return result;
+            }
+        }
+        return new double[] {-1, 0};
+    }
+
+    // ---------- 24. Атмосфера (Полёт 2.0, US3) ----------
+
+    /**
+     * Скан на Земле моделирует подъём (эталон достигает 450 м, напор > 0);
+     * отвесный вход на 300 м/с без капсулы зажигает флаг нагрева на Земле
+     * и не зажигает на Луне (вакуум — та же ракета, та же скорость).
+     */
+    private void testAtmosphere(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int hx = BX + 600;
+        moveTo(context, sp, hx - 5, BZ);
+        buildSingleStack(context, sp, hx, false);
+
+        RocketInteractions.ScanResult scan = sp.getServer().computeOnServer(server ->
+                RocketInteractions.scanResultAtPylon(server.overworld(), new BlockPos(hx - 2, BY + 3, BZ),
+                        server.getPlayerList().getPlayers().get(0)));
+        assertThat(scan != null, "Скан эталонной ракеты должен прочитаться");
+        assertThat(scan.payload().ascentReached(),
+                "Моделирование подъёма: эталон достигает высоты перехода, апогей " + scan.payload().ascentApexM());
+        assertThat(scan.payload().maxQPa() > 0, "В атмосфере Земли скоростной напор > 0");
+        assertThat(scan.payload().ascentDeltaV() > 0, "Стоимость подъёма > 0");
+        log(String.format("скан: подъём до %.0f м за Δv %.0f м/с, макс. напор %.1f кПа ✓",
+                scan.payload().ascentApexM(), scan.payload().ascentDeltaV(), scan.payload().maxQPa() / 1000));
+
+        sp.getServer().runOnServer(server -> RocketInteractions.assembleFromPylon(
+                server.overworld(), new BlockPos(hx - 2, BY + 3, BZ),
+                server.getPlayerList().getPlayers().get(0)));
+        context.waitTicks(5);
+        AABB area = new AABB(hx - 24, BY - 200, BZ - 24, hx + 24, BY + 400, BZ + 24);
+
+        // Земля: аппарат на 260 м, отвесно вниз на 300 м/с → нагрев
+        String earth = sp.getServer().computeOnServer(server -> {
+            List<RocketEntity> rockets = server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class), area, RocketEntity::isParked);
+            if (rockets.size() != 1) {
+                return "ожидалась 1 ракета, найдено " + rockets.size();
+            }
+            RocketEntity rocket = rockets.get(0);
+            rocket.setPos(hx + 0.5, 260, BZ + 0.5);
+            if (!rocket.ignite(server.overworld())) {
+                return "ignite failed";
+            }
+            rocket.setFlightVelocity(new net.minecraft.world.phys.Vec3(0, -300, 0));
+            return "ok";
+        });
+        assertThat(earth.equals("ok"), "Подготовка входа: " + earth);
+        context.waitTicks(2);
+        boolean heatingEarth = sp.getServer().computeOnServer(server ->
+                server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                        area, e -> true).stream().anyMatch(RocketEntity::clientHeating));
+        assertThat(heatingEarth, "Вход на 300 м/с в атмосфере Земли должен зажечь флаг нагрева");
+        log("нагрев на Земле ✓");
+        sp.getServer().runOnServer(server -> server.overworld().getEntities(
+                EntityTypeTest.forClass(RocketEntity.class), area, e -> true).forEach(Entity::discard));
+
+        // Луна: та же модель, но профиль тела без атмосферы — плотность 0 на любой высоте,
+        // индекс нагрева 0 (харнесс клиентского стенда не переносит игрока между измерениями,
+        // а безлюдное измерение не отслеживает свежие сущности — проверяем данные профиля
+        // и ту же формулу, что использует борт; сама формула покрыта AerothermalTest)
+        String moonCheck = sp.getServer().computeOnServer(server -> {
+            ServerLevel level = server.getLevel(ResourceKey.create(Registries.DIMENSION,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "moon")));
+            if (level == null) {
+                return "нет измерения Луны";
+            }
+            var env = org.alex_melan.spacereloaded.planet.PlanetManager.environment(level);
+            var earthEnv = org.alex_melan.spacereloaded.planet.PlanetManager.environment(server.overworld());
+            double moonHeat = org.alex_melan.spacereloaded.core.rocketry.Aerothermal
+                    .heatIndex(env.density(200), 300);
+            double earthHeat = org.alex_melan.spacereloaded.core.rocketry.Aerothermal
+                    .heatIndex(earthEnv.density(200), 300);
+            return "moonVacuum=" + env.atmosphere().isVacuum() + " moonDensity=" + env.density(100)
+                    + " moonHeat=" + moonHeat + " earthHeat=" + Math.round(earthHeat);
+        });
+        assertThat(moonCheck.contains("moonVacuum=true") && moonCheck.contains("moonHeat=0.0"),
+                "Профиль Луны — вакуум без нагрева: " + moonCheck);
+        assertThat(!moonCheck.contains("earthHeat=0"), "На Земле тот же вход греет: " + moonCheck);
+        log("на Луне нагрева нет, вакуум (" + moonCheck + ") ✓");
+        sp.getServer().runCommand(String.format("tp @p %d %d %d", hx - 5, BY, BZ));
+        context.waitTicks(5);
+    }
+
+    // ---------- 23. Ориентация (Полёт 2.0, US2) ----------
+
+    /**
+     * Пилот держит «вперёд» на тяге: с гироскопом ракета наклоняется по взгляду
+     * и набирает горизонтальную скорость; без гироскопа команда не действует.
+     */
+    private void testAttitude(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int ax = BX + 520;
+        moveTo(context, sp, ax - 5, BZ);
+        buildSingleStack(context, sp, ax, true);
+        sp.getServer().runOnServer(server -> RocketInteractions.assembleFromPylon(
+                server.overworld(), new BlockPos(ax - 2, BY + 3, BZ),
+                server.getPlayerList().getPlayers().get(0)));
+        context.waitTicks(5);
+        AABB area = new AABB(ax - 200, BY - 200, BZ - 200, ax + 200, BY + 400, BZ + 200);
+
+        String started = sp.getServer().computeOnServer(server -> flyHoldingForward(server, area));
+        assertThat(started.equals("ok"), "Старт с пилотом должен пройти, получено: " + started);
+        int piloted = holdForwardFor(context, sp, area, 100);
+        log("ориентация: пилот на борту тиков: " + piloted + " из 100");
+        double[] withGyro = sp.getServer().computeOnServer(server -> {
+            List<RocketEntity> rockets = server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class), area, e -> true);
+            if (rockets.isEmpty()) {
+                return new double[] {-1, -1, -1};
+            }
+            RocketEntity rocket = rockets.get(0);
+            double horizontal = Math.hypot(rocket.getDeltaMovement().x, rocket.getDeltaMovement().z) / 0.05;
+            double commanded = Math.hypot(rocket.clientCmdPitchDeg(), rocket.clientCmdRollDeg());
+            double actual = Math.hypot(rocket.pitchDeg(), rocket.rollDeg());
+            return new double[] {horizontal, commanded, actual};
+        });
+        assertThat(withGyro[1] > 20, "Командуемый наклон должен вырасти, получено: " + withGyro[1]);
+        assertThat(withGyro[2] > 10, "С гироскопом фактический наклон следует за командой, получено: " + withGyro[2]);
+        assertThat(withGyro[0] >= 5.0,
+                "Наклон на тяге даёт горизонтальную скорость >= 5 м/с, получено: " + withGyro[0]);
+        log(String.format("ориентация: команда %.0f°, факт %.0f°, горизонтальная %.1f м/с ✓",
+                withGyro[1], withGyro[2], withGyro[0]));
+        cleanupFlight(sp, area);
+
+        // Без гироскопа: команда есть, наклона нет
+        int bx = ax + 40;
+        moveTo(context, sp, bx - 5, BZ);
+        buildSingleStack(context, sp, bx, false);
+        sp.getServer().runOnServer(server -> RocketInteractions.assembleFromPylon(
+                server.overworld(), new BlockPos(bx - 2, BY + 3, BZ),
+                server.getPlayerList().getPlayers().get(0)));
+        context.waitTicks(5);
+        AABB areaB = new AABB(bx - 200, BY - 200, BZ - 200, bx + 200, BY + 400, BZ + 200);
+        String startedB = sp.getServer().computeOnServer(server -> flyHoldingForward(server, areaB));
+        assertThat(startedB.equals("ok"), "Старт без гироскопа должен пройти, получено: " + startedB);
+        holdForwardFor(context, sp, areaB, 100);
+        double[] noGyro = sp.getServer().computeOnServer(server -> {
+            List<RocketEntity> rockets = server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class), areaB, e -> true);
+            if (rockets.isEmpty()) {
+                return new double[] {-1, -1};
+            }
+            RocketEntity rocket = rockets.get(0);
+            return new double[] {Math.hypot(rocket.pitchDeg(), rocket.rollDeg()), rocket.clientHasGyro() ? 1 : 0};
+        });
+        assertThat(noGyro[1] == 0, "У стека без гироскопа флаг управления должен быть снят");
+        assertThat(noGyro[0] >= 0 && noGyro[0] < 1.0,
+                "Без гироскопа наклон не меняется (< 1°), получено: " + noGyro[0]);
+        log("без гироскопа команда игнорируется ✓");
+        cleanupFlight(sp, areaB);
+        sp.getServer().runCommand(String.format("tp @p %d %d %d", bx - 5, BY, BZ));
+        context.waitTicks(5);
+    }
+
+    /** Одноступенчатый стек: двигатель, бак, командный модуль (+ гироскоп сбоку). */
+    private void buildSingleStack(ClientGameTestContext context, TestSingleplayerContext sp, int x, boolean gyro) {
+        sp.getServer().runCommand(fill(x - 1, BY, BZ - 1, x + 1, BY, BZ + 1, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(fill(x - 2, BY + 1, BZ, x - 2, BY + 5, BZ, "spacereloaded:assembly_pylon"));
+        sp.getServer().runCommand(set(x - 2, BY, BZ, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(set(x, BY + 1, BZ, "spacereloaded:rocket_engine"));
+        sp.getServer().runCommand(set(x, BY + 2, BZ, "spacereloaded:fuel_tank"));
+        sp.getServer().runCommand(set(x, BY + 3, BZ, "spacereloaded:command_module"));
+        if (gyro) {
+            sp.getServer().runCommand(set(x + 1, BY + 3, BZ, "spacereloaded:gyroscope"));
+        }
+        context.waitTick();
+        sp.getServer().runOnServer(server -> {
+            if (server.overworld().getBlockEntity(new BlockPos(x, BY + 2, BZ))
+                    instanceof FuelTankBlockEntity tank) {
+                tank.setPropellant(2000.0, "spacereloaded:kerolox");
+            }
+        });
+    }
+
+    /** Пилот садится, смотрит на юг, держит «вперёд» + тягу, борт зажигается. */
+    private static String flyHoldingForward(net.minecraft.server.MinecraftServer server, AABB area) {
+        List<RocketEntity> rockets = server.overworld().getEntities(
+                EntityTypeTest.forClass(RocketEntity.class), area, RocketEntity::isParked);
+        if (rockets.size() != 1) {
+            return "ожидалась 1 ракета, найдено " + rockets.size();
+        }
+        RocketEntity rocket = rockets.get(0);
+        var player = server.getPlayerList().getPlayers().get(0);
+        player.setShiftKeyDown(false); // sneak на сервере = «слезть» (Player.rideTick)
+        if (!player.startRiding(rocket, true, true)) {
+            return "startRiding failed";
+        }
+        player.setYHeadRot(0.0f); // взгляд на юг (+Z): «вперёд» наклоняет к +Z
+        player.setLastClientInput(new net.minecraft.world.entity.player.Input(
+                true, false, false, false, true, false, false));
+        if (!rocket.ignite(server.overworld())) {
+            return "ignite failed";
+        }
+        rocket.setFlightVelocity(new net.minecraft.world.phys.Vec3(0, 5, 0));
+        return "ok";
+    }
+
+    /**
+     * Держит «вперёд + тяга» {@code ticks} тиков. Харнесс клиентского стенда ссаживает
+     * серверно посаженного игрока между тиками (см. api-notes), поэтому каждый тик пилот
+     * сажается заново тем же вызовом, что и в игре, и ввод подаётся штатной записью Input.
+     *
+     * @return сколько тиков борт видел пилота на борту
+     */
+    private static int holdForwardFor(ClientGameTestContext context, TestSingleplayerContext sp,
+                                      AABB area, int ticks) {
+        int piloted = 0;
+        for (int i = 0; i < ticks; i++) {
+            context.waitTick();
+            piloted += sp.getServer().computeOnServer(server -> {
+                List<RocketEntity> rockets = server.overworld().getEntities(
+                        EntityTypeTest.forClass(RocketEntity.class), area, r -> !r.isParked());
+                if (rockets.isEmpty()) {
+                    return 0;
+                }
+                RocketEntity rocket = rockets.get(0);
+                var player = server.getPlayerList().getPlayers().get(0);
+                int seen = rocket.getFirstPassenger() == player ? 1 : 0;
+                if (player.getVehicle() != rocket) {
+                    player.setShiftKeyDown(false);
+                    player.startRiding(rocket, true, true);
+                }
+                player.setYHeadRot(0.0f);
+                player.setLastClientInput(new net.minecraft.world.entity.player.Input(
+                        true, false, false, false, true, false, false));
+                return seen;
+            });
+        }
+        return piloted;
+    }
+
+    /** Пилот наземь, аппараты в области — прочь. */
+    private static void cleanupFlight(TestSingleplayerContext sp, AABB area) {
+        sp.getServer().runOnServer(server -> {
+            server.getPlayerList().getPlayers().get(0).stopRiding();
+            server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                    area, e -> true).forEach(Entity::discard);
+        });
+    }
+
+    // ---------- 22. Ступени (Полёт 2.0, US1) ----------
+
+    /**
+     * Двухступенчатый стек: скан считает Δv по ступеням, беспилотный старт
+     * сам отбрасывает выгоревшую первую ступень (обломок падает и исчезает),
+     * ручное отделение доступно только пилоту в полёте.
+     */
+    private void testStaging(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int sx = BX + 440;
+        moveTo(context, sp, sx - 5, BZ);
+        buildTwoStageStack(context, sp, sx, 150.0);
+
+        // Скан: две ступени, суммарный Δv = сумма ступеней, вторая ступень летит
+        RocketInteractions.ScanResult scan = sp.getServer().computeOnServer(server ->
+                RocketInteractions.scanResultAtPylon(server.overworld(), new BlockPos(sx - 2, BY + 4, BZ),
+                        server.getPlayerList().getPlayers().get(0)));
+        assertThat(scan != null, "Скан двухступенчатого стека должен прочитаться");
+        assertThat(scan.staged().stageCount() == 2,
+                "Ожидались 2 ступени, получено: " + scan.staged().stageCount());
+        double dv1 = scan.staged().stages().get(0).deltaV();
+        double dv2 = scan.staged().stages().get(1).deltaV();
+        assertThat(dv1 > 0 && dv2 > 0
+                        && Math.abs(scan.staged().totalDeltaV() - (dv1 + dv2)) < 1.0,
+                "Δv стека = сумма ступеней: " + dv1 + " + " + dv2 + " = " + scan.staged().totalDeltaV());
+        assertThat(scan.payload().stages().size() == 2, "В пакете скана должны быть 2 строки ступеней");
+        log(String.format("ступени: Δv₁=%.0f, Δv₂=%.0f, сумма %.0f м/с ✓", dv1, dv2, scan.staged().totalDeltaV()));
+
+        // Сборка: топливо по ступеням честное (150 кг внизу, 2000 кг вверху)
+        sp.getServer().runOnServer(server -> RocketInteractions.assembleFromPylon(
+                server.overworld(), new BlockPos(sx - 2, BY + 4, BZ),
+                server.getPlayerList().getPlayers().get(0)));
+        context.waitTicks(5);
+        AABB area = new AABB(sx - 24, BY - 200, BZ - 24, sx + 24, BY + 400, BZ + 24);
+        double[] fuel = sp.getServer().computeOnServer(server -> {
+            List<RocketEntity> rockets = server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class), area, RocketEntity::isParked);
+            if (rockets.size() != 1) {
+                return new double[] {-1, -1, rockets.size()};
+            }
+            RocketEntity rocket = rockets.get(0);
+            return new double[] {rocket.stagePropellantKg(0), rocket.stagePropellantKg(1), rocket.stageCount()};
+        });
+        assertThat(fuel[2] == 2, "Собранная ракета должна иметь 2 ступени, получено: " + fuel[2]);
+        assertThat(Math.abs(fuel[0] - 150.0) < 1.0 && Math.abs(fuel[1] - 2000.0) < 1.0,
+                "Топливо по ступеням: ожидалось 150/2000, получено " + fuel[0] + "/" + fuel[1]);
+        log("сборка: топливо по ступеням 150/2000 кг ✓");
+
+        // Отделение на стоянке — отказ (валидация сервера)
+        String parked = sp.getServer().computeOnServer(server -> {
+            RocketEntity rocket = server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class), area, RocketEntity::isParked).get(0);
+            var player = server.getPlayerList().getPlayers().get(0);
+            player.startRiding(rocket, true, true);
+            String answer = rocket.requestStageSeparation(player).getString();
+            player.stopRiding();
+            return answer;
+        });
+        assertThat(parked.contains("only in flight"),
+                "На стоянке отделение должно отклоняться, получено: " + parked);
+        log("отделение на стоянке отклонено ✓");
+
+        // Беспилотный старт: первая ступень (150 кг) выгорает за секунды — автопилот отделяет её сам
+        String launch = sp.getServer().computeOnServer(server -> {
+            RocketEntity rocket = server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class), area, RocketEntity::isParked).get(0);
+            return rocket.launchUnmanned(server.overworld()).getString();
+        });
+        assertThat(launch.contains("Autopilot"), "Беспилотный старт должен состояться, получено: " + launch);
+        boolean separated = false;
+        for (int waited = 0; waited < 400 && !separated; waited += 10) {
+            context.waitTicks(10);
+            separated = sp.getServer().computeOnServer(server -> {
+                List<RocketEntity> rockets = server.overworld().getEntities(
+                        EntityTypeTest.forClass(RocketEntity.class), area, e -> true);
+                boolean debris = rockets.stream().anyMatch(RocketEntity::isDebris);
+                boolean upper = rockets.stream().anyMatch(r -> !r.isDebris() && r.stageCount() == 1);
+                return debris && upper;
+            });
+        }
+        assertThat(separated, "Автопилот должен отделить выгоревшую ступень: обломок + одноступенчатый остаток");
+        log("автопилот: ступень отделена, обломок в полёте ✓");
+
+        // Обломок падает и исчезает (крушение) либо паркуется — вечных объектов нет
+        boolean debrisGone = false;
+        for (int waited = 0; waited < 1200 && !debrisGone; waited += 20) {
+            context.waitTicks(20);
+            debrisGone = sp.getServer().computeOnServer(server ->
+                    server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                            area, RocketEntity::isDebris).isEmpty());
+        }
+        assertThat(debrisGone, "Обломок ступени должен разрушиться или припарковаться за 60 с");
+        log("обломок утилизирован честно ✓");
+
+        // Ручное отделение пилотом в полёте
+        int mx = sx + 40;
+        moveTo(context, sp, mx - 5, BZ);
+        buildTwoStageStack(context, sp, mx, 2000.0);
+        sp.getServer().runOnServer(server -> RocketInteractions.assembleFromPylon(
+                server.overworld(), new BlockPos(mx - 2, BY + 4, BZ),
+                server.getPlayerList().getPlayers().get(0)));
+        context.waitTicks(5);
+        AABB manualArea = new AABB(mx - 24, BY - 200, BZ - 24, mx + 24, BY + 400, BZ + 24);
+        String manual = sp.getServer().computeOnServer(server -> {
+            RocketEntity rocket = server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class), manualArea, RocketEntity::isParked).get(0);
+            var player = server.getPlayerList().getPlayers().get(0);
+            // Sneak на сервере = «хочу слезть» (Player.rideTick): снимаем флаг явно
+            player.setShiftKeyDown(false);
+            if (!player.startRiding(rocket, true, true)) {
+                return "startRiding failed";
+            }
+            // Пилот держит тягу (штатный ввод) — и на всякий случай борт уже идёт вверх
+            player.setLastClientInput(new net.minecraft.world.entity.player.Input(
+                    false, false, false, false, true, false, false));
+            if (!rocket.ignite(server.overworld())) {
+                return "ignite failed";
+            }
+            rocket.setFlightVelocity(new net.minecraft.world.phys.Vec3(0, 20, 0));
+            return "ok id=" + rocket.getId() + " riding=" + (player.getVehicle() == rocket)
+                    + " mode=" + player.gameMode.getGameModeForPlayer() + " spectator=" + player.isSpectator();
+        });
+        assertThat(manual.startsWith("ok"), "Зажигание с пилотом должно пройти, получено: " + manual);
+        log("ручной старт: " + manual);
+        context.waitTicks(20);
+        String answer = sp.getServer().computeOnServer(server -> {
+            var player = server.getPlayerList().getPlayers().get(0);
+            // Стенд: если харнесс ссадил игрока между тиками, сажаем обратно тем же вызовом —
+            // проверяем серверную валидацию и само отделение с пилотом на борту
+            if (!(player.getVehicle() instanceof RocketEntity)) {
+                List<RocketEntity> rockets = server.overworld().getEntities(
+                        EntityTypeTest.forClass(RocketEntity.class), manualArea, r -> !r.isParked());
+                if (!rockets.isEmpty()) {
+                    player.setShiftKeyDown(false);
+                    player.startRiding(rockets.get(0), true, true);
+                }
+            }
+            if (!(player.getVehicle() instanceof RocketEntity rocket)) {
+                List<RocketEntity> rockets = server.overworld().getEntities(
+                        EntityTypeTest.forClass(RocketEntity.class), manualArea, e -> true);
+                StringBuilder info = new StringBuilder("пилот не в ракете; sneak=" + player.isShiftKeyDown()
+                        + " игрок y=" + Math.round(player.getY()) + " аппаратов=" + rockets.size());
+                for (RocketEntity r : rockets) {
+                    info.append(" [y=").append(Math.round(r.getY())).append(" launched=").append(!r.isParked())
+                            .append(" debris=").append(r.isDebris()).append(" пассажиров=")
+                            .append(r.getPassengers().size()).append(']');
+                }
+                return info.toString();
+            }
+            return rocket.requestStageSeparation(player).getString();
+        });
+        assertThat(answer.contains("separated"), "Пилот должен отделить ступень в полёте, получено: " + answer);
+        context.waitTicks(2);
+        int count = sp.getServer().computeOnServer(server -> server.overworld().getEntities(
+                EntityTypeTest.forClass(RocketEntity.class), manualArea, e -> true).size());
+        assertThat(count == 2, "После ручного отделения должно быть 2 аппарата, найдено: " + count);
+        log("ручное отделение пилотом: " + answer + " ✓");
+
+        // Уборка: игрок наземь, аппараты прочь
+        sp.getServer().runOnServer(server -> {
+            server.getPlayerList().getPlayers().get(0).stopRiding();
+            server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                    manualArea, e -> true).forEach(Entity::discard);
+        });
+        sp.getServer().runCommand(String.format("tp @p %d %d %d", mx - 5, BY, BZ));
+        context.waitTicks(5);
+    }
+
+    /**
+     * Стек: два двигателя + бак + разделитель | двигатель + бак + командный модуль
+     * на площадке 3×3 с пилоном высотой 7. Первая ступень заправлена на lowerFuelKg.
+     */
+    private void buildTwoStageStack(ClientGameTestContext context, TestSingleplayerContext sp,
+                                    int x, double lowerFuelKg) {
+        sp.getServer().runCommand(fill(x - 1, BY, BZ - 1, x + 1, BY, BZ + 1, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(fill(x - 2, BY + 1, BZ, x - 2, BY + 7, BZ, "spacereloaded:assembly_pylon"));
+        sp.getServer().runCommand(set(x - 2, BY, BZ, "spacereloaded:launch_pad"));
+        // Два двигателя симметрично по бокам корпуса: без гиродинов асимметрия опрокинула бы стек
+        sp.getServer().runCommand(set(x - 1, BY + 1, BZ, "spacereloaded:rocket_engine"));
+        sp.getServer().runCommand(set(x, BY + 1, BZ, "spacereloaded:rocket_hull"));
+        sp.getServer().runCommand(set(x + 1, BY + 1, BZ, "spacereloaded:rocket_engine"));
+        sp.getServer().runCommand(set(x, BY + 2, BZ, "spacereloaded:fuel_tank"));
+        sp.getServer().runCommand(set(x, BY + 3, BZ, "spacereloaded:stage_separator"));
+        sp.getServer().runCommand(set(x, BY + 4, BZ, "spacereloaded:rocket_engine"));
+        sp.getServer().runCommand(set(x, BY + 5, BZ, "spacereloaded:fuel_tank"));
+        sp.getServer().runCommand(set(x, BY + 6, BZ, "spacereloaded:command_module"));
+        context.waitTick();
+        sp.getServer().runOnServer(server -> {
+            if (server.overworld().getBlockEntity(new BlockPos(x, BY + 2, BZ))
+                    instanceof FuelTankBlockEntity lower) {
+                lower.setPropellant(lowerFuelKg, "spacereloaded:kerolox");
+            }
+            if (server.overworld().getBlockEntity(new BlockPos(x, BY + 5, BZ))
+                    instanceof FuelTankBlockEntity upper) {
+                upper.setPropellant(2000.0, "spacereloaded:kerolox");
+            }
+        });
     }
 
     // ---------- 1. Герметичность ----------
@@ -253,6 +792,10 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
     private void testOrbitalCannon(ClientGameTestContext context, TestSingleplayerContext sp) {
         int tx = BX + 120;
         moveTo(context, sp, tx - 10, BZ);
+        // Полёт 2.0: без спутникового покрытия лом рассеивается — для детерминизма
+        // существующего сценария даём покрытие (снимается в конце сценария)
+        sp.getServer().runOnServer(server -> org.alex_melan.spacereloaded.network.SpaceNetworkState
+                .get(server).setCoverage(Level.OVERWORLD, 1));
         // Мишень: каменная платформа 7×7 (moveTo уже форсировал чанки области)
         sp.getServer().runCommand(fill(tx - 3, BY, BZ - 3, tx + 3, BY, BZ + 3, "minecraft:stone"));
         context.waitTick();
@@ -355,6 +898,9 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         }
         assertThat(remoteCrater, "Дистанционный выстрел должен вынести кратер");
         log("пульт: привязка + дистанционный выстрел ✓");
+        // Вернуть мир к состоянию без покрытия (сценарии сетей и наведения проверяют его сами)
+        sp.getServer().runOnServer(server -> org.alex_melan.spacereloaded.network.SpaceNetworkState
+                .get(server).setCoverage(Level.OVERWORLD, 0));
     }
 
     // ---------- 5. Стыковка: расстыковка/стыковка по узлу (US6) ----------

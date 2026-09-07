@@ -1,5 +1,6 @@
 package org.alex_melan.spacereloaded.core.ballistics;
 
+import org.alex_melan.spacereloaded.core.atmosphere.AtmosphereProfile;
 import org.alex_melan.spacereloaded.core.geometry.Vec3d;
 import org.junit.jupiter.api.Test;
 
@@ -9,12 +10,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BallisticsTest {
 
     private static final double DT = 0.005;
+    private static final AtmosphereProfile EARTH = new AtmosphereProfile(1.225, 110, 63);
+    private static final AtmosphereProfile MARS = new AtmosphereProfile(0.020, 150, 64);
+    /** Вольфрамовый лом: 2 т, C_d 0.1, Ø ≈ 0.2 м. */
+    private static final ProjectileSpec ROD = new ProjectileSpec(2000, 0.1, 0.03);
 
     @Test
     void freeFallMatchesAnalyticTimeAndImpactSpeed() {
         double h = 320;
         double g = 9.81;
-        ProjectileSpec rod = new ProjectileSpec(1000, 0);
+        ProjectileSpec rod = ProjectileSpec.ballistic(1000);
 
         BallisticIntegrator.State state = new BallisticIntegrator.State(
                 new Vec3d(0, h, 0), Vec3d.ZERO);
@@ -35,7 +40,7 @@ class BallisticsTest {
         double h = 100;
         double g = 9.81;
         double vx = 50;
-        ProjectileSpec rod = new ProjectileSpec(1000, 0);
+        ProjectileSpec rod = ProjectileSpec.ballistic(1000);
 
         BallisticIntegrator.State state = new BallisticIntegrator.State(
                 new Vec3d(0, h, 0), new Vec3d(vx, 0, 0));
@@ -47,24 +52,45 @@ class BallisticsTest {
         assertEquals(expectedRange, state.pos().x(), expectedRange * 0.01, "дальность (1%)");
     }
 
+    /** Квадратичное сопротивление: в плотной атмосфере скорость удара ниже; в вакууме — как без него. */
     @Test
-    void dragReducesImpactSpeed() {
+    void quadraticDragReducesImpactSpeedOnlyInAtmosphere() {
         double h = 500;
-        ProjectileSpec vacuumRod = new ProjectileSpec(1000, 0);
-        ProjectileSpec airRod = new ProjectileSpec(1000, 0.05);
+        ProjectileSpec blunt = new ProjectileSpec(1000, 1.0, 1.0);
 
-        double vVacuum = impactSpeed(vacuumRod, h);
-        double vAir = impactSpeed(airRod, h);
+        double vVacuum = impactSpeed(blunt, h, AtmosphereProfile.VACUUM);
+        double vBallistic = impactSpeed(ProjectileSpec.ballistic(1000), h, EARTH);
+        double vAir = impactSpeed(blunt, h, new AtmosphereProfile(1.225, 1.0e9, 0));
+        assertEquals(vVacuum, vBallistic, 1e-9, "без C_d атмосфера не тормозит; в вакууме C_d не важен");
         assertTrue(vAir < vVacuum, "сопротивление снижает скорость удара");
+        // Терминальная скорость √(2mg/(ρC_dA)) = 126.5 м/с — не превышается
+        assertTrue(vAir <= Math.sqrt(2 * 1000 * 9.81 / (1.225 * 1.0 * 1.0)) * 1.001);
     }
 
-    private static double impactSpeed(ProjectileSpec spec, double h) {
+    private static double impactSpeed(ProjectileSpec spec, double h, AtmosphereProfile atmosphere) {
         BallisticIntegrator.State state = new BallisticIntegrator.State(
                 new Vec3d(0, h, 0), Vec3d.ZERO);
         while (state.pos().y() > 0) {
-            state = BallisticIntegrator.step(state, spec, 9.81, DT);
+            state = BallisticIntegrator.step(state, spec, 9.81, atmosphere.density(state.pos().y()), DT);
         }
         return state.vel().length();
+    }
+
+    /** Прогноз удара лома: на Марсе быстрее, чем на Земле; обтекаемый лом теряет проценты. */
+    @Test
+    void impactForecastReflectsTargetAtmosphere() {
+        BallisticIntegrator.Forecast earth = BallisticIntegrator.impactForecast(ROD, 2400, 1500, 9.81, EARTH, 64);
+        BallisticIntegrator.Forecast mars = BallisticIntegrator.impactForecast(ROD, 2400, 1500, 3.72, MARS, 64);
+        BallisticIntegrator.Forecast vacuum = BallisticIntegrator.impactForecast(ROD, 2400, 1500, 9.81,
+                AtmosphereProfile.VACUUM, 64);
+
+        assertTrue(earth.impactSpeedMs() < vacuum.impactSpeedMs(), "Земля тормозит лом");
+        assertTrue(earth.impactSpeedMs() > 1400, "…но лишь на проценты: " + earth.impactSpeedMs());
+        assertTrue(mars.impactSpeedMs() > earth.impactSpeedMs() - 20, "тонкая атмосфера Марса тормозит меньше");
+        assertEquals(ImpactEnergy.kineticEnergyJ(2000, earth.impactSpeedMs()), earth.impactEnergyJ(), 1e-6);
+        assertTrue(earth.flightTimeS() > 1.4 && earth.flightTimeS() < 1.8, "подлёт ~1.6 с: " + earth.flightTimeS());
+        // Вакуумный прогноз совпадает с аналитикой v² = v₀² + 2gh
+        assertEquals(Math.sqrt(1500 * 1500 + 2 * 9.81 * 2400), vacuum.impactSpeedMs(), 1.0);
     }
 
     @Test

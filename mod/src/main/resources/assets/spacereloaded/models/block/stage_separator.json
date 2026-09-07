@@ -1,0 +1,7 @@
+{
+	"parent": "minecraft:block/cube_column",
+	"textures": {
+		"end": "spacereloaded:block/stage_separator_end",
+		"side": "spacereloaded:block/stage_separator_side"
+	}
+}

@@ -46,39 +46,103 @@ public final class RocketInteractions {
                 Component message = Component.translatable(key,
                         pos.getX() + " " + pos.getY() + " " + pos.getZ());
                 net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,
-                        new org.alex_melan.spacereloaded.network.ScanReportPayload(
-                                0, 0, 0, 0, 0, 0, 0, java.util.List.of(), key));
+                        org.alex_melan.spacereloaded.network.ScanReportPayload.error(key));
                 return message;
             }
             case RocketAssembler.Result.Ok ok -> {
-                RocketPerformance performance =
-                        PerformanceCalculator.calculate(ok.structure(), 9.81);
+                ScanResult scan = scanResult(level, ok, pylonPos.getY());
                 Component stats = Component.translatable("message.spacereloaded.rocket.stats",
-                        String.format(Locale.ROOT, "%.0f", performance.totalMassKg()),
-                        String.format(Locale.ROOT, "%.0f", performance.dryMassKg()),
-                        String.format(Locale.ROOT, "%.0f", performance.totalThrustN() / 1000),
-                        String.format(Locale.ROOT, "%.2f", performance.twr()),
-                        String.format(Locale.ROOT, "%.0f", performance.deltaV()));
-                var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
-                // Оценка: сверхминимум sqrt(2gh) + 15% на гравитационные потери
-                double needed = profile.map(p -> 1.15 * Math.sqrt(
-                        2 * p.gravity() * p.transitionAltitude())).orElse(0.0);
-                java.util.List<String> warnings = performance.warnings().stream()
-                        .map(PerformanceWarning::name).toList();
-                net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,
-                        new org.alex_melan.spacereloaded.network.ScanReportPayload(
-                                ok.blocks().size(), performance.totalMassKg(),
-                                performance.dryMassKg(), performance.totalThrustN(),
-                                performance.twr(), performance.deltaV(), needed, warnings, ""));
+                        String.format(Locale.ROOT, "%.0f", scan.performance().totalMassKg()),
+                        String.format(Locale.ROOT, "%.0f", scan.performance().dryMassKg()),
+                        String.format(Locale.ROOT, "%.0f", scan.performance().totalThrustN() / 1000),
+                        String.format(Locale.ROOT, "%.2f", scan.performance().twr()),
+                        String.format(Locale.ROOT, "%.0f", scan.staged().totalDeltaV()));
+                net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player, scan.payload());
                 return stats;
             }
         }
+    }
+
+    /** Результат скана (Полёт 2.0): ЛТХ стека, ступени и пакет для экрана; используется стендом. */
+    public record ScanResult(RocketPerformance performance,
+                             org.alex_melan.spacereloaded.core.rocketry.StagedPerformance.StagedReport staged,
+                             org.alex_melan.spacereloaded.network.ScanReportPayload payload) {
+    }
+
+    /**
+     * Полный расчёт скана: ЛТХ, ступени (D12) и оценка достижимости высоты перехода.
+     * TWR и тяга — активной (нижней) ступени: именно она отрывает стек от стола.
+     */
+    public static ScanResult scanResult(ServerLevel level, RocketAssembler.Result.Ok ok, int padY) {
+        double gravity = org.alex_melan.spacereloaded.planet.PlanetManager.gravity(level);
+        RocketPerformance performance = PerformanceCalculator.calculate(ok.structure(), gravity);
+        var layout = org.alex_melan.spacereloaded.core.rocketry.StageLayout.of(ok.structure());
+        double[] stageFuel = layout.propellantByStage();
+        var staged = org.alex_melan.spacereloaded.core.rocketry.StagedPerformance
+                .calculate(layout, stageFuel, gravity);
+        var first = staged.stages().get(0);
+
+        // Подъём (FR-084, D12): численное моделирование вертикального подъёма с
+        // сопротивлением, гравитационными потерями и авто-отделением ступеней —
+        // вместо оценки 1.15·√(2gh). Старт — низ стека, цель — высота перехода тела.
+        var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
+        var config = SpaceReloaded.config();
+        double startY = ok.origin().getY();
+        double targetY = profile.map(p -> (double) p.transitionAltitude()).orElse(startY);
+        var ascent = org.alex_melan.spacereloaded.core.rocketry.AscentSimulator.simulate(
+                layout, stageFuel, org.alex_melan.spacereloaded.planet.PlanetManager.environment(level),
+                config.rocketDragCoefficient, startY, targetY);
+        boolean reached = ascent.reachedTarget();
+        double needed = ascent.deltaVSpentToTargetMs();
+        boolean maxQExceeded = ascent.maxDynamicPressurePa() > config.maxDynamicPressurePa;
+
+        java.util.LinkedHashSet<String> warnings = new java.util.LinkedHashSet<>();
+        for (PerformanceWarning warning : first.warnings()) {
+            warnings.add(warning.name());
+        }
+        for (var stage : staged.stages()) {
+            if (stage.warnings().contains(PerformanceWarning.STAGE_NO_ENGINE)) {
+                warnings.add(PerformanceWarning.STAGE_NO_ENGINE.name());
+            }
+        }
+        if (maxQExceeded) {
+            warnings.add(PerformanceWarning.MAX_Q_EXCEEDED.name());
+        }
+        java.util.List<org.alex_melan.spacereloaded.network.ScanReportPayload.StageLine> lines =
+                staged.stages().stream()
+                        .map(s -> new org.alex_melan.spacereloaded.network.ScanReportPayload.StageLine(
+                                s.index(), s.deltaV(), s.twr(), layout.stage(s.index()).hasEngines()))
+                        .toList();
+        var payload = new org.alex_melan.spacereloaded.network.ScanReportPayload(
+                ok.blocks().size(), performance.totalMassKg(), performance.dryMassKg(),
+                first.thrustN(), first.twr(), staged.totalDeltaV(), needed,
+                java.util.List.copyOf(warnings), "", lines, reached, needed,
+                ascent.apexM(), ascent.maxDynamicPressurePa(), maxQExceeded);
+        return new ScanResult(performance, staged, payload);
     }
 
     /** Общий каркас скана площадки от пилона (null — нет площадки). */
     private static RocketAssembler.Result scanVolumeAtPylon(ServerLevel level, BlockPos pylonPos,
                                                             ServerPlayer player) {
         return runPylonScan(level, pylonPos, player);
+    }
+
+    /**
+     * Скан без пакета игроку (стенд): результат расчёта либо null, если площадки
+     * нет или стек не прочитался (ошибка уходит игроку сообщением).
+     */
+    @org.jetbrains.annotations.Nullable
+    public static ScanResult scanResultAtPylon(ServerLevel level, BlockPos pylonPos, ServerPlayer player) {
+        formComplex(level, pylonPos);
+        RocketAssembler.Result result = runPylonScan(level, pylonPos, player);
+        if (result instanceof RocketAssembler.Result.Ok ok) {
+            return scanResult(level, ok, pylonPos.getY());
+        }
+        if (result instanceof RocketAssembler.Result.Error(String key, BlockPos pos)) {
+            player.sendSystemMessage(Component.translatable(key,
+                    pos.getX() + " " + pos.getY() + " " + pos.getZ()));
+        }
+        return null;
     }
 
     public static void assembleFromPylon(ServerLevel level, BlockPos pylonPos, ServerPlayer player) {
@@ -235,6 +299,11 @@ public final class RocketInteractions {
             case RocketAssembler.Result.Ok ok -> {
                 RocketPerformance performance =
                         PerformanceCalculator.calculate(ok.structure(), 9.81);
+                // Полёт 2.0: топливо по ступеням — честные суммы баков каждой ступени
+                var layout = org.alex_melan.spacereloaded.core.rocketry.StageLayout.of(ok.structure());
+                double[] stageFuel = layout.propellantByStage();
+                var staged = org.alex_melan.spacereloaded.core.rocketry.StagedPerformance
+                        .calculate(layout, stageFuel, 9.81);
 
                 player.sendSystemMessage(Component.translatable(
                         "message.spacereloaded.rocket.assembled", ok.blocks().size()));
@@ -242,10 +311,10 @@ public final class RocketInteractions {
                         "message.spacereloaded.rocket.stats",
                         String.format(Locale.ROOT, "%.0f", performance.totalMassKg()),
                         String.format(Locale.ROOT, "%.0f", performance.dryMassKg()),
-                        String.format(Locale.ROOT, "%.0f", performance.totalThrustN() / 1000),
-                        String.format(Locale.ROOT, "%.2f", performance.twr()),
-                        String.format(Locale.ROOT, "%.0f", performance.deltaV())));
-                for (PerformanceWarning warning : performance.warnings()) {
+                        String.format(Locale.ROOT, "%.0f", staged.stages().get(0).thrustN() / 1000),
+                        String.format(Locale.ROOT, "%.2f", staged.stages().get(0).twr()),
+                        String.format(Locale.ROOT, "%.0f", staged.totalDeltaV())));
+                for (PerformanceWarning warning : staged.stages().get(0).warnings()) {
                     player.sendSystemMessage(Component.translatable(
                             "message.spacereloaded.rocket.warning." + warning.name()));
                 }
@@ -280,7 +349,8 @@ public final class RocketInteractions {
                         .max().orElse(0) + 1;
                 rocket.setPos(ok.origin().getX() + sizeX / 2.0, ok.origin().getY(),
                         ok.origin().getZ() + sizeZ / 2.0);
-                rocket.setAssembly(RocketData.fromScan(ok.blocks(), performance.propellantMassKg()));
+                rocket.setAssembly(RocketData.fromScan(ok.blocks(), performance.propellantMassKg()),
+                        stageFuel);
                 rocket.setCargo(cargo);
                 level.addFreshEntity(rocket);
                 level.playSound(null, ok.commandWorldPos(), SoundEvents.IRON_DOOR_OPEN,

@@ -64,4 +64,9 @@ public record PartProperties(
     public static PartProperties gyro(double massKg, double torqueNm) {
         return new PartProperties(massKg, PartRole.GYRO, 0, 0, NO_FUEL, 0, torqueNm);
     }
+
+    /** Разделитель ступеней: только масса, плоскость разделения задаётся позицией. */
+    public static PartProperties separator(double massKg) {
+        return new PartProperties(massKg, PartRole.SEPARATOR, 0, 0, NO_FUEL, 0, 0);
+    }
 }

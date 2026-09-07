@@ -45,9 +45,12 @@ public class RocketHud implements HudElement {
 
         int x = 8;
         int y = 8;
-        int width = 150;
+        int width = 170;
         int line = font.lineHeight + 2;
-        int height = 8 + 10 + 4 + line * 5 + 4;
+        boolean multiStage = rocket.clientStageCount() > 1;
+        boolean heating = launched && rocket.clientHeating();
+        int lines = 5 + (multiStage ? 1 : 0) + (launched ? 1 : 0) + (heating ? 1 : 0);
+        int height = 8 + 10 + 4 + line * lines + 4;
 
         gfx.fill(x - 4, y - 4, x + width + 4, y + height, PANEL_BG);
         gfx.text(font, Component.translatable(launched
@@ -64,6 +67,14 @@ public class RocketHud implements HudElement {
         gfx.text(font, Component.translatable("hud.spacereloaded.rocket.fuel",
                 String.format("%.0f", fuel), String.format("%.0f", capacity)), x, y, TEXT);
         y += line;
+        // Полёт 2.0: ступень, её топливо и остаток Δv стека
+        if (multiStage) {
+            gfx.text(font, Component.translatable("hud.spacereloaded.rocket.stage",
+                    rocket.clientStage() + 1, rocket.clientStageCount(),
+                    String.format("%.0f", rocket.clientStageFuelKg()),
+                    String.format("%.0f", rocket.clientDeltaV())), x, y, ACCENT);
+            y += line;
+        }
         gfx.text(font, Component.translatable("hud.spacereloaded.rocket.speed",
                 String.format("%.1f", speed), String.format("%+.1f", verticalSpeed)), x, y, TEXT);
         y += line;
@@ -75,6 +86,18 @@ public class RocketHud implements HudElement {
         gfx.text(font, Component.translatable("hud.spacereloaded.rocket.destination",
                 destinationName(mc, rocket)), x, y, TEXT);
         y += line;
+        // Полёт 2.0 (FR-074): фактический и командуемый наклон; без гиродинов — пояснение
+        if (launched) {
+            double actual = Math.hypot(rocket.pitchDeg(), rocket.rollDeg());
+            double commanded = Math.hypot(rocket.clientCmdPitchDeg(), rocket.clientCmdRollDeg());
+            if (commanded > 0.5 && !rocket.clientHasGyro()) {
+                gfx.text(font, Component.translatable("hud.spacereloaded.rocket.no_gyro"), x, y, 0xFFDD4B4B);
+            } else {
+                gfx.text(font, Component.translatable("hud.spacereloaded.rocket.attitude",
+                        String.format("%.0f", actual), String.format("%.0f", commanded)), x, y, TEXT);
+            }
+            y += line;
+        }
         gfx.text(font, Component.translatable(launched
                 ? "hud.spacereloaded.rocket.hint_flight"
                 : "hud.spacereloaded.rocket.hint_parked"), x, y, MUTED);

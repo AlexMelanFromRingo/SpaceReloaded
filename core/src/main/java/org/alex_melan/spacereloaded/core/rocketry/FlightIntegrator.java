@@ -31,8 +31,24 @@ public final class FlightIntegrator {
     private FlightIntegrator() {
     }
 
+    /** Шаг без аэродинамики (вакуумный расчёт / тесты 001). */
     public static FlightState step(RocketStructure structure, FlightState state,
                                    ControlInput input, FlightEnvironment env, double dt) {
+        return step(structure, state, input, env, dt, org.alex_melan.spacereloaded.core.atmosphere.DragBody.NONE);
+    }
+
+    /**
+     * Шаг с квадратичным сопротивлением (Полёт 2.0, FR-081): F_d = −½ρ|v|C_dA_eff·v̂,
+     * ρ — плотность профиля атмосферы на текущей высоте. Упрощение (документировано):
+     * сопротивление за шаг ограничено так, чтобы не развернуть скорость — устойчивость
+     * полу-неявного Эйлера при экстремальных плотностях из датапака; при игровых
+     * массах (≥ 250 кг) и скоростях (≤ 500 м/с) ограничение не срабатывает.
+     *
+     * @param drag аэродинамическое тело; {@code DragBody.NONE} — вакуумный расчёт
+     */
+    public static FlightState step(RocketStructure structure, FlightState state,
+                                   ControlInput input, FlightEnvironment env, double dt,
+                                   org.alex_melan.spacereloaded.core.atmosphere.DragBody drag) {
         if (dt <= 0) {
             throw new IllegalArgumentException("dt must be > 0");
         }
@@ -56,6 +72,20 @@ public final class FlightIntegrator {
             accel = thrustDir.scale(thrust / mp.totalMassKg);
         }
         accel = accel.add(new Vec3d(0, -env.gravity(), 0));
+
+        // Аэродинамическое сопротивление (FR-081): квадратичное, по плотности на высоте
+        if (drag != null && drag.cd() > 0 && mp.totalMassKg > 0) {
+            double density = env.density(state.pos().y());
+            if (density > 0) {
+                Vec3d dragAccel = drag.force(state.vel(), density).scale(1.0 / mp.totalMassKg);
+                double maxDecel = state.vel().length() / dt;
+                double decel = dragAccel.length();
+                if (decel > maxDecel && decel > 0) {
+                    dragAccel = dragAccel.scale(maxDecel / decel); // клиппинг: не разворачивать скорость
+                }
+                accel = accel.add(dragAccel);
+            }
+        }
 
         Vec3d vel = state.vel().add(accel.scale(dt));
         Vec3d pos = state.pos().add(vel.scale(dt));
@@ -93,6 +123,11 @@ public final class FlightIntegrator {
         double roll = state.roll() + rollRate * dt;
 
         return new FlightState(pos, vel, pitch, roll, pitchRate, rollRate, newPropellant);
+    }
+
+    /** Ось аппарата (направление тяги) при данных тангаже и крене — для отделения ступеней и HUD. */
+    public static Vec3d axis(double pitch, double roll) {
+        return rotate(new Vec3d(0, 1, 0), pitch, roll);
     }
 
     /** Поворот вектора: сначала крен вокруг Z, затем тангаж вокруг X (порядок фиксирован). */

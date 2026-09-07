@@ -262,6 +262,14 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
 
+    /**
+     * Разделитель ступеней (Полёт 2.0, FR-060): пироболтовое кольцо, задаёт
+     * плоскость отделения ступени в полёте; после отделения уходит вниз с обломком.
+     */
+    public static final Block STAGE_SEPARATOR = register("stage_separator", Block::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
     /** Гидролоксовый двигатель: ниже тяга, выше Isp — для орбиты и Луны. */
     public static final Block HYDROLOX_ENGINE = register("hydrolox_engine", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
