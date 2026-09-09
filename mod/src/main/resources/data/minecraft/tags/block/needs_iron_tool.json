@@ -5,6 +5,8 @@
 		"spacereloaded:deepslate_titanium_ore",
 		"spacereloaded:deepslate_tungsten_ore",
 		"spacereloaded:moon_titanium_ore",
-		"spacereloaded:mars_tungsten_ore"
+		"spacereloaded:mars_tungsten_ore",
+		"spacereloaded:cargo_terminal",
+		"spacereloaded:docking_port"
 	]
 }

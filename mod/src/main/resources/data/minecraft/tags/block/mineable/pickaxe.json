@@ -50,6 +50,10 @@
 		"spacereloaded:asteroid_stone",
 		"spacereloaded:moon_titanium_ore",
 		"spacereloaded:mars_tungsten_ore",
-		"spacereloaded:stage_separator"
+		"spacereloaded:stage_separator",
+		"spacereloaded:cargo_terminal",
+		"spacereloaded:docking_port",
+		"spacereloaded:module_hull",
+		"spacereloaded:mars_ice"
 	]
 }

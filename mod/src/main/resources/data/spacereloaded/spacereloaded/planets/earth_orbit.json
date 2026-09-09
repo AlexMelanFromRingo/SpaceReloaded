@@ -13,5 +13,11 @@
 	],
 	"arrival": "platform",
 	"temperature": -100,
-	"temperature_amplitude": 0
+	"temperature_amplitude": 0,
+	"transfer_delta_v": {
+		"spacereloaded:earth": 100.0,
+		"spacereloaded:moon": 3955.0,
+		"spacereloaded:mars": 3613.0,
+		"spacereloaded:asteroid_belt": 9650.0
+	}
 }

@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"terminal": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:cargo_terminal"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:cargo_terminal"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.cargo_line.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.cargo_line.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"terminal"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:docking"
+}

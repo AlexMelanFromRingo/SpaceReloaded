@@ -26,9 +26,12 @@ public final class AscentSimulator {
      * @param maxDynamicPressurePa    пиковый скоростной напор, Па
      * @param timeToTargetS           время до высоты перехода, с (NaN, если не достигнута)
      * @param stagesUsed              сколько ступеней зажигалось
+     * @param propellantAfter         топливо по ступеням в конце моделирования (003: вход планировщика)
+     * @param activeStageAfter        активная ступень в конце моделирования
      */
     public record AscentReport(boolean reachedTarget, double apexM, double deltaVSpentToTargetMs,
-                               double maxDynamicPressurePa, double timeToTargetS, int stagesUsed) {
+                               double maxDynamicPressurePa, double timeToTargetS, int stagesUsed,
+                               double[] propellantAfter, int activeStageAfter) {
     }
 
     private AscentSimulator() {
@@ -44,11 +47,20 @@ public final class AscentSimulator {
      */
     public static AscentReport simulate(StageLayout layout, double[] stagePropellantKg,
                                         FlightEnvironment env, double cd, double startY, double targetY) {
+        return simulate(layout, stagePropellantKg, 0, env, cd, startY, targetY);
+    }
+
+    /**
+     * То же со стартовой активной ступенью (003, D23): планировщик маршрута
+     * продолжает моделирование с той ступени, на которой борт прибыл на платформу.
+     */
+    public static AscentReport simulate(StageLayout layout, double[] stagePropellantKg, int startStage,
+                                        FlightEnvironment env, double cd, double startY, double targetY) {
         double[] fuel = new double[layout.stageCount()];
         for (int i = 0; i < fuel.length && i < stagePropellantKg.length; i++) {
             fuel[i] = Math.max(0, stagePropellantKg[i]);
         }
-        int active = 0;
+        int active = Math.clamp(startStage, 0, layout.stageCount() - 1);
         int stagesUsed = 1;
         RocketStructure view = layout.activeView(active, fuel);
         DragBody drag = view.dragBody(cd);
@@ -103,6 +115,6 @@ public final class AscentSimulator {
         if (!reached) {
             deltaVSpent = 0;
         }
-        return new AscentReport(reached, apex, deltaVSpent, maxQ, timeToTarget, stagesUsed);
+        return new AscentReport(reached, apex, deltaVSpent, maxQ, timeToTarget, stagesUsed, fuel.clone(), active);
     }
 }

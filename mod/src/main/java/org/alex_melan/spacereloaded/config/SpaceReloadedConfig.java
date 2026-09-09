@@ -212,6 +212,25 @@ public final class SpaceReloadedConfig {
     /** Радиус рассеивания без спутникового покрытия целевого измерения, блоки («разброс до N»). */
     public double cannonUnguidedSpreadBlocks = 10.0;
 
+    // --- Межпланетная логистика (003): линии, перелёты, wet workshop ---
+    /** Интервал проверки грузового терминала, тики (делитель тик-цикла). */
+    public int cargoLineCheckIntervalTicks = 20;
+    /** Выдержка «груз и топливо не менялись» перед автозапуском, тики (10 с: погрузчик и колонка работают раз в 10 тиков). */
+    public int cargoLineDwellTicks = 200;
+    /** Запас планировщика к Δv перелёта и посадки, % (навигационные ошибки, неидеальные импульсы). */
+    public double cargoLineDeltaVMarginPercent = 5.0;
+    /** Задержка пересадки автопилота на промежуточной платформе, тики (время «перепрограммирования»). */
+    public int autopilotRelaunchDelayTicks = 100;
+    /**
+     * Балансовый множитель таблицы перелётов профилей планет (НЕ физика: таблица выведена из
+     * уравнений Гомана/патч-коник по реальным орбитам). 1.0 — честные значения, 0 — списание отключено.
+     */
+    public double transferDeltaVScale = 1.0;
+    /** Максимальная доля топлива (от ёмкости) для конверсии борта в модуль станции; остаток стравливается. */
+    public double wetWorkshopMaxResidualFraction = 0.05;
+    /** Высота прибытия над маяком/точкой спуска, м — общая для перехода и планировщика посадки. */
+    public double arrivalHeightM = 180.0;
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static SpaceReloadedConfig load(Path configDir) {
@@ -308,6 +327,22 @@ public final class SpaceReloadedConfig {
         if (cannonGuidedSpreadBlocks < 0 || cannonGuidedSpreadBlocks > 4
                 || cannonUnguidedSpreadBlocks < 0 || cannonUnguidedSpreadBlocks > 64) {
             throw new IllegalArgumentException("cannonGuidedSpreadBlocks в [0, 4], cannonUnguidedSpreadBlocks в [0, 64]");
+        }
+        // Межпланетная логистика (003)
+        if (cargoLineCheckIntervalTicks < 1 || cargoLineDwellTicks < 1 || autopilotRelaunchDelayTicks < 1) {
+            throw new IllegalArgumentException("cargoLineCheckIntervalTicks, cargoLineDwellTicks, autopilotRelaunchDelayTicks должны быть >= 1");
+        }
+        if (cargoLineDeltaVMarginPercent < 0 || cargoLineDeltaVMarginPercent > 100) {
+            throw new IllegalArgumentException("cargoLineDeltaVMarginPercent должен быть в [0, 100]");
+        }
+        if (transferDeltaVScale < 0 || transferDeltaVScale > 10) {
+            throw new IllegalArgumentException("transferDeltaVScale должен быть в [0, 10]");
+        }
+        if (wetWorkshopMaxResidualFraction < 0 || wetWorkshopMaxResidualFraction > 1) {
+            throw new IllegalArgumentException("wetWorkshopMaxResidualFraction должен быть в [0, 1]");
+        }
+        if (arrivalHeightM < 20 || arrivalHeightM > 400) {
+            throw new IllegalArgumentException("arrivalHeightM должен быть в [20, 400]");
         }
     }
 }

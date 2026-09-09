@@ -85,3 +85,14 @@ ID ванили теперь в `net.minecraft.references.{BlockIds,ItemIds,Bloc
 - `Codec.doubleRange(min, max)` — валидация диапазонов датапак-полей прямо в кодеке.
 - Fabric client gametest: `TestInput.holdKey/pressKey/holdKeyFor/lookAt` есть, но стенд управляет ракетой серверными методами — надёжнее под Xvfb.
 - `SoundEvents.GENERIC_EXPLODE` — `Holder`, звук через `.value()`; `ParticleTypes.SOUL_FIRE_FLAME/POOF` для плазмы и разделения.
+
+## Дополнено при межпланетной логистике (003-interplanetary-logistics, 2026-09-09)
+
+- `RecordCodecBuilder.group` 16 полей: при 17 компонентах записи — вложить пару скаляров в `MapCodec` (`ThermalSpec` temperature/temperature_amplitude) и собирать запись статической фабрикой `fromCodec(...)`; JSON остаётся плоским.
+- `Codec.unboundedMap(Identifier.CODEC, Codec.doubleRange(...))` + `optionalFieldOf("...", Map.of())` — таблица «id → число» в датапаке.
+- `ServerChunkCache.getChunkNow(cx, cz)` → `LevelChunk` (или null) без загрузки; `LevelChunk.getBlockEntities()` — `Map<BlockPos, BlockEntity>` для обхода блок-сущностей чанка по клику (ЦУП).
+- Направленный блок без `HorizontalDirectionalBlock`: свойство `BlockStateProperties.HORIZONTAL_FACING` добавляется в `createBlockStateDefinition` подкласса; `Block`-конструктор вызывает `createBlockStateDefinition` ДО инициализации полей подкласса — свойства должны быть `static`. `getStateForPlacement` — `context.getHorizontalDirection().getOpposite()` (лицом к игроку).
+- Blockstate `orientable` + варианты `facing=…,open=…,cycling=…` с поворотом `y`; `/setblock … block[facing=west]` в стенде.
+- `Entity.setAssembly`-подобные инициализации на сервере: `level()` доступен уже в конструкторе сущности — цель по умолчанию можно вычислить из реестра там же.
+- `ValueOutput.putString/putLong/putDouble`, `ValueInput.getStringOr/getLongOr/getDoubleOr` — для BE достаточно; UUID и списки — строками.
+- Стенд: `config` мода — обычный объект с публичными полями, сценарий может временно менять лимиты (выдержка терминала) и обязан вернуть их в `finally`.

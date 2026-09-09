@@ -69,6 +69,29 @@ public class JadeClientPlugin implements IWailaPlugin {
             @Override
             public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
                 CompoundTag data = accessor.getServerData();
+                if (!data.contains("sr_terminal_state")) {
+                    return;
+                }
+                tooltip.add(Component.translatable("jade.spacereloaded.terminal",
+                        Component.translatable("message.spacereloaded.terminal.mode."
+                                + data.getStringOr("sr_terminal_mode", "hold")),
+                        Component.translatable(data.getStringOr("sr_terminal_state",
+                                "message.spacereloaded.terminal.state.no_program")),
+                        data.getStringOr("sr_terminal_detail", "")));
+                tooltip.add(Component.translatable("jade.spacereloaded.terminal_counters",
+                        data.getIntOr("sr_terminal_departures", 0), data.getIntOr("sr_terminal_arrivals", 0)));
+            }
+
+            @Override
+            public Identifier getUid() {
+                return JadePlugin.TERMINAL;
+            }
+        }, Block.class);
+
+        registration.registerBlockComponent(new IBlockComponentProvider() {
+            @Override
+            public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+                CompoundTag data = accessor.getServerData();
                 if (!data.contains("sr_rods")) {
                     return;
                 }

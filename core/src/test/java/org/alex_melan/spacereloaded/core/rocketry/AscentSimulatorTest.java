@@ -148,4 +148,37 @@ class AscentSimulatorTest {
         assertEquals(100, report.apexM(), 1e-9);
         assertTrue(Double.isNaN(report.timeToTargetS()));
     }
+
+    /** 003: остаток топлива в отчёте согласован с потраченным Δv по Циолковскому (2 %). */
+    @Test
+    void propellantAfterMatchesSpentDeltaV() {
+        StageLayout layout = StageLayout.of(symmetricRocket());
+        double[] fuel = layout.propellantByStage();
+        AscentSimulator.AscentReport report = AscentSimulator.simulate(
+                layout, fuel, new FlightEnvironment(9.81), 0.5, 0, 450);
+
+        assertTrue(report.reachedTarget());
+        assertEquals(0, report.activeStageAfter());
+        double burned = fuel[0] - report.propellantAfter()[0];
+        assertTrue(burned > 0 && burned < fuel[0]);
+        double m0 = 4400;
+        double tsiolkovsky = 300 * G0 * Math.log(m0 / (m0 - burned));
+        assertEquals(tsiolkovsky, report.deltaVSpentToTargetMs(), tsiolkovsky * 0.02,
+                "Δv по сожжённому топливу совпадает с интегралом тяги");
+    }
+
+    /** 003: старт с верхней ступени двухступенчатого стека — нижняя игнорируется. */
+    @Test
+    void startsFromUpperStageWhenAsked() {
+        StageLayout two = StageLayout.of(shortFirstStage(true));
+        double[] fuel = {0, 2000};
+        AscentSimulator.AscentReport report = AscentSimulator.simulate(
+                two, fuel, 1, new FlightEnvironment(1.62), 0.5, 100, 260);
+
+        assertTrue(report.reachedTarget(), "верхняя ступень сама поднимает стек с платформы: " + report);
+        assertEquals(1, report.stagesUsed());
+        assertEquals(1, report.activeStageAfter());
+        assertEquals(0, report.propellantAfter()[0], 0);
+        assertTrue(report.propellantAfter()[1] < 2000 && report.propellantAfter()[1] > 1500);
+    }
 }

@@ -1,0 +1,29 @@
+{
+	"criteria": {
+		"mars": {
+			"trigger": "minecraft:changed_dimension",
+			"conditions": {
+				"to": "spacereloaded:mars"
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:mars_tungsten_ore"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.mars.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.mars.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"mars"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:orbit"
+}

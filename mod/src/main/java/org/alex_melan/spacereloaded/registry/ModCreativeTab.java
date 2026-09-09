@@ -94,6 +94,10 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.VENT_GRATE);
                         output.accept(ModBlocks.CARGO_HOLD);
                         output.accept(ModBlocks.CARGO_LOADER);
+                        output.accept(ModBlocks.CARGO_TERMINAL);
+                        output.accept(ModBlocks.DOCKING_PORT);
+                        output.accept(ModBlocks.MODULE_HULL);
+                        output.accept(ModBlocks.MARS_ICE);
                         output.accept(ModBlocks.MISSION_CONTROL);
                         output.accept(ModBlocks.TELEMETRY_SCREEN);
                         output.accept(ModItems.FLIGHT_PROGRAM);

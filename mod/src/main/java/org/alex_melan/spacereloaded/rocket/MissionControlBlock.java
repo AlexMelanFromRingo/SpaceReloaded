@@ -46,10 +46,19 @@ public class MissionControlBlock extends Block {
         List<RocketEntity> rockets = serverLevel.getEntities(
                 EntityTypeTest.forClass(RocketEntity.class),
                 new AABB(pos).inflate(RANGE), entity -> true);
-        if (rockets.isEmpty()) {
+        List<org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity> terminals = terminalsInRange(serverLevel, pos);
+        if (rockets.isEmpty() && terminals.isEmpty()) {
             serverPlayer.sendSystemMessage(
                     Component.translatable("message.spacereloaded.mission_control.empty"));
             return InteractionResult.SUCCESS_SERVER;
+        }
+        // 003 (FR-117): грузовые терминалы в радиусе — состояние линий
+        for (var terminal : terminals) {
+            serverPlayer.sendSystemMessage(Component.translatable(
+                    "message.spacereloaded.mission_control.terminal",
+                    terminal.getBlockPos().toShortString(),
+                    Component.translatable(terminal.stateKey()), terminal.detail(),
+                    terminal.departures(), terminal.arrivals()));
         }
         serverPlayer.sendSystemMessage(Component.translatable(
                 "message.spacereloaded.mission_control.header", rockets.size()));
@@ -66,5 +75,29 @@ public class MissionControlBlock extends Block {
                             : Component.translatable("message.spacereloaded.mission_control.flight")));
         }
         return InteractionResult.SUCCESS_SERVER;
+    }
+
+    /** Терминалы в загруженных чанках радиуса (обход блок-сущностей чанков — по клику, не по тику). */
+    private static List<org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity> terminalsInRange(
+            ServerLevel level, BlockPos center) {
+        List<org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity> found = new java.util.ArrayList<>();
+        int chunkRadius = (int) Math.ceil(RANGE / 16.0);
+        int cx = center.getX() >> 4;
+        int cz = center.getZ() >> 4;
+        for (int dx = -chunkRadius; dx <= chunkRadius; dx++) {
+            for (int dz = -chunkRadius; dz <= chunkRadius; dz++) {
+                var chunk = level.getChunkSource().getChunkNow(cx + dx, cz + dz);
+                if (chunk == null) {
+                    continue;
+                }
+                for (var blockEntity : chunk.getBlockEntities().values()) {
+                    if (blockEntity instanceof org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity terminal
+                            && terminal.getBlockPos().distSqr(center) <= RANGE * RANGE) {
+                        found.add(terminal);
+                    }
+                }
+            }
+        }
+        return found;
     }
 }

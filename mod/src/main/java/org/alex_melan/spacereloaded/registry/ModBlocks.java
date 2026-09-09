@@ -196,6 +196,26 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
 
+    /**
+     * Грузовой терминал (003, FR-110): автомат челночной линии — хранит полётную
+     * программу и отправляет обслуженный беспилотный борт из своей зоны.
+     */
+    public static final Block CARGO_TERMINAL = register("cargo_terminal",
+            org.alex_melan.spacereloaded.logistics.CargoTerminalBlock::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
+    /** Обшивка модуля (003, FR-124): герметичная стенка из бака/корпуса — только конверсией. */
+    public static final Block MODULE_HULL = register("module_hull", Block::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
+    /** Стыковочный порт (003, FR-120): герметичный люк с направлением и функцией стыковки-конверсии. */
+    public static final org.alex_melan.spacereloaded.logistics.DockingPortBlock DOCKING_PORT =
+            register("docking_port", org.alex_melan.spacereloaded.logistics.DockingPortBlock::new,
+                    BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
+                            .requiresCorrectToolForDrops().noOcclusion());
+
     /** Экран телеметрии: настенная панель, светится по статусу зоны. */
     public static final Block TELEMETRY_SCREEN = register("telemetry_screen",
             org.alex_melan.spacereloaded.sealing.TelemetryScreenBlock::new,
@@ -304,6 +324,11 @@ public final class ModBlocks {
 
     public static final Block MOON_ICE = register("moon_ice", Block::new,
             BlockBehaviour.Properties.of().strength(1.2f).requiresCorrectToolForDrops()
+                    .sound(SoundType.GLASS));
+
+    /** Марсианский лёд (003, FR-130): подповерхностные жилы в красном песчанике — сырьё Сабатье. */
+    public static final Block MARS_ICE = register("mars_ice", Block::new,
+            BlockBehaviour.Properties.of().strength(1.4f).requiresCorrectToolForDrops()
                     .sound(SoundType.GLASS));
 
     /** Нефтеносный сланец — сырьё перегонки (глубины Земли). */

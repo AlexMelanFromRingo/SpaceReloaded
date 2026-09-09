@@ -75,6 +75,9 @@ public class RocketEntity extends Entity {
     private static final EntityDataAccessor<Boolean> DATA_HAS_GYRO =
             SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
     // Полёт 2.0: входной нагрев (US3)
+    /** 003 (FR-104): цена следующего хопа — перелёт + посадка при спуске, м/с (0 — нет цели/стоимости). */
+    private static final EntityDataAccessor<Float> DATA_TRANSFER_DV =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> DATA_HEATING =
             SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
 
@@ -100,6 +103,12 @@ public class RocketEntity extends Entity {
     private boolean prevSprint;
     private boolean fuelOutWarned;
     private boolean windowWarned;
+    /** 003 (FR-103): предупреждение о нехватке Δv перелёта — один раз за подъём. */
+    private boolean transferWarned;
+    /** 003 (FR-116): беспилотный маршрут продолжается с промежуточной платформы. */
+    private boolean routeContinues;
+    /** Тик повторного беспилотного старта (пересадка); 0 — нет. */
+    private long relaunchAtTick;
     /** Беспилотный набор высоты до орбиты (запуск спутников/грузов). */
     private boolean autopilot;
     /** Фаза беспилотной посадки после прибытия «снижение» (suicide-burn-lite). */
@@ -162,6 +171,7 @@ public class RocketEntity extends Entity {
         builder.define(DATA_CMD_ROLL, 0.0f);
         builder.define(DATA_HAS_GYRO, false);
         builder.define(DATA_HEATING, false);
+        builder.define(DATA_TRANSFER_DV, 0.0f);
     }
 
     /** Сервер: установить структуру после сборки (до addFreshEntity); топливо — по ёмкости ступеней. */
@@ -179,6 +189,13 @@ public class RocketEntity extends Entity {
         this.rocketData = data;
         rebuildDerived();
         this.activeStage = 0;
+        if (level() instanceof ServerLevel serverLevel) {
+            // 003: цель по умолчанию — ближайший переход планеты (раньше индекс 0 =
+            // первая планета алфавитного списка, т.е. пояс астероидов: планировщик
+            // честно отказывал бы в старте «к поясу» каждому свежесобранному борту)
+            destinationIndex = defaultDestinationIndex(serverLevel);
+            entityData.set(DATA_DESTINATION, destinationIndex);
+        }
         this.stagePropellant = propellantByStage != null && propellantByStage.length == layout.stageCount()
                 ? propellantByStage.clone()
                 : layout.distributeByCapacity(data.propellantKg());
@@ -268,7 +285,8 @@ public class RocketEntity extends Entity {
         return debris;
     }
 
-    org.alex_melan.spacereloaded.core.rocketry.StageLayout layout() {
+    /** Раскладка ступеней (003: вход планировщика маршрута). */
+    public org.alex_melan.spacereloaded.core.rocketry.StageLayout layout() {
         return layout;
     }
 
@@ -280,7 +298,8 @@ public class RocketEntity extends Entity {
         return flight;
     }
 
-    double[] stagePropellantSnapshot() {
+    /** Топливо по ступеням, копия (003: вход планировщика маршрута). */
+    public double[] stagePropellantSnapshot() {
         return stagePropellant.clone();
     }
 
@@ -329,6 +348,11 @@ public class RocketEntity extends Entity {
     private boolean hasReturnCapsule() {
         return rocketData != null && rocketData.blocks().stream().anyMatch(e ->
                 e.state().is(org.alex_melan.spacereloaded.registry.ModBlocks.RETURN_CAPSULE));
+    }
+
+    /** 003: цена следующего хопа для HUD, м/с. */
+    public float clientTransferDeltaV() {
+        return entityData.get(DATA_TRANSFER_DV);
     }
 
     public boolean clientHeating() {
@@ -844,6 +868,21 @@ public class RocketEntity extends Entity {
             if (jump) {
                 ignite(serverLevel);
             }
+            // 003: пересадка автопилота — повторный беспилотный старт по сроку (FR-116)
+            if (pilot != null) {
+                relaunchAtTick = 0; // экипаж на борту — ручной режим
+            } else if (relaunchAtTick > 0 && serverLevel.getGameTime() >= relaunchAtTick) {
+                LaunchResult relaunch = tryLaunchUnmanned(serverLevel);
+                if (!relaunch.launched()) {
+                    relaunchAtTick = serverLevel.getGameTime()
+                            + org.alex_melan.spacereloaded.SpaceReloaded.config().autopilotRelaunchDelayTicks;
+                    org.alex_melan.spacereloaded.SpaceReloaded.LOGGER.info("Пересадка отложена: {}",
+                            relaunch.message().getString());
+                }
+            }
+            if (tickCount % 20 == 0) {
+                entityData.set(DATA_TRANSFER_DV, (float) nextHopCost(serverLevel));
+            }
             return;
         }
         prevSprint = sprint;
@@ -903,6 +942,7 @@ public class RocketEntity extends Entity {
         }
         if (tickCount % 10 == 0) {
             entityData.set(DATA_DELTA_V, (float) remainingDeltaV(gravity));
+            entityData.set(DATA_TRANSFER_DV, (float) nextHopCost(serverLevel));
         }
         // Ниже границы мира (пустота орбиты, потерянный обломок) — утилизация, не вечный объект
         if (getY() < serverLevel.getMinY() - 64) {
@@ -982,6 +1022,7 @@ public class RocketEntity extends Entity {
             }
         } else if (getY() < (profile.map(pp -> pp.transitionAltitude()).orElse(Integer.MAX_VALUE) - 20)) {
             windowWarned = false; // спустились — предупреждение об окне снова актуально
+            transferWarned = false;
         }
     }
 
@@ -1039,6 +1080,42 @@ public class RocketEntity extends Entity {
         if (target == null) {
             return;
         }
+        ServerPlayer pilot = getFirstPassenger() instanceof ServerPlayer sp ? sp : null;
+        var config = org.alex_melan.spacereloaded.SpaceReloaded.config();
+        // 003 (FR-102/FR-103, D21): списание Δv перелёта по Циолковскому через ступени ДО телепорта
+        double transferCost = fromProfile.transferDeltaVTo(targetId) * config.transferDeltaVScale;
+        if (transferCost > 0) {
+            if (transferWarned) {
+                return; // уже предупреждали за этот подъём — считать заново нечего
+            }
+            var burn = org.alex_melan.spacereloaded.core.rocketry.TransferBurn
+                    .apply(layout, stagePropellant, activeStage, transferCost);
+            if (!burn.achieved()) {
+                transferWarned = true;
+                String need = String.format(java.util.Locale.ROOT, "%.0f", transferCost);
+                String have = String.format(java.util.Locale.ROOT, "%.0f", remainingDeltaV(9.81));
+                if (pilot != null) {
+                    pilot.sendOverlayMessage(Component.translatable(
+                            "message.spacereloaded.rocket.transfer_short", need, have));
+                }
+                org.alex_melan.spacereloaded.SpaceReloaded.LOGGER.info(
+                        "Перелёт к {} отклонён: нужно {} м/с, есть {} м/с", targetId, need, have);
+                return;
+            }
+            if (burn.activeStage() > activeStage) {
+                StageSeparation.dropBurnedStages(this, burn.activeStage(),
+                        java.util.Arrays.copyOfRange(burn.propellantKg(), burn.activeStage(),
+                                burn.propellantKg().length));
+            } else {
+                stagePropellant = burn.propellantKg();
+                activeView = null;
+                flight = withPropellant(flight, stagePropellant[activeStage]);
+                syncStageData();
+            }
+        }
+        boolean continueRoute = autopilot && pilot == null
+                && !targetId.equals(finalDestination(from));
+
         double scale = fromProfile.coordinateScale() / targetProfile.get().coordinateScale();
         double targetX = getX() * scale;
         double targetZ = getZ() * scale;
@@ -1058,7 +1135,7 @@ public class RocketEntity extends Entity {
                     : org.alex_melan.spacereloaded.planet.PlanetManager
                             .ensureOrbitPlatform(target, targetX, targetZ);
         } else if (padArrival) {
-            targetY = programPad.pos().getY() + 180.0;
+            targetY = programPad.pos().getY() + config.arrivalHeightM;
         } else {
             targetY = Math.max(180.0, targetProfile.get().transitionAltitude() - 20.0);
         }
@@ -1067,7 +1144,6 @@ public class RocketEntity extends Entity {
         org.alex_melan.spacereloaded.planet.ModTickets.holdAround(target,
                 BlockPos.containing(targetX, targetY, targetZ), 2);
 
-        ServerPlayer pilot = getFirstPassenger() instanceof ServerPlayer sp ? sp : null;
         ejectPassengers();
 
         double[] savedStages = stagePropellant.clone();
@@ -1077,7 +1153,7 @@ public class RocketEntity extends Entity {
                 net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING));
 
         if (moved instanceof RocketEntity rocket) {
-            rocket.postArrival(toOrbit, savedStages, savedActive);
+            rocket.postArrival(toOrbit, savedStages, savedActive, continueRoute);
             // Спутник/энергоспутник: развёртывание на орбите ТОЛЬКО беспилотно
             // (иначе экипаж и груз погибли бы вместе с аппаратом)
             boolean payload = rocket.hasSatellite() || rocket.hasPowerSatellite();
@@ -1109,7 +1185,7 @@ public class RocketEntity extends Entity {
     }
 
     /** Настройка после прибытия (вызывается на НОВОМ экземпляре после teleport). */
-    private void postArrival(boolean parked, double[] stages, int active) {
+    private void postArrival(boolean parked, double[] stages, int active, boolean continueRoute) {
         if (layout != null && stages.length == layout.stageCount()) {
             this.stagePropellant = stages.clone();
             this.activeStage = Math.clamp(active, 0, layout.stageCount() - 1);
@@ -1123,6 +1199,11 @@ public class RocketEntity extends Entity {
         if (parked) {
             autopilot = false;
             descentMode = false;
+            // 003 (FR-116): цель дальше — пересадка через задержку
+            this.routeContinues = continueRoute;
+            this.relaunchAtTick = continueRoute
+                    ? level().getGameTime() + org.alex_melan.spacereloaded.SpaceReloaded.config().autopilotRelaunchDelayTicks
+                    : 0;
         } else if (autopilot) {
             descentMode = true; // беспилотная посадка к маяку
         }
@@ -1142,32 +1223,39 @@ public class RocketEntity extends Entity {
         if (destination == null && pad == null) {
             return Component.translatable("message.spacereloaded.program.empty");
         }
-        if (destination != null) {
-            var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
-            int index = -1;
-            if (profile.isPresent()) {
-                var targets = profile.get().transitionTargets();
-                for (int i = 0; i < targets.size(); i++) {
-                    var target = org.alex_melan.spacereloaded.planet.PlanetManager
-                            .profileById(level, targets.get(i));
-                    if (target.isPresent() && target.get().dimension().equals(destination)) {
-                        index = i;
-                        break;
-                    }
-                }
-            }
-            if (index < 0) {
-                return Component.translatable("message.spacereloaded.program.unreachable",
-                        destination.toString());
-            }
-            destinationIndex = index;
-            entityData.set(DATA_DESTINATION, destinationIndex);
-        }
-        this.programPad = pad;
-        this.programFrequency = program.getOrDefault(
+        int frequency = program.getOrDefault(
                 org.alex_melan.spacereloaded.registry.ModDataComponents.PROGRAM_FREQUENCY, 0);
+        if (!installRoute(level, destination, pad, frequency)) {
+            return Component.translatable("message.spacereloaded.program.unreachable",
+                    String.valueOf(destination));
+        }
         return Component.translatable("message.spacereloaded.program.installed",
                 FlightProgramItem.describe(program));
+    }
+
+    /**
+     * Маршрут борта (003, терминал и предмет-программа): цель — измерение планеты
+     * из реестра (ЛЮБАЯ достижимая по хопам, как у карты полёта), маяк и канал.
+     * Индекс цели — по общему списку планет (как {@link #setDestination}); раньше
+     * программа писала индекс по transition_targets — другое пространство индексов.
+     *
+     * @return false, если цель не в реестре или маршрута к ней нет
+     */
+    public boolean installRoute(ServerLevel level, net.minecraft.resources.Identifier destinationDimension,
+                                net.minecraft.core.GlobalPos pad, int frequency) {
+        if (destinationDimension != null) {
+            var access = level.registryAccess();
+            var entry = org.alex_melan.spacereloaded.planet.Navigation.entryIdFor(access, destinationDimension);
+            var here = org.alex_melan.spacereloaded.planet.Navigation.entryIdFor(access, level.dimension().identifier());
+            if (entry == null || here == null
+                    || org.alex_melan.spacereloaded.planet.Navigation.nextHop(access, here, entry) == null) {
+                return false;
+            }
+            setDestination(level, entry);
+        }
+        this.programPad = pad;
+        this.programFrequency = frequency;
+        return true;
     }
 
     /**
@@ -1176,39 +1264,123 @@ public class RocketEntity extends Entity {
      * автопилот выполнит suicide-burn-lite над ним.
      */
     public Component launchUnmanned(ServerLevel level) {
+        return tryLaunchUnmanned(level).message();
+    }
+
+    /** Результат беспилотного старта: стартовал ли борт и сообщение (успех или причина отказа). */
+    public record LaunchResult(boolean launched, Kind kind, Component message) {
+        /** Класс исхода — терминал показывает состояние без разбора текста. */
+        public enum Kind {
+            OK, NO_TARGET, ONLY_ORBIT, TWR, BUDGET, WINDOW, NO_COVERAGE, AUTH
+        }
+    }
+
+    private static LaunchResult refused(LaunchResult.Kind kind, Component message) {
+        return new LaunchResult(false, kind, message);
+    }
+
+    /**
+     * Беспилотный старт с честной проверкой (003, FR-107): планировщик бюджета
+     * маршрута, окно перелёта на момент «сейчас + подъём», спутниковое покрытие —
+     * отказ с причиной и цифрами вместо сожжённого впустую топлива.
+     */
+    public LaunchResult tryLaunchUnmanned(ServerLevel level) {
         if (!isParked() || debris) {
-            return Component.translatable("message.spacereloaded.rocket.autopilot_no_target");
+            return refused(LaunchResult.Kind.NO_TARGET,
+                    Component.translatable("message.spacereloaded.rocket.autopilot_no_target"));
         }
         var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
         var targetId = nextHop(level);
         if (profile.isEmpty() || targetId == null) {
-            return Component.translatable("message.spacereloaded.rocket.autopilot_no_target");
+            return refused(LaunchResult.Kind.NO_TARGET,
+                    Component.translatable("message.spacereloaded.rocket.autopilot_no_target"));
         }
         var target = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, targetId);
         boolean descendTarget = target.isPresent() && !"platform".equals(target.get().arrival());
         if (target.isEmpty() || (descendTarget && programPad == null)) {
-            return Component.translatable("message.spacereloaded.rocket.autopilot_only_orbit");
+            return refused(LaunchResult.Kind.ONLY_ORBIT,
+                    Component.translatable("message.spacereloaded.rocket.autopilot_only_orbit"));
         }
         if (!canLiftOff()) {
-            return Component.translatable("message.spacereloaded.rocket.warning.TWR_BELOW_ONE");
+            boolean noPropellant = remainingDeltaV(9.81) <= 0;
+            return refused(LaunchResult.Kind.TWR, Component.translatable(noPropellant
+                    ? "message.spacereloaded.rocket.warning.NO_USABLE_PROPELLANT"
+                    : "message.spacereloaded.rocket.warning.TWR_BELOW_ONE"));
+        }
+        // 003 (FR-105…FR-107): бюджет всего маршрута — отказ с причиной и цифрами
+        var plan = org.alex_melan.spacereloaded.logistics.MissionPlanning.plan(level, this, finalDestination(level));
+        if (plan != null && !plan.feasible()) {
+            return refused(LaunchResult.Kind.BUDGET,
+                    org.alex_melan.spacereloaded.logistics.MissionPlanning.describe(plan));
+        }
+        // Окно перелёта на момент прибытия на высоту перехода (иначе борт сжёг бы топливо зря)
+        if (org.alex_melan.spacereloaded.planet.TransferWindows.hasWindow(target.get())) {
+            double ascentS = plan == null ? 0 : plan.report().firstAscentTimeS();
+            long at = level.getGameTime() + (Double.isFinite(ascentS) ? Math.round(ascentS * 20) : 0);
+            if (!org.alex_melan.spacereloaded.planet.TransferWindows.isOpen(at, target.get())) {
+                long ticks = org.alex_melan.spacereloaded.planet.TransferWindows.ticksToOpen(at, target.get());
+                return refused(LaunchResult.Kind.WINDOW, Component.translatable("message.spacereloaded.rocket.window_closed",
+                        Component.translatable("planet.spacereloaded." + targetId.getPath()),
+                        ticks / 24000L, (ticks % 24000L) / 1200L));
+            }
+        }
+        // Покрытие для беспилотного межпланетного рейса — до старта, а не на высоте перехода
+        if (!org.alex_melan.spacereloaded.network.Logistics.coverageSatisfied(
+                level.getServer(), level.dimension(), target.get(), true)) {
+            return refused(LaunchResult.Kind.NO_COVERAGE, Component.translatable("message.spacereloaded.mission.no_coverage",
+                    Component.translatable("planet.spacereloaded." + targetId.getPath())));
         }
         // Защищённая маршрутизация: разрешаем адрес доставки (аутентификация/перехват)
         if (programPad != null) {
             var routed = org.alex_melan.spacereloaded.network.SecureRouting.resolve(
                     level.getServer(), programPad, programFrequency);
             if (routed.authFailed()) {
-                return Component.translatable("message.spacereloaded.routing.auth_failed");
+                return refused(LaunchResult.Kind.AUTH,
+                        Component.translatable("message.spacereloaded.routing.auth_failed"));
             }
             programPad = routed.destination();
         }
         autopilot = true;
         launched = true;
         fuelOutWarned = false;
+        transferWarned = false;
+        relaunchAtTick = 0;
         entityData.set(DATA_LAUNCHED, true);
         flight = FlightState.atRest(corePos(), stagePropellantKg(activeStage));
         level.playSound(null, blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.NEUTRAL, 3.0f, 0.5f);
-        return Component.translatable("message.spacereloaded.rocket.autopilot_started",
-                Component.translatable("planet.spacereloaded." + targetId.getPath()));
+        return new LaunchResult(true, LaunchResult.Kind.OK, Component.translatable("message.spacereloaded.rocket.autopilot_started",
+                Component.translatable("planet.spacereloaded." + targetId.getPath())));
+    }
+
+    /**
+     * Цена следующего хопа для HUD (003, FR-104): перелёт по таблице профиля плюс
+     * пропульсивная посадка при прибытии спуском (TWR активного вида при гравитации цели).
+     * Без симуляции подъёма — дёшево для периодического вызова.
+     */
+    private double nextHopCost(ServerLevel level) {
+        if (layout == null) {
+            return 0;
+        }
+        var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
+        var hop = nextHop(level);
+        if (profile.isEmpty() || hop == null) {
+            return 0;
+        }
+        var config = org.alex_melan.spacereloaded.SpaceReloaded.config();
+        double cost = profile.get().transferDeltaVTo(hop) * config.transferDeltaVScale;
+        var target = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, hop);
+        if (target.isPresent() && !"platform".equals(target.get().arrival()) && target.get().gravity() > 0) {
+            var perf = PerformanceCalculator.calculate(currentView(), target.get().gravity());
+            double touchdown = org.alex_melan.spacereloaded.core.rocketry.LandingBudget.touchdownSpeed(
+                    org.alex_melan.spacereloaded.logistics.MissionPlanning.ARRIVAL_SPEED_MS,
+                    target.get().gravity(), config.arrivalHeightM);
+            double landing = org.alex_melan.spacereloaded.core.rocketry.LandingBudget
+                    .propulsiveDeltaV(touchdown, perf.twr());
+            if (Double.isFinite(landing)) {
+                cost += landing;
+            }
+        }
+        return cost;
     }
 
     /** Активная ступень оторвёт стек от земли и есть чем лететь (TWR > 1, Δv стека > 0). */
@@ -1428,6 +1600,18 @@ public class RocketEntity extends Entity {
         return true;
     }
 
+    /** Индекс первой цели перехода текущей планеты в общем списке планет (0, если нет). */
+    private static int defaultDestinationIndex(ServerLevel level) {
+        var access = level.registryAccess();
+        var profile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
+        if (profile.isEmpty() || profile.get().transitionTargets().isEmpty()) {
+            return 0;
+        }
+        int index = org.alex_melan.spacereloaded.planet.Navigation.planetIds(access)
+                .indexOf(profile.get().transitionTargets().get(0));
+        return Math.max(0, index);
+    }
+
     /** Циклический выбор цели перехода: ЛЮБАЯ планета реестра, не только сосед. */
     private void cycleDestination(ServerLevel level, ServerPlayer pilot) {
         var access = level.registryAccess();
@@ -1495,6 +1679,8 @@ public class RocketEntity extends Entity {
             output.putLong("program_pad_pos", programPad.pos().asLong());
         }
         output.putInt("program_frequency", programFrequency);
+        output.putBoolean("route_continues", routeContinues);
+        output.putLong("relaunch_at", relaunchAtTick);
         output.putInt("destination", destinationIndex);
         output.putDouble("vel_x", flight == null ? 0 : flight.vel().x());
         output.putDouble("vel_y", flight == null ? 0 : flight.vel().y());
@@ -1549,6 +1735,8 @@ public class RocketEntity extends Entity {
                     BlockPos.of(input.getLongOr("program_pad_pos", 0L)));
         }
         this.programFrequency = input.getIntOr("program_frequency", 0);
+        this.routeContinues = input.getBooleanOr("route_continues", false);
+        this.relaunchAtTick = input.getLongOr("relaunch_at", 0L);
         this.destinationIndex = input.getIntOr("destination", 0);
         entityData.set(DATA_LAUNCHED, launched);
     }

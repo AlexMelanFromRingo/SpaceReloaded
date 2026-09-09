@@ -40,8 +40,16 @@ public class FlightProgramItem extends Item {
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        if (!level.getBlockState(context.getClickedPos()).is(ModBlocks.LANDING_BEACON)
-                || !(context.getPlayer() instanceof ServerPlayer player)) {
+        if (!(context.getPlayer() instanceof ServerPlayer player)) {
+            return InteractionResult.PASS;
+        }
+        // 003: ПКМ программой по грузовому терминалу — загрузить программу линии
+        if (level.getBlockEntity(context.getClickedPos())
+                instanceof org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity terminal) {
+            player.sendSystemMessage(terminal.installProgram(context.getItemInHand()));
+            return InteractionResult.SUCCESS_SERVER;
+        }
+        if (!level.getBlockState(context.getClickedPos()).is(ModBlocks.LANDING_BEACON)) {
             return InteractionResult.PASS;
         }
         GlobalPos pad = GlobalPos.of(level.dimension(), context.getClickedPos().immutable());

@@ -14,5 +14,8 @@
 	"temperature_amplitude": 10,
 	"atmosphere_density": 1.225,
 	"scale_height": 110.0,
-	"datum_y": 63.0
+	"datum_y": 63.0,
+	"transfer_delta_v": {
+		"spacereloaded:earth_orbit": 0.0
+	}
 }

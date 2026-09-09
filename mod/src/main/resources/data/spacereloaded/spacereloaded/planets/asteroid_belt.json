@@ -11,5 +11,8 @@
 	"arrival": "platform",
 	"atmosphere": "none",
 	"temperature": -180,
-	"temperature_amplitude": 0
+	"temperature_amplitude": 0,
+	"transfer_delta_v": {
+		"spacereloaded:earth_orbit": 4800.0
+	}
 }

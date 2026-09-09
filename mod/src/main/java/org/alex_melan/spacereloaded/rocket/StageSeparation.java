@@ -105,6 +105,46 @@ public final class StageSeparation {
                 active + 1, rocket.stageCount());
     }
 
+    /**
+     * Ступени, сгоревшие в межпланетном перелёте (003, D21): всё ниже ступени
+     * {@code newActive} исчезает БЕЗ обломка (задокументированное упрощение —
+     * обломок остаётся на орбите перелёта, а не в измерении), верхний стек
+     * остаётся той же сущностью с нормализованными координатами.
+     *
+     * @param upperStages топливо ступеней от {@code newActive} и выше
+     */
+    static void dropBurnedStages(RocketEntity rocket, int newActive, double[] upperStages) {
+        StageLayout layout = rocket.layout();
+        if (layout == null || newActive <= rocket.activeStage() || newActive >= layout.stageCount()) {
+            return;
+        }
+        int topY = layout.stage(newActive - 1).topY();
+        RocketData data = rocket.rocketData();
+        List<RocketData.Entry> upper = new ArrayList<>();
+        for (RocketData.Entry entry : data.blocks()) {
+            if (PackedPos.unpackY(entry.localPos()) > topY) {
+                upper.add(entry);
+            }
+        }
+        if (upper.isEmpty()) {
+            return;
+        }
+        double upperFuel = 0;
+        for (double kg : upperStages) {
+            upperFuel += kg;
+        }
+        Vec3 base = new Vec3(rocket.getX() - rocket.halfX(), rocket.getY(), rocket.getZ() - rocket.halfZ());
+        Bounds upperBounds = bounds(upper);
+        Vec3 newPos = new Vec3(base.x + upperBounds.minX() + upperBounds.sizeX() / 2.0,
+                base.y + upperBounds.minY(),
+                base.z + upperBounds.minZ() + upperBounds.sizeZ() / 2.0);
+        int dropped = newActive - rocket.activeStage();
+        rocket.applyRemainingStack(new RocketData(normalize(upper, upperBounds), upperFuel),
+                newPos, upperStages, Vec3d.ZERO);
+        SpaceReloaded.LOGGER.info("Перелёт сжёг {} ступ.: остаток {} бл. ({} кг топлива)",
+                dropped, upper.size(), Math.round(upperFuel));
+    }
+
     private static double dryMass(List<RocketData.Entry> entries) {
         double mass = 0;
         for (RocketData.Entry entry : entries) {

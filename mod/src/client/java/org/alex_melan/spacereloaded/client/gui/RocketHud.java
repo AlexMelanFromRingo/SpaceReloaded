@@ -49,7 +49,10 @@ public class RocketHud implements HudElement {
         int line = font.lineHeight + 2;
         boolean multiStage = rocket.clientStageCount() > 1;
         boolean heating = launched && rocket.clientHeating();
-        int lines = 5 + (multiStage ? 1 : 0) + (launched ? 1 : 0) + (heating ? 1 : 0);
+        // 003 (FR-104): цена следующего хопа против остатка Δv стека
+        double transferCost = rocket.clientTransferDeltaV();
+        boolean showTransfer = transferCost > 0;
+        int lines = 5 + (multiStage ? 1 : 0) + (launched ? 1 : 0) + (heating ? 1 : 0) + (showTransfer ? 1 : 0);
         int height = 8 + 10 + 4 + line * lines + 4;
 
         gfx.fill(x - 4, y - 4, x + width + 4, y + height, PANEL_BG);
@@ -86,6 +89,13 @@ public class RocketHud implements HudElement {
         gfx.text(font, Component.translatable("hud.spacereloaded.rocket.destination",
                 destinationName(mc, rocket)), x, y, TEXT);
         y += line;
+        if (showTransfer) {
+            double have = rocket.clientDeltaV();
+            gfx.text(font, Component.translatable("hud.spacereloaded.rocket.transfer",
+                    String.format("%.0f", transferCost), String.format("%.0f", have)),
+                    x, y, transferCost > have ? 0xFFDD4B4B : TEXT);
+            y += line;
+        }
         // Полёт 2.0 (FR-074): фактический и командуемый наклон; без гиродинов — пояснение
         if (launched) {
             double actual = Math.hypot(rocket.pitchDeg(), rocket.rollDeg());

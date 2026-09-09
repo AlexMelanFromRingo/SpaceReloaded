@@ -1,0 +1,64 @@
+{
+	"variants": {
+		"facing=north,open=true,cycling=true": {
+			"model": "spacereloaded:block/docking_port_open"
+		},
+		"facing=north,open=true,cycling=false": {
+			"model": "spacereloaded:block/docking_port_open"
+		},
+		"facing=north,open=false,cycling=true": {
+			"model": "spacereloaded:block/docking_port_cycling"
+		},
+		"facing=north,open=false,cycling=false": {
+			"model": "spacereloaded:block/docking_port"
+		},
+		"facing=east,open=true,cycling=true": {
+			"model": "spacereloaded:block/docking_port_open",
+			"y": 90
+		},
+		"facing=east,open=true,cycling=false": {
+			"model": "spacereloaded:block/docking_port_open",
+			"y": 90
+		},
+		"facing=east,open=false,cycling=true": {
+			"model": "spacereloaded:block/docking_port_cycling",
+			"y": 90
+		},
+		"facing=east,open=false,cycling=false": {
+			"model": "spacereloaded:block/docking_port",
+			"y": 90
+		},
+		"facing=south,open=true,cycling=true": {
+			"model": "spacereloaded:block/docking_port_open",
+			"y": 180
+		},
+		"facing=south,open=true,cycling=false": {
+			"model": "spacereloaded:block/docking_port_open",
+			"y": 180
+		},
+		"facing=south,open=false,cycling=true": {
+			"model": "spacereloaded:block/docking_port_cycling",
+			"y": 180
+		},
+		"facing=south,open=false,cycling=false": {
+			"model": "spacereloaded:block/docking_port",
+			"y": 180
+		},
+		"facing=west,open=true,cycling=true": {
+			"model": "spacereloaded:block/docking_port_open",
+			"y": 270
+		},
+		"facing=west,open=true,cycling=false": {
+			"model": "spacereloaded:block/docking_port_open",
+			"y": 270
+		},
+		"facing=west,open=false,cycling=true": {
+			"model": "spacereloaded:block/docking_port_cycling",
+			"y": 270
+		},
+		"facing=west,open=false,cycling=false": {
+			"model": "spacereloaded:block/docking_port",
+			"y": 270
+		}
+	}
+}

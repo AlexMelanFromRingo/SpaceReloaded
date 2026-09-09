@@ -10,5 +10,8 @@
 	],
 	"arrival": "descend",
 	"temperature": -20,
-	"temperature_amplitude": 130
+	"temperature_amplitude": 130,
+	"transfer_delta_v": {
+		"spacereloaded:earth_orbit": 822.0
+	}
 }

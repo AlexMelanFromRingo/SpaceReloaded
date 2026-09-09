@@ -13,6 +13,8 @@
 		"spacereloaded:refinery",
 		"spacereloaded:fuel_tank",
 		"spacereloaded:sabatier_reactor",
-		"spacereloaded:atmospheric_collector"
+		"spacereloaded:atmospheric_collector",
+		"spacereloaded:module_hull",
+		"spacereloaded:docking_port"
 	]
 }

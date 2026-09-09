@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"front": "spacereloaded:block/docking_port_front",
+		"side": "spacereloaded:block/hermetic_hatch_cycling",
+		"top": "spacereloaded:block/hermetic_hatch_cycling"
+	}
+}

@@ -92,6 +92,11 @@ public final class ModBlockEntities {
                     org.alex_melan.spacereloaded.rocket.CargoHoldBlockEntity::new,
                     Set.of(ModBlocks.CARGO_HOLD)));
 
+    public static final BlockEntityType<org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity> CARGO_TERMINAL =
+            register("cargo_terminal", new BlockEntityType<>(
+                    org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity::new,
+                    Set.of(ModBlocks.CARGO_TERMINAL)));
+
     public static final BlockEntityType<org.alex_melan.spacereloaded.rocket.CargoLoaderBlockEntity> CARGO_LOADER =
             register("cargo_loader", new BlockEntityType<>(
                     org.alex_melan.spacereloaded.rocket.CargoLoaderBlockEntity::new,

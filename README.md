@@ -68,6 +68,26 @@ actual part masses, and a lopsided rocket tips over on ascent.
   beacon), upload it to a parked rocket, trigger the launch remotely. The
   autopilot climbs, transfers and lands on the beacon with a terminal
   retro-burn.
+- **Honest transfer costs.** Every body carries a table of transfer delta-v
+  derived from Hohmann and patched-conic equations on real orbits (Moon 3955,
+  Mars 3613 m/s). At transition altitude the server burns that budget through
+  the stages by Tsiolkovsky; a stack that cannot afford it does not transfer
+  and the pilot is told need versus have. The HUD shows the price of the next
+  hop, and every unmanned launch runs a full route planner (numerical ascent,
+  transfer, propulsive landing with TWR at the destination) and refuses with
+  numbers instead of wasting propellant.
+- **Cargo lines.** A cargo terminal next to a landing beacon holds a flight
+  program and, in AUTO mode, dispatches any unmanned parked craft once loaders
+  and pumps have gone quiet, after checking budget, transfer window and
+  satellite coverage. A terminal on the far end sends it back. Mid-route the
+  autopilot relaunches itself from the orbital platform. Status lives in the
+  terminal, in Jade and in Mission Control.
+- **Wet workshop.** A docking port is a hatch with a purpose: sneak-click it
+  and the empty stage parked at its face becomes a station module made of
+  blocks. Exposed tanks and hull turn into module hull, enclosed ones into
+  habitable volume, engines and the command module stay, the wall facing the
+  port becomes a hatch. Residual propellant is vented, cargo is dropped, and
+  the shell passes the regular 26-direction sealing check.
 - **Orbital kinetic bombardment.** A cannon that only works in orbit fires
   tungsten rods along an honest entry trajectory. Crater size comes from
   E = ½mv² with cube-root scaling; obsidian-class blocks and water survive.
@@ -81,12 +101,13 @@ actual part masses, and a lopsided rocket tips over on ascent.
   batteries.
 - **Every body pays for the trip.** Earth carries just enough titanium and
   tungsten for the first rocket and suit. The real titanium is lunar ilmenite,
-  the tungsten sits in deep Martian veins, and meteoric iron exists only in the
-  asteroid belt, where the return capsule's heat shield comes from.
+  the tungsten sits in deep Martian veins, Martian ice feeds the Sabatier
+  reactor for the ride home, and meteoric iron exists only in the asteroid
+  belt, where the return capsule's heat shield comes from.
 - **Screens, not chat spam.** The scan report, the cannon terminal and a flight
   map drawn from the transition graph are proper panels. Jade is supported as a
   soft dependency: look at a machine to read energy, fuel and rod count.
-- **A guided progression.** Sixteen advancements walk you from the first
+- **A guided progression.** Twenty advancements walk you from the first
   steel ingot to closing the interplanetary loop.
 
 ## No teleport magic

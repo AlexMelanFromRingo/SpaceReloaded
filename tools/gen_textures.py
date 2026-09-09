@@ -182,6 +182,88 @@ def stage_separator():
     save(end, "block/stage_separator_end.png")
 
 
+def cargo_terminal():
+    """Грузовой терминал (003): тёмная стальная стойка с оранжевой полосой линии
+    и зелёным экраном состояния на верхней грани."""
+    steel = (0x3E, 0x43, 0x4A)
+    light = (0x5C, 0x63, 0x6B)
+    stripe = (0xE0, 0x7A, 0x1E)
+    screen = (0x2E, 0xC4, 0x6B)
+    screen_dark = (0x14, 0x3A, 0x26)
+    rng = random.Random(0xCA60)
+    side = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            base = light if y in (0, 15) or x in (0, 15) else steel
+            n = rng.randint(-6, 6)
+            side.putpixel((x, y), tuple(max(0, min(255, c + n)) for c in base) + (255,))
+    for x in range(2, 14):
+        for y in (6, 7):
+            side.putpixel((x, y), stripe + (255,))
+    for x, y in ((11, 5), (12, 6), (12, 7), (11, 8)):
+        side.putpixel((x, y), (0xFF, 0xD0, 0x80, 255))
+    save(side, "block/cargo_terminal_side.png")
+
+    top = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            base = light if y in (0, 15) or x in (0, 15) else steel
+            n = rng.randint(-6, 6)
+            top.putpixel((x, y), tuple(max(0, min(255, c + n)) for c in base) + (255,))
+    for y in range(3, 13):
+        for x in range(3, 13):
+            top.putpixel((x, y), screen_dark + (255,))
+    for x in range(4, 12):
+        top.putpixel((x, 5), screen + (255,))
+        top.putpixel((x, 8), screen + (255,))
+    for x in range(4, 9):
+        top.putpixel((x, 11), screen + (255,))
+    save(top, "block/cargo_terminal_top.png")
+
+
+def docking_port():
+    """Стыковочный порт (003): лицевая грань — люк с направляющим кольцом захвата."""
+    ring = (0xD8, 0xB4, 0x5A)
+    dark = (0x2A, 0x2D, 0x31)
+    for source, name in (("block/hermetic_hatch.png", "block/docking_port_front.png"),
+                         ("block/hermetic_hatch_open.png", "block/docking_port_open.png")):
+        image = mod(source).copy()
+        for i in range(16):
+            for c in (1, 14):
+                image.putpixel((i, c), ring + (255,))
+                image.putpixel((c, i), ring + (255,))
+        for x, y in ((0, 0), (15, 0), (0, 15), (15, 15)):
+            image.putpixel((x, y), dark + (255,))
+        save(image, name)
+
+
+def module_hull():
+    """Обшивка модуля (003): стенка бака в раме обшивки — «этот модуль был ракетой»."""
+    tank = mod("block/fuel_tank_side.png")
+    frame = mod("block/hull_plating.png")
+    image = tank.copy()
+    for i in range(16):
+        for c in (0, 15):
+            image.putpixel((i, c), frame.getpixel((i, c)))
+            image.putpixel((c, i), frame.getpixel((c, i)))
+    save(image, "block/module_hull.png")
+
+
+def mars_ice():
+    """Марсианский лёд (003): красный песчаник с прожилками грунтового льда."""
+    base = vanilla("block/red_sandstone.png").copy()
+    ice = (0xBF, 0xE3, 0xF2)
+    ice_dark = (0x8C, 0xC1, 0xD9)
+    rng = random.Random(0x3A25)
+    for _ in range(5):
+        x, y = rng.randint(1, 14), rng.randint(1, 14)
+        for step in range(rng.randint(3, 6)):
+            base.putpixel((x % 16, y % 16), (ice if step % 2 == 0 else ice_dark) + (255,))
+            dx, dy = rng.choice(((1, 0), (0, 1), (1, 1), (-1, 1)))
+            x, y = (x + dx) % 16, (y + dy) % 16
+    save(base, "block/mars_ice.png")
+
+
 def main():
     print("руды:")
     transplant_ore(mod("block/moon_stone.png"), vanilla("block/stone.png"),
@@ -199,6 +281,10 @@ def main():
         fuel_bucket(color, name)
     heat_shield()
     stage_separator()
+    cargo_terminal()
+    docking_port()
+    module_hull()
+    mars_ice()
 
 
 if __name__ == "__main__":

@@ -93,4 +93,25 @@ class FlightPerformanceBudgetTest {
         assertTrue(report.stageCount() == 2 && ascent.reachedTarget(), "стек летит: " + ascent);
         assertTrue(millis < 200, "скан + подъём 500 деталей: " + millis + " мс (бюджет 100, мягко 200)");
     }
+
+    /** 003 (SC-003): планировщик маршрута из 3 хопов для стека 500 деталей — быстрее 300 мс (мягко 600). */
+    @Test
+    void threeLegMissionPlanUnder300Ms() {
+        RocketStructure rocket = bigStack();
+        StageLayout layout = StageLayout.of(rocket);
+        double[] fuel = layout.propellantByStage();
+        FlightEnvironment earth = new FlightEnvironment(9.81, new AtmosphereProfile(1.225, 110, 63));
+        FlightEnvironment orbit = new FlightEnvironment(1.62);
+        java.util.List<MissionPlanner.Leg> legs = java.util.List.of(
+                new MissionPlanner.Leg(earth, 64, 450, 0, 0.5, null),
+                new MissionPlanner.Leg(orbit, 100, 260, 200, 0.5, null),
+                new MissionPlanner.Leg(orbit, 100, 260, 100, 0.5, new MissionPlanner.Landing(1.62, 180, 5)));
+
+        MissionPlanner.plan(layout, fuel, 0, legs, 0.05); // прогрев
+        long start = System.nanoTime();
+        MissionPlanner.MissionReport report = MissionPlanner.plan(layout, fuel, 0, legs, 0.05);
+        double millis = (System.nanoTime() - start) / 1.0e6;
+        assertTrue(report.legs().size() >= 1, "план посчитан: " + report.reason());
+        assertTrue(millis < 600, "планировщик 3 хопа, 500 деталей: " + millis + " мс (бюджет 300, мягко 600)");
+    }
 }

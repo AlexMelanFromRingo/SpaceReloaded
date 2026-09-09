@@ -74,6 +74,41 @@ public final class ModRegistries {
         }
     }
 
+
+
+    /** Тепловая пара профиля (temperature / temperature_amplitude) — плоские поля через MapCodec. */
+    public record ThermalSpec(double temperature, double temperatureAmplitude) {
+        public static final com.mojang.serialization.MapCodec<ThermalSpec> MAP_CODEC =
+                RecordCodecBuilder.mapCodec(instance -> instance.group(
+                        Codec.DOUBLE.optionalFieldOf("temperature", 20.0).forGetter(ThermalSpec::temperature),
+                        Codec.DOUBLE.optionalFieldOf("temperature_amplitude", 0.0)
+                                .forGetter(ThermalSpec::temperatureAmplitude)
+                ).apply(instance, ThermalSpec::new));
+    }
+
+    /**
+     * Таблица стоимости перелётов профиля (003, FR-100): «id записи цели → Δv, м/с».
+     * Значения мода выведены из уравнений Гомана/патч-коник по реальным орбитам
+     * (см. TransferOrbitsTest); отсутствующая запись стоит 0 — совместимость с аддонами.
+     * Плоское поле {@code transfer_delta_v} через MapCodec (лимит 16 полей RecordCodecBuilder).
+     */
+    public record TransferSpec(java.util.Map<Identifier, Double> deltaV) {
+        public static final com.mojang.serialization.MapCodec<TransferSpec> MAP_CODEC =
+                RecordCodecBuilder.mapCodec(instance -> instance.group(
+                        Codec.unboundedMap(Identifier.CODEC, Codec.doubleRange(0.0, 1.0e6))
+                                .optionalFieldOf("transfer_delta_v", java.util.Map.of())
+                                .forGetter(TransferSpec::deltaV)
+                ).apply(instance, TransferSpec::new));
+
+        public static final TransferSpec NONE = new TransferSpec(java.util.Map.of());
+
+        /** Δv перелёта к цели, м/с (0, если записи нет). */
+        public double deltaVTo(Identifier target) {
+            Double value = deltaV.get(target);
+            return value == null ? 0.0 : value;
+        }
+    }
+
     /**
      * Профиль небесного тела (FR-030, паттерн Ad Astra): физика измерения —
      * данными. transition_target — id ПРОФИЛЯ, куда попадает ракета, набрав
@@ -96,7 +131,8 @@ public final class ModRegistries {
             boolean requiresCoverage,
             double temperature,
             double temperatureAmplitude,
-            AtmosphereSpec aero
+            AtmosphereSpec aero,
+            TransferSpec transfer
     ) {
         public static final Codec<PlanetProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Identifier.CODEC.fieldOf("dimension").forGetter(PlanetProfile::dimension),
@@ -113,10 +149,28 @@ public final class ModRegistries {
                 Codec.LONG.optionalFieldOf("window_width_ticks", 0L).forGetter(PlanetProfile::windowWidthTicks),
                 Codec.LONG.optionalFieldOf("window_phase_ticks", 0L).forGetter(PlanetProfile::windowPhaseTicks),
                 Codec.BOOL.optionalFieldOf("requires_coverage", false).forGetter(PlanetProfile::requiresCoverage),
-                Codec.DOUBLE.optionalFieldOf("temperature", 20.0).forGetter(PlanetProfile::temperature),
-                Codec.DOUBLE.optionalFieldOf("temperature_amplitude", 0.0).forGetter(PlanetProfile::temperatureAmplitude),
-                AtmosphereSpec.MAP_CODEC.forGetter(PlanetProfile::aero)
-        ).apply(instance, PlanetProfile::new));
+                ThermalSpec.MAP_CODEC.forGetter(p -> new ThermalSpec(p.temperature(), p.temperatureAmplitude())),
+                AtmosphereSpec.MAP_CODEC.forGetter(PlanetProfile::aero),
+                TransferSpec.MAP_CODEC.forGetter(PlanetProfile::transfer)
+        ).apply(instance, PlanetProfile::fromCodec));
+
+        /** Фабрика для кодека: 16 полей группы (лимит RecordCodecBuilder) при 17 компонентах записи. */
+        private static PlanetProfile fromCodec(Identifier dimension, double gravity, boolean breathable,
+                                               double solarEfficiency, double coordinateScale, int transitionAltitude,
+                                               java.util.List<Identifier> transitionTargets, String arrival,
+                                               String atmosphere, long synodicPeriodTicks, long windowWidthTicks,
+                                               long windowPhaseTicks, boolean requiresCoverage,
+                                               ThermalSpec thermal, AtmosphereSpec aero, TransferSpec transfer) {
+            return new PlanetProfile(dimension, gravity, breathable, solarEfficiency, coordinateScale,
+                    transitionAltitude, transitionTargets, arrival, atmosphere, synodicPeriodTicks,
+                    windowWidthTicks, windowPhaseTicks, requiresCoverage,
+                    thermal.temperature(), thermal.temperatureAmplitude(), aero, transfer);
+        }
+
+        /** Стоимость перелёта из этого тела к цели (id записи), м/с; 0 без записи. */
+        public double transferDeltaVTo(Identifier target) {
+            return transfer == null ? 0.0 : transfer.deltaVTo(target);
+        }
     }
 
     public static final ResourceKey<Registry<RocketPartEntry>> PART_PROPERTIES =

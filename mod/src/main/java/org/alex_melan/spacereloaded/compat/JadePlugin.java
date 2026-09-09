@@ -26,6 +26,7 @@ public class JadePlugin implements IWailaPlugin {
     public static final Identifier ENERGY = id("energy");
     public static final Identifier FUEL = id("fuel_tank");
     public static final Identifier CANNON = id("orbital_cannon");
+    public static final Identifier TERMINAL = id("cargo_terminal");
 
     static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, path);
@@ -36,6 +37,8 @@ public class JadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(ENERGY_DATA, MachineBlockEntity.class);
         registration.registerBlockDataProvider(FUEL_DATA, FuelTankBlockEntity.class);
         registration.registerBlockDataProvider(CANNON_DATA, OrbitalCannonBlockEntity.class);
+        registration.registerBlockDataProvider(TERMINAL_DATA,
+                org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity.class);
     }
 
     private static final IServerDataProvider<BlockAccessor> ENERGY_DATA =
@@ -68,6 +71,26 @@ public class JadePlugin implements IWailaPlugin {
                 @Override
                 public Identifier getUid() {
                     return FUEL;
+                }
+            };
+
+    private static final IServerDataProvider<BlockAccessor> TERMINAL_DATA =
+            new IServerDataProvider<>() {
+                @Override
+                public void appendServerData(CompoundTag data, BlockAccessor accessor) {
+                    if (accessor.getBlockEntity()
+                            instanceof org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity terminal) {
+                        data.putString("sr_terminal_state", terminal.stateKey());
+                        data.putString("sr_terminal_detail", terminal.detail().getString());
+                        data.putString("sr_terminal_mode", terminal.mode().name().toLowerCase(java.util.Locale.ROOT));
+                        data.putInt("sr_terminal_departures", terminal.departures());
+                        data.putInt("sr_terminal_arrivals", terminal.arrivals());
+                    }
+                }
+
+                @Override
+                public Identifier getUid() {
+                    return TERMINAL;
                 }
             };
 

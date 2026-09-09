@@ -1,0 +1,33 @@
+{
+	"criteria": {
+		"port": {
+			"trigger": "minecraft:inventory_changed",
+			"conditions": {
+				"items": [
+					{
+						"items": "spacereloaded:docking_port"
+					}
+				]
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:docking_port"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.wet_workshop.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.wet_workshop.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"port"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:sealed"
+}

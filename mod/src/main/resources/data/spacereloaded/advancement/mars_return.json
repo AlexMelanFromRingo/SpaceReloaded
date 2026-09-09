@@ -1,0 +1,30 @@
+{
+	"criteria": {
+		"home": {
+			"trigger": "minecraft:changed_dimension",
+			"conditions": {
+				"from": "spacereloaded:mars",
+				"to": "spacereloaded:earth_orbit"
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:methalox_engine"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.mars_return.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.mars_return.description"
+		},
+		"frame": "challenge"
+	},
+	"requirements": [
+		[
+			"home"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:mars"
+}

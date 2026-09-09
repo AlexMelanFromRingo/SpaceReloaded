@@ -77,6 +77,8 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testAttitude(context, sp);
             testAtmosphere(context, sp);
             testStrikeGuidance(context, sp);
+            testCargoLine(context, sp);
+            testWetWorkshop(context, sp);
         }
     }
 
@@ -1516,6 +1518,193 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         log("навигация: Земля → орбита → Марс и обратно ✓");
     }
 
+    // ---------- 26. Грузовая линия: терминал — отказ по Δv → заправка → автозапуск ----------
+
+    private void testCargoLine(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int lx = BX + 720;
+        moveTo(context, sp, lx - 5, BZ);
+        var config = SpaceReloaded.config();
+        int savedDwell = config.cargoLineDwellTicks;
+        config.cargoLineDwellTicks = 60; // стенд: короткая выдержка
+        try {
+            sp.getServer().runCommand(fill(lx - 1, BY, BZ - 1, lx + 1, BY, BZ + 1, "spacereloaded:launch_pad"));
+            sp.getServer().runCommand(fill(lx - 2, BY + 1, BZ, lx - 2, BY + 5, BZ, "spacereloaded:assembly_pylon"));
+            sp.getServer().runCommand(set(lx - 2, BY, BZ, "spacereloaded:launch_pad"));
+            sp.getServer().runCommand(set(lx, BY + 1, BZ, "spacereloaded:rocket_engine"));
+            sp.getServer().runCommand(set(lx, BY + 2, BZ, "spacereloaded:fuel_tank"));
+            sp.getServer().runCommand(set(lx, BY + 3, BZ, "spacereloaded:cargo_hold"));
+            sp.getServer().runCommand(set(lx, BY + 4, BZ, "spacereloaded:command_module"));
+            sp.getServer().runCommand(set(lx + 3, BY, BZ, "spacereloaded:cargo_terminal"));
+            context.waitTick();
+            sp.getServer().runOnServer(server -> RocketInteractions.assembleFromPylon(
+                    server.overworld(), new BlockPos(lx - 2, BY + 3, BZ),
+                    server.getPlayerList().getPlayers().get(0)));
+            context.waitTicks(5);
+            AABB area = new AABB(lx - 8, BY - 2, BZ - 8, lx + 8, BY + 12, BZ + 8);
+            BlockPos terminalPos = new BlockPos(lx + 3, BY, BZ);
+
+            // Программа линии: орбита Земли, маяк на орбите; режим AUTO
+            String installed = sp.getServer().computeOnServer(server -> {
+                if (!(server.overworld().getBlockEntity(terminalPos)
+                        instanceof org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity terminal)) {
+                    return "нет терминала";
+                }
+                ItemStack program = new ItemStack(ModItems.FLIGHT_PROGRAM);
+                program.set(ModDataComponents.PROGRAM_DESTINATION,
+                        Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit"));
+                program.set(ModDataComponents.PROGRAM_PAD, GlobalPos.of(
+                        ResourceKey.create(Registries.DIMENSION,
+                                Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")),
+                        new BlockPos(60, 101, 60)));
+                String message = terminal.installProgram(program).getString();
+                terminal.toggleMode();
+                return terminal.mode().name() + ": " + message;
+            });
+            assertThat(installed.startsWith("AUTO"), "Терминал должен принять программу и перейти в AUTO: " + installed);
+            log("терминал: " + installed + " ✓");
+
+            // Пустой бак: после выдержки — честный отказ, борт на месте
+            String refused = waitForTerminalState(context, sp, terminalPos, 400,
+                    org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity.State.REFUSED);
+            assertThat(refused.startsWith("REFUSED"), "Терминал должен отказать пустому борту, состояние: " + refused);
+            boolean stillParked = sp.getServer().computeOnServer(server ->
+                    !server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                            area, RocketEntity::isParked).isEmpty());
+            assertThat(stillParked, "Борт без топлива должен остаться на площадке");
+            log("грузовая линия: отказ — " + refused + " ✓");
+
+            // Заправка → выдержка → автозапуск
+            sp.getServer().runOnServer(server -> server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class), area, RocketEntity::isParked)
+                    .forEach(rocket -> rocket.refuel(2000)));
+            String launched = waitForTerminalState(context, sp, terminalPos, 600,
+                    org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity.State.LAUNCHED);
+            assertThat(launched.startsWith("LAUNCHED"), "После заправки терминал должен отправить борт: " + launched);
+            int departures = sp.getServer().computeOnServer(server ->
+                    server.overworld().getBlockEntity(terminalPos)
+                            instanceof org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity terminal
+                            ? terminal.departures() : -1);
+            assertThat(departures == 1, "Счётчик отправлений должен стать 1, получено: " + departures);
+            boolean flying = sp.getServer().computeOnServer(server ->
+                    server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                            new AABB(lx - 8, BY - 2, BZ - 8, lx + 8, BY + 400, BZ + 8),
+                            rocket -> !rocket.isParked()).size() == 1
+                    || server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                            area, RocketEntity::isParked).isEmpty());
+            assertThat(flying, "Отправленный борт должен быть в полёте (или уже на орбите)");
+            log("грузовая линия: заправка → автозапуск, рейс №" + departures + " ✓");
+        } finally {
+            config.cargoLineDwellTicks = savedDwell;
+            sp.getServer().runOnServer(server -> server.overworld().getEntities(
+                    EntityTypeTest.forClass(RocketEntity.class),
+                    new AABB(lx - 40, BY - 200, BZ - 40, lx + 40, BY + 400, BZ + 40),
+                    e -> true).forEach(Entity::discard));
+        }
+    }
+
+    /** Ждёт состояние терминала; возвращает "STATE: detail" последнего опроса. */
+    private static String waitForTerminalState(ClientGameTestContext context, TestSingleplayerContext sp,
+                                               BlockPos terminalPos, int maxTicks,
+                                               org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity.State expected) {
+        String last = "";
+        for (int waited = 0; waited < maxTicks; waited += 10) {
+            context.waitTicks(10);
+            last = sp.getServer().computeOnServer(server ->
+                    server.overworld().getBlockEntity(terminalPos)
+                            instanceof org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity terminal
+                            ? terminal.state().name() + ": " + terminal.detail().getString()
+                            : "нет терминала");
+            if (last.startsWith(expected.name())) {
+                return last;
+            }
+        }
+        return last;
+    }
+
+    // ---------- 27. Wet workshop: борт → герметичный модуль ----------
+
+    private void testWetWorkshop(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int wx = BX + 760;
+        moveTo(context, sp, wx - 7, BZ);
+        sp.getServer().runCommand(fill(wx - 2, BY, BZ - 2, wx + 2, BY, BZ + 2, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(fill(wx - 3, BY + 1, BZ, wx - 3, BY + 8, BZ, "spacereloaded:assembly_pylon"));
+        sp.getServer().runCommand(set(wx - 3, BY, BZ, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(fill(wx - 2, BY + 1, BZ - 2, wx + 2, BY + 1, BZ + 2, "spacereloaded:rocket_engine"));
+        sp.getServer().runCommand(fill(wx - 2, BY + 2, BZ - 2, wx + 2, BY + 6, BZ + 2, "spacereloaded:fuel_tank"));
+        sp.getServer().runCommand(set(wx, BY + 7, BZ, "spacereloaded:command_module"));
+        sp.getServer().runCommand(set(wx + 3, BY + 4, BZ, "spacereloaded:docking_port[facing=west]"));
+        context.waitTick();
+        sp.getServer().runOnServer(server -> RocketInteractions.assembleFromPylon(
+                server.overworld(), new BlockPos(wx - 3, BY + 4, BZ),
+                server.getPlayerList().getPlayers().get(0)));
+        context.waitTicks(5);
+        boolean assembled = sp.getServer().computeOnServer(server ->
+                !server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                        new AABB(wx - 8, BY - 2, BZ - 8, wx + 8, BY + 12, BZ + 8), RocketEntity::isParked).isEmpty());
+        assertThat(assembled, "Стек 5×5×7 должен собраться в борт");
+
+        String converted = sp.getServer().computeOnServer(server ->
+                org.alex_melan.spacereloaded.logistics.WetWorkshop.convert(server.overworld(),
+                        new BlockPos(wx + 3, BY + 4, BZ), net.minecraft.core.Direction.WEST).getString());
+        context.waitTick();
+        int[] counts = sp.getServer().computeOnServer(server -> {
+            ServerLevel level = server.overworld();
+            int air = 0;
+            int hull = 0;
+            int engines = 0;
+            int hatch = 0;
+            BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+            for (int x = wx - 2; x <= wx + 2; x++) {
+                for (int z = BZ - 2; z <= BZ + 2; z++) {
+                    for (int y = BY + 1; y <= BY + 7; y++) {
+                        var state = level.getBlockState(cursor.set(x, y, z));
+                        if (y == BY + 1 && state.is(ModBlocks.ROCKET_ENGINE)) {
+                            engines++;
+                        }
+                        if (state.is(ModBlocks.MODULE_HULL)) {
+                            hull++;
+                        }
+                        if (state.is(ModBlocks.HERMETIC_HATCH)) {
+                            hatch++;
+                        }
+                        boolean interior = Math.abs(x - wx) <= 1 && Math.abs(z - BZ) <= 1
+                                && y >= BY + 3 && y <= BY + 5;
+                        if (interior && state.isAir()) {
+                            air++;
+                        }
+                    }
+                }
+            }
+            boolean command = level.getBlockState(new BlockPos(wx, BY + 7, BZ)).is(ModBlocks.COMMAND_MODULE);
+            boolean hatchAtPort = level.getBlockState(new BlockPos(wx + 2, BY + 4, BZ)).is(ModBlocks.HERMETIC_HATCH);
+            boolean noEntity = level.getEntities(EntityTypeTest.forClass(RocketEntity.class),
+                    new AABB(wx - 8, BY - 2, BZ - 8, wx + 8, BY + 12, BZ + 8), e -> true).isEmpty();
+            return new int[]{air, hull, engines, hatch, command ? 1 : 0, hatchAtPort ? 1 : 0, noEntity ? 1 : 0};
+        });
+        assertThat(counts[0] == 27, "Внутренний объём 3×3×3 должен стать воздухом, получено: " + counts[0] + " · " + converted);
+        assertThat(counts[1] == 97 && counts[3] == 1 && counts[5] == 1,
+                "Оболочка: 97 обшивки + люк напротив порта, получено обшивки " + counts[1] + ", люков " + counts[3]);
+        assertThat(counts[2] == 25 && counts[4] == 1, "Двигатели (25) и командный модуль должны остаться");
+        assertThat(counts[6] == 1, "Сущность борта должна исчезнуть после конверсии");
+        log("wet workshop: 27 воздух / 97 обшивка + люк / 25 двигателей ✓ — " + converted);
+
+        // Герметичность модуля штатным флудфиллом: контроллер внутри, люк закрыт
+        sp.getServer().runCommand(set(wx, BY + 4, BZ, "spacereloaded:atmosphere_controller"));
+        sp.getServer().runCommand(set(wx - 1, BY + 4, BZ, "spacereloaded:creative_power"));
+        context.waitTick();
+        BlockPos controller = new BlockPos(wx, BY + 4, BZ);
+        SealingStatus status = SealingStatus.INVALID_ORIGIN;
+        for (int waited = 0; waited < 600 && status != SealingStatus.SEALED; waited += 10) {
+            context.waitTicks(10);
+            status = sp.getServer().computeOnServer(server -> {
+                SealedZone zone = ZoneManager.zoneAt(server.overworld(), controller);
+                return zone == null ? SealingStatus.INVALID_ORIGIN : zone.status();
+            });
+        }
+        assertThat(status == SealingStatus.SEALED, "Модуль после конверсии должен быть герметичен, статус: " + status);
+        log("wet workshop: модуль герметичен ✓");
+    }
+
     // ---------- Утилиты ----------
 
     private static String fill(int x1, int y1, int z1, int x2, int y2, int z2, String block) {
@@ -1562,9 +1751,37 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         assertThat(!marsTop.contains("еголит") && !marsTop.toLowerCase().contains("regolith"),
                 "На Марсе не должно быть лунного реголита, найдено: " + marsTop);
         log("поверхность Марса: " + marsTop + " ✓");
+
+        // 003 (FR-130): подповерхностный марсианский лёд — сырьё реактора Сабатье
+        int ice = sp.getServer().computeOnServer(SpaceReloadedClientGameTest::marsIceCount);
+        assertThat(ice >= 1, "В 3×3 чанках Марса должен найтись марсианский лёд, найдено: " + ice);
+        log("марсианский лёд: " + ice + " блоков в 3×3 чанках ✓");
     }
 
     /** Мин/макс высоты поверхности по сетке 65×65 вокруг начала координат. */
+    /** 003 (FR-130): подповерхностный марсианский лёд в области 3×3 чанка. */
+    private static int marsIceCount(net.minecraft.server.MinecraftServer server) {
+        ServerLevel mars = server.getLevel(ResourceKey.create(Registries.DIMENSION,
+                Identifier.fromNamespaceAndPath("spacereloaded", "mars")));
+        int count = 0;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int cx = -1; cx <= 1; cx++) {
+            for (int cz = -1; cz <= 1; cz++) {
+                var chunk = mars.getChunk(cx, cz);
+                for (int x = 0; x < 16; x++) {
+                    for (int z = 0; z < 16; z++) {
+                        for (int y = 4; y <= 90; y++) {
+                            if (chunk.getBlockState(cursor.set(x, y, z)).is(ModBlocks.MARS_ICE)) {
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
     private static int[] reliefSpan(net.minecraft.server.MinecraftServer server, String planet) {
         ServerLevel level = server.getLevel(ResourceKey.create(Registries.DIMENSION,
                 Identifier.fromNamespaceAndPath("spacereloaded", planet)));
