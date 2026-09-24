@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:copper_plate",
+		"spacereloaded:copper_plate",
+		"spacereloaded:glass_fiber",
+		"spacereloaded:steel_plate",
+		"spacereloaded:relay"
+	],
+	"result": {
+		"id": "spacereloaded:wrs_module"
+	}
+}

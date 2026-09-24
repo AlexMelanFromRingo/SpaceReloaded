@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"front": "spacereloaded:block/eclss_controller_front_on",
+		"side": "spacereloaded:block/eclss_panel_side",
+		"top": "spacereloaded:block/eclss_panel_side"
+	}
+}

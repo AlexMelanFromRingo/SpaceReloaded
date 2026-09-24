@@ -188,6 +188,11 @@ public final class ModBlockEntities {
             register("lithography_station", new BlockEntityType<>(org.alex_melan.spacereloaded.electronics.LithographyStationBlockEntity::new,
                     Set.of(ModBlocks.LITHOGRAPHY_STATION)));
 
+    // --- Тяжёлая индустрия (008) ---
+    public static final BlockEntityType<org.alex_melan.spacereloaded.eclss.EclssControllerBlockEntity> ECLSS_CONTROLLER =
+            register("eclss_controller", new BlockEntityType<>(org.alex_melan.spacereloaded.eclss.EclssControllerBlockEntity::new,
+                    Set.of(ModBlocks.ECLSS_CONTROLLER)));
+
     // --- Жизнь на станции (007) ---
     public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity> GAS_TANK =
             register("gas_tank", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity::new,
@@ -250,6 +255,7 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ETCH_BATH);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CRYSTAL_PULLER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), AIR_SEPARATOR);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ECLSS_CONTROLLER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), AIRLOCK_PUMP);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CO2_SCRUBBER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), GROW_LAMP);

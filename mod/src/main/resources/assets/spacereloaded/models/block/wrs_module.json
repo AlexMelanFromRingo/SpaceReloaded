@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"front": "spacereloaded:block/wrs_module_front",
+		"side": "spacereloaded:block/eclss_module_side",
+		"top": "spacereloaded:block/eclss_module_side"
+	}
+}

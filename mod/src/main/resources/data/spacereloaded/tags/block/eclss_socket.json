@@ -1,0 +1,10 @@
+{
+	"replace": false,
+	"values": [
+		"spacereloaded:ogs_module",
+		"spacereloaded:sabatier_module",
+		"spacereloaded:cdra_module",
+		"spacereloaded:wrs_module",
+		"spacereloaded:eclss_blank_panel"
+	]
+}

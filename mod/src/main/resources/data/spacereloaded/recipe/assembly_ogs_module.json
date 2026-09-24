@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:electrolysis_cell",
+		"spacereloaded:nickel_ingot",
+		"spacereloaded:nickel_ingot",
+		"spacereloaded:circuit_board",
+		"spacereloaded:copper_wire"
+	],
+	"result": {
+		"id": "spacereloaded:ogs_module"
+	}
+}

@@ -1,0 +1,146 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"rod": "spacereloaded:block/eclss_piston",
+		"head": "spacereloaded:block/eclss_fan",
+		"particle": "spacereloaded:block/eclss_piston"
+	},
+	"elements": [
+		{
+			"from": [
+				7.5,
+				8,
+				1.2
+			],
+			"to": [
+				8.5,
+				13,
+				2.2
+			],
+			"faces": {
+				"up": {
+					"texture": "#rod",
+					"uv": [
+						7.5,
+						1.2,
+						8.5,
+						2.2
+					]
+				},
+				"down": {
+					"texture": "#rod",
+					"uv": [
+						7.5,
+						13.8,
+						8.5,
+						14.8
+					]
+				},
+				"north": {
+					"texture": "#rod",
+					"uv": [
+						7.5,
+						3,
+						8.5,
+						8
+					]
+				},
+				"south": {
+					"texture": "#rod",
+					"uv": [
+						7.5,
+						3,
+						8.5,
+						8
+					]
+				},
+				"east": {
+					"texture": "#rod",
+					"uv": [
+						13.8,
+						3,
+						14.8,
+						8
+					]
+				},
+				"west": {
+					"texture": "#rod",
+					"uv": [
+						1.2,
+						3,
+						2.2,
+						8
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				6,
+				6,
+				0.8
+			],
+			"to": [
+				10,
+				8,
+				2.6
+			],
+			"faces": {
+				"up": {
+					"texture": "#head",
+					"uv": [
+						6,
+						0.8,
+						10,
+						2.6
+					]
+				},
+				"down": {
+					"texture": "#head",
+					"uv": [
+						6,
+						13.4,
+						10,
+						15.2
+					]
+				},
+				"north": {
+					"texture": "#head",
+					"uv": [
+						6,
+						8,
+						10,
+						10
+					]
+				},
+				"south": {
+					"texture": "#head",
+					"uv": [
+						6,
+						8,
+						10,
+						10
+					]
+				},
+				"east": {
+					"texture": "#head",
+					"uv": [
+						13.4,
+						8,
+						15.2,
+						10
+					]
+				},
+				"west": {
+					"texture": "#head",
+					"uv": [
+						0.8,
+						8,
+						2.6,
+						10
+					]
+				}
+			}
+		}
+	]
+}

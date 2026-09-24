@@ -5,7 +5,10 @@ package org.alex_melan.spacereloaded.core.eclss;
  * OGS — электролиз 2H₂O → 2H₂ + O₂ (1.125 кг воды и 0.125 кг H₂ на кг O₂; 5.36 кВт·ч/кг O₂ при
  * 1.6 В на ячейку); Sabatier — CO₂ + 4H₂ → CH₄ + 2H₂O, ограничен водородом OGS (на кг CO₂ нужно
  * 8/44 кг H₂: на человека H₂ хватает на 57 % CO₂); CDRA — удаление CO₂ из зоны (2 МДж/кг, как цеолит
- * 007); WRS — регенерация 93.5 % конденсата (≈ 0.1 кВт·ч/кг, **оценка** по VCD МКС).
+ * 007); WRS — регенерация 93.5 % конденсата (≈ 0.1 кВт·ч/кг, **оценка** по VCD МКС). Питьевой цикл
+ * экипажа в игре не ведётся, поэтому в воду стойки честно возвращается только <b>метаболическая</b>
+ * вода — та, что образуется при окислении пищи (0.35 кг на человека в сутки, BVAD): остальная влага
+ * выпита из того же контура.
  */
 public final class EclssBalance {
 
@@ -18,6 +21,7 @@ public final class EclssBalance {
     public static final double CDRA_KWH_PER_KG_CO2 = 2e6 / 3.6e6;
     public static final double WRS_KWH_PER_KG = 0.1;
     public static final double WRS_RECOVERY = 0.935;
+    public static final double METABOLIC_WATER_PER_DAY = 0.35;
 
     private EclssBalance() {
     }

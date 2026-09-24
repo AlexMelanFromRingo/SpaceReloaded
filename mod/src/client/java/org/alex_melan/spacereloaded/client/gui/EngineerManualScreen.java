@@ -41,6 +41,9 @@ public class EngineerManualScreen extends Screen {
     private final List<Page> pages = new ArrayList<>();
     private int page;
     private int layer;
+    /** Первая видимая страница в списке (список прокручивается: страниц больше, чем помещается). */
+    private int scroll;
+    private static final int VISIBLE = 8;
 
     public EngineerManualScreen() {
         super(Component.translatable("screen.spacereloaded.manual"));
@@ -59,18 +62,43 @@ public class EngineerManualScreen extends Screen {
         }
         int left = (width - PANEL_W) / 2;
         int top = (height - PANEL_H) / 2;
-        for (int i = 0; i < pages.size(); i++) {
+        scroll = Math.max(0, Math.min(scroll, Math.max(0, pages.size() - VISIBLE)));
+        for (int i = scroll; i < Math.min(pages.size(), scroll + VISIBLE); i++) {
             int index = i;
             addRenderableWidget(Button.builder(pageTitle(pages.get(i)), b -> {
                         page = index;
                         layer = 0;
                     })
-                    .bounds(left + 6, top + 22 + i * 21, 108, 19).build());
+                    .bounds(left + 6, top + 22 + (i - scroll) * 21, 108, 19).build());
+        }
+        if (pages.size() > VISIBLE) {
+            addRenderableWidget(Button.builder(Component.literal("▲"), b -> scrollList(-1))
+                    .bounds(left + 6, top + 22 + VISIBLE * 21, 53, 18).build());
+            addRenderableWidget(Button.builder(Component.literal("▼"), b -> scrollList(1))
+                    .bounds(left + 61, top + 22 + VISIBLE * 21, 53, 18).build());
         }
         addRenderableWidget(Button.builder(Component.literal("▲"), b -> layer++)
                 .bounds(left + PANEL_W - 30, top + 22, 22, 18).build());
         addRenderableWidget(Button.builder(Component.literal("▼"), b -> layer--)
                 .bounds(left + PANEL_W - 30, top + 42, 22, 18).build());
+    }
+
+    private void scrollList(int delta) {
+        int next = Math.max(0, Math.min(scroll + delta, Math.max(0, pages.size() - VISIBLE)));
+        if (next != scroll) {
+            scroll = next;
+            rebuildWidgets();
+        }
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        int left = (width - PANEL_W) / 2;
+        if (mouseX < left + 118 && scrollY != 0) {
+            scrollList(scrollY > 0 ? -1 : 1);
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     private Component pageTitle(Page p) {

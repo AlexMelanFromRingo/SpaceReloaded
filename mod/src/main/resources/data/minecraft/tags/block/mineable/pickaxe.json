@@ -103,6 +103,13 @@
 		"spacereloaded:rim_thruster",
 		"spacereloaded:despin_motor",
 		"spacereloaded:rover_charger",
-		"spacereloaded:imaging_satellite"
+		"spacereloaded:imaging_satellite",
+		"spacereloaded:eclss_controller",
+		"spacereloaded:eclss_rack_frame",
+		"spacereloaded:ogs_module",
+		"spacereloaded:sabatier_module",
+		"spacereloaded:cdra_module",
+		"spacereloaded:wrs_module",
+		"spacereloaded:eclss_blank_panel"
 	]
 }

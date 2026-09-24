@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:zeolite_bed",
+		"spacereloaded:zeolite_bed",
+		"spacereloaded:motor",
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:cdra_module"
+	}
+}

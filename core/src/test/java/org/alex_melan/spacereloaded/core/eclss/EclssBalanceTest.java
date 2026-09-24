@@ -26,9 +26,8 @@ class EclssBalanceTest {
 
     @Test
     void waterRecoveryAndEnergy() {
-        var d = EclssBalance.day(0.84, 1.01, 2.0, true, true, true, true);
-        assertEquals(0.472 - 0.935 * 2.0, d.water() - d.waterBack(), 0.002);
-        assertEquals(0, d.makeup(), 1e-9);
+        var d = EclssBalance.day(0.84, 1.01, EclssBalance.METABOLIC_WATER_PER_DAY, true, true, true, true);
+        assertEquals(0.472 - 0.935 * 0.35, d.makeup(), 0.002);   // почти замкнуто: 0.14 кг/сут
         assertEquals(5.36, EclssBalance.OGS_KWH_PER_KG_O2, 0.01);
     }
 }

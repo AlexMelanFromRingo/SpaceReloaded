@@ -1,0 +1,10 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:eclss_blank_panel",
+		"count": 2
+	}
+}

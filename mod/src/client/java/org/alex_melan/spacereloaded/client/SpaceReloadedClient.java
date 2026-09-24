@@ -74,6 +74,9 @@ public class SpaceReloadedClient implements ClientModInitializer {
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.MASS_DRIVER_BREECH,
 				org.alex_melan.spacereloaded.client.render.MassDriverRenderer::new);
 		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.ECLSS_CONTROLLER,
+				org.alex_melan.spacereloaded.client.render.EclssRenderer::new);
+		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.REGOLITH_REACTOR,
 				org.alex_melan.spacereloaded.client.render.RegolithReactorRenderer::new);
 		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
@@ -99,6 +102,16 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
 				org.alex_melan.spacereloaded.network.SpinSkyPayload.TYPE,
 				(payload, context) -> SpinSky.set(payload.axis(), payload.omega()));
+		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
+				org.alex_melan.spacereloaded.network.MachineStatusPayload.TYPE,
+				(payload, context) -> {
+					var open = org.alex_melan.spacereloaded.client.gui.MachineStatusScreen.active();
+					if (open != null && open.shows(payload)) {
+						open.update(payload);
+					} else {
+						context.client().setScreenAndShow(new org.alex_melan.spacereloaded.client.gui.MachineStatusScreen(payload));
+					}
+				});
 		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
 				org.alex_melan.spacereloaded.network.CabinGasPayload.TYPE,
 				(payload, context) -> org.alex_melan.spacereloaded.client.gui.CabinGasHud.update(payload));

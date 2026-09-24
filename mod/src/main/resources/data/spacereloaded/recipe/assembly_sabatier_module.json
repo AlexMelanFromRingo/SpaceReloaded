@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:nickel_ingot",
+		"spacereloaded:alumina",
+		"spacereloaded:alumina",
+		"spacereloaded:steel_plate",
+		"spacereloaded:copper_wire"
+	],
+	"result": {
+		"id": "spacereloaded:sabatier_module"
+	}
+}

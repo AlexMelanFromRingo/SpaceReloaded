@@ -577,6 +577,32 @@ public final class ModBlocks {
                         .lightLevel(state -> state.getValue(org.alex_melan.spacereloaded.machine.MachineActivity.ACTIVE) ? light : 0));
     }
 
+    // --- Тяжёлая индустрия (008): стойка жизнеобеспечения ---
+    public static final Block ECLSS_CONTROLLER = register("eclss_controller",
+            props -> new org.alex_melan.spacereloaded.multiblock.ControllerBlock<>(props,
+                    org.alex_melan.spacereloaded.eclss.EclssControllerBlockEntity::new, () -> ModBlockEntities.ECLSS_CONTROLLER,
+                    org.alex_melan.spacereloaded.eclss.EclssControllerBlockEntity::serverTick),
+            industrial().lightLevel(s -> s.getValue(org.alex_melan.spacereloaded.multiblock.ControllerBlock.ACTIVE) ? 6 : 0));
+    public static final Block ECLSS_RACK_FRAME = register("eclss_rack_frame",
+            org.alex_melan.spacereloaded.multiblock.FormableBlock::new, industrial());
+    public static final Block OGS_MODULE = module("ogs_module");
+    public static final Block SABATIER_MODULE = module("sabatier_module");
+    public static final Block CDRA_MODULE = module("cdra_module");
+    public static final Block WRS_MODULE = module("wrs_module");
+    public static final Block ECLSS_BLANK_PANEL = module("eclss_blank_panel");
+    public static final Block ECLSS_FAN = registerNoItem("eclss_fan", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ECLSS_PISTON = registerNoItem("eclss_piston", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+
+    private static BlockBehaviour.Properties industrial() {
+        return BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL).requiresCorrectToolForDrops();
+    }
+
+    private static Block module(String name) {
+        return register(name, org.alex_melan.spacereloaded.multiblock.FacingFormableBlock::new, industrial().noOcclusion());
+    }
+
     // --- Жизнь на станции (007) ---
     public static final Block AIR_SEPARATOR = register("air_separator",
             props -> new MachineBlock<>(props, org.alex_melan.spacereloaded.lifesupport.AirSeparatorBlockEntity::new,

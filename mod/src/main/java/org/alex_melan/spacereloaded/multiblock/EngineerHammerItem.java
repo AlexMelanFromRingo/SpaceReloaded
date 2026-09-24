@@ -33,7 +33,9 @@ public class EngineerHammerItem extends Item {
         }
         BlockPos pos = context.getClickedPos();
         var be = level.getBlockEntity(pos);
-        if (be instanceof ElectrolyzerBlockEntity electrolyzer) {
+        if (be instanceof HammerTarget target) {
+            target.hammer(level, player);
+        } else if (be instanceof ElectrolyzerBlockEntity electrolyzer) {
             electrolyzer.hammer(level, player);
         } else if (be instanceof RefineryBlockEntity refinery) {
             refinery.hammer(level, player);

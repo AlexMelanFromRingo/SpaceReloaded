@@ -39,6 +39,8 @@ public final class ModNetworking {
 
         PayloadTypeRegistry.serverboundPlay().register(
                 CannonActionPayload.TYPE, CannonActionPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(MachineStatusPayload.TYPE, MachineStatusPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(MachineActionPayload.TYPE, MachineActionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(
                 OpenPlanetMapPayload.TYPE, OpenPlanetMapPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(
@@ -46,6 +48,8 @@ public final class ModNetworking {
         PayloadTypeRegistry.serverboundPlay().register(
                 StageSeparatePayload.TYPE, StageSeparatePayload.CODEC);
 
+        ServerPlayNetworking.registerGlobalReceiver(MachineActionPayload.TYPE,
+                (payload, context) -> handleMachineAction(payload, context.player()));
         ServerPlayNetworking.registerGlobalReceiver(CannonActionPayload.TYPE,
                 (payload, context) -> handleCannonAction(payload, context.player()));
         ServerPlayNetworking.registerGlobalReceiver(StageSeparatePayload.TYPE,
@@ -54,6 +58,20 @@ public final class ModNetworking {
                 (payload, context) -> handlePlanetMapRequest(context.server(), context.player()));
         ServerPlayNetworking.registerGlobalReceiver(SetDestinationPayload.TYPE,
                 (payload, context) -> handleSetDestination(payload, context.player()));
+    }
+
+    /** Экран мультиблока 008: действие (или обновление) и свежий снимок в ответ; только рядом с машиной. */
+    private static void handleMachineAction(MachineActionPayload payload, ServerPlayer player) {
+        if (!(player.level() instanceof ServerLevel level)
+                || player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(payload.pos())) > REACH_SQ
+                || !level.isLoaded(payload.pos())
+                || !(level.getBlockEntity(payload.pos()) instanceof org.alex_melan.spacereloaded.multiblock.StatusProvider machine)) {
+            return;
+        }
+        if (!MachineActionPayload.REFRESH.equals(payload.action())) {
+            machine.action(level, player, payload.action(), payload.value());
+        }
+        ServerPlayNetworking.send(player, machine.status(level));
     }
 
     private static void handleCannonAction(CannonActionPayload payload, ServerPlayer player) {

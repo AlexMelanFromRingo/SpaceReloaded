@@ -102,6 +102,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testSpinRing", () -> testSpinRing(context, sp));
             scenarios.put("testRover", () -> testRover(context, sp));
             scenarios.put("testOrbitalImaging", () -> testOrbitalImaging(context, sp));
+            scenarios.put("testEclssRack", () -> testEclssRack(context, sp));
             scenarios.put("testReadmeShots", () -> testReadmeShots(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
@@ -3120,6 +3121,108 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         assertThat(pixels.equals(expected), "Снимок: шерсть синяя, над рудой камень, карта заперта — ожидалось " + expected
                 + ", получено " + pixels);
         log("съёмка: снимок проявлен в запертую карту масштаба 1, поверхность видна, руда под камнем — нет ✓");
+    }
+
+    // ---------- 008. Стойка жизнеобеспечения (US1) ----------
+
+    /**
+     * Модуль 5×4×2 (39 м³ без контроллера атмосферы) со стойкой 5×4 в северной стене: электролиз держит кислород, CDRA снимает CO₂,
+     * Сабатье возвращает воду и отдаёт метан метаноксом в бак за стеной (кислород — из баллона там же),
+     * регенерация возвращает метаболическую воду. Расход воды и метан сверяются со стехиометрией.
+     */
+    private void testEclssRack(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1400;
+        int z0 = BZ;
+        context.runOnClient(mc -> {
+            if (mc.player != null && mc.player.isDeadOrDying()) {
+                mc.player.respawn();
+            }
+        });
+        context.waitTicks(10);
+        sp.getServer().runCommand("gamemode creative @a");
+        moveTo(context, sp, x0 - 6, z0 + 2);
+        sp.getServer().runCommand(fill(x0, BY, z0, x0 + 6, BY + 5, z0 + 3, "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(fill(x0 + 1, BY + 1, z0 + 1, x0 + 5, BY + 4, z0 + 2, "minecraft:air"));
+        // стойка в северной стене: рама, ключ внизу по центру лицом в модуль, четыре модуля
+        sp.getServer().runCommand(fill(x0 + 1, BY + 1, z0, x0 + 5, BY + 4, z0, "spacereloaded:eclss_rack_frame"));
+        BlockPos key = new BlockPos(x0 + 3, BY + 1, z0);
+        sp.getServer().runCommand(set(key.getX(), key.getY(), key.getZ(), "spacereloaded:eclss_controller[facing=south]"));
+        sp.getServer().runCommand(set(x0 + 2, BY + 2, z0, "spacereloaded:ogs_module[facing=south]"));
+        sp.getServer().runCommand(set(x0 + 2, BY + 3, z0, "spacereloaded:sabatier_module[facing=south]"));
+        sp.getServer().runCommand(set(x0 + 4, BY + 2, z0, "spacereloaded:cdra_module[facing=south]"));
+        sp.getServer().runCommand(set(x0 + 4, BY + 3, z0, "spacereloaded:wrs_module[facing=south]"));
+        sp.getServer().runCommand(set(x0 + 3, BY, z0, "spacereloaded:energy_cable"));
+        sp.getServer().runCommand(set(x0 + 3, BY - 1, z0, "spacereloaded:creative_power"));
+        BlockPos fuel = new BlockPos(x0 + 2, BY + 2, z0 - 1);
+        BlockPos o2Rack = new BlockPos(x0 + 4, BY + 2, z0 - 1);
+        sp.getServer().runCommand(set(fuel.getX(), fuel.getY(), fuel.getZ(), "spacereloaded:fuel_tank"));
+        sp.getServer().runCommand(set(o2Rack.getX(), o2Rack.getY(), o2Rack.getZ(), "spacereloaded:gas_tank"));
+        // контроллер атмосферы наполняет модуль из баллонов, потом кислород ему отключаем — дальше O₂ даёт стойка
+        BlockPos atmo = new BlockPos(x0 + 1, BY + 1, z0 + 2);
+        BlockPos o2Fill = new BlockPos(x0 + 1, BY + 1, z0 + 3);
+        BlockPos n2Fill = new BlockPos(x0, BY + 1, z0 + 2);
+        sp.getServer().runCommand(set(atmo.getX(), atmo.getY(), atmo.getZ(), "spacereloaded:atmosphere_controller"));
+        sp.getServer().runCommand(set(x0 + 1, BY, z0 + 2, "spacereloaded:energy_cable"));
+        sp.getServer().runCommand(set(x0 + 1, BY - 1, z0 + 2, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(o2Fill.getX(), o2Fill.getY(), o2Fill.getZ(), "spacereloaded:gas_tank"));
+        sp.getServer().runCommand(set(n2Fill.getX(), n2Fill.getY(), n2Fill.getZ(), "spacereloaded:gas_tank"));
+        context.waitTicks(3);
+        boolean formed = sp.getServer().computeOnServer(server -> {
+            tank(server, o2Fill).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN, 30);
+            tank(server, n2Fill).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.NITROGEN, 60);
+            tank(server, o2Rack).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN, 20);
+            var rack = (org.alex_melan.spacereloaded.eclss.EclssControllerBlockEntity) server.overworld().getBlockEntity(key);
+            rack.testWater(50);
+            return rack.hammer(server.overworld(), server.getPlayerList().getPlayers().get(0));
+        });
+        assertThat(formed, "Стойка должна собраться молотом");
+        String fill = "";
+        for (int waited = 0; waited < 2400 && !fill.contains("p=101."); waited += 20) {
+            context.waitTicks(20);
+            fill = sp.getServer().computeOnServer(server -> {
+                var zone = ZoneManager.zoneAt(server.overworld(), atmo);
+                var gas = zone == null ? null : org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(server.overworld(), zone);
+                return gas == null ? "none" : String.format(java.util.Locale.ROOT, "V=%.0f p=%.1f", gas.volume(), gas.pressure());
+            });
+        }
+        assertThat(fill.startsWith("V=39 p=101."), "Модуль наполнен (40 м³ минус контроллер): " + fill);
+        sp.getServer().runCommand(set(o2Fill.getX(), o2Fill.getY(), o2Fill.getZ(), "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(String.format("tp @p %d %d %d", x0 + 3, BY + 1, z0 + 1));
+        // прогрев: CO₂ зоны выходит на равновесие удаления (τ = V/k ≈ 740 тиков)
+        context.waitTicks(2400);
+        double[] a = eclssSample(sp, key, fuel, atmo);
+        context.waitTicks(1200);
+        double[] b = eclssSample(sp, key, fuel, atmo);
+        double days = 1200 / 24000.0;
+        double water = (a[0] - b[0]) / days;
+        double methalox = (b[1] - a[1]) / days;
+        var d = org.alex_melan.spacereloaded.core.eclss.EclssBalance.day(0.84, 1.01,
+                org.alex_melan.spacereloaded.core.eclss.EclssBalance.METABOLIC_WATER_PER_DAY, true, true, true, true);
+        String report = String.format(java.util.Locale.ROOT,
+                "вода %.3f кг/сут (ожидалось %.3f), метанокс %.3f кг/сут (CH₄ %.3f × 4.6), pO₂ %.2f, pCO₂ %.3f",
+                water, d.makeup(), methalox, d.ch4(), b[2], b[3]);
+        assertThat(Math.abs(water - d.makeup()) < 0.05 && Math.abs(methalox - d.ch4() * 4.6) < 0.25 * d.ch4() * 4.6
+                && b[2] > 20.5 && b[3] < 0.53, "Стойка: " + report);
+        log("стойка жизнеобеспечения: " + report + " ✓");
+        readmeCamera(context, sp, x0 + 3.5, BY + 0.4, z0 + 2.7, 180f, -18f);
+        readmeShot(context, "eclss");
+        context.runOnClient(mc -> {
+            if (mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
+        });
+        sp.getServer().runCommand("gamemode creative @a");
+        sp.getServer().runCommand(String.format("tp @p %d %d %d", x0 - 6, BY, z0 + 2));
+    }
+
+    private double[] eclssSample(TestSingleplayerContext sp, BlockPos key, BlockPos fuel, BlockPos inside) {
+        return sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var rack = (org.alex_melan.spacereloaded.eclss.EclssControllerBlockEntity) level.getBlockEntity(key);
+            var tank = (FuelTankBlockEntity) level.getBlockEntity(fuel);
+            var gas = org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(level, ZoneManager.zoneAt(level, inside));
+            return new double[] {rack.waterKg(), tank.propellantKg(), gas.pO2(), gas.pCo2()};
+        });
     }
 
     // ---------- Кадры README и сайта (запуск: SR_ONLY=testReadmeShots) ----------

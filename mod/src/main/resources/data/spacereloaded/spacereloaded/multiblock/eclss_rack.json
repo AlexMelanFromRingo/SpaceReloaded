@@ -1,0 +1,157 @@
+{
+	"key": "spacereloaded:eclss_controller",
+	"cells": [
+		{
+			"offset": [
+				-2,
+				0,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				-1,
+				0,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				1,
+				0,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				2,
+				0,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				-2,
+				1,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				-1,
+				1,
+				0
+			],
+			"block": "#spacereloaded:eclss_socket"
+		},
+		{
+			"offset": [
+				0,
+				1,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				1,
+				1,
+				0
+			],
+			"block": "#spacereloaded:eclss_socket"
+		},
+		{
+			"offset": [
+				2,
+				1,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				-2,
+				2,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				-1,
+				2,
+				0
+			],
+			"block": "#spacereloaded:eclss_socket"
+		},
+		{
+			"offset": [
+				0,
+				2,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				1,
+				2,
+				0
+			],
+			"block": "#spacereloaded:eclss_socket"
+		},
+		{
+			"offset": [
+				2,
+				2,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				-2,
+				3,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				-1,
+				3,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				0,
+				3,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				1,
+				3,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		},
+		{
+			"offset": [
+				2,
+				3,
+				0
+			],
+			"block": "spacereloaded:eclss_rack_frame"
+		}
+	]
+}

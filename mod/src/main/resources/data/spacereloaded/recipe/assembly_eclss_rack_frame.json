@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:eclss_rack_frame",
+		"count": 4
+	}
+}

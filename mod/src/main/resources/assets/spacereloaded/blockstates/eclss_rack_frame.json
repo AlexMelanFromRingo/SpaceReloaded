@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/eclss_rack_frame"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/eclss_rack_frame_formed"
+		}
+	}
+}
