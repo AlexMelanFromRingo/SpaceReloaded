@@ -12,6 +12,8 @@
 	"atmosphere": "none",
 	"temperature": -180,
 	"temperature_amplitude": 0,
+	"body_radius": 470000.0,
+	"parking_altitude": 10000.0,
 	"transfer_delta_v": {
 		"spacereloaded:earth_orbit": 4800.0
 	}

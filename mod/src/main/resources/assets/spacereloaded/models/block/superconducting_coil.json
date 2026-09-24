@@ -1,0 +1,12 @@
+{
+	"parent": "minecraft:block/cube",
+	"textures": {
+		"particle": "spacereloaded:block/superconducting_coil_side",
+		"down": "spacereloaded:block/superconducting_coil_side",
+		"up": "spacereloaded:block/superconducting_coil_side",
+		"north": "spacereloaded:block/superconducting_coil_side",
+		"south": "spacereloaded:block/superconducting_coil_side",
+		"east": "spacereloaded:block/superconducting_coil_end",
+		"west": "spacereloaded:block/superconducting_coil_end"
+	}
+}

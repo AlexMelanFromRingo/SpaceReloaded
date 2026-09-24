@@ -33,6 +33,9 @@ public final class ModDataComponents {
     /** Полётная программа: посадочный маяк (точка прибытия). */
     public static final DataComponentType<GlobalPos> PROGRAM_PAD = register("program_pad");
 
+    /** Полётная программа, привязанная к ловушке масс (004, FR-209): цель катапульты. */
+    public static final DataComponentType<GlobalPos> PROGRAM_CATCHER = register("program_catcher");
+
     /** Частота (канал) ключа связи — прошивается в ЦУПе. */
     public static final DataComponentType<Integer> KEY_FREQUENCY = registerInt("key_frequency");
 

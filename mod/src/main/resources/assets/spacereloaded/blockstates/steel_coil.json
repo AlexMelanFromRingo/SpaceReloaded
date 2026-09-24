@@ -1,0 +1,18 @@
+{
+	"variants": {
+		"axis=x,in_rail=false": {
+			"model": "spacereloaded:block/steel_coil"
+		},
+		"axis=x,in_rail=true": {
+			"model": "spacereloaded:block/steel_coil_in_rail"
+		},
+		"axis=z,in_rail=false": {
+			"model": "spacereloaded:block/steel_coil",
+			"y": 90
+		},
+		"axis=z,in_rail=true": {
+			"model": "spacereloaded:block/steel_coil_in_rail",
+			"y": 90
+		}
+	}
+}

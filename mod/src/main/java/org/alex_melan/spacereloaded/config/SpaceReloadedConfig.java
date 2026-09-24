@@ -231,6 +231,72 @@ public final class SpaceReloadedConfig {
     /** Высота прибытия над маяком/точкой спуска, м — общая для перехода и планировщика посадки. */
     public double arrivalHeightM = 180.0;
 
+    // --- Лунная индустрия (004): катапульта, ловушка масс, реголитовый реактор ---
+    /** Предельное ускорение стальной катушки, g: О'Нил закладывал ~1000 g для сыпучих грузов в «вёдрах». */
+    public double coilTier1AccelG = 1000.0;
+    /** Предельное ускорение сверхпроводящей катушки, g (только груз в капсуле; аппаратура — 30–100 g). */
+    public double coilTier2AccelG = 3000.0;
+    /** Длина секции рельса, м (1 блок = 1 м). */
+    public double massDriverSectionLengthM = 1.0;
+    /** Предел длины рельса, секций — ограничивает число прогружаемых чанков (Луна: 324 секции тира 1). */
+    public int massDriverMaxSections = 400;
+    /** КПД линейного синхронного двигателя η: E = ½mv²/η. */
+    public double massDriverEfficiency = 0.85;
+    /**
+     * Масштаб «Дж на единицу энергии мода». 15 кДж — масштаб, неявно заданный орбитальной
+     * пушкой (150 000 E на лом 2000 кг при 1500 м/с = 2.25 ГДж). Генераторы мода в этом
+     * масштабе не физичны (панель 20 E/т ≈ 6 МВт) — балансовое упрощение.
+     */
+    public double massDriverJoulesPerEnergy = 15_000.0;
+    /** Свободные клетки за дульным срезом, без которых выстрел запрещён. */
+    public int massDriverClearance = 8;
+    /** Перезарядка катапульты = время возврата салазок к казённику, тики. */
+    public int massDriverSledReturnTicks = 200;
+    /** Визуальная длительность волны по рельсу, тики (реальный разгон ≈ 0.1 с — художественно замедлен). */
+    public int massDriverWaveTicks = 10;
+    /** Ёмкость конденсатора, E. */
+    public long capacitorCapacity = 250_000L;
+    /** Приём конденсатора из сети, E/т. */
+    public long capacitorMaxInsert = 2_000L;
+    /** Предел числа конденсаторов в батарее казённика. */
+    public int capacitorMaxBlocks = 32;
+    /** Масса пустой грузовой капсулы, кг. */
+    public double podDryMassKg = 100.0;
+    /** «Игровые кг» на предмет груза капсулы (у ракетного груза массы нет — балансовая модель 004). */
+    public double podKgPerItem = 2.0;
+    /** Предел скоростного напора капсулы у дульного среза, Па. */
+    public double podMaxDynamicPressurePa = 1_000_000.0;
+    /** Предел теплового потока капсулы (Саттон–Грейвс), Вт/м². */
+    public double podMaxHeatFluxWm2 = 5_000_000.0;
+    /** Игровое время перелёта капсулы к ловушке, тики (реально ~3 суток — балансовое упрощение). */
+    public int podTransitTicks = 600;
+    /** σ рассеивания прибытия при спутниковом покрытии орбиты цели, блоки (как наводимый лом). */
+    public double podSigmaCovered = 0.5;
+    /** σ рассеивания прибытия без покрытия, блоки (как ненаводимый лом). */
+    public double podSigmaUncovered = 10.0;
+    /** Радиус захвата ловушки без сетки, блоки. */
+    public double catcherBaseRadius = 1.5;
+    /** Прирост радиуса захвата на √(число секций сетки): радиус круга той же площади ≈ 0.56·√n. */
+    public double catcherRadiusPerSqrtNet = 0.6;
+    /** Предел радиуса захвата, блоки. */
+    public double catcherMaxRadius = 12.0;
+    /** Предел числа секций сетки ловушки. */
+    public int catcherNetMaxBlocks = 441;
+    /** Только для стенда: ловушка работает вне орбитальной платформы. */
+    public boolean massCatcherAnyDimension = false;
+    /** Длительность цикла реголитового реактора, тики. */
+    public int reactorCycleTicks = 200;
+    /** Энергия цикла реактора, E (электролиз расплава ~21 кВт·ч/кг O₂, масштаб от электролизёра мода). */
+    public long reactorEnergyPerCycle = 1_600L;
+    /** Кислород из блока реголита, единицы баллона (половина льда: реголит беднее и дороже). */
+    public int reactorOxygenPerBlock = 150;
+    /** Шанс титановой пыли за цикл (ильменит в морском реголите). */
+    public double reactorTitaniumChance = 0.2;
+    /** Внутренний буфер кислорода реактора, единицы. */
+    public int reactorOxygenBuffer = 1_500;
+    /** Толща непрозрачных блоков над головой, начиная с которой позиция — «укрытие» (стабильная температура). */
+    public int shelterMinRockBlocks = 4;
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static SpaceReloadedConfig load(Path configDir) {
@@ -343,6 +409,39 @@ public final class SpaceReloadedConfig {
         }
         if (arrivalHeightM < 20 || arrivalHeightM > 400) {
             throw new IllegalArgumentException("arrivalHeightM должен быть в [20, 400]");
+        }
+        // Лунная индустрия (004)
+        if (coilTier1AccelG < 1 || coilTier1AccelG > 100_000 || coilTier2AccelG < coilTier1AccelG) {
+            throw new IllegalArgumentException("coilTier1AccelG должен быть в [1, 100000], coilTier2AccelG >= coilTier1AccelG");
+        }
+        if (massDriverSectionLengthM < 0.25 || massDriverSectionLengthM > 4 || massDriverMaxSections < 8
+                || massDriverMaxSections > 1024) {
+            throw new IllegalArgumentException("massDriverSectionLengthM в [0.25, 4], massDriverMaxSections в [8, 1024]");
+        }
+        if (massDriverEfficiency <= 0 || massDriverEfficiency > 1 || massDriverJoulesPerEnergy <= 0) {
+            throw new IllegalArgumentException("massDriverEfficiency в (0, 1], massDriverJoulesPerEnergy > 0");
+        }
+        if (massDriverClearance < 1 || massDriverClearance > 64 || massDriverSledReturnTicks < 20
+                || massDriverWaveTicks < 2 || massDriverWaveTicks > 100) {
+            throw new IllegalArgumentException("massDriverClearance [1, 64], massDriverSledReturnTicks >= 20, massDriverWaveTicks [2, 100]");
+        }
+        if (capacitorCapacity < 1000 || capacitorMaxInsert < 1 || capacitorMaxBlocks < 1 || capacitorMaxBlocks > 256) {
+            throw new IllegalArgumentException("capacitorCapacity >= 1000, capacitorMaxInsert >= 1, capacitorMaxBlocks в [1, 256]");
+        }
+        if (podDryMassKg <= 0 || podKgPerItem < 0 || podMaxDynamicPressurePa <= 0 || podMaxHeatFluxWm2 <= 0
+                || podTransitTicks < 60 || podSigmaCovered <= 0 || podSigmaUncovered <= 0) {
+            throw new IllegalArgumentException("параметры капсулы: масса > 0, пределы > 0, podTransitTicks >= 60, σ > 0");
+        }
+        if (catcherBaseRadius < 0 || catcherRadiusPerSqrtNet < 0 || catcherMaxRadius < catcherBaseRadius
+                || catcherNetMaxBlocks < 1 || catcherNetMaxBlocks > 4096) {
+            throw new IllegalArgumentException("параметры ловушки: радиусы >= 0, max >= base, catcherNetMaxBlocks в [1, 4096]");
+        }
+        if (reactorCycleTicks < 1 || reactorEnergyPerCycle < 0 || reactorOxygenPerBlock < 0
+                || reactorTitaniumChance < 0 || reactorTitaniumChance > 1 || reactorOxygenBuffer < 0) {
+            throw new IllegalArgumentException("параметры реактора: цикл >= 1, энергия/O2/буфер >= 0, шанс в [0, 1]");
+        }
+        if (shelterMinRockBlocks < 1 || shelterMinRockBlocks > 64) {
+            throw new IllegalArgumentException("shelterMinRockBlocks должен быть в [1, 64]");
         }
     }
 }

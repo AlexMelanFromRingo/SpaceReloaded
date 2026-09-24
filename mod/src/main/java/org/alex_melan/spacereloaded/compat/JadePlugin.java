@@ -27,6 +27,7 @@ public class JadePlugin implements IWailaPlugin {
     public static final Identifier FUEL = id("fuel_tank");
     public static final Identifier CANNON = id("orbital_cannon");
     public static final Identifier TERMINAL = id("cargo_terminal");
+    public static final Identifier INDUSTRY = id("lunar_industry");
 
     static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, path);
@@ -39,7 +40,44 @@ public class JadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(CANNON_DATA, OrbitalCannonBlockEntity.class);
         registration.registerBlockDataProvider(TERMINAL_DATA,
                 org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity.class);
+        registration.registerBlockDataProvider(INDUSTRY_DATA, net.minecraft.world.level.block.entity.BlockEntity.class);
     }
+
+    /** 004: казённик катапульты, ловушка масс, реголитовый реактор. */
+    private static final IServerDataProvider<BlockAccessor> INDUSTRY_DATA =
+            new IServerDataProvider<>() {
+                @Override
+                public void appendServerData(CompoundTag data, BlockAccessor accessor) {
+                    if (!(accessor.getLevel() instanceof net.minecraft.server.level.ServerLevel level)) {
+                        return;
+                    }
+                    var be = accessor.getBlockEntity();
+                    if (be instanceof org.alex_melan.spacereloaded.industry.MassDriverBreechBlockEntity breech) {
+                        var solution = breech.solve(level);
+                        data.putInt("sr_md_rail", breech.railLength());
+                        data.putString("sr_md_reason", solution.reason().name().toLowerCase(java.util.Locale.ROOT));
+                        data.putLong("sr_md_charge", breech.storedEnergy(level));
+                        data.putLong("sr_md_need", solution.energyUnits());
+                        data.putLong("sr_md_speed", Math.round(solution.vMax()));
+                    } else if (be instanceof org.alex_melan.spacereloaded.industry.MassCatcherBlockEntity catcher) {
+                        data.putDouble("sr_mc_radius", catcher.captureRadius());
+                        data.putInt("sr_mc_net", catcher.netBlocks());
+                        data.putInt("sr_mc_caught", catcher.caught());
+                        data.putInt("sr_mc_lost", catcher.lost());
+                    } else if (be instanceof org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity reactor) {
+                        data.putBoolean("sr_rr_formed", reactor.formed());
+                        data.putInt("sr_rr_o2", reactor.oxygenBuffer());
+                        data.putInt("sr_rr_o2_max", SpaceReloaded.config().reactorOxygenBuffer);
+                        data.putLong("sr_energy", reactor.energyStorage().getAmount());
+                        data.putLong("sr_energy_max", reactor.energyStorage().getCapacity());
+                    }
+                }
+
+                @Override
+                public Identifier getUid() {
+                    return INDUSTRY;
+                }
+            };
 
     private static final IServerDataProvider<BlockAccessor> ENERGY_DATA =
             new IServerDataProvider<>() {

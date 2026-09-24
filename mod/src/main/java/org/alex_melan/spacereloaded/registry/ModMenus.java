@@ -44,6 +44,10 @@ public final class ModMenus {
     public static final MenuType<RefineryMenu> REFINERY = register("refinery",
             new MenuType<>(RefineryMenu::new, FeatureFlags.VANILLA_SET));
 
+    public static final MenuType<org.alex_melan.spacereloaded.industry.RegolithReactorMenu> REGOLITH_REACTOR =
+            register("regolith_reactor", new MenuType<>(
+                    org.alex_melan.spacereloaded.industry.RegolithReactorMenu::new, FeatureFlags.VANILLA_SET));
+
     private static <T extends net.minecraft.world.inventory.AbstractContainerMenu> MenuType<T> register(
             String name, MenuType<T> type) {
         return Registry.register(BuiltInRegistries.MENU,

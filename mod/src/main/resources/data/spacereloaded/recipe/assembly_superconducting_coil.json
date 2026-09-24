@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_coil",
+		"spacereloaded:tungsten_ingot",
+		"spacereloaded:tungsten_ingot",
+		"spacereloaded:titanium_alloy_ingot",
+		"spacereloaded:moon_ice"
+	],
+	"result": {
+		"id": "spacereloaded:superconducting_coil",
+		"count": 1
+	}
+}

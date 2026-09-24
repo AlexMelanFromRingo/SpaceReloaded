@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot",
+		"spacereloaded:cargo_hold",
+		"spacereloaded:gyroscope"
+	],
+	"result": {
+		"id": "spacereloaded:mass_catcher",
+		"count": 1
+	}
+}

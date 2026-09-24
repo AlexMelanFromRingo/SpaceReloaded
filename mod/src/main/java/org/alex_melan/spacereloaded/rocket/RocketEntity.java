@@ -1167,6 +1167,8 @@ public class RocketEntity extends Entity {
                 }
                 target.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
                         rocket.getX(), rocket.getY() + 1.5, rocket.getZ(), 40, 1.0, 1.0, 1.0, 0.05);
+                org.alex_melan.spacereloaded.industry.IndustryAdvancements.awardNearby(target,
+                        rocket.blockPosition(), 128, org.alex_melan.spacereloaded.industry.IndustryAdvancements.SATELLITE);
                 target.playSound(null, rocket.blockPosition(),
                         net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE,
                         net.minecraft.sounds.SoundSource.BLOCKS, 2.0f, 1.4f);

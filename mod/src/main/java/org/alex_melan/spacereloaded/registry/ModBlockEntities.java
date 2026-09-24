@@ -127,6 +127,27 @@ public final class ModBlockEntities {
                     org.alex_melan.spacereloaded.energy.RectennaBlockEntity::new,
                     Set.of(ModBlocks.RECTENNA)));
 
+    // --- Лунная индустрия (004) ---
+    public static final BlockEntityType<org.alex_melan.spacereloaded.industry.MassDriverBreechBlockEntity> MASS_DRIVER_BREECH =
+            register("mass_driver_breech", new BlockEntityType<>(
+                    org.alex_melan.spacereloaded.industry.MassDriverBreechBlockEntity::new,
+                    Set.of(ModBlocks.MASS_DRIVER_BREECH)));
+
+    public static final BlockEntityType<org.alex_melan.spacereloaded.industry.CapacitorBlockEntity> CAPACITOR =
+            register("capacitor", new BlockEntityType<>(
+                    org.alex_melan.spacereloaded.industry.CapacitorBlockEntity::new,
+                    Set.of(ModBlocks.CAPACITOR)));
+
+    public static final BlockEntityType<org.alex_melan.spacereloaded.industry.MassCatcherBlockEntity> MASS_CATCHER =
+            register("mass_catcher", new BlockEntityType<>(
+                    org.alex_melan.spacereloaded.industry.MassCatcherBlockEntity::new,
+                    Set.of(ModBlocks.MASS_CATCHER)));
+
+    public static final BlockEntityType<org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity> REGOLITH_REACTOR =
+            register("regolith_reactor", new BlockEntityType<>(
+                    org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity::new,
+                    Set.of(ModBlocks.REGOLITH_REACTOR)));
+
     public static void init() {
         // Публикация энергохранилищ в Fabric API lookup (решение D7: Team Reborn Energy)
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SOLAR_PANEL);
@@ -144,6 +165,11 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ATMOSPHERIC_COLLECTOR);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SABATIER_REACTOR);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), RECTENNA);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CAPACITOR);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), REGOLITH_REACTOR);
+        EnergyStorage.SIDED.registerForBlocks((level, pos, state, blockEntity, direction) ->
+                org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity.energyThroughLining(level, pos),
+                ModBlocks.REFRACTORY_LINING);
 
         // Топливо как жидкость: бак виден трубам соседних модов (Fabric Transfer API)
         net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage.SIDED.registerForBlockEntity(

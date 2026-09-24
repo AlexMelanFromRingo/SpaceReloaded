@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:titanium_alloy_ingot",
+		"spacereloaded:titanium_alloy_ingot",
+		"spacereloaded:titanium_alloy_ingot",
+		"spacereloaded:heat_shield"
+	],
+	"result": {
+		"id": "spacereloaded:cargo_pod",
+		"count": 1
+	}
+}

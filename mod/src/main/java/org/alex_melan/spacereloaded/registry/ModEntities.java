@@ -62,6 +62,22 @@ public final class ModEntities {
                             .fireImmune()
                             .build(METEOR_KEY));
 
+    public static final ResourceKey<EntityType<?>> CARGO_POD_KEY = ResourceKey.create(
+            Registries.ENTITY_TYPE,
+            Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "cargo_pod"));
+
+    /** Визуальная грузовая капсула катапульты (004): без груза и без сохранения. */
+    public static final EntityType<org.alex_melan.spacereloaded.industry.CargoPodEntity> CARGO_POD =
+            Registry.register(BuiltInRegistries.ENTITY_TYPE, CARGO_POD_KEY,
+                    EntityType.Builder.of(org.alex_melan.spacereloaded.industry.CargoPodEntity::new,
+                                    MobCategory.MISC)
+                            .sized(0.8f, 0.8f)
+                            .clientTrackingRange(16)
+                            .updateInterval(1)
+                            .noSave()
+                            .fireImmune()
+                            .build(CARGO_POD_KEY));
+
     public static void init() {
         FabricEntityDataRegistry.register(
                 Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "compound_tag"),

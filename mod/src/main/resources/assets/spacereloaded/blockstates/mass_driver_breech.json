@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=north": {
+			"model": "spacereloaded:block/mass_driver_breech"
+		},
+		"facing=east": {
+			"model": "spacereloaded:block/mass_driver_breech",
+			"y": 90
+		},
+		"facing=south": {
+			"model": "spacereloaded:block/mass_driver_breech",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "spacereloaded:block/mass_driver_breech",
+			"y": 270
+		}
+	}
+}

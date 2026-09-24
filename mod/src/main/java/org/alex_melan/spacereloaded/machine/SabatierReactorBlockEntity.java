@@ -53,6 +53,8 @@ public class SabatierReactorBlockEntity extends ChemMachineBlockEntity {
                 co2.shrink(1);
                 ice.shrink(1);
                 fuelBuffer += config.sabatierFuelPerOp;
+                org.alex_melan.spacereloaded.industry.IndustryAdvancements.awardNearby(level, getBlockPos(), 16,
+                        org.alex_melan.spacereloaded.industry.IndustryAdvancements.METHALOX);
             }
             setChanged();
         } else if (progress > 0) {

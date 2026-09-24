@@ -15,6 +15,9 @@
 		"spacereloaded:sabatier_reactor",
 		"spacereloaded:atmospheric_collector",
 		"spacereloaded:module_hull",
-		"spacereloaded:docking_port"
+		"spacereloaded:docking_port",
+		"spacereloaded:sintered_regolith",
+		"spacereloaded:lunar_bricks",
+		"spacereloaded:refractory_lining"
 	]
 }

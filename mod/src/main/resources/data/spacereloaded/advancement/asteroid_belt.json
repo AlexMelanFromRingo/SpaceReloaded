@@ -1,0 +1,29 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:changed_dimension",
+			"conditions": {
+				"to": "spacereloaded:asteroid_belt"
+			}
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:asteroid_stone"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.asteroid_belt.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.asteroid_belt.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:orbit"
+}

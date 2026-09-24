@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:lunar_bricks"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.underground.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.underground.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:moon"
+}

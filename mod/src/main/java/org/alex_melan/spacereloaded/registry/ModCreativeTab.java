@@ -108,6 +108,18 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.ORBITAL_CANNON);
                         output.accept(ModItems.TUNGSTEN_ROD);
                         output.accept(ModItems.TARGETING_DESIGNATOR);
+                        output.accept(ModBlocks.MASS_DRIVER_BREECH);
+                        output.accept(ModBlocks.STEEL_COIL);
+                        output.accept(ModBlocks.SUPERCONDUCTING_COIL);
+                        output.accept(ModBlocks.CAPACITOR);
+                        output.accept(ModItems.CARGO_POD);
+                        output.accept(ModBlocks.MASS_CATCHER);
+                        output.accept(ModBlocks.CATCHER_NET);
+                        output.accept(ModBlocks.REGOLITH_REACTOR);
+                        output.accept(ModBlocks.REFRACTORY_LINING);
+                        output.accept(ModItems.SLAG);
+                        output.accept(ModBlocks.SINTERED_REGOLITH);
+                        output.accept(ModBlocks.LUNAR_BRICKS);
                     })
                     .build());
 

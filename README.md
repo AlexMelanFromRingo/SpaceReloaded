@@ -12,6 +12,11 @@ real**. Rockets are entities assembled from blocks you placed yourself.
 Delta-v comes from the Tsiolkovsky equation, thrust-to-weight is computed from
 actual part masses, and a lopsided rocket tips over on ascent.
 
+It takes the best of four classics and rebuilds it on real physics: colonies
+and stations from **Galacticraft**, free-form rockets and satellites from
+**Advanced Rocketry**, visible machines and deep crafting chains from
+**Create**, industrial multiblocks from **Immersive Engineering**.
+
 [Документация на русском](README.ru.md)
 
 <p align="center">
@@ -88,6 +93,24 @@ actual part masses, and a lopsided rocket tips over on ascent.
   habitable volume, engines and the command module stay, the wall facing the
   port becomes a hatch. Residual propellant is vented, cargo is dropped, and
   the shell passes the regular 26-direction sealing check.
+- **Lunar industry.** On an airless body you do not burn propellant to lift
+  ore: an electromagnetic mass driver does it with electricity. Lay a straight
+  line of coil sections from the breech; muzzle velocity is v = sqrt(2 sum
+  a_i L_i), so reaching Earth orbit from the Moon (2515 m/s) takes 108
+  superconducting or 323 steel sections. The shot draws E = ½mv²/eta from a
+  capacitor bank. The rail lights up in a travelling wave, the pod leaves the
+  muzzle and the sled rolls back while the bank recharges. In an atmosphere the
+  pod would break up, so the mass driver refuses on Earth and Mars with numbers.
+  A mass catcher on the orbital platform receives the pod: its net sets the
+  capture radius, satellite coverage sets the dispersion, a miss loses the
+  cargo.
+- **Regolith reactor.** A 3×3×3 refractory multiblock runs molten regolith
+  electrolysis: lunar soil becomes oxygen for your canisters, iron and titanium
+  dust and slag, and its window glows while it works. Slag sinters into dense
+  blocks for meteor berms.
+- **Lava tubes and crash sites.** The Moon hides long lava tubes under skylight
+  pits with a steady +17 °C inside, and wrecked probes of earlier missions with
+  salvage in their containers.
 - **Orbital kinetic bombardment.** A cannon that only works in orbit fires
   tungsten rods along an honest entry trajectory. Crater size comes from
   E = ½mv² with cube-root scaling; obsidian-class blocks and water survive.
@@ -107,7 +130,7 @@ actual part masses, and a lopsided rocket tips over on ascent.
 - **Screens, not chat spam.** The scan report, the cannon terminal and a flight
   map drawn from the transition graph are proper panels. Jade is supported as a
   soft dependency: look at a machine to read energy, fuel and rod count.
-- **A guided progression.** Twenty advancements walk you from the first
+- **A guided progression.** Twenty-nine advancements walk you from the first
   steel ingot to closing the interplanetary loop.
 
 ## No teleport magic

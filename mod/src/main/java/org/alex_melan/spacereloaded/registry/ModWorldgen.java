@@ -26,6 +26,18 @@ public final class ModWorldgen {
                     net.minecraft.world.level.levelgen.feature.configurations
                             .NoneFeatureConfiguration.CODEC);
 
+    /** Лавовые трубки Луны (004): chunk-local вырезание детерминированных трубок регионов. */
+    public static final net.minecraft.world.level.levelgen.feature.Feature<
+            net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> LAVA_TUBE =
+            new org.alex_melan.spacereloaded.worldgen.LavaTubeFeature(
+                    net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration.CODEC);
+
+    /** Место крушения зонда (004): кратер, обломки, контейнер с добычей. */
+    public static final net.minecraft.world.level.levelgen.feature.Feature<
+            net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration> CRASHED_PROBE =
+            new org.alex_melan.spacereloaded.worldgen.CrashedProbeFeature(
+                    net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration.CODEC);
+
     private static ResourceKey<PlacedFeature> placed(String name) {
         return ResourceKey.create(Registries.PLACED_FEATURE,
                 Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name));
@@ -35,6 +47,12 @@ public final class ModWorldgen {
         net.minecraft.core.Registry.register(
                 net.minecraft.core.registries.BuiltInRegistries.FEATURE,
                 Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "crater"), CRATER);
+        net.minecraft.core.Registry.register(
+                net.minecraft.core.registries.BuiltInRegistries.FEATURE,
+                Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "lava_tube"), LAVA_TUBE);
+        net.minecraft.core.Registry.register(
+                net.minecraft.core.registries.BuiltInRegistries.FEATURE,
+                Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "crashed_probe"), CRASHED_PROBE);
         BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(),
                 GenerationStep.Decoration.UNDERGROUND_ORES, ORE_TITANIUM);
         BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(),

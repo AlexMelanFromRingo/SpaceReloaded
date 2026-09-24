@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:methalox_engine"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.methalox.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.methalox.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:mars"
+}

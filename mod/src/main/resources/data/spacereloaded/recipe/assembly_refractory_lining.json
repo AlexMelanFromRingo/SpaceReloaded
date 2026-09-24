@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:lunar_bricks",
+		"spacereloaded:lunar_bricks",
+		"spacereloaded:tungsten_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:refractory_lining",
+		"count": 2
+	}
+}

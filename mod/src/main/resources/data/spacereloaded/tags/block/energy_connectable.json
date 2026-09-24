@@ -16,6 +16,9 @@
 		"spacereloaded:orbital_cannon",
 		"spacereloaded:atmospheric_collector",
 		"spacereloaded:sabatier_reactor",
-		"spacereloaded:rectenna"
+		"spacereloaded:rectenna",
+		"spacereloaded:capacitor",
+		"spacereloaded:regolith_reactor",
+		"spacereloaded:refractory_lining"
 	]
 }

@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:mass_catcher"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.mass_catch.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.mass_catch.description"
+		},
+		"frame": "challenge"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:mass_driver"
+}

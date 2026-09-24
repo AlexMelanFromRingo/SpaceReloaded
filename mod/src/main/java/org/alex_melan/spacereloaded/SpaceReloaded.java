@@ -51,6 +51,7 @@ public class SpaceReloaded implements ModInitializer {
 				org.alex_melan.spacereloaded.network.VacuumStatePayload.TYPE,
 				org.alex_melan.spacereloaded.network.VacuumStatePayload.CODEC);
 		org.alex_melan.spacereloaded.network.ModNetworking.init();
+		org.alex_melan.spacereloaded.registry.ModSounds.init();
 		ModBlocks.init();
 		org.alex_melan.spacereloaded.fluid.ModFluids.init();
 		ModDataComponents.init();
@@ -114,10 +115,14 @@ public class SpaceReloaded implements ModInitializer {
 			org.alex_melan.spacereloaded.planet.PlanetEffects.tick(level);
 			org.alex_melan.spacereloaded.impact.MeteorManager.tick(level);
 			org.alex_melan.spacereloaded.network.MarsClimate.tick(level);
+			org.alex_melan.spacereloaded.industry.IndustryAdvancements.tick(level);
 		});
+		ServerTickEvents.END_SERVER_TICK.register(
+				org.alex_melan.spacereloaded.industry.PodTransitState::tick);
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
 			ZoneManager.shutdown();
 			CableNetworkManager.clearAll();
+			org.alex_melan.spacereloaded.industry.IndustryStructures.clearAll();
 			org.alex_melan.spacereloaded.rocket.FuelingHose.clearAll();
 			org.alex_melan.spacereloaded.sealing.VacuumHazard.clearAll();
 		});

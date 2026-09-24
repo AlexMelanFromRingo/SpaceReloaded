@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:tungsten_ingot",
+		"spacereloaded:tungsten_ingot",
+		"minecraft:blast_furnace",
+		"spacereloaded:hermetic_glass"
+	],
+	"result": {
+		"id": "spacereloaded:regolith_reactor",
+		"count": 1
+	}
+}

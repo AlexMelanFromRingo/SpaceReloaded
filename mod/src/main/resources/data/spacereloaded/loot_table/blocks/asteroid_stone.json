@@ -37,6 +37,11 @@
 					"type": "minecraft:item",
 					"weight": 5,
 					"name": "minecraft:ice"
+				},
+				{
+					"type": "minecraft:item",
+					"weight": 7,
+					"name": "spacereloaded:raw_titanium"
 				}
 			],
 			"conditions": [

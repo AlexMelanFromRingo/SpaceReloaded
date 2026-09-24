@@ -77,12 +77,18 @@ public final class ModRegistries {
 
 
     /** Тепловая пара профиля (temperature / temperature_amplitude) — плоские поля через MapCodec. */
-    public record ThermalSpec(double temperature, double temperatureAmplitude) {
+    public record ThermalSpec(double temperature, double temperatureAmplitude, double shelterTemperature) {
+        /**
+         * {@code shelter_temperature} (004, FR-241) — температура «укрытия» под толщей породы
+         * (лавовая трубка): без суточного размаха. NaN (нет поля) — равна средней {@code temperature}.
+         */
         public static final com.mojang.serialization.MapCodec<ThermalSpec> MAP_CODEC =
                 RecordCodecBuilder.mapCodec(instance -> instance.group(
                         Codec.DOUBLE.optionalFieldOf("temperature", 20.0).forGetter(ThermalSpec::temperature),
                         Codec.DOUBLE.optionalFieldOf("temperature_amplitude", 0.0)
-                                .forGetter(ThermalSpec::temperatureAmplitude)
+                                .forGetter(ThermalSpec::temperatureAmplitude),
+                        Codec.DOUBLE.optionalFieldOf("shelter_temperature", Double.NaN)
+                                .forGetter(ThermalSpec::shelterTemperature)
                 ).apply(instance, ThermalSpec::new));
     }
 
@@ -92,15 +98,25 @@ public final class ModRegistries {
      * (см. TransferOrbitsTest); отсутствующая запись стоит 0 — совместимость с аддонами.
      * Плоское поле {@code transfer_delta_v} через MapCodec (лимит 16 полей RecordCodecBuilder).
      */
-    public record TransferSpec(java.util.Map<Identifier, Double> deltaV) {
+    public record TransferSpec(java.util.Map<Identifier, Double> deltaV, double bodyRadius,
+                               double parkingAltitude) {
+        /**
+         * {@code body_radius}/{@code parking_altitude} (004, FR-205a) — радиус тела и высота
+         * парковочной орбиты, от которой отсчитан табличный Δv: из них катапульта обращает
+         * табличный перелёт в избыток скорости v∞ (патч-коники). Радиус 0 — тело без катапульты.
+         */
         public static final com.mojang.serialization.MapCodec<TransferSpec> MAP_CODEC =
                 RecordCodecBuilder.mapCodec(instance -> instance.group(
                         Codec.unboundedMap(Identifier.CODEC, Codec.doubleRange(0.0, 1.0e6))
                                 .optionalFieldOf("transfer_delta_v", java.util.Map.of())
-                                .forGetter(TransferSpec::deltaV)
+                                .forGetter(TransferSpec::deltaV),
+                        Codec.doubleRange(0.0, 1.0e9).optionalFieldOf("body_radius", 0.0)
+                                .forGetter(TransferSpec::bodyRadius),
+                        Codec.doubleRange(0.0, 1.0e9).optionalFieldOf("parking_altitude", 100_000.0)
+                                .forGetter(TransferSpec::parkingAltitude)
                 ).apply(instance, TransferSpec::new));
 
-        public static final TransferSpec NONE = new TransferSpec(java.util.Map.of());
+        public static final TransferSpec NONE = new TransferSpec(java.util.Map.of(), 0.0, 100_000.0);
 
         /** Δv перелёта к цели, м/с (0, если записи нет). */
         public double deltaVTo(Identifier target) {
@@ -132,7 +148,8 @@ public final class ModRegistries {
             double temperature,
             double temperatureAmplitude,
             AtmosphereSpec aero,
-            TransferSpec transfer
+            TransferSpec transfer,
+            double shelterTemperature
     ) {
         public static final Codec<PlanetProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Identifier.CODEC.fieldOf("dimension").forGetter(PlanetProfile::dimension),
@@ -149,7 +166,8 @@ public final class ModRegistries {
                 Codec.LONG.optionalFieldOf("window_width_ticks", 0L).forGetter(PlanetProfile::windowWidthTicks),
                 Codec.LONG.optionalFieldOf("window_phase_ticks", 0L).forGetter(PlanetProfile::windowPhaseTicks),
                 Codec.BOOL.optionalFieldOf("requires_coverage", false).forGetter(PlanetProfile::requiresCoverage),
-                ThermalSpec.MAP_CODEC.forGetter(p -> new ThermalSpec(p.temperature(), p.temperatureAmplitude())),
+                ThermalSpec.MAP_CODEC.forGetter(p -> new ThermalSpec(p.temperature(), p.temperatureAmplitude(),
+                        p.shelterTemperature())),
                 AtmosphereSpec.MAP_CODEC.forGetter(PlanetProfile::aero),
                 TransferSpec.MAP_CODEC.forGetter(PlanetProfile::transfer)
         ).apply(instance, PlanetProfile::fromCodec));
@@ -164,7 +182,18 @@ public final class ModRegistries {
             return new PlanetProfile(dimension, gravity, breathable, solarEfficiency, coordinateScale,
                     transitionAltitude, transitionTargets, arrival, atmosphere, synodicPeriodTicks,
                     windowWidthTicks, windowPhaseTicks, requiresCoverage,
-                    thermal.temperature(), thermal.temperatureAmplitude(), aero, transfer);
+                    thermal.temperature(), thermal.temperatureAmplitude(), aero, transfer,
+                    Double.isNaN(thermal.shelterTemperature()) ? thermal.temperature() : thermal.shelterTemperature());
+        }
+
+        /** Радиус тела, м (0 — не задан: катапульта на теле не работает). */
+        public double bodyRadius() {
+            return transfer == null ? 0.0 : transfer.bodyRadius();
+        }
+
+        /** Высота парковочной орбиты, от которой отсчитан табличный Δv, м. */
+        public double parkingAltitude() {
+            return transfer == null ? 100_000.0 : transfer.parkingAltitude();
         }
 
         /** Стоимость перелёта из этого тела к цели (id записи), м/с; 0 без записи. */

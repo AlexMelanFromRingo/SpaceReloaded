@@ -1,0 +1,26 @@
+{
+	"mass_driver.charge": {
+		"subtitle": "subtitles.spacereloaded.mass_driver.charge",
+		"sounds": [ { "name": "spacereloaded:mass_driver/charge" } ]
+	},
+	"mass_driver.fire": {
+		"subtitle": "subtitles.spacereloaded.mass_driver.fire",
+		"sounds": [ { "name": "spacereloaded:mass_driver/fire", "attenuation_distance": 64 } ]
+	},
+	"mass_driver.sled": {
+		"subtitle": "subtitles.spacereloaded.mass_driver.sled",
+		"sounds": [ { "name": "spacereloaded:mass_driver/sled" } ]
+	},
+	"mass_catcher.catch": {
+		"subtitle": "subtitles.spacereloaded.mass_catcher.catch",
+		"sounds": [ { "name": "spacereloaded:mass_catcher/catch", "attenuation_distance": 32 } ]
+	},
+	"regolith_reactor.hum": {
+		"subtitle": "subtitles.spacereloaded.regolith_reactor.hum",
+		"sounds": [ { "name": "spacereloaded:regolith_reactor/hum", "volume": 0.8 } ]
+	},
+	"orbital_cannon.fire": {
+		"subtitle": "subtitles.spacereloaded.orbital_cannon.fire",
+		"sounds": [ { "name": "spacereloaded:orbital_cannon/fire", "attenuation_distance": 64 } ]
+	}
+}

@@ -108,5 +108,37 @@ public class JadeClientPlugin implements IWailaPlugin {
                 return JadePlugin.CANNON;
             }
         }, Block.class);
+
+        registration.registerBlockComponent(new IBlockComponentProvider() {
+            @Override
+            public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+                CompoundTag data = accessor.getServerData();
+                if (data.contains("sr_md_rail")) {
+                    tooltip.add(Component.translatable("jade.spacereloaded.mass_driver",
+                            data.getIntOr("sr_md_rail", 0), data.getLongOr("sr_md_speed", 0),
+                            Component.translatable("jade.spacereloaded.mass_driver.state."
+                                    + data.getStringOr("sr_md_reason", "no_rail"))));
+                    tooltip.add(Component.translatable("jade.spacereloaded.mass_driver.charge",
+                            data.getLongOr("sr_md_charge", 0), data.getLongOr("sr_md_need", 0)));
+                } else if (data.contains("sr_mc_radius")) {
+                    tooltip.add(Component.translatable("jade.spacereloaded.mass_catcher",
+                            String.format(Locale.ROOT, "%.1f", data.getDoubleOr("sr_mc_radius", 0)),
+                            data.getIntOr("sr_mc_net", 0)));
+                    tooltip.add(Component.translatable("jade.spacereloaded.mass_catcher.counters",
+                            data.getIntOr("sr_mc_caught", 0), data.getIntOr("sr_mc_lost", 0)));
+                } else if (data.contains("sr_rr_formed")) {
+                    tooltip.add(Component.translatable("jade.spacereloaded.regolith_reactor",
+                            Component.translatable(data.getBooleanOr("sr_rr_formed", false)
+                                    ? "gui.spacereloaded.regolith_reactor.formed"
+                                    : "gui.spacereloaded.regolith_reactor.not_formed"),
+                            data.getIntOr("sr_rr_o2", 0), data.getIntOr("sr_rr_o2_max", 0)));
+                }
+            }
+
+            @Override
+            public Identifier getUid() {
+                return JadePlugin.INDUSTRY;
+            }
+        }, Block.class);
     }
 }

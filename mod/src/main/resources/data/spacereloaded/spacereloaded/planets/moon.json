@@ -11,6 +11,9 @@
 	"arrival": "descend",
 	"temperature": -20,
 	"temperature_amplitude": 130,
+	"body_radius": 1737400.0,
+	"parking_altitude": 100000.0,
+	"shelter_temperature": 17,
 	"transfer_delta_v": {
 		"spacereloaded:earth_orbit": 822.0
 	}

@@ -264,6 +264,256 @@ def mars_ice():
     save(base, "block/mars_ice.png")
 
 
+# ---------------------------------------------------------------------------
+# Лунная индустрия (004): катапульта, ловушка масс, реголитовый реактор
+# ---------------------------------------------------------------------------
+
+def _shade(color, factor):
+    r, g, b = color[:3]
+    return (max(0, min(255, int(r * factor))), max(0, min(255, int(g * factor))),
+            max(0, min(255, int(b * factor))), 255)
+
+
+def _frame(image, color, width=1):
+    for i in range(16):
+        for w in range(width):
+            for xy in ((i, w), (i, 15 - w), (w, i), (15 - w, i)):
+                image.putpixel(xy, color)
+
+
+def coil(name, band, band_dark, core):
+    """Секция рельса: стальной сердечник, обмотка полосами поперёк оси, торец — кольцо."""
+    steel = vanilla("block/iron_block.png")
+    side = steel.copy()
+    for x in range(16):
+        for y in range(2, 14):
+            if x % 4 in (1, 2):
+                side.putpixel((x, y), band if (x + y) % 3 else band_dark)
+            elif x % 4 == 3:
+                side.putpixel((x, y), band_dark)
+    _frame(side, _shade(steel.getpixel((8, 8)), 0.55))
+    save(side, f"block/{name}_side.png")
+    end = steel.copy()
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if 4.5 <= d <= 7.2:
+                end.putpixel((x, y), band if int(d * 2) % 2 else band_dark)
+            elif d < 3:
+                end.putpixel((x, y), core)
+    save(end, f"block/{name}_end.png")
+    # Верх секции в составе рельса: направляющая для салазок вдоль оси
+    top = side.copy()
+    rail = _shade(steel.getpixel((8, 8)), 0.35)
+    for x in range(16):
+        for y in (6, 9):
+            top.putpixel((x, y), rail)
+        for y in (7, 8):
+            top.putpixel((x, y), _shade(steel.getpixel((8, 8)), 1.15))
+    save(top, f"block/{name}_rail.png")
+
+
+def mass_driver_breech():
+    base = vanilla("block/netherite_block.png")
+    side = base.copy()
+    _frame(side, (0x2A, 0x2A, 0x30, 255), 2)
+    for y in range(5, 11):
+        side.putpixel((3, y), (0xE0, 0x88, 0x30, 255))
+        side.putpixel((12, y), (0xE0, 0x88, 0x30, 255))
+    save(side, "block/mass_driver_breech_side.png")
+    front = base.copy()
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d < 3.2:
+                front.putpixel((x, y), (0x08, 0x0A, 0x10, 255))
+            elif d < 5.2:
+                front.putpixel((x, y), (0x55, 0xC8, 0xFF, 255) if (x + y) % 2 else (0x2C, 0x7A, 0xB8, 255))
+    _frame(front, (0x2A, 0x2A, 0x30, 255), 2)
+    save(front, "block/mass_driver_breech_front.png")
+    top = base.copy()
+    for x in range(3, 13):
+        top.putpixel((x, 7), (0x7A, 0x7A, 0x80, 255))
+        top.putpixel((x, 8), (0x7A, 0x7A, 0x80, 255))
+    _frame(top, (0x2A, 0x2A, 0x30, 255), 1)
+    save(top, "block/mass_driver_breech_top.png")
+
+
+def capacitor():
+    base = vanilla("block/iron_block.png")
+    side = base.copy()
+    for cell in range(3):
+        x0 = 1 + cell * 5
+        for x in range(x0, x0 + 4):
+            for y in range(3, 14):
+                side.putpixel((x, y), (0x2C, 0x5C, 0xC8, 255) if x in (x0, x0 + 3) else (0x3A, 0x7B, 0xFF, 255))
+        side.putpixel((x0 + 1, 2), (0xC8, 0x90, 0x50, 255))
+        side.putpixel((x0 + 2, 2), (0xC8, 0x90, 0x50, 255))
+    save(side, "block/capacitor_side.png")
+    top = base.copy()
+    for x, y in ((4, 4), (11, 4), (4, 11), (11, 11)):
+        for dx in range(2):
+            for dy in range(2):
+                top.putpixel((x + dx, y + dy), (0xC8, 0x90, 0x50, 255))
+    save(top, "block/capacitor_top.png")
+
+
+def mass_driver_sled():
+    steel = vanilla("block/iron_block.png").copy()
+    for x in range(16):
+        steel.putpixel((x, 0), (0xE0, 0x88, 0x30, 255))
+        steel.putpixel((x, 15), (0xE0, 0x88, 0x30, 255))
+    save(steel, "block/mass_driver_sled.png")
+
+
+def mass_catcher():
+    base = vanilla("block/iron_block.png")
+    top = base.copy()
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d < 7.4 and int(d) % 3 == 0:
+                top.putpixel((x, y), (0xD0, 0x40, 0x30, 255))
+    save(top, "block/mass_catcher_top.png")
+    side = base.copy()
+    _frame(side, (0x55, 0x55, 0x5A, 255), 1)
+    for x in range(2, 14):
+        side.putpixel((x, 12), (0xD0, 0x40, 0x30, 255))
+    save(side, "block/mass_catcher_side.png")
+
+
+def catcher_net():
+    image = Image.new("RGBA", (16, 16), (0x22, 0x24, 0x28, 255))
+    fiber = (0x5A, 0x5E, 0x66, 255)
+    knot = (0x9A, 0x9E, 0xA8, 255)
+    for i in range(16):
+        for j in range(16):
+            if i % 4 == 0 or j % 4 == 0:
+                image.putpixel((i, j), knot if (i % 4 == 0 and j % 4 == 0) else fiber)
+    save(image, "block/catcher_net.png")
+
+
+def regolith_reactor():
+    lining = mod("block/refractory_lining.png") if os.path.exists(
+        os.path.join(ASSETS, "block/refractory_lining.png")) else vanilla("block/deepslate_bricks.png")
+    for lit in (False, True):
+        front = vanilla("block/blast_furnace_side.png").copy()
+        for x in range(4, 12):
+            for y in range(5, 11):
+                if lit:
+                    heat = 1.0 - abs(y - 8) / 4.0
+                    front.putpixel((x, y), (0xFF, int(0x80 + 0x60 * heat), int(0x20 + 0x40 * heat), 255))
+                else:
+                    front.putpixel((x, y), (0x18, 0x1A, 0x22, 255))
+        for x in range(3, 13):
+            front.putpixel((x, 4), (0x70, 0x70, 0x78, 255))
+            front.putpixel((x, 11), (0x70, 0x70, 0x78, 255))
+        for y in range(4, 12):
+            front.putpixel((3, y), (0x70, 0x70, 0x78, 255))
+            front.putpixel((12, y), (0x70, 0x70, 0x78, 255))
+        save(front, "block/regolith_reactor_front_lit.png" if lit else "block/regolith_reactor_front.png")
+    save(lining.copy(), "block/regolith_reactor_side.png")
+
+
+def refractory_lining():
+    bricks = vanilla("block/stone_bricks.png")
+    tint = (0xC9, 0xB8, 0x9A)
+    out = Image.new("RGBA", (16, 16))
+    for x in range(16):
+        for y in range(16):
+            r, g, b, a = bricks.getpixel((x, y))
+            lum = (r + g + b) / (3 * 255)
+            out.putpixel((x, y), (int(tint[0] * lum * 1.2), int(tint[1] * lum * 1.2), int(tint[2] * lum * 1.2), 255))
+    save(out, "block/refractory_lining.png")
+
+
+def lunar_bricks():
+    bricks = vanilla("block/stone_bricks.png")
+    moon = mod("block/moon_stone.png")
+    out = Image.new("RGBA", (16, 16))
+    for x in range(16):
+        for y in range(16):
+            br, bg, bb, _ = bricks.getpixel((x, y))
+            mr, mg, mb, _ = moon.getpixel((x, y))
+            lum = (br + bg + bb) / (3 * 150.0)
+            out.putpixel((x, y), (min(255, int(mr * lum)), min(255, int(mg * lum)), min(255, int(mb * lum)), 255))
+    save(out, "block/lunar_bricks.png")
+
+
+def sintered_regolith():
+    base = mod("block/moon_regolith.png").copy()
+    rng = random.Random(0x5117)
+    for x in range(16):
+        for y in range(16):
+            r, g, b, a = base.getpixel((x, y))
+            f = 0.72 + rng.random() * 0.12
+            base.putpixel((x, y), (int(r * f), int(g * f), int(b * f * 1.05), 255))
+    for _ in range(10):
+        x, y = rng.randint(0, 15), rng.randint(0, 15)
+        base.putpixel((x, y), (0x9A, 0xA0, 0xB0, 255))  # стекловидные включения
+    save(base, "block/sintered_regolith.png")
+
+
+def cargo_pod_item():
+    image = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    hull = (0xB8, 0xBC, 0xC4, 255)
+    dark = (0x6A, 0x6E, 0x78, 255)
+    shield = (0x5A, 0x3A, 0x28, 255)
+    for y in range(2, 14):
+        half = 3 + min(y - 2, 3)
+        for x in range(8 - half, 8 + half):
+            image.putpixel((x, y), hull if x not in (8 - half, 8 + half - 1) else dark)
+    for x in range(2, 14):
+        image.putpixel((x, 13), shield)
+        image.putpixel((x, 14), shield)
+    save(image, "item/cargo_pod.png")
+
+
+def slag_item():
+    image = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    rng = random.Random(0x51A6)
+    for _ in range(3):
+        cx, cy, r = rng.randint(4, 11), rng.randint(5, 11), rng.randint(3, 4)
+        for x in range(16):
+            for y in range(16):
+                if (x - cx) ** 2 + (y - cy) ** 2 <= r * r:
+                    v = rng.randint(0x30, 0x55)
+                    image.putpixel((x, y), (v, v - 6, v - 10, 255))
+    save(image, "item/slag.png")
+
+
+def regolith_reactor_gui():
+    """GUI реактора: фон электролизёра + три выходных слота (80/98/116, 58)."""
+    gui = mod("gui/electrolyzer.png").copy()
+    for i in range(3):
+        x0, y0 = 79 + i * 18, 57
+        for x in range(x0, x0 + 18):
+            for y in range(y0, y0 + 18):
+                edge_dark = x == x0 or y == y0
+                edge_light = x == x0 + 17 or y == y0 + 17
+                color = (0x37, 0x37, 0x37, 255) if edge_dark else (0xFF, 0xFF, 0xFF, 255) if edge_light \
+                    else (0x8B, 0x8B, 0x8B, 255)
+                gui.putpixel((x, y), color)
+    save(gui, "gui/regolith_reactor.png")
+
+
+def lunar_industry():
+    coil("steel_coil", (0xC8, 0x7A, 0x48, 255), (0x8C, 0x4E, 0x2A, 255), (0x50, 0x50, 0x58, 255))
+    coil("superconducting_coil", (0x7F, 0xD8, 0xF0, 255), (0x3A, 0x8C, 0xB8, 255), (0xE8, 0xF6, 0xFF, 255))
+    mass_driver_breech()
+    capacitor()
+    mass_driver_sled()
+    mass_catcher()
+    catcher_net()
+    refractory_lining()
+    regolith_reactor()
+    lunar_bricks()
+    sintered_regolith()
+    cargo_pod_item()
+    slag_item()
+    regolith_reactor_gui()
+
+
 def main():
     print("руды:")
     transplant_ore(mod("block/moon_stone.png"), vanilla("block/stone.png"),
@@ -285,6 +535,8 @@ def main():
     docking_port()
     module_hull()
     mars_ice()
+    print("лунная индустрия:")
+    lunar_industry()
 
 
 if __name__ == "__main__":

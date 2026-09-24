@@ -38,6 +38,8 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		MenuScreens.register(ModMenus.BATTERY, BatteryScreen::new);
 		MenuScreens.register(ModMenus.ELECTROLYZER, ElectrolyzerScreen::new);
 		MenuScreens.register(ModMenus.REFINERY, RefineryScreen::new);
+		MenuScreens.register(ModMenus.REGOLITH_REACTOR,
+				org.alex_melan.spacereloaded.client.gui.RegolithReactorScreen::new);
 
 		// Топливо-жидкости: текстуры уже окрашены, тинт нейтральный
 		for (var propellant : org.alex_melan.spacereloaded.fluid.ModFluids.all()) {
@@ -56,6 +58,15 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		}
 
 		EntityRendererRegistry.register(ModEntities.ROCKET, RocketRenderer::new);
+		// 004: анимации мультиблоков и визуальная капсула
+		EntityRendererRegistry.register(ModEntities.CARGO_POD,
+				org.alex_melan.spacereloaded.client.render.CargoPodRenderer::new);
+		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.MASS_DRIVER_BREECH,
+				org.alex_melan.spacereloaded.client.render.MassDriverRenderer::new);
+		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.REGOLITH_REACTOR,
+				org.alex_melan.spacereloaded.client.render.RegolithReactorRenderer::new);
 		EntityRendererRegistry.register(ModEntities.KINETIC_PROJECTILE,
 				org.alex_melan.spacereloaded.client.render.KineticProjectileRenderer::new);
 		EntityRendererRegistry.register(ModEntities.METEOR,

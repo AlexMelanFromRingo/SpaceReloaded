@@ -76,6 +76,16 @@ public class OrbitalCannonBlockEntity extends MachineBlockEntity {
      *
      * @return сообщение игроку (статус или причина отказа)
      */
+    public Component tryFire(ServerLevel level, net.minecraft.server.level.ServerPlayer shooter) {
+        int before = rods;
+        Component result = tryFire(level);
+        if (rods < before && shooter != null) {
+            org.alex_melan.spacereloaded.industry.IndustryAdvancements.award(shooter,
+                    org.alex_melan.spacereloaded.industry.IndustryAdvancements.CANNON_FIRE);
+        }
+        return result;
+    }
+
     public Component tryFire(ServerLevel level) {
         var config = SpaceReloaded.config();
         boolean inOrbit = PlanetManager.profileFor(level)
@@ -144,8 +154,8 @@ public class OrbitalCannonBlockEntity extends MachineBlockEntity {
         // Предупреждение внизу: гром за секунды до удара (FR-044) — по метке, не по точке удара
         targetLevel.playSound(null, aim, SoundEvents.LIGHTNING_BOLT_THUNDER,
                 SoundSource.WEATHER, 8.0f, 0.6f);
-        level.playSound(null, getBlockPos(), SoundEvents.WITHER_SHOOT,
-                SoundSource.BLOCKS, 3.0f, 0.4f);
+        level.playSound(null, getBlockPos(), org.alex_melan.spacereloaded.registry.ModSounds.ORBITAL_CANNON_FIRE,
+                SoundSource.BLOCKS, 3.0f, 1.0f);
 
         double eta = BallisticIntegrator.etaToAltitude(spawnY, -config.cannonMuzzleSpeed,
                 aim.getY(), PlanetManager.gravity(targetLevel));

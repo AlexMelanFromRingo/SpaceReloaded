@@ -65,7 +65,7 @@ public final class ModNetworking {
             return;
         }
         if (payload.action() == CannonActionPayload.FIRE) {
-            player.sendSystemMessage(cannon.tryFire(level));
+            player.sendSystemMessage(cannon.tryFire(level, player));
         }
         ServerPlayNetworking.send(player, cannon.snapshot(level));
     }

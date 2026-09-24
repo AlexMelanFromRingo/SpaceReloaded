@@ -1,0 +1,7 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:moon_regolith",
+	"result": {
+		"id": "spacereloaded:sintered_regolith"
+	}
+}

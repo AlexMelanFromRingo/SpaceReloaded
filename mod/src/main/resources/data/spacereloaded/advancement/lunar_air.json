@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:regolith_reactor"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.lunar_air.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.lunar_air.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:moon"
+}

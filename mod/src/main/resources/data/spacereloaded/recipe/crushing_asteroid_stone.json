@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:crushing",
+	"ingredient": "spacereloaded:asteroid_stone",
+	"result": {
+		"id": "spacereloaded:titanium_dust",
+		"count": 1
+	}
+}

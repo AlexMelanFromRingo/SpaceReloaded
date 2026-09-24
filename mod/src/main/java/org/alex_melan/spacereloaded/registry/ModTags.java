@@ -23,6 +23,9 @@ public final class ModTags {
     /** Что электролизёр принимает как источник воды (льды). */
     public static final TagKey<Item> ELECTROLYZER_INPUT = item("electrolyzer_input");
 
+    /** Сырьё реголитового реактора (004): реголит и лунный камень. */
+    public static final TagKey<Item> REGOLITH_REACTOR_INPUT = item("regolith_reactor_input");
+
     /** Части скафандра EVA: полный сет (грудь+ноги+ботинки) защищает от среды. */
     public static final TagKey<Item> SPACE_SUIT = item("space_suit");
     /** Сырьё перегонного куба (нефтеносный сланец). */

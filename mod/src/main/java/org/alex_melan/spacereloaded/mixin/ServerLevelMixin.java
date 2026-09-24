@@ -27,6 +27,7 @@ public abstract class ServerLevelMixin {
             ServerLevel level = (ServerLevel) (Object) this;
             ZoneManager.markBlockChanged(level, pos);
             CableNetworkManager.markBlockChanged(level, pos);
+            org.alex_melan.spacereloaded.industry.IndustryStructures.onBlockChanged(level, pos, oldState, newState);
         }
     }
 }

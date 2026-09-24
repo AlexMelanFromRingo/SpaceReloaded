@@ -79,6 +79,9 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testStrikeGuidance(context, sp);
             testCargoLine(context, sp);
             testWetWorkshop(context, sp);
+            testMassDriver(context, sp);
+            testMassCatcher(context, sp);
+            testRegolithReactor(context, sp);
         }
     }
 
@@ -887,7 +890,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             designator.set(ModDataComponents.TARGET_MARK,
                     GlobalPos.of(Level.OVERWORLD, new BlockPos(tx, BY, BZ)));
             TargetingDesignatorItem.remoteRetarget(server, designator);
-            return TargetingDesignatorItem.remoteFire(server, designator).getString();
+            return TargetingDesignatorItem.remoteFire(server, designator, null).getString();
         });
         log("пульт: " + remote);
         assertThat(remote.contains("impact"),
@@ -1703,6 +1706,266 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         }
         assertThat(status == SealingStatus.SEALED, "Модуль после конверсии должен быть герметичен, статус: " + status);
         log("wet workshop: модуль герметичен ✓");
+    }
+
+    // ---------- 28. Электромагнитная катапульта (004, US1) ----------
+
+    /**
+     * Рельс из сверхпроводящих катушек на казённике: в оверворлде — запрет по атмосфере;
+     * с профилем Луны (тестовая подмена тела) 40 секций — «рельс короток», 110 — выстрел со
+     * списанием энергии ½mv²/η и записью капсулы в транзит.
+     */
+    private void testMassDriver(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int wx = BX + 800;
+        moveTo(context, sp, wx + 60, BZ + 6);
+        sp.getServer().runCommand(String.format("forceload add %d %d %d %d", wx - 8, BZ - 8, wx + 130, BZ + 8));
+        sp.getServer().runCommand(set(wx, BY, BZ, "spacereloaded:mass_driver_breech[facing=east]"));
+        sp.getServer().runCommand(fill(wx + 1, BY, BZ, wx + 40, BY, BZ, "spacereloaded:superconducting_coil"));
+        sp.getServer().runCommand(fill(wx, BY, BZ - 2, wx, BY, BZ - 1, "spacereloaded:capacitor"));
+        sp.getServer().runCommand(fill(wx - 1, BY, BZ - 2, wx - 1, BY, BZ - 1, "spacereloaded:creative_power"));
+        context.waitTicks(5);
+        BlockPos breechPos = new BlockPos(wx, BY, BZ);
+        BlockPos catcherPos = new BlockPos(0, 100, 0);
+        sp.getServer().runOnServer(server -> {
+            if (server.overworld().getBlockEntity(breechPos)
+                    instanceof org.alex_melan.spacereloaded.industry.MassDriverBreechBlockEntity breech) {
+                ItemStack program = new ItemStack(ModItems.FLIGHT_PROGRAM);
+                program.set(org.alex_melan.spacereloaded.registry.ModDataComponents.PROGRAM_CATCHER,
+                        net.minecraft.core.GlobalPos.of(net.minecraft.resources.ResourceKey.create(
+                                net.minecraft.core.registries.Registries.DIMENSION,
+                                Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")), catcherPos));
+                breech.setTargetFromProgram(program);
+                breech.setItem(0, new ItemStack(ModItems.CARGO_POD));
+                breech.setItem(1, new ItemStack(ModBlocks.MOON_REGOLITH, 64));
+            }
+        });
+        context.waitTicks(3);
+        try {
+            String earth = solveReason(sp, breechPos);
+            assertThat(earth.startsWith("ATMOSPHERE"), "В оверворлде катапульта запрещена атмосферой, получено: " + earth);
+            log("катапульта: запрет в атмосфере Земли ✓ (" + earth + ")");
+
+            sp.getServer().runOnServer(server -> org.alex_melan.spacereloaded.industry.IndustryStructures
+                    .testBodyOverride = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(
+                            server.overworld(), Identifier.fromNamespaceAndPath("spacereloaded", "moon")).orElseThrow());
+            String shortRail = solveReason(sp, breechPos);
+            assertThat(shortRail.startsWith("RAIL_SHORT"), "40 секций на Луне — рельс короток, получено: " + shortRail);
+            log("катапульта: 40 секций — рельс короток ✓ (" + shortRail + ")");
+
+            sp.getServer().runCommand(fill(wx + 41, BY, BZ, wx + 110, BY, BZ, "spacereloaded:superconducting_coil"));
+            context.waitTicks(5);
+            String ready = "";
+            for (int waited = 0; waited < 400 && !ready.startsWith("OK"); waited += 10) {
+                context.waitTicks(10);
+                ready = solveReason(sp, breechPos);
+            }
+            assertThat(ready.startsWith("OK"), "110 секций + заряд — готова, получено: " + ready);
+            prepareCamera(context, sp, wx - 4, BY + 4, BZ + 6, -115f, 20f);
+            String fired = sp.getServer().computeOnServer(server -> {
+                var breech = (org.alex_melan.spacereloaded.industry.MassDriverBreechBlockEntity)
+                        server.overworld().getBlockEntity(breechPos);
+                long before = breech.storedEnergy(server.overworld());
+                var solution = breech.tryFire(server.overworld(), null);
+                long after = breech.storedEnergy(server.overworld());
+                double expected = org.alex_melan.spacereloaded.core.industry.MassDriverBallistics.shotEnergyJ(
+                        100 + 64 * 2.0, solution.vRequired(), 0.85) / 15000.0;
+                boolean energyOk = Math.abs((before - after) - expected) <= expected * 0.01 + 1;
+                boolean podGone = breech.getItem(0).isEmpty() && breech.getItem(1).isEmpty();
+                boolean queued = org.alex_melan.spacereloaded.industry.PodTransitState.get(server).pods().stream()
+                        .anyMatch(p -> p.targetPos().equals(catcherPos) && p.cargo().get(0).getCount() == 64);
+                return solution.reason() + " v=" + Math.round(solution.vRequired()) + " dE=" + (before - after)
+                        + " ожид=" + Math.round(expected) + (energyOk ? " E✓" : " E✗") + (podGone ? " слоты✓" : " слоты✗")
+                        + (queued ? " транзит✓" : " транзит✗");
+            });
+            assertThat(fired.startsWith("OK") && fired.contains("E✓") && fired.contains("слоты✓")
+                    && fired.contains("транзит✓"), "Выстрел катапульты: " + fired);
+            log("катапульта: выстрел 110 секций ✓ — " + fired);
+            // Кадры анимации: волна по рельсу и возвращение салазок (визуальная проверка)
+            snapshot(context, "mass_driver_wave", 2);
+            snapshot(context, "mass_driver_sled", 60);
+            sp.getServer().runCommand("gamemode survival @a");
+        } finally {
+            sp.getServer().runOnServer(server -> {
+                org.alex_melan.spacereloaded.industry.IndustryStructures.testBodyOverride = null;
+                org.alex_melan.spacereloaded.industry.PodTransitState.get(server)
+                        .removeIf(p -> p.targetPos().equals(catcherPos));
+            });
+        }
+    }
+
+    private static String solveReason(TestSingleplayerContext sp, BlockPos breechPos) {
+        return sp.getServer().computeOnServer(server -> {
+            if (!(server.overworld().getBlockEntity(breechPos)
+                    instanceof org.alex_melan.spacereloaded.industry.MassDriverBreechBlockEntity breech)) {
+                return "нет казённика";
+            }
+            var s = breech.solve(server.overworld());
+            return s.reason() + " vmax=" + Math.round(s.vMax()) + " vreq=" + Math.round(s.vRequired())
+                    + " rail=" + breech.railLength() + " caps=" + breech.capacitorCount()
+                    + " missing=" + s.missingSections();
+        });
+    }
+
+    // ---------- 29. Ловушка масс (004, US2) ----------
+
+    private void testMassCatcher(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int cx = BX + 840;
+        int cz = BZ + 30;
+        moveTo(context, sp, cx - 6, cz);
+        sp.getServer().runCommand(fill(cx - 2, BY, cz - 2, cx + 2, BY, cz + 2, "spacereloaded:catcher_net"));
+        sp.getServer().runCommand(set(cx, BY, cz, "spacereloaded:mass_catcher"));
+        context.waitTicks(5);
+        BlockPos catcherPos = new BlockPos(cx, BY, cz);
+        boolean previousAny = SpaceReloaded.config().massCatcherAnyDimension;
+        try {
+            sp.getServer().runOnServer(server -> {
+                SpaceReloaded.config().massCatcherAnyDimension = true;
+                org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server)
+                        .setCoverage(net.minecraft.world.level.Level.OVERWORLD, 1);
+            });
+            double radius = sp.getServer().computeOnServer(server ->
+                    ((org.alex_melan.spacereloaded.industry.MassCatcherBlockEntity)
+                            server.overworld().getBlockEntity(catcherPos)).captureRadius());
+            assertThat(Math.abs(radius - (1.5 + 0.6 * Math.sqrt(24))) < 1e-6,
+                    "Радиус захвата сетки 5×5 (24 секции) = 1.5 + 0.6·√24, получено " + radius);
+
+            // Round-trip кодека записи транзита (переживает перезапуск сервера)
+            String codec = sp.getServer().computeOnServer(server -> {
+                var transit = new org.alex_melan.spacereloaded.industry.PodTransitState.PodTransit(
+                        java.util.UUID.randomUUID(), new ItemStack(ModItems.CARGO_POD),
+                        List.of(new ItemStack(ModBlocks.MOON_REGOLITH, 64), new ItemStack(ModItems.SLAG, 7)),
+                        net.minecraft.world.level.Level.OVERWORLD, catcherPos,
+                        server.overworld().getGameTime(), 42L, java.util.Optional.empty(), false);
+                var ops = server.registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE);
+                var tag = org.alex_melan.spacereloaded.industry.PodTransitState.PodTransit.CODEC
+                        .encodeStart(ops, transit).getOrThrow();
+                var back = org.alex_melan.spacereloaded.industry.PodTransitState.PodTransit.CODEC
+                        .parse(ops, tag).getOrThrow();
+                boolean same = back.cargo().size() == 2 && back.cargo().get(0).getCount() == 64
+                        && back.cargo().get(1).is(ModItems.SLAG) && back.seed() == 42L
+                        && back.targetPos().equals(catcherPos);
+                org.alex_melan.spacereloaded.industry.PodTransitState.get(server).enqueue(back);
+                return same ? "ok" : "расхождение";
+            });
+            assertThat(codec.equals("ok"), "Кодек транзита: " + codec);
+
+            int caught = 0;
+            for (int waited = 0; waited < 100 && caught == 0; waited += 10) {
+                context.waitTicks(10);
+                caught = sp.getServer().computeOnServer(server ->
+                        ((org.alex_melan.spacereloaded.industry.MassCatcherBlockEntity)
+                                server.overworld().getBlockEntity(catcherPos)).caught());
+            }
+            String contents = sp.getServer().computeOnServer(server -> {
+                var catcher = (org.alex_melan.spacereloaded.industry.MassCatcherBlockEntity)
+                        server.overworld().getBlockEntity(catcherPos);
+                int regolith = 0;
+                int pods = 0;
+                int slag = 0;
+                for (int slot = 0; slot < catcher.getContainerSize(); slot++) {
+                    ItemStack stack = catcher.getItem(slot);
+                    if (stack.is(ModBlocks.MOON_REGOLITH.asItem())) {
+                        regolith += stack.getCount();
+                    } else if (stack.is(ModItems.CARGO_POD)) {
+                        pods += stack.getCount();
+                    } else if (stack.is(ModItems.SLAG)) {
+                        slag += stack.getCount();
+                    }
+                }
+                return regolith + "/" + slag + "/" + pods;
+            });
+            assertThat(caught == 1 && contents.equals("64/7/1"),
+                    "Ловушка должна принять груз и капсулу: принято " + caught + ", содержимое " + contents);
+            log("ловушка масс: радиус " + String.format("%.2f", radius) + ", приём 64 реголита + 7 шлака + капсула ✓");
+        } finally {
+            sp.getServer().runOnServer(server -> {
+                SpaceReloaded.config().massCatcherAnyDimension = previousAny;
+                org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server)
+                        .setCoverage(net.minecraft.world.level.Level.OVERWORLD, 0);
+            });
+        }
+    }
+
+    // ---------- 30. Реголитовый реактор (004, US3) ----------
+
+    /** Камера для кадров: респаун (ранние сценарии убивают игрока), спектатор, точка, прогрузка чанков. */
+    private void prepareCamera(ClientGameTestContext context, TestSingleplayerContext sp, double x, double y,
+                               double z, float yaw, float pitch) {
+        context.runOnClient(mc -> {
+            if (mc.player != null && mc.player.isDeadOrDying()) {
+                mc.player.respawn();
+            }
+        });
+        context.waitTicks(10);
+        context.setScreen(() -> null);
+        sp.getServer().runCommand("gamemode spectator @a");
+        sp.getServer().runCommand(String.format(java.util.Locale.ROOT, "tp @a %.1f %.1f %.1f %.1f %.1f",
+                x, y, z, yaw, pitch));
+        context.waitTicks(20);
+        sp.getClientLevel().waitForChunksRender();
+    }
+
+    private void snapshot(ClientGameTestContext context, String name, int waitTicks) {
+        context.waitTicks(waitTicks);
+        log("скриншот " + name + ": " + context.takeScreenshot("spacereloaded_" + name));
+    }
+
+    private void testRegolithReactor(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int rx = BX + 880;
+        int rz = BZ + 60;
+        moveTo(context, sp, rx - 6, rz);
+        // Куб 3×3×3 за контроллером (фасад на север): z от rz до rz+2
+        sp.getServer().runCommand(fill(rx - 1, BY, rz, rx + 1, BY + 2, rz + 2, "spacereloaded:refractory_lining"));
+        sp.getServer().runCommand(set(rx, BY + 1, rz + 1, "minecraft:air"));
+        sp.getServer().runCommand(set(rx, BY + 1, rz, "spacereloaded:regolith_reactor[facing=north]"));
+        // Питание — через клетку оболочки (футеровка пробрасывает энергию контроллеру)
+        sp.getServer().runCommand(set(rx + 2, BY + 1, rz + 1, "spacereloaded:creative_power"));
+        context.waitTicks(3);
+        BlockPos controller = new BlockPos(rx, BY + 1, rz);
+        int previousCycle = SpaceReloaded.config().reactorCycleTicks;
+        prepareCamera(context, sp, rx - 2.5, BY + 2.2, rz - 3.5, -30f, 12f);
+        try {
+            sp.getServer().runOnServer(server -> {
+                SpaceReloaded.config().reactorCycleTicks = 20;
+                var reactor = (org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity)
+                        server.overworld().getBlockEntity(controller);
+                reactor.setItem(0, new ItemStack(ModBlocks.MOON_REGOLITH, 4));
+                ItemStack canister = new ItemStack(ModItems.OXYGEN_CANISTER);
+                canister.setDamageValue(canister.getMaxDamage());
+                reactor.setItem(1, canister);
+            });
+            snapshot(context, "regolith_reactor", 25);
+            sp.getServer().runCommand("gamemode survival @a");
+            String result = "";
+            for (int waited = 0; waited < 300; waited += 10) {
+                context.waitTicks(10);
+                result = sp.getServer().computeOnServer(server -> {
+                    var reactor = (org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity)
+                            server.overworld().getBlockEntity(controller);
+                    ItemStack canister = reactor.getItem(1);
+                    int oxygen = canister.getMaxDamage() - canister.getDamageValue() + reactor.oxygenBuffer();
+                    return (reactor.formed() ? "formed" : "unformed") + " rego=" + reactor.getItem(0).getCount()
+                            + " o2=" + oxygen + " fe=" + reactor.getItem(2).getCount()
+                            + " slag=" + reactor.getItem(4).getCount();
+                });
+                if (result.contains("rego=0 ") && result.contains("slag=4")) {
+                    break;
+                }
+            }
+            assertThat(result.equals("formed rego=0 o2=600 fe=4 slag=4"),
+                    "Реактор: 4 реголита → 600 O₂, 4 железной пыли, 4 шлака; получено: " + result);
+            log("реголитовый реактор: " + result + " ✓");
+
+            sp.getServer().runCommand(set(rx + 1, BY + 2, rz + 2, "minecraft:air"));
+            context.waitTicks(3);
+            boolean formed = sp.getServer().computeOnServer(server ->
+                    ((org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity)
+                            server.overworld().getBlockEntity(controller)).formed());
+            assertThat(!formed, "Дыра в футеровке — реактор не сформирован");
+            log("реголитовый реактор: дыра в оболочке → не сформирован ✓");
+        } finally {
+            sp.getServer().runOnServer(server -> SpaceReloaded.config().reactorCycleTicks = previousCycle);
+        }
     }
 
     // ---------- Утилиты ----------

@@ -1,0 +1,12 @@
+{
+	"parent": "minecraft:block/cube",
+	"textures": {
+		"particle": "spacereloaded:block/steel_coil_side",
+		"down": "spacereloaded:block/steel_coil_side",
+		"up": "spacereloaded:block/steel_coil_rail",
+		"north": "spacereloaded:block/steel_coil_side",
+		"south": "spacereloaded:block/steel_coil_side",
+		"east": "spacereloaded:block/steel_coil_end",
+		"west": "spacereloaded:block/steel_coil_end"
+	}
+}

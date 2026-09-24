@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:tungsten_rod"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.cannon_fire.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.cannon_fire.description"
+		},
+		"frame": "challenge"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:cannon"
+}

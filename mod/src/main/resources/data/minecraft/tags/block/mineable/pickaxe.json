@@ -54,6 +54,16 @@
 		"spacereloaded:cargo_terminal",
 		"spacereloaded:docking_port",
 		"spacereloaded:module_hull",
-		"spacereloaded:mars_ice"
+		"spacereloaded:mars_ice",
+		"spacereloaded:mass_driver_breech",
+		"spacereloaded:steel_coil",
+		"spacereloaded:superconducting_coil",
+		"spacereloaded:capacitor",
+		"spacereloaded:mass_catcher",
+		"spacereloaded:catcher_net",
+		"spacereloaded:regolith_reactor",
+		"spacereloaded:refractory_lining",
+		"spacereloaded:sintered_regolith",
+		"spacereloaded:lunar_bricks"
 	]
 }

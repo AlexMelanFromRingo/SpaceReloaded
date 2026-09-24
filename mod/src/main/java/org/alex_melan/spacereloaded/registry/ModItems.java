@@ -112,6 +112,10 @@ public final class ModItems {
     public static final Item CARBON_FIBER = simple("carbon_fiber");
     /** Абляционный экран возвратной капсулы: только из метеоритного железа. */
     public static final Item HEAT_SHIELD = simple("heat_shield");
+    /** Грузовая капсула катапульты (004, FR-213): многоразовая, возвращается ловушкой масс. */
+    public static final Item CARGO_POD = register("cargo_pod", props -> new Item(props.stacksTo(16)));
+    /** Шлак реголитового реактора (004): спекается в спечённый реголит. */
+    public static final Item SLAG = simple("slag");
 
     private static Item simple(String name) {
         return register(name, Item::new);

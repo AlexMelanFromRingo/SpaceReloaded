@@ -1,0 +1,7 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:slag",
+	"result": {
+		"id": "spacereloaded:sintered_regolith"
+	}
+}

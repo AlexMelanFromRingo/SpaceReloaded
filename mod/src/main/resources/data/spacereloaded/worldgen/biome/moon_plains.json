@@ -14,8 +14,12 @@
 		[
 			"spacereloaded:moon_crater"
 		],
-		[],
-		[],
+		[
+			"spacereloaded:lava_tube"
+		],
+		[
+			"spacereloaded:crashed_probe"
+		],
 		[],
 		[
 			"spacereloaded:moon_ice",

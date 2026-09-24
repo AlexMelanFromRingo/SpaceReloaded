@@ -363,6 +363,72 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(2.0f, 6.0f).sound(SoundType.METAL)
                     .noOcclusion());
 
+    // --- Лунная индустрия (004) ---
+    /** Казённик электромагнитной катапульты (FR-200). */
+    public static final Block MASS_DRIVER_BREECH = register("mass_driver_breech",
+            org.alex_melan.spacereloaded.industry.MassDriverBreechBlock::new,
+            BlockBehaviour.Properties.of().strength(5.0f, 12.0f).sound(SoundType.NETHERITE_BLOCK)
+                    .requiresCorrectToolForDrops());
+    /** Стальная катушка — секция рельса тира 1. */
+    public static final Block STEEL_COIL = register("steel_coil",
+            props -> new org.alex_melan.spacereloaded.industry.CoilBlock(props, 1),
+            BlockBehaviour.Properties.of().strength(4.0f, 10.0f).sound(SoundType.COPPER)
+                    .requiresCorrectToolForDrops().noOcclusion());
+    /** Сверхпроводящая катушка — секция рельса тира 2. */
+    public static final Block SUPERCONDUCTING_COIL = register("superconducting_coil",
+            props -> new org.alex_melan.spacereloaded.industry.CoilBlock(props, 2),
+            BlockBehaviour.Properties.of().strength(4.0f, 10.0f).sound(SoundType.NETHERITE_BLOCK)
+                    .requiresCorrectToolForDrops().noOcclusion());
+    /** Конденсатор батареи катапульты (FR-202). */
+    public static final Block CAPACITOR = register("capacitor",
+            props -> new MachineBlock<>(props,
+                    org.alex_melan.spacereloaded.industry.CapacitorBlockEntity::new,
+                    () -> ModBlockEntities.CAPACITOR,
+                    org.alex_melan.spacereloaded.industry.CapacitorBlockEntity::serverTick),
+            BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+    /** Салазки рельса — только модель для рендера анимации (без предмета). */
+    public static final Block MASS_DRIVER_SLED = registerNoItem("mass_driver_sled", Block::new,
+            BlockBehaviour.Properties.of().strength(1.0f).noOcclusion().noLootTable());
+    /** Ловушка масс (FR-220). */
+    public static final Block MASS_CATCHER = register("mass_catcher",
+            org.alex_melan.spacereloaded.industry.MassCatcherBlock::new,
+            BlockBehaviour.Properties.of().strength(4.0f, 10.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+    /** Секция сетки-уловителя. */
+    public static final Block CATCHER_NET = register("catcher_net", Block::new,
+            BlockBehaviour.Properties.of().strength(1.5f, 4.0f).sound(SoundType.CHAIN).noOcclusion());
+    /** Контроллер реголитового реактора (FR-230): светится окном, пока идёт электролиз. */
+    public static final Block REGOLITH_REACTOR = register("regolith_reactor",
+            org.alex_melan.spacereloaded.industry.RegolithReactorBlock::new,
+            BlockBehaviour.Properties.of().strength(5.0f, 12.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(
+                            org.alex_melan.spacereloaded.industry.RegolithReactorBlock.LIT) ? 13 : 0));
+    /** Огнеупорная футеровка оболочки реактора. */
+    public static final Block REFRACTORY_LINING = register("refractory_lining", Block::new,
+            BlockBehaviour.Properties.of().strength(4.0f, 30.0f).sound(SoundType.DEEPSLATE_BRICKS)
+                    .requiresCorrectToolForDrops());
+    /**
+     * Спечённый реголит (FR-235): плотный строительный блок обваловки; взрывостойкость 40 —
+     * между камнем (6) и обсидианом (1200), ниже порога выживания метеорита — защищает толщиной.
+     */
+    public static final Block SINTERED_REGOLITH = register("sintered_regolith", Block::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 40.0f).sound(SoundType.DEEPSLATE)
+                    .requiresCorrectToolForDrops());
+    /** Лунный кирпич (FR-250): строительный блок из лунного камня. */
+    public static final Block LUNAR_BRICKS = register("lunar_bricks", Block::new,
+            BlockBehaviour.Properties.of().strength(2.0f, 6.0f).sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops());
+
+    private static <T extends Block> T registerNoItem(String name,
+                                                      Function<BlockBehaviour.Properties, T> factory,
+                                                      BlockBehaviour.Properties properties) {
+        Identifier id = Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name);
+        ResourceKey<Block> blockKey = ResourceKey.create(Registries.BLOCK, id);
+        return Registry.register(BuiltInRegistries.BLOCK, blockKey, factory.apply(properties.setId(blockKey)));
+    }
+
     /**
      * Регистрация блока + BlockItem по контракту 26.2: id задаётся заранее
      * через Properties.setId (реестры BlockIds/ItemIds разделены).

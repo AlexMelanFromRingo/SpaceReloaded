@@ -1,0 +1,14 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"pattern": [
+		"SS",
+		"SS"
+	],
+	"key": {
+		"S": "spacereloaded:moon_stone"
+	},
+	"result": {
+		"id": "spacereloaded:lunar_bricks",
+		"count": 4
+	}
+}

@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:carbon_fiber",
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:catcher_net",
+		"count": 4
+	}
+}

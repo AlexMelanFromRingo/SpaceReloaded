@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:mass_driver_breech"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.mass_driver.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.mass_driver.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:moon"
+}

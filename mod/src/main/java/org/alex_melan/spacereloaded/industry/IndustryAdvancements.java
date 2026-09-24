@@ -1,0 +1,57 @@
+package org.alex_melan.spacereloaded.industry;
+
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import org.alex_melan.spacereloaded.SpaceReloaded;
+
+/**
+ * Достижения событий (004, FR-253, D41): JSON с триггером {@code minecraft:impossible},
+ * выдаются кодом из серверных событий (выстрел, приём, O₂, укрытие) — это не получение предмета.
+ */
+public final class IndustryAdvancements {
+
+    public static final String METHALOX = "methalox";
+    public static final String SATELLITE = "satellite";
+    public static final String CANNON_FIRE = "cannon_fire";
+    public static final String MASS_DRIVER = "mass_driver";
+    public static final String MASS_CATCH = "mass_catch";
+    public static final String LUNAR_AIR = "lunar_air";
+    public static final String UNDERGROUND = "underground";
+
+    private IndustryAdvancements() {
+    }
+
+    public static void award(ServerPlayer player, String name) {
+        AdvancementHolder holder = player.level().getServer().getAdvancements()
+                .get(Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name));
+        if (holder != null) {
+            player.getAdvancements().award(holder, "done");
+        }
+    }
+
+    public static void awardNearby(ServerLevel level, BlockPos pos, double radius, String name) {
+        for (ServerPlayer player : level.players()) {
+            if (player.blockPosition().closerThan(pos, radius)) {
+                award(player, name);
+            }
+        }
+    }
+
+    /** Тик уровня: «Под поверхностью» — игрок на Луне в укрытии под толщей породы (раз в 40 тиков). */
+    public static void tick(ServerLevel level) {
+        if (level.getGameTime() % 40 != 0
+                || !level.dimension().identifier().equals(
+                        Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "moon"))) {
+            return;
+        }
+        for (ServerPlayer player : level.players()) {
+            BlockPos head = player.blockPosition().above();
+            if (org.alex_melan.spacereloaded.network.Thermal.isSheltered(level, head)) {
+                award(player, UNDERGROUND);
+            }
+        }
+    }
+}

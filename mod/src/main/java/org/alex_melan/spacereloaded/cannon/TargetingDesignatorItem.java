@@ -92,7 +92,7 @@ public class TargetingDesignatorItem extends Item {
         // Sneak+ПКМ в воздух — статус, ПКМ — дистанционный выстрел
         serverPlayer.sendSystemMessage(player.isSecondaryUseActive()
                 ? remoteStatus(level.getServer(), stack)
-                : remoteFire(level.getServer(), stack));
+                : remoteFire(level.getServer(), stack, serverPlayer));
         return InteractionResult.SUCCESS_SERVER;
     }
 
@@ -120,13 +120,14 @@ public class TargetingDesignatorItem extends Item {
     }
 
     /** Дистанционный выстрел привязанной пушки. */
-    public static Component remoteFire(MinecraftServer server, ItemStack stack) {
+    public static Component remoteFire(MinecraftServer server, ItemStack stack,
+                                       net.minecraft.server.level.ServerPlayer shooter) {
         OrbitalCannonBlockEntity cannon = boundCannon(server, stack);
         if (cannon == null) {
             return missingMessage(stack);
         }
         GlobalPos bound = stack.get(ModDataComponents.BOUND_CANNON);
-        return cannon.tryFire(server.getLevel(bound.dimension()));
+        return cannon.tryFire(server.getLevel(bound.dimension()), shooter);
     }
 
     /** Статус привязанной пушки. */

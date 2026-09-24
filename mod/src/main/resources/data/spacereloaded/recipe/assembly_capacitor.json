@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:battery",
+		"minecraft:copper_ingot",
+		"minecraft:copper_ingot",
+		"spacereloaded:carbon_fiber"
+	],
+	"result": {
+		"id": "spacereloaded:capacitor",
+		"count": 1
+	}
+}
