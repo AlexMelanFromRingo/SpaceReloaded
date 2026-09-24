@@ -100,6 +100,15 @@ public class HydroponicTrayBlockEntity extends BlockEntity {
         return water;
     }
 
+    /** Стенд и витрина: рост до доли цикла (0…1). */
+    public void testGrow(double fraction) {
+        CropProfiles.Profile p = profile();
+        if (p != null) {
+            growth = fraction * p.cycleDays() / CYCLE_COMPRESSION;
+            changed();
+        }
+    }
+
     public boolean mature() {
         CropProfiles.Profile p = profile();
         return p != null && growth >= p.cycleDays() / CYCLE_COMPRESSION;

@@ -20,8 +20,15 @@ and stations from **Galacticraft**, free-form rockets and satellites from
 [Документация на русском](README.ru.md)
 
 <p align="center">
-  <img src="docs/img/creative-tab.png" width="46%" alt="SpaceReloaded creative tab">
-  <img src="docs/img/airlock.png" width="52%" alt="Airlock with interlocked hermetic hatches">
+  <img src="docs/img/station.png" width="98%" alt="Station module cutaway: gas tanks, atmosphere controller, CO₂ scrubber, telemetry and a hydroponic greenhouse">
+</p>
+<p align="center">
+  <img src="docs/img/rover.png" width="49%" alt="Rover built from parts next to its charger">
+  <img src="docs/img/gears.png" width="49%" alt="Gear train driven by a motor: small and large gears in mesh">
+</p>
+<p align="center">
+  <img src="docs/img/orbital-image.png" width="43%" alt="Orbital image of a base, developed into a locked map">
+  <img src="docs/img/creative-tab.png" width="45%" alt="SpaceReloaded creative tab">
 </p>
 
 <p align="center">

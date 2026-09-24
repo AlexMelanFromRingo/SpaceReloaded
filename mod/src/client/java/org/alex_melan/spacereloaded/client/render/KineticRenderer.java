@@ -42,7 +42,14 @@ public class KineticRenderer<T extends KineticBlockEntity> implements BlockEntit
         Direction.Axis axis = block.axis(be.getBlockState());
         state.axis = axis == null ? Direction.Axis.Y : axis;
         double time = be.getLevel() == null ? 0 : be.getLevel().getGameTime() + partialTick;
-        state.angleDeg = (float) Math.toDegrees(be.visualAngle(time) % (2 * Math.PI));
+        // сдвиг зацепления: с ним зуб одной шестерни стоит во впадине соседней при любом соседстве
+        // на сетке (по грани и по диагонали, малая–малая и малая–большая): δ_малой = π/16, δ_большой = π/32
+        double mesh = switch (block.kind()) {
+            case SMALL_GEAR -> Math.PI / 16;
+            case LARGE_GEAR -> Math.PI / 32;
+            default -> 0;
+        };
+        state.angleDeg = (float) Math.toDegrees((be.visualAngle(time) + mesh) % (2 * Math.PI));
         state.hasShaft = false;
         state.hasPart = false;
         state.gearbox = false;

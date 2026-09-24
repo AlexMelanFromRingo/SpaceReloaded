@@ -632,6 +632,8 @@ public final class ModBlocks {
                                                 BlockBehaviour.Properties properties) {
         Identifier id = Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name);
         ResourceKey<Block> blockKey = ResourceKey.create(Registries.BLOCK, id);
+        // цвет на картах и орбитальных снимках — «вид сверху» модели (tools/gen_map_colors.py)
+        properties.mapColor(ModMapColors.of(name));
         T block = Registry.register(BuiltInRegistries.BLOCK, blockKey, factory.apply(properties.setId(blockKey)));
 
         ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, id);

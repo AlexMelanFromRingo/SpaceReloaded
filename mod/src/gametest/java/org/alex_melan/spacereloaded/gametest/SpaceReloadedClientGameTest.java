@@ -102,9 +102,12 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testSpinRing", () -> testSpinRing(context, sp));
             scenarios.put("testRover", () -> testRover(context, sp));
             scenarios.put("testOrbitalImaging", () -> testOrbitalImaging(context, sp));
+            scenarios.put("testReadmeShots", () -> testReadmeShots(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
-                if (selected == null || selected.contains(name) || name.equals("testSealing")) {
+                boolean explicitOnly = name.equals("testReadmeShots"); // кадры README — только по SR_ONLY
+                if ((selected == null && !explicitOnly) || (selected != null && selected.contains(name))
+                        || name.equals("testSealing")) {
                     scenario.run();
                 }
             });
@@ -3117,6 +3120,262 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         assertThat(pixels.equals(expected), "Снимок: шерсть синяя, над рудой камень, карта заперта — ожидалось " + expected
                 + ", получено " + pixels);
         log("съёмка: снимок проявлен в запертую карту масштаба 1, поверхность видна, руда под камнем — нет ✓");
+    }
+
+    // ---------- Кадры README и сайта (запуск: SR_ONLY=testReadmeShots) ----------
+
+    /**
+     * Сцены для README на настоящем рельефе: отсек станции в разрезе, ровер, зубчатая передача,
+     * орбитальный снимок в рамке, вкладка креатива. Кадры 1600×900 без HUD и чата попадают в
+     * screenshots/readme_*.png; tools/readme_shots.py переносит их в docs/img.
+     */
+    private void testReadmeShots(ClientGameTestContext context, TestSingleplayerContext sp) {
+        context.getInput().resizeWindow(1600, 900);
+        int[] g = flatGround(context, sp, BX + 3000, BZ + 400);
+        int gx = g[0];
+        int gy = g[1];
+        int gz = g[2];
+        sp.getServer().runCommand("time set 2500");
+        sp.getServer().runCommand("weather clear");
+        sp.getServer().runCommand(String.format("forceload add %d %d %d %d", gx - 24, gz - 24, gx + 150, gz + 24));
+        for (int k = 0; k < 4; k++) {
+            int cx = gx + k * 40;
+            sp.getServer().runCommand(fill(cx - 12, gy - 3, gz - 12, cx + 12, gy - 1, gz + 12, "minecraft:dirt"));
+            sp.getServer().runCommand(fill(cx - 12, gy, gz - 12, cx + 12, gy, gz + 12, "minecraft:grass_block"));
+            sp.getServer().runCommand(fill(cx - 12, gy + 1, gz - 12, cx + 12, gy + 14, gz + 12, "minecraft:air"));
+        }
+        context.waitTicks(20);
+
+        // 1. Отсек станции в разрезе: баллоны, контроллер, поглотитель, телеметрия, оранжерея, гермолюк
+        int s = gx;
+        sp.getServer().runCommand(fill(s - 4, gy + 1, gz, s + 4, gy + 5, gz + 6, "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(fill(s - 3, gy + 2, gz, s + 3, gy + 4, gz + 5, "minecraft:air"));
+        sp.getServer().runCommand(fill(s - 1, gy + 3, gz + 6, s + 1, gy + 3, gz + 6, "spacereloaded:hermetic_glass"));
+        sp.getServer().runCommand(set(s - 3, gy + 2, gz + 5, "spacereloaded:gas_tank"));
+        sp.getServer().runCommand(set(s - 2, gy + 2, gz + 5, "spacereloaded:gas_tank"));
+        sp.getServer().runCommand(set(s - 3, gy + 3, gz + 5, "spacereloaded:gas_tank"));
+        sp.getServer().runCommand(set(s - 1, gy + 2, gz + 5, "spacereloaded:atmosphere_controller"));
+        sp.getServer().runCommand(set(s + 2, gy + 3, gz + 6, "spacereloaded:co2_scrubber[facing=north]"));
+        sp.getServer().runCommand(set(s + 3, gy + 2, gz + 5, "spacereloaded:airlock_pump"));
+        sp.getServer().runCommand(set(s + 1, gy + 4, gz + 5, "spacereloaded:telemetry_screen[facing=north]"));
+        sp.getServer().runCommand(set(s - 4, gy + 2, gz + 3, "spacereloaded:hermetic_hatch"));
+        for (int x = s - 1; x <= s + 1; x++) {
+            sp.getServer().runCommand(set(x, gy + 2, gz + 2, "spacereloaded:hydroponic_tray"));
+            sp.getServer().runCommand(set(x, gy + 4, gz + 2, "spacereloaded:grow_lamp[lit=true]"));
+        }
+        context.waitTicks(3);
+        sp.getServer().runOnServer(server -> {
+            var level = server.overworld();
+            tank(server, new BlockPos(s - 3, gy + 2, gz + 5)).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN, 200);
+            tank(server, new BlockPos(s - 3, gy + 3, gz + 5)).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN, 120);
+            tank(server, new BlockPos(s - 2, gy + 2, gz + 5)).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.NITROGEN, 180);
+            for (int x = s - 1; x <= s + 1; x++) {
+                if (level.getBlockEntity(new BlockPos(x, gy + 2, gz + 2))
+                        instanceof org.alex_melan.spacereloaded.lifesupport.HydroponicTrayBlockEntity tray) {
+                    tray.plant(new ItemStack(x == s ? net.minecraft.world.item.Items.POTATO : net.minecraft.world.item.Items.WHEAT_SEEDS));
+                    tray.testGrow(x == s ? 0.6 : 1.0);
+                }
+            }
+        });
+        readmeCamera(context, sp, s + 0.5, gy + 2.2, gz - 6.5, 0f, 12f);
+        readmeShot(context, "station");
+
+        // 2. Ровер на красном песке у зарядной станции
+        int r = gx + 40;
+        sp.getServer().runCommand(fill(r - 12, gy, gz - 12, r + 12, gy, gz + 12, "minecraft:red_sand"));
+        for (int[] b : new int[][] {{-6, 5}, {5, 7}, {7, -3}, {-8, -2}}) {
+            sp.getServer().runCommand(set(r + b[0], gy + 1, gz + b[1], "minecraft:red_sandstone"));
+        }
+        sp.getServer().runCommand(set(r + 3, gy + 1, gz + 3, "spacereloaded:rover_charger"));
+        sp.getServer().runCommand(String.format("summon spacereloaded:rover %d.5 %d %d.5 {Rotation:[35f,0f]}", r, gy + 1, gz + 2));
+        context.waitTicks(3);
+        sp.getServer().runOnServer(server -> server.overworld().getEntitiesOfClass(org.alex_melan.spacereloaded.vehicle.RoverEntity.class,
+                new net.minecraft.world.phys.AABB(r - 3, gy, gz - 1, r + 3, gy + 3, gz + 5))
+                .forEach(v -> v.testSetup(4, org.alex_melan.spacereloaded.vehicle.RoverEntity.capacityE() * 0.8, false)));
+        readmeCamera(context, sp, r - 2.6, gy + 0.9, gz - 1.2, -40f, 14f);
+        readmeShot(context, "rover");
+
+        // 3. Зубчатая передача от мотора: малая → большая (2:1) → малая → малая (реверс)
+        int t = gx + 80;
+        int ty = gy + 2;
+        sp.getServer().runCommand(set(t, ty, gz + 2, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(t, ty, gz + 1, "spacereloaded:motor[axis=z]"));
+        sp.getServer().runCommand(set(t, ty, gz, "spacereloaded:small_gear[axis=z]"));
+        sp.getServer().runCommand(set(t + 1, ty + 1, gz, "spacereloaded:large_gear[axis=z]"));
+        sp.getServer().runCommand(set(t + 1, ty + 1, gz + 1, "spacereloaded:steel_shaft[axis=z]"));
+        sp.getServer().runCommand(set(t + 2, ty + 2, gz, "spacereloaded:small_gear[axis=z]"));
+        sp.getServer().runCommand(set(t + 3, ty + 2, gz, "spacereloaded:small_gear[axis=z]"));
+        sp.getServer().runCommand(fill(t - 1, gy + 1, gz + 1, t + 4, gy + 1, gz + 2, "spacereloaded:hull_plating"));
+        context.waitTicks(120);
+        readmeCamera(context, sp, t + 1.5, ty - 0.4, gz - 4.2, 0f, 6f);
+        readmeShot(context, "gears");
+
+        // 4. Снимок с орбиты: база, видимая сверху, по центру сетки карты масштаба 1 (256 м);
+        //    ЦУП и спутник-камера у стены с рамкой
+        int cell = 128 * 2;
+        int m = Math.floorDiv(gx + 360 + 64, cell) * cell + cell / 2 - 64;
+        int mz = Math.floorDiv(gz + 64, cell) * cell + cell / 2 - 64;
+        // forceload — не больше 256 чанков за команду: четыре квадранта
+        for (int qx = -1; qx <= 0; qx++) {
+            for (int qz = -1; qz <= 0; qz++) {
+                sp.getServer().runCommand(String.format("forceload add %d %d %d %d", m + qx * 128, mz + qz * 128,
+                        m + qx * 128 + 127, mz + qz * 128 + 127));
+            }
+        }
+        for (int w = 0; w < 600; w += 20) {
+            boolean ready = sp.getServer().computeOnServer(server -> server.overworld().isLoaded(new BlockPos(m - 124, gy, mz - 124))
+                    && server.overworld().isLoaded(new BlockPos(m + 124, gy, mz + 124)));
+            if (ready) {
+                break;
+            }
+            context.waitTicks(20);
+        }
+        java.util.List<String> base = new java.util.ArrayList<>(List.of(
+                // дороги крестом
+                fill(m - 124, gy, mz - 3, m + 124, gy, mz + 3, "minecraft:gray_concrete"),
+                fill(m - 3, gy, mz - 124, m + 3, gy, mz + 124, "minecraft:gray_concrete"),
+                // стартовый стол: бетонное кольцо, красный песок, площадка
+                fill(m + 40, gy, mz - 90, m + 90, gy, mz - 40, "minecraft:white_concrete"),
+                fill(m + 46, gy, mz - 84, m + 84, gy, mz - 46, "minecraft:red_sand"),
+                fill(m + 60, gy + 1, mz - 70, m + 70, gy + 1, mz - 60, "spacereloaded:launch_pad"),
+                // пруд
+                fill(m - 96, gy - 2, mz + 36, m - 44, gy, mz + 76, "minecraft:water"),
+                // модули базы и оранжерея под стеклом
+                fill(m - 90, gy + 1, mz - 80, m - 44, gy + 5, mz - 50, "spacereloaded:hull_plating"),
+                fill(m - 36, gy + 1, mz - 80, m - 16, gy + 5, mz - 24, "spacereloaded:hull_plating"),
+                fill(m - 36, gy + 6, mz - 80, m - 16, gy + 6, mz - 24, "minecraft:glass"),
+                // площадка у стены со снимком
+                fill(m - 6, gy, mz - 6, m + 6, gy, mz + 6, "minecraft:smooth_stone"),
+                fill(m - 3, gy + 1, mz + 2, m + 3, gy + 4, mz + 2, "spacereloaded:hull_plating")));
+        // поле солнечных панелей рядами с проходами
+        for (int row = 0; row < 8; row++) {
+            int zr = mz + 40 + row * 7;
+            base.add(fill(m + 40, gy + 1, zr, m + 100, gy + 1, zr + 4, "spacereloaded:solar_panel"));
+        }
+        for (String cmd : base) {
+            sp.getServer().runCommand(cmd);
+        }
+        BlockPos mcPos = new BlockPos(m - 2, gy + 1, mz);
+        sp.getServer().runCommand(set(mcPos.getX(), mcPos.getY(), mcPos.getZ(), "spacereloaded:mission_control"));
+        sp.getServer().runCommand(set(m + 2, gy + 1, mz, "spacereloaded:imaging_satellite"));
+        context.waitTicks(40);
+        sp.getServer().runOnServer(server -> {
+            var level = server.overworld();
+            var player = server.getPlayerList().getPlayers().get(0);
+            org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server).setImagingSats(level.dimension(), 2);
+            var map = new ItemStack(net.minecraft.world.item.Items.MAP);
+            map.set(ModDataComponents.IMAGE_SCALE, 1);
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.order(level, mcPos, player, map);
+            var image = slotOf(player, ModItems.ORBITAL_IMAGE);
+            var order = image.get(ModDataComponents.IMAGE_ORDER);
+            var due = new org.alex_melan.spacereloaded.orbit.ImageOrder(order.dimension(), order.x(), order.z(), order.scale(),
+                    level.getGameTime());
+            image.set(ModDataComponents.IMAGE_ORDER, due);
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.develop(player, image, due);
+        });
+        context.waitTicks(60);
+        sp.getServer().runOnServer(server -> {
+            var level = server.overworld();
+            var player = server.getPlayerList().getPlayers().get(0);
+            var filled = slotOf(player, net.minecraft.world.item.Items.FILLED_MAP).copy();
+            var frame = new net.minecraft.world.entity.decoration.ItemFrame(level, new BlockPos(m, gy + 2, mz + 1),
+                    net.minecraft.core.Direction.NORTH);
+            frame.setItem(filled, false);
+            level.addFreshEntity(frame);
+            org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server).setImagingSats(level.dimension(), 0);
+        });
+        readmeCamera(context, sp, m + 0.5, gy + 0.9, mz + 0.05, 0f, 22f);
+        readmeShot(context, "orbital-image");
+
+        // 5. Вкладка креатива мода
+        sp.getServer().runCommand("gamemode creative @a");
+        context.waitTicks(10);
+        // вкладка выбирается до открытия экрана: init() открывает статически выбранную
+        context.runOnClient(mc -> {
+            try {
+                var field = net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.class
+                        .getDeclaredField("selectedTab");
+                field.setAccessible(true);
+                field.set(null, org.alex_melan.spacereloaded.registry.ModCreativeTab.TAB);
+            } catch (ReflectiveOperationException e) {
+                throw new AssertionError("Вкладка креатива: " + e);
+            }
+        });
+        context.setScreen(() -> {
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            return new net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen(mc.player,
+                    mc.player.connection.enabledFeatures(), false);
+        });
+        context.getInput().setCursorPos(4, 4); // курсор в угол — без всплывающей подсказки
+        context.waitTicks(5);
+        readmeShot(context, "creative-tab");
+        context.setScreen(() -> null);
+        context.runOnClient(mc -> {
+            if (mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
+        });
+        sp.getServer().runCommand("gamemode survival @a");
+        context.getInput().resizeWindow(854, 480);
+        log("кадры README сняты ✓");
+    }
+
+    /** Ровный сухой участок настоящего рельефа (перепад ≤ 3 блока на 24×24), {x, y, z}. */
+    private int[] flatGround(ClientGameTestContext context, TestSingleplayerContext sp, int x0, int z0) {
+        for (int i = 0; i < 24; i++) {
+            int x = x0 + i * 64;
+            sp.getServer().runCommand(String.format("forceload add %d %d %d %d", x - 12, z0 - 12, x + 12, z0 + 12));
+            boolean loaded = false;
+            for (int w = 0; w < 400 && !loaded; w += 10) {
+                loaded = sp.getServer().computeOnServer(server -> server.overworld().isLoaded(new BlockPos(x, 64, z0)));
+                if (!loaded) {
+                    context.waitTicks(10);
+                }
+            }
+            int[] found = sp.getServer().computeOnServer(server -> {
+                var level = server.overworld();
+                int lo = Integer.MAX_VALUE;
+                int hi = Integer.MIN_VALUE;
+                for (int dx = -12; dx <= 12; dx += 4) {
+                    for (int dz = -12; dz <= 12; dz += 4) {
+                        int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                                x + dx, z0 + dz) - 1;
+                        if (!level.getFluidState(new BlockPos(x + dx, y, z0 + dz)).isEmpty()) {
+                            return null;
+                        }
+                        lo = Math.min(lo, y);
+                        hi = Math.max(hi, y);
+                    }
+                }
+                return hi - lo <= 3 ? new int[] {x, hi, z0} : null;
+            });
+            if (found != null) {
+                return found;
+            }
+            sp.getServer().runCommand(String.format("forceload remove %d %d %d %d", x - 12, z0 - 12, x + 12, z0 + 12));
+        }
+        throw new AssertionError("Не нашёлся ровный сухой участок для кадров README");
+    }
+
+    private void readmeCamera(ClientGameTestContext context, TestSingleplayerContext sp, double x, double y, double z,
+                              float yaw, float pitch) {
+        prepareCamera(context, sp, x, y, z, yaw, pitch);
+        context.waitTicks(20);
+        sp.getClientLevel().waitForChunksRender();
+    }
+
+    /** Кадр без интерфейса и чата (сообщения о режиме и сохранённом скриншоте не попадают в картинку). */
+    private void readmeShot(ClientGameTestContext context, String name) {
+        context.runOnClient(mc -> {
+            mc.gui.hud.getChat().clearMessages(false);
+            if (!mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
+        });
+        context.waitTicks(5);
+        var path = context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions
+                .of("readme_" + name).disableCounterPrefix());
+        log("кадр README " + name + ": " + path);
     }
 
     // ---------- 36. Взрыв и герметичность (T024) ----------

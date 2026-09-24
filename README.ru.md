@@ -21,8 +21,15 @@ Engineering**.
 [English documentation](README.md)
 
 <p align="center">
-  <img src="docs/img/creative-tab.png" width="46%" alt="Креативная вкладка SpaceReloaded">
-  <img src="docs/img/airlock.png" width="52%" alt="Шлюз с интерлоком гермолюков">
+  <img src="docs/img/station.png" width="98%" alt="Отсек станции в разрезе: газовые баллоны, контроллер атмосферы, поглотитель CO₂, телеметрия и гидропонная оранжерея">
+</p>
+<p align="center">
+  <img src="docs/img/rover.png" width="49%" alt="Ровер из деталей у зарядной станции">
+  <img src="docs/img/gears.png" width="49%" alt="Зубчатая передача от мотора: малые и большая шестерни в зацеплении">
+</p>
+<p align="center">
+  <img src="docs/img/orbital-image.png" width="43%" alt="Снимок базы с орбиты, проявленный в запертую карту">
+  <img src="docs/img/creative-tab.png" width="45%" alt="Креативная вкладка SpaceReloaded">
 </p>
 
 <p align="center">

@@ -41,6 +41,8 @@ public class KineticBlockEntity extends BlockEntity {
     protected String networkState = "idle";
     /** Визуальная фаза (синхронизируется). */
     private double visualOmega;
+    /** Множитель визуальной скорости сети (≤ 1). */
+    private double visualScale = 1;
     private double angle0;
     private long tick0;
     private boolean registered;
@@ -80,13 +82,37 @@ public class KineticBlockEntity extends BlockEntity {
         this.networkState = state;
     }
 
-    /** Синхронизация визуальной фазы клиенту (непрерывно по углу). */
+    /** Синхронизация визуальной фазы клиенту (непрерывно по углу) с последним масштабом сети. */
     public void syncMotion(long now) {
-        double cap = SpaceReloaded.config().kineticVisualMaxOmega;
-        double next = Math.max(-cap, Math.min(cap, omega));
+        syncMotion(now, visualScale);
+    }
+
+    /**
+     * Синхронизация с масштабом визуальной скорости сети: предел {@code kineticVisualMaxOmega} сеть
+     * применяет ОДНИМ множителем ко всем узлам, иначе ограничение ломало бы передаточные отношения и
+     * зубья на экране проскальзывали бы.
+     */
+    public void syncMotion(long now, double scale) {
         angle0 = visualAngle(now);
         tick0 = now;
-        visualOmega = next;
+        visualScale = scale;
+        visualOmega = omega * scale;
+        sendMotion();
+    }
+
+    /**
+     * Согласование фазы при сборке сети: угол узла = rᵢ·Θ (Θ — фаза корня), чтобы зубья шестерён,
+     * поставленных в разное время, входили во впадины соседей (сдвиг зацепления добавляет рендер).
+     */
+    public void alignPhase(long now, double angle, double scale) {
+        angle0 = angle;
+        tick0 = now;
+        visualScale = scale;
+        visualOmega = omega * scale;
+        sendMotion();
+    }
+
+    private void sendMotion() {
         setChanged();
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);

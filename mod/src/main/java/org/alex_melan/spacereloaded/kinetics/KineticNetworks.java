@@ -305,12 +305,18 @@ public final class KineticNetworks {
             } else {
                 net.omega = 0;
             }
-            // Мгновенно согласовать узлы и показать состояние (заклинено, слишком велика…)
+            // Мгновенно согласовать узлы и показать состояние (заклинено, слишком велика…); фаза
+            // каждого узла — rᵢ·Θ от корня, чтобы зубья соседних шестерён были в зацеплении
+            int rootIndex = Math.max(0, net.nodes.indexOf(pos));
+            double rootRatio = state == KineticGraph.State.OK ? net.analysis.ratio()[rootIndex] : 0;
+            double theta = rootRatio != 0 && level.getBlockEntity(pos) instanceof KineticBlockEntity rootBe
+                    ? rootBe.visualAngle(now) / rootRatio : 0;
+            double scale = visualScale(net, state == KineticGraph.State.OK ? net.analysis.ratio() : null, net.omega);
             for (int i = 0; i < net.nodes.size(); i++) {
                 if (level.getBlockEntity(net.nodes.get(i)) instanceof KineticBlockEntity be) {
                     double r = state == KineticGraph.State.OK ? net.analysis.ratio()[i] : 0;
                     be.applyStep(r * net.omega, 0, 0, net.stateKey());
-                    be.syncMotion(now);
+                    be.alignPhase(now, r * theta, scale);
                 }
             }
             net.lastSync = now;
@@ -410,9 +416,11 @@ public final class KineticNetworks {
         double change = Math.abs(net.omega - net.lastSyncedOmega) / Math.max(1, Math.abs(net.omega));
         if (sleepNow || Double.isNaN(net.lastSyncedOmega)
                 || (change > config.kineticSyncThreshold && now - net.lastSync >= config.kineticSyncMinTicks)) {
+            double scale = visualScale(net, net.analysis.state() == KineticGraph.State.OK ? net.analysis.ratio() : null,
+                    net.omega);
             for (KineticBlockEntity be : nodes) {
                 if (be != null) {
-                    be.syncMotion(now);
+                    be.syncMotion(now, scale);
                 }
             }
             net.lastSync = now;
@@ -450,5 +458,17 @@ public final class KineticNetworks {
         LevelData data = LEVELS.get(level.dimension());
         Net net = data == null ? null : data.byPos.get(pos.asLong());
         return net == null ? "none" : net.stateKey();
+    }
+
+    /** Общий множитель визуальной скорости: самый быстрый узел не быстрее kineticVisualMaxOmega. */
+    private static double visualScale(Net net, double[] ratio, double omega) {
+        double cap = SpaceReloaded.config().kineticVisualMaxOmega;
+        double fastest = 0;
+        if (ratio != null) {
+            for (double r : ratio) {
+                fastest = Math.max(fastest, Math.abs(r * omega));
+            }
+        }
+        return fastest > cap ? cap / fastest : 1;
     }
 }
