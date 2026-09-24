@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/dish_panel"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/dish_panel_hidden"
+		}
+	}
+}

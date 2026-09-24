@@ -273,6 +273,40 @@ OTHER = {
         "Трансформатор перед ванною 3×3×2 з вогнетриву, склепіння з трьома графітовими електродами. Завантажте залізо й "
         "кальцит при відкритому склепінні й плавте: 0.475 кВт·год на кг при 5 МВт; продування киснем випалює вуглець і "
         "економить струм. Піч нахиляється й зливає сталь через носок."),
+    "block.spacereloaded.dsn_controller": ("Deep Space Receiver", "Приёмник дальней связи", "Приймач далекого зв'язку"),
+    "block.spacereloaded.dish_mount": ("Antenna Mount", "Опора антенны", "Опора антени"),
+    "block.spacereloaded.dish_panel": ("Reflector Panel", "Панель отражателя", "Панель відбивача"),
+    "screen.spacereloaded.dsn": ("Deep Space Antenna", "Антенна дальней связи", "Антена далекого зв'язку"),
+    "status.spacereloaded.dsn.not_formed": ("Antenna not assembled — strike the receiver with the engineer's hammer",
+                                            "Антенна не собрана — ударьте приёмник инженерным молотом",
+                                            "Антену не зібрано — вдарте приймач інженерним молотом"),
+    "status.spacereloaded.dsn.target": ("Target: %s · range %s Gm", "Цель: %s · дальность %s Гм", "Ціль: %s · відстань %s Гм"),
+    "status.spacereloaded.dsn.dish": ("Dish: %s panels · Ø %s m · gain %s dBi", "Тарелка: %s панелей · Ø %s м · усиление %s дБи",
+                                      "Тарілка: %s панелей · Ø %s м · підсилення %s дБі"),
+    "status.spacereloaded.dsn.sky": ("Target %s° above the horizon", "Цель %s° над горизонтом", "Ціль %s° над горизонтом"),
+    "status.spacereloaded.dsn.below": ("Target below the horizon — no link", "Цель под горизонтом — связи нет",
+                                       "Ціль під горизонтом — зв'язку немає"),
+    "status.spacereloaded.dsn.rate": ("Link: %s · %s", "Линия: %s · %s", "Лінія: %s · %s"),
+    "status.spacereloaded.dsn.link_ok": ("telemetry and control OK", "телеметрия и управление есть", "телеметрія й керування є"),
+    "status.spacereloaded.dsn.link_no": ("below telemetry threshold (1 kbit/s)", "ниже порога телеметрии (1 кбит/с)",
+                                         "нижче порога телеметрії (1 кбіт/с)"),
+    "gauge.spacereloaded.link": ("Link rate", "Скорость линии", "Швидкість лінії"),
+    "action.spacereloaded.dsn.target": ("Target", "Цель", "Ціль"),
+    "message.spacereloaded.imaging.remote": ("Image of %s via the deep space link %s — downlink %s min",
+                                             "Снимок тела %s по дальней связи %s — передача %s мин",
+                                             "Знімок тіла %s далеким зв'язком %s — передавання %s хв"),
+    "manual.spacereloaded.deep_space_antenna.title": ("Deep Space Antenna", "Антенна дальней связи", "Антена далекого зв'язку"),
+    "manual.spacereloaded.deep_space_antenna.text": (
+        "A receiver with a mount; build the dish from reflector panels in the plane above the mount — its diameter "
+        "sets the gain (πD/λ)². The dish tracks the target across the sky. A 34 m dish hears Mars at ~5 Mbit/s, a 3 m "
+        "one at ~38 kbit/s; a link of 1 kbit/s commands unmanned craft without a relay satellite.",
+        "Приёмник с опорой; тарелку соберите из панелей отражателя в плоскости над опорой — её диаметр задаёт "
+        "усиление (πD/λ)². Тарелка сопровождает цель по небу. 34 м слышат Марс на ~5 Мбит/с, 3 м — на ~38 кбит/с; "
+        "линия от 1 кбит/с командует беспилотниками без спутника-ретранслятора.",
+        "Приймач з опорою; тарілку зберіть із панелей відбивача в площині над опорою — її діаметр задає "
+        "підсилення (πD/λ)². Тарілка супроводжує ціль небом. 34 м чують Марс на ~5 Мбіт/с, 3 м — на ~38 кбіт/с; "
+        "лінія від 1 кбіт/с керує безпілотниками без супутника-ретранслятора."),
+    "planet.spacereloaded.overworld": ("Earth", "Земля", "Земля"),
     "manual.spacereloaded.eclss_rack.title": ("Life Support Rack", "Стойка жизнеобеспечения", "Стійка життєзабезпечення"),
     "manual.spacereloaded.eclss_rack.text": (
         "A 5×4 rack in the wall of a sealed zone with four module sockets. Electrolysis turns water into O₂; "

@@ -667,6 +667,20 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block EAF_ELECTRODE = registerNoItem("eaf_electrode", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    // --- 008: антенна дальней связи ---
+    public static final Block DSN_CONTROLLER = register("dsn_controller",
+            props -> new org.alex_melan.spacereloaded.multiblock.ControllerBlock<>(props,
+                    org.alex_melan.spacereloaded.comms.DsnBlockEntity::new, () -> ModBlockEntities.DSN,
+                    org.alex_melan.spacereloaded.comms.DsnBlockEntity::serverTick),
+            industrial().lightLevel(s -> s.getValue(org.alex_melan.spacereloaded.multiblock.ControllerBlock.ACTIVE) ? 4 : 0));
+    public static final Block DISH_MOUNT = register("dish_mount",
+            org.alex_melan.spacereloaded.multiblock.FormableBlock::new, industrial().noOcclusion());
+    public static final Block DISH_PANEL = register("dish_panel",
+            org.alex_melan.spacereloaded.multiblock.FormableBlock::new, industrial().noOcclusion());
+    public static final Block DISH_TILE = registerNoItem("dish_tile", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block FEED_HORN = registerNoItem("feed_horn", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block BERYL_ORE = register("beryl_ore", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 3.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
     public static final Block BORAX_ORE = register("borax_ore", Block::new,

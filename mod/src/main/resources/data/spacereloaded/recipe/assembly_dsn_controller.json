@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:circuit_board",
+		"spacereloaded:radhard_processor",
+		"spacereloaded:copper_wire",
+		"spacereloaded:copper_wire"
+	],
+	"result": {
+		"id": "spacereloaded:dsn_controller"
+	}
+}

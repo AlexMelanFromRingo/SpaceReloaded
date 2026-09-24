@@ -107,6 +107,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testCascade", () -> testCascade(context, sp));
             scenarios.put("testAirColumn", () -> testAirColumn(context, sp));
             scenarios.put("testArcFurnace", () -> testArcFurnace(context, sp));
+            scenarios.put("testDsnAntenna", () -> testDsnAntenna(context, sp));
             scenarios.put("testReadmeShots", () -> testReadmeShots(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
@@ -3531,6 +3532,98 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                         && Math.abs(r[2] - org.alex_melan.spacereloaded.core.metallurgy.ArcFurnace.oxygenKg(200)) < 0.5
                         && Math.abs(r[3] - 0.36) < 0.05, "Дуговая печь: " + report);
         log("дуговая печь: " + report + " ✓");
+    }
+
+    // ---------- 008. Антенна дальней связи (US6) ----------
+
+    /**
+     * Тарелка ~10 м нацелена на Марс в зените: скорость линии — бюджет радиолинии на текущей дальности;
+     * беспилотный рейс к Марсу на связи без спутника; снимок Марса заказывается с Земли через антенну.
+     */
+    private void testDsnAntenna(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1600;
+        int z0 = BZ;
+        moveTo(context, sp, x0 - 9, z0);
+        BlockPos key = new BlockPos(x0, BY, z0);
+        sp.getServer().runCommand(set(x0, BY, z0, "spacereloaded:dsn_controller[facing=north]"));
+        sp.getServer().runCommand(set(x0, BY + 1, z0, "spacereloaded:dish_mount"));
+        int panels = 0;
+        for (int dx = -5; dx <= 5; dx++) {
+            for (int dz = -5; dz <= 5; dz++) {
+                if (dx * dx + dz * dz <= 25) {
+                    sp.getServer().runCommand(set(x0 + dx, BY + 2, z0 + dz, "spacereloaded:dish_panel"));
+                    panels++;
+                }
+            }
+        }
+        BlockPos mc = new BlockPos(x0 - 3, BY, z0 - 3);
+        sp.getServer().runCommand(set(mc.getX(), mc.getY(), mc.getZ(), "spacereloaded:mission_control"));
+        context.waitTicks(5);
+        var mars = Identifier.fromNamespaceAndPath("spacereloaded", "mars");
+        // Марс в зенит: угол Солнца = 90° − элонгация
+        long clock = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var own = org.alex_melan.spacereloaded.comms.DsnBlockEntity.bodyOf(level.dimension().identifier());
+            var body = org.alex_melan.spacereloaded.comms.DsnBlockEntity.bodyOf(mars);
+            double elong = org.alex_melan.spacereloaded.comms.DsnBlockEntity.skyAngle(0, level.getGameTime(), own, body);
+            double sun = Math.PI / 2 - elong;
+            return Math.floorMod(Math.round(sun / (2 * Math.PI) * 24000), 24000L);
+        });
+        sp.getServer().runCommand("time set " + clock);
+        boolean formed = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server).setCoverage(level.dimension(), 0);
+            var d = (org.alex_melan.spacereloaded.comms.DsnBlockEntity) level.getBlockEntity(key);
+            d.testTarget(mars);
+            return d.hammer(level, server.getPlayerList().getPlayers().get(0));
+        });
+        assertThat(formed, "Антенна должна собраться молотом");
+        context.waitTicks(80);
+        final int n = panels;
+        double[] r = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var d = (org.alex_melan.spacereloaded.comms.DsnBlockEntity) level.getBlockEntity(key);
+            var own = org.alex_melan.spacereloaded.comms.DsnBlockEntity.bodyOf(level.dimension().identifier());
+            var body = org.alex_melan.spacereloaded.comms.DsnBlockEntity.bodyOf(mars);
+            double range = org.alex_melan.spacereloaded.comms.DsnBlockEntity.distance(level.getGameTime(), own, body);
+            double diameter = 2 * Math.sqrt(n / Math.PI);
+            double expected = org.alex_melan.spacereloaded.core.comms.LinkBudget.rate(100, 3, diameter, range);
+            var marsProfile = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, mars).orElseThrow();
+            boolean covered = org.alex_melan.spacereloaded.network.Logistics.coverageSatisfied(server,
+                    ResourceKey.create(Registries.DIMENSION, Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")),
+                    marsProfile, true);
+            return new double[] {d.panels().length / 2.0, d.diameterM(), d.rateBps(), expected, range, covered ? 1 : 0,
+                    org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server).groundLinkRate(mars)};
+        });
+        assertThat(r[0] == n && Math.abs(r[2] - r[3]) < 0.01 * r[3] && r[2] > 1000 && r[5] == 1 && Math.abs(r[6] - r[2]) < 0.02 * r[2],
+                String.format(java.util.Locale.ROOT, "Антенна: %.0f панелей Ø %.1f м, линия %.0f бит/с (ожидалось %.0f) на %.3g Гм, покрытие %s",
+                        r[0], r[1], r[2], r[3], r[4] / 1e9, r[5] == 1));
+        log(String.format(java.util.Locale.ROOT, "антенна: Ø %.1f м → Марс на %.0f Гм, линия %s = бюджет; беспилотный рейс на связи ✓",
+                r[1], r[4] / 1e9, org.alex_melan.spacereloaded.comms.DsnBlockEntity.formatRate(r[2])));
+        String remote = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var player = server.getPlayerList().getPlayers().get(0);
+            var marsKey = ResourceKey.create(Registries.DIMENSION, mars);
+            org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server).setImagingSats(level.dimension(), 0);
+            org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server).setImagingSats(marsKey, 1);
+            player.getInventory().clearContent();
+            var map = new ItemStack(net.minecraft.world.item.Items.MAP);
+            map.set(ModDataComponents.IMAGE_SCALE, 2);
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.order(level, mc, player, map);
+            var image = slotOf(player, ModItems.ORBITAL_IMAGE);
+            org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server).setImagingSats(marsKey, 0);
+            var order = image.get(ModDataComponents.IMAGE_ORDER);
+            return order == null ? "none" : order.dimension() + " " + (order.readyTick() - level.getGameTime());
+        });
+        assertThat(remote.startsWith("spacereloaded:mars "), "Снимок Марса с Земли через антенну: " + remote);
+        log("антенна: снимок Марса заказан с Земли по дальней связи, готов через " + remote.split(" ")[1] + " тиков ✓");
+        readmeCamera(context, sp, x0 - 9.5, BY + 1, z0 - 5.5, -60f, 8f);
+        readmeShot(context, "dsn");
+        context.runOnClient(mc2 -> {
+            if (mc2.gui.hud.isHidden()) {
+                mc2.gui.hud.toggle();
+            }
+        });
     }
 
     // ---------- Кадры README и сайта (запуск: SR_ONLY=testReadmeShots) ----------

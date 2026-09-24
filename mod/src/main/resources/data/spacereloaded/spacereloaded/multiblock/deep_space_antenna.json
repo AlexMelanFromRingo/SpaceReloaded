@@ -1,0 +1,13 @@
+{
+	"key": "spacereloaded:dsn_controller",
+	"cells": [
+		{
+			"offset": [
+				0,
+				1,
+				0
+			],
+			"block": "spacereloaded:dish_mount"
+		}
+	]
+}

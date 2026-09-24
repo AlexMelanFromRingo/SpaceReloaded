@@ -1,0 +1,11 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:dish_panel",
+		"count": 2
+	}
+}

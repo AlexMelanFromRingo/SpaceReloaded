@@ -36,6 +36,15 @@ public class SpaceNetworkState extends SavedData {
         ).apply(instance, PosEntry::new));
     }
 
+    /** Наземная антенна дальней связи (008): позиция, тело цели, скорость линии, бит/с. */
+    private record LinkEntry(GlobalPos pos, Identifier target, double rate) {
+        static final Codec<LinkEntry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                GlobalPos.CODEC.fieldOf("pos").forGetter(LinkEntry::pos),
+                Identifier.CODEC.fieldOf("target").forGetter(LinkEntry::target),
+                Codec.DOUBLE.fieldOf("rate").forGetter(LinkEntry::rate)
+        ).apply(instance, LinkEntry::new));
+    }
+
     public static final Codec<SpaceNetworkState> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.unboundedMap(Level.RESOURCE_KEY_CODEC, Codec.INT)
                     .optionalFieldOf("coverage", Map.of()).forGetter(s -> s.coverage),
@@ -48,7 +57,9 @@ public class SpaceNetworkState extends SavedData {
             PosEntry.CODEC.listOf().optionalFieldOf("interceptors", List.of())
                     .forGetter(s -> toList(s.interceptors)),
             Codec.unboundedMap(Level.RESOURCE_KEY_CODEC, Codec.INT)
-                    .optionalFieldOf("imaging_sats", Map.of()).forGetter(s -> s.imagingSats)
+                    .optionalFieldOf("imaging_sats", Map.of()).forGetter(s -> s.imagingSats),
+            LinkEntry.CODEC.listOf().optionalFieldOf("ground_links", List.of())
+                    .forGetter(s -> List.copyOf(s.groundLinks.values()))
     ).apply(instance, SpaceNetworkState::new));
 
     public static final SavedDataType<SpaceNetworkState> TYPE = new SavedDataType<>(
@@ -65,17 +76,21 @@ public class SpaceNetworkState extends SavedData {
     private final Map<ResourceKey<Level>, Integer> powerSats;
     /** Спутники-камеры (007, US5): измерение-тело под орбитой → число аппаратов. */
     private final Map<ResourceKey<Level>, Integer> imagingSats;
+    private final Map<GlobalPos, LinkEntry> groundLinks = new HashMap<>();
 
     public SpaceNetworkState() {
-        this(Map.of(), Map.of(), Map.of(), List.of(), List.of(), Map.of());
+        this(Map.of(), Map.of(), Map.of(), List.of(), List.of(), Map.of(), List.of());
     }
 
     private SpaceNetworkState(Map<ResourceKey<Level>, Integer> coverage,
                              Map<ResourceKey<Level>, Long> stormUntil,
                              Map<ResourceKey<Level>, Integer> powerSats,
                              List<PosEntry> beaconFrequency, List<PosEntry> interceptors,
-                             Map<ResourceKey<Level>, Integer> imagingSats) {
+                             Map<ResourceKey<Level>, Integer> imagingSats, List<LinkEntry> links) {
         this.imagingSats = new HashMap<>(imagingSats);
+        for (LinkEntry e : links) {
+            groundLinks.put(e.pos(), e);
+        }
         this.coverage = new HashMap<>(coverage);
         this.stormUntil = new HashMap<>(stormUntil);
         this.powerSats = new HashMap<>(powerSats);
@@ -125,6 +140,32 @@ public class SpaceNetworkState extends SavedData {
     }
 
     // --- Энергоспутники (Phase 14) ---
+
+    /** Линия наземной антенны (0 — нет связи: цель за горизонтом или антенна разобрана). */
+    public void setGroundLink(GlobalPos antenna, Identifier target, double rateBps) {
+        LinkEntry old = groundLinks.get(antenna);
+        if (rateBps <= 0) {
+            if (groundLinks.remove(antenna) != null) {
+                setDirty();
+            }
+            return;
+        }
+        if (old == null || !old.target().equals(target) || Math.abs(old.rate() - rateBps) > 0.01 * rateBps) {
+            groundLinks.put(antenna, new LinkEntry(antenna, target, rateBps));
+            setDirty();
+        }
+    }
+
+    /** Лучшая скорость наземной линии к телу, бит/с. */
+    public double groundLinkRate(Identifier target) {
+        double best = 0;
+        for (LinkEntry e : groundLinks.values()) {
+            if (e.target().equals(target)) {
+                best = Math.max(best, e.rate());
+            }
+        }
+        return best;
+    }
 
     public int imagingSats(ResourceKey<Level> body) {
         return imagingSats.getOrDefault(body, 0);

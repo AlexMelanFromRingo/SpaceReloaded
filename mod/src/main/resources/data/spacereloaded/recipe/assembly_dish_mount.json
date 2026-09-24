@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_shaft",
+		"spacereloaded:motor"
+	],
+	"result": {
+		"id": "spacereloaded:dish_mount"
+	}
+}

@@ -484,6 +484,55 @@ def eaf_models():
         g.item_def(i, f"{NS}:item/{i}")
 
 
+# --- US6: антенна дальней связи --------------------------------------------------------------------
+DSN_BLOCKS = ["dsn_controller", "dish_mount", "dish_panel"]
+DSN_PARTS = ["dish_tile", "feed_horn"]
+
+
+def dsn_template():
+    """Приёмник (ключ) и опора над ним; тарелку контроллер собирает из панелей над опорой сам."""
+    write(os.path.join(MB, "deep_space_antenna.json"), {
+        "key": sr("dsn_controller"), "cells": [{"offset": [0, 1, 0], "block": sr("dish_mount")}]})
+
+
+def dsn_recipes():
+    assembly("dsn_controller", ["steel_plate", "steel_plate", "circuit_board", "radhard_processor", "copper_wire",
+                                "copper_wire"], "dsn_controller")
+    assembly("dish_mount", ["steel_plate", "steel_plate", "steel_plate", "steel_shaft", "motor"], "dish_mount")
+    assembly("dish_panel", ["aluminium_ingot", "aluminium_ingot"], "dish_panel", 2)
+
+
+def dsn_models():
+    for formed in (False, True):
+        for active in (False, True):
+            name = "dsn_controller" + ("_formed" if formed else "") + ("_on" if active else "")
+            front = "dsn_controller_front" + ("_on" if formed and active else "")
+            mk.plain(name, "minecraft:block/orientable", {"front": f"{NS}:block/{front}", "side": f"{NS}:block/dsn_cabin",
+                                                         "top": f"{NS}:block/dsn_cabin"})
+    mk.blockstate("dsn_controller", mk.facing_variants(
+        lambda formed, active: f"{NS}:block/dsn_controller" + ("_formed" if formed else "") + ("_on" if active else "")))
+    mk.item("dsn_controller", f"{NS}:block/dsn_controller")
+    # опора: пьедестал и вилка (ось вращения север — юг, на ней качается тарелка)
+    mount = [mk.box([3, 0, 3], [13, 9, 13], "#steel"),
+             mk.box([1, 9, 6], [3, 16, 10], "#steel"), mk.box([13, 9, 6], [15, 16, 10], "#steel"),
+             mk.box([3, 9, 6.5], [13, 10, 9.5], "#steel", skip=("east", "west"))]
+    mk.model("dish_mount", {"steel": f"{NS}:block/dsn_mount"}, mount)
+    mk.model("dish_mount_formed", {"steel": f"{NS}:block/dsn_mount"}, mount)
+    mk.blockstate("dish_mount", {"formed=false": {"model": f"{NS}:block/dish_mount"}, "formed=true": {"model": f"{NS}:block/dish_mount_formed"}})
+    mk.item("dish_mount", f"{NS}:block/dish_mount")
+    mk.plain("dish_panel", "minecraft:block/cube_all", {"all": f"{NS}:block/dish_panel"})
+    mk.model("dish_panel_hidden", {"particle": f"{NS}:block/dish_panel"}, [])
+    mk.blockstate("dish_panel", {"formed=false": {"model": f"{NS}:block/dish_panel"}, "formed=true": {"model": f"{NS}:block/dish_panel_hidden"}})
+    mk.item("dish_panel", f"{NS}:block/dish_panel")
+    # плитка отражателя (1 м², толщина 1 px, рёбра жёсткости снизу) и облучатель в фокусе
+    mk.model("dish_tile", {"face": f"{NS}:block/dish_panel", "rib": f"{NS}:block/dsn_mount"},
+             [mk.box([0, 0, 0], [16, 1, 16], "#face"), mk.box([7.5, -1, 0], [8.5, 0, 16], "#rib", skip=("up",))])
+    mk.model("feed_horn", {"horn": f"{NS}:block/dsn_mount", "mouth": f"{NS}:block/reactor_dark"},
+             [mk.box([6, 0, 6], [10, 3, 10], "#horn", over={"down": "#mouth"}), mk.box([7, 3, 7], [9, 6, 9], "#horn", skip=("down",))])
+    for p in DSN_PARTS:
+        mk.blockstate(p, {"": {"model": f"{NS}:block/{p}"}})
+
+
 def reactor_models():
     faces_all = mk.FACES
     # привод: несформирован — корпус с пультом; сформирован — открытый каркас (виден ход стержня)
@@ -580,10 +629,12 @@ MASSES = {
     "asu_tray": (40.0, ["asu_tray"]),
     "argon_canister": (60.0, ["argon_canister"]),           # баллон 50 л + 10 кг аргона
     "eaf": (200.0, ["eaf_controller", "eaf_shell", "eaf_roof"]),
-    "electrode": (40.0, ["electrode_blank", "graphite_electrode"]),   # Ø 200 мм × 0.8 м графита                 # корзина: ~30 кг сплава U-Zr + оболочка
+    "electrode": (40.0, ["electrode_blank", "graphite_electrode"]),   # Ø 200 мм × 0.8 м графита
+    "dsn": (150.0, ["dsn_controller", "dish_mount"]),
+    "dish_panel": (12.0, ["dish_panel"]),                   # 1 м² алюминиевой сотовой панели                 # корзина: ~30 кг сплава U-Zr + оболочка
 }
 
-BLOCKS = ECLSS_BLOCKS + REACTOR_BLOCKS + CASCADE_BLOCKS + ASU_BLOCKS + ["asu_compressor"] + EAF_BLOCKS
+BLOCKS = ECLSS_BLOCKS + REACTOR_BLOCKS + CASCADE_BLOCKS + ASU_BLOCKS + ["asu_compressor"] + EAF_BLOCKS + DSN_BLOCKS
 
 
 def data():
@@ -592,6 +643,7 @@ def data():
     cascade_template()
     asu_template()
     eaf_template()
+    dsn_template()
     write(os.path.join(DATA, "tags", "item", "eaf_charge.json"), {"replace": False, "values": [
         sr("iron_dust"), sr("meteoric_iron"), "minecraft:iron_ingot", "minecraft:raw_iron", "minecraft:iron_nugget",
         "minecraft:iron_block", "minecraft:raw_iron_block"]})
@@ -625,6 +677,7 @@ def main():
     cascade_recipes()
     asu_recipes()
     eaf_recipes()
+    dsn_recipes()
     data()
     eclss_models()
     reactor_models()
@@ -632,6 +685,7 @@ def main():
     cascade_models()
     asu_models()
     eaf_models()
+    dsn_models()
 
 
 if __name__ == "__main__":

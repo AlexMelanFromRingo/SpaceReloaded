@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"front": "spacereloaded:block/dsn_controller_front",
+		"side": "spacereloaded:block/dsn_cabin",
+		"top": "spacereloaded:block/dsn_cabin"
+	}
+}

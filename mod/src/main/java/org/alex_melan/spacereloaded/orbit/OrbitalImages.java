@@ -114,14 +114,35 @@ public final class OrbitalImages {
                 minutes(worst)));
     }
 
-    /** ПКМ по ЦУПу пустой картой: заказ снимка вокруг ЦУПа. */
+    /**
+     * ПКМ по ЦУПу пустой картой: заказ снимка вокруг ЦУПа. Нет спутника-камеры над своим телом — снимок
+     * удалённого тела через антенну дальней связи (линия ≥ порога телеметрии к телу со спутником-камерой):
+     * центр — точка ЦУПа в координатах того тела, к ожиданию пролёта добавляется передача сырых данных
+     * полосы ((128·2^k м)² / GSD² пикселей по 12 бит) на скорости линии.
+     */
     public static void order(ServerLevel level, BlockPos at, ServerPlayer player, ItemStack map) {
-        int sats = SpaceNetworkState.get(level.getServer()).imagingSats(level.dimension());
+        var network = SpaceNetworkState.get(level.getServer());
+        ServerLevel imaged = level;
+        int sats = network.imagingSats(level.dimension());
+        double linkBps = 0;
         if (sats <= 0) {
-            player.sendSystemMessage(Component.translatable("message.spacereloaded.imaging.no_satellite"));
-            return;
+            for (var body : org.alex_melan.spacereloaded.comms.DsnBlockEntity.BODIES) {
+                var key = ResourceKey.create(Registries.DIMENSION, body.id());
+                double rate = network.groundLinkRate(body.id());
+                ServerLevel other = level.getServer().getLevel(key);
+                if (other != null && !key.equals(level.dimension()) && rate >= org.alex_melan.spacereloaded.comms.DsnBlockEntity.TELEMETRY_BPS
+                        && network.imagingSats(key) > 0 && rate > linkBps) {
+                    imaged = other;
+                    linkBps = rate;
+                }
+            }
+            if (linkBps <= 0) {
+                player.sendSystemMessage(Component.translatable("message.spacereloaded.imaging.no_satellite"));
+                return;
+            }
+            sats = network.imagingSats(imaged.dimension());
         }
-        var optics = optics(level);
+        var optics = optics(imaged);
         if (optics.isEmpty() || optics.get().minScale() < 0) {
             player.sendSystemMessage(Component.translatable("message.spacereloaded.imaging.no_orbit"));
             return;
@@ -134,12 +155,24 @@ public final class OrbitalImages {
             return;
         }
         long now = level.getGameTime();
-        // спутник пролетит над точкой в случайный момент витка покрытия — детерминированно по заказу
         long seed = at.asLong() * 0x9E3779B97F4A7C15L ^ now * 0xC2B2AE3D27D4EB4FL ^ player.getUUID().getLeastSignificantBits();
         seed = (seed ^ (seed >>> 31)) * 0xBF58476D1CE4E5B9L;
         double u = ((seed ^ (seed >>> 29)) >>> 11) * 0x1.0p-53;
         long wait = OrbitalImaging.waitTicks(o.radius(), o.altitude(), o.mu(), scale, sats, u);
-        ImageOrder order = new ImageOrder(level.dimension().identifier(), at.getX(), at.getZ(), scale, now + wait);
+        int cx = at.getX();
+        int cz = at.getZ();
+        long downlink = 0;
+        if (imaged != level) {
+            double from = PlanetManager.profileFor(level).map(p -> p.coordinateScale()).orElse(1.0);
+            double to = PlanetManager.profileFor(imaged).map(p -> p.coordinateScale()).orElse(1.0);
+            cx = (int) Math.round(at.getX() * from / to);
+            cz = (int) Math.round(at.getZ() * from / to);
+            double side = 128.0 * (1 << scale);
+            double bits = side * side / (o.gsd() * o.gsd()) * 12;
+            downlink = Math.round(bits / linkBps * 20);
+            wait += downlink;
+        }
+        ImageOrder order = new ImageOrder(imaged.dimension().identifier(), cx, cz, scale, now + wait);
         map.shrink(1);
         ItemStack image = new ItemStack(ModItems.ORBITAL_IMAGE);
         image.set(ModDataComponents.IMAGE_ORDER, order);
@@ -149,6 +182,11 @@ public final class OrbitalImages {
         player.sendSystemMessage(Component.translatable("message.spacereloaded.imaging.ordered", scale, 1 << scale,
                 String.format(Locale.ROOT, "%.0f", OrbitalImaging.LINE_PIXELS * (1 << scale) / 1000.0), sats,
                 minutes(wait)));
+        if (imaged != level) {
+            player.sendSystemMessage(Component.translatable("message.spacereloaded.imaging.remote",
+                    Component.translatable("planet.spacereloaded." + imaged.dimension().identifier().getPath()),
+                    org.alex_melan.spacereloaded.comms.DsnBlockEntity.formatRate(linkBps), minutes(downlink)));
+        }
     }
 
     /** Проявка: по готовности заказ превращается в запертую карту. */

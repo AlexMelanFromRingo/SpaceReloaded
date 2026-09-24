@@ -160,6 +160,7 @@ public final class ModCreativeTab {
                                 ModBlocks.CASCADE_CONTROLLER, ModBlocks.GAS_CENTRIFUGE,
                                 ModBlocks.ASU_SUMP, ModBlocks.ASU_TRAY, ModBlocks.ASU_HEAT_EXCHANGER, ModBlocks.ASU_COMPRESSOR,
                                 ModBlocks.EAF_CONTROLLER, ModBlocks.EAF_SHELL, ModBlocks.EAF_ROOF,
+                                ModBlocks.DSN_CONTROLLER, ModBlocks.DISH_MOUNT, ModBlocks.DISH_PANEL,
                                 ModBlocks.BERYL_ORE, ModBlocks.BORAX_ORE, ModBlocks.URANINITE_ORE}) {
                             output.accept(block);
                         }

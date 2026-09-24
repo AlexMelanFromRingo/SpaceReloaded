@@ -212,6 +212,10 @@ public final class ModBlockEntities {
             register("eaf", new BlockEntityType<>(org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity::new,
                     Set.of(ModBlocks.EAF_CONTROLLER)));
 
+    public static final BlockEntityType<org.alex_melan.spacereloaded.comms.DsnBlockEntity> DSN =
+            register("dsn", new BlockEntityType<>(org.alex_melan.spacereloaded.comms.DsnBlockEntity::new,
+                    Set.of(ModBlocks.DSN_CONTROLLER)));
+
     // --- Жизнь на станции (007) ---
     public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity> GAS_TANK =
             register("gas_tank", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity::new,

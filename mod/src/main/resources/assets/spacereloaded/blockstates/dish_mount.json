@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/dish_mount"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/dish_mount_formed"
+		}
+	}
+}

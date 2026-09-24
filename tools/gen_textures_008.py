@@ -330,7 +330,29 @@ def eaf():
                                                  for x in range(6, 10) for y in range(1, 15)])
 
 
+def dsn():
+    cabin = noise_fill((0xE4, 0xE4, 0xE0), 8, 57)
+    save(cabin, "block/dsn_cabin.png")
+    for on in (False, True):
+        img = cabin.copy()
+        for x in range(3, 13):
+            for y in range(3, 10):
+                put(img, x, y, (0x10, 0x16, 0x1A))
+        if on:
+            for x in range(4, 12):
+                put(img, x, 6 + int(2 * math.sin(x * 0.9)), (0x6F, 0xD5, 0xE8))  # спектр сигнала
+        put(img, 12, 12, (0x60, 0xE0, 0x80) if on else (0x50, 0x50, 0x50))
+        save(img, "block/dsn_controller_front" + ("_on" if on else "") + ".png")
+    save(noise_fill((0x9C, 0xA0, 0xA6), 10, 59), "block/dsn_mount.png")
+    panel = noise_fill((0xF2, 0xF2, 0xEE), 6, 61)
+    for i in range(16):
+        put(panel, i, 0, (0xD4, 0xD4, 0xD0))
+        put(panel, 0, i, (0xD4, 0xD4, 0xD0))
+    save(panel, "block/dish_panel.png")
+
+
 def main():
+    dsn()
     eclss()
     reactor()
     cascade()

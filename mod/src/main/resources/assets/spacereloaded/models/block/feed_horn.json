@@ -1,0 +1,137 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"horn": "spacereloaded:block/dsn_mount",
+		"mouth": "spacereloaded:block/reactor_dark",
+		"particle": "spacereloaded:block/dsn_mount"
+	},
+	"elements": [
+		{
+			"from": [
+				6,
+				0,
+				6
+			],
+			"to": [
+				10,
+				3,
+				10
+			],
+			"faces": {
+				"up": {
+					"texture": "#horn",
+					"uv": [
+						6,
+						6,
+						10,
+						10
+					]
+				},
+				"down": {
+					"texture": "#mouth",
+					"uv": [
+						6,
+						6,
+						10,
+						10
+					]
+				},
+				"north": {
+					"texture": "#horn",
+					"uv": [
+						6,
+						13,
+						10,
+						16
+					]
+				},
+				"south": {
+					"texture": "#horn",
+					"uv": [
+						6,
+						13,
+						10,
+						16
+					]
+				},
+				"east": {
+					"texture": "#horn",
+					"uv": [
+						6,
+						13,
+						10,
+						16
+					]
+				},
+				"west": {
+					"texture": "#horn",
+					"uv": [
+						6,
+						13,
+						10,
+						16
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				7,
+				3,
+				7
+			],
+			"to": [
+				9,
+				6,
+				9
+			],
+			"faces": {
+				"up": {
+					"texture": "#horn",
+					"uv": [
+						7,
+						7,
+						9,
+						9
+					]
+				},
+				"north": {
+					"texture": "#horn",
+					"uv": [
+						7,
+						10,
+						9,
+						13
+					]
+				},
+				"south": {
+					"texture": "#horn",
+					"uv": [
+						7,
+						10,
+						9,
+						13
+					]
+				},
+				"east": {
+					"texture": "#horn",
+					"uv": [
+						7,
+						10,
+						9,
+						13
+					]
+				},
+				"west": {
+					"texture": "#horn",
+					"uv": [
+						7,
+						10,
+						9,
+						13
+					]
+				}
+			}
+		}
+	]
+}

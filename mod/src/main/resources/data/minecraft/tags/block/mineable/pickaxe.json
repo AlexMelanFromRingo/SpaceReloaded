@@ -129,6 +129,9 @@
 		"spacereloaded:asu_compressor",
 		"spacereloaded:eaf_controller",
 		"spacereloaded:eaf_shell",
-		"spacereloaded:eaf_roof"
+		"spacereloaded:eaf_roof",
+		"spacereloaded:dsn_controller",
+		"spacereloaded:dish_mount",
+		"spacereloaded:dish_panel"
 	]
 }

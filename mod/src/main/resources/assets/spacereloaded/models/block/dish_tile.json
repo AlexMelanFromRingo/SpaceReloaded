@@ -1,0 +1,137 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"face": "spacereloaded:block/dish_panel",
+		"rib": "spacereloaded:block/dsn_mount",
+		"particle": "spacereloaded:block/dish_panel"
+	},
+	"elements": [
+		{
+			"from": [
+				0,
+				0,
+				0
+			],
+			"to": [
+				16,
+				1,
+				16
+			],
+			"faces": {
+				"up": {
+					"texture": "#face",
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					]
+				},
+				"down": {
+					"texture": "#face",
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					]
+				},
+				"north": {
+					"texture": "#face",
+					"uv": [
+						0,
+						15,
+						16,
+						16
+					]
+				},
+				"south": {
+					"texture": "#face",
+					"uv": [
+						0,
+						15,
+						16,
+						16
+					]
+				},
+				"east": {
+					"texture": "#face",
+					"uv": [
+						0,
+						15,
+						16,
+						16
+					]
+				},
+				"west": {
+					"texture": "#face",
+					"uv": [
+						0,
+						15,
+						16,
+						16
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				7.5,
+				-1,
+				0
+			],
+			"to": [
+				8.5,
+				0,
+				16
+			],
+			"faces": {
+				"down": {
+					"texture": "#rib",
+					"uv": [
+						7.5,
+						0,
+						8.5,
+						16
+					]
+				},
+				"north": {
+					"texture": "#rib",
+					"uv": [
+						7.5,
+						0,
+						8.5,
+						1
+					]
+				},
+				"south": {
+					"texture": "#rib",
+					"uv": [
+						7.5,
+						0,
+						8.5,
+						1
+					]
+				},
+				"east": {
+					"texture": "#rib",
+					"uv": [
+						0,
+						0,
+						16,
+						1
+					]
+				},
+				"west": {
+					"texture": "#rib",
+					"uv": [
+						0,
+						0,
+						16,
+						1
+					]
+				}
+			}
+		}
+	]
+}
