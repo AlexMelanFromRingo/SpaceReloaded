@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:spin_hub"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.coriolis.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.coriolis.description"
+		},
+		"frame": "challenge"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:orbit"
+}

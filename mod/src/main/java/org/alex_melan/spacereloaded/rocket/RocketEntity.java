@@ -543,6 +543,11 @@ public class RocketEntity extends Entity {
         return hasPayload(org.alex_melan.spacereloaded.registry.ModBlocks.SATELLITE);
     }
 
+    /** Есть ли спутник-камера (007, US5). */
+    public boolean hasImagingSatellite() {
+        return hasPayload(org.alex_melan.spacereloaded.registry.ModBlocks.IMAGING_SATELLITE);
+    }
+
     /** Есть ли энергоспутник (Phase 14). */
     public boolean hasPowerSatellite() {
         return hasPayload(org.alex_melan.spacereloaded.registry.ModBlocks.POWER_SATELLITE);
@@ -1158,14 +1163,21 @@ public class RocketEntity extends Entity {
             rocket.postArrival(toOrbit, savedStages, savedActive, continueRoute);
             // Спутник/энергоспутник: развёртывание на орбите ТОЛЬКО беспилотно
             // (иначе экипаж и груз погибли бы вместе с аппаратом)
-            boolean payload = rocket.hasSatellite() || rocket.hasPowerSatellite();
-            if (toOrbit && payload && pilot == null) {
+            // спутник-камера (007): над Землёй — с орбитальной платформы, у Луны и Марса аппарат
+            // остаётся на парковочной орбите вместо посадки (ракета — его платформа)
+            boolean imaging = rocket.hasImagingSatellite();
+            boolean payload = toOrbit ? rocket.hasSatellite() || rocket.hasPowerSatellite() || imaging : imaging;
+            if (payload && pilot == null) {
                 var network = org.alex_melan.spacereloaded.network.SpaceNetworkState.get(target.getServer());
-                if (rocket.hasSatellite()) {
+                if (toOrbit && rocket.hasSatellite()) {
                     network.addCoverage(target.dimension());
                 }
-                if (rocket.hasPowerSatellite()) {
+                if (toOrbit && rocket.hasPowerSatellite()) {
                     network.addPowerSat(target.dimension());
+                }
+                if (imaging) {
+                    org.alex_melan.spacereloaded.orbit.OrbitalImages.bodyUnder(target).ifPresent(body ->
+                            network.setImagingSats(body, network.imagingSats(body) + 1));
                 }
                 target.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
                         rocket.getX(), rocket.getY() + 1.5, rocket.getZ(), 40, 1.0, 1.0, 1.0, 0.05);

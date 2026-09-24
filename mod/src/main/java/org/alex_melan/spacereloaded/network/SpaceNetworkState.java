@@ -46,7 +46,9 @@ public class SpaceNetworkState extends SavedData {
             PosEntry.CODEC.listOf().optionalFieldOf("beacon_frequency", List.of())
                     .forGetter(s -> toList(s.beaconFrequency)),
             PosEntry.CODEC.listOf().optionalFieldOf("interceptors", List.of())
-                    .forGetter(s -> toList(s.interceptors))
+                    .forGetter(s -> toList(s.interceptors)),
+            Codec.unboundedMap(Level.RESOURCE_KEY_CODEC, Codec.INT)
+                    .optionalFieldOf("imaging_sats", Map.of()).forGetter(s -> s.imagingSats)
     ).apply(instance, SpaceNetworkState::new));
 
     public static final SavedDataType<SpaceNetworkState> TYPE = new SavedDataType<>(
@@ -61,15 +63,19 @@ public class SpaceNetworkState extends SavedData {
     private final Map<GlobalPos, Integer> interceptors;
 
     private final Map<ResourceKey<Level>, Integer> powerSats;
+    /** Спутники-камеры (007, US5): измерение-тело под орбитой → число аппаратов. */
+    private final Map<ResourceKey<Level>, Integer> imagingSats;
 
     public SpaceNetworkState() {
-        this(Map.of(), Map.of(), Map.of(), List.of(), List.of());
+        this(Map.of(), Map.of(), Map.of(), List.of(), List.of(), Map.of());
     }
 
     private SpaceNetworkState(Map<ResourceKey<Level>, Integer> coverage,
                              Map<ResourceKey<Level>, Long> stormUntil,
                              Map<ResourceKey<Level>, Integer> powerSats,
-                             List<PosEntry> beaconFrequency, List<PosEntry> interceptors) {
+                             List<PosEntry> beaconFrequency, List<PosEntry> interceptors,
+                             Map<ResourceKey<Level>, Integer> imagingSats) {
+        this.imagingSats = new HashMap<>(imagingSats);
         this.coverage = new HashMap<>(coverage);
         this.stormUntil = new HashMap<>(stormUntil);
         this.powerSats = new HashMap<>(powerSats);
@@ -119,6 +125,20 @@ public class SpaceNetworkState extends SavedData {
     }
 
     // --- Энергоспутники (Phase 14) ---
+
+    public int imagingSats(ResourceKey<Level> body) {
+        return imagingSats.getOrDefault(body, 0);
+    }
+
+    /** Прямая установка (развёртывание — +1; стенд и админ-команды); 0 удаляет запись. */
+    public void setImagingSats(ResourceKey<Level> body, int count) {
+        if (count <= 0) {
+            imagingSats.remove(body);
+        } else {
+            imagingSats.put(body, count);
+        }
+        setDirty();
+    }
 
     public int powerSats(ResourceKey<Level> orbit) {
         return powerSats.getOrDefault(orbit, 0);

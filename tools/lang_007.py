@@ -15,8 +15,12 @@ ITEMS = {
     "rover_chassis": ("Rover Chassis", "Шасси ровера", "Шасі ровера"),
     "rover_wheel": ("Rover Hub-Motor Wheel", "Мотор-колесо ровера", "Мотор-колесо ровера"),
     "nife_battery": ("Ni–Fe Battery 8.7 kWh", "Ni–Fe батарея 8,7 кВт·ч", "Ni–Fe батарея 8,7 кВт·год"),
+    "telescope_mirror": ("Cassegrain Mirror Ø10 cm", "Зеркало Кассегрена Ø 10 см", "Дзеркало Кассегрена Ø 10 см"),
+    "image_sensor": ("Pushbroom CCD Line (10⁴ px)", "ПЗС-линейка 10⁴ пикселей", "ПЗЗ-лінійка 10⁴ пікселів"),
+    "orbital_image": ("Orbital Image (pending)", "Орбитальный снимок (ожидание)", "Орбітальний знімок (очікування)"),
 }
 BLOCKS = {
+    "imaging_satellite": ("Imaging Satellite", "Спутник-камера", "Супутник-камера"),
     "gas_tank": ("Gas Tank", "Газовый баллон", "Газовий балон"),
     "air_separator": ("Air Separation Unit", "Воздухоразделительная установка", "Повітророзділювальна установка"),
     "airlock_pump": ("Airlock Pump", "Насос шлюза", "Насос шлюзу"),
@@ -68,6 +72,50 @@ OTHER = {
     "message.spacereloaded.rover.report": ("Rover: wheels %s/4 · battery %s%% · mass %s kg · %s km/h · odometer %s km",
                                            "Ровер: колёс %s/4 · батарея %s%% · масса %s кг · %s км/ч · пробег %s км",
                                            "Ровер: коліс %s/4 · батарея %s%% · маса %s кг · %s км/год · пробіг %s км"),
+    "advancements.spacereloaded.green_air.title": ("Green Air", "Зелёный воздух", "Зелене повітря"),
+    "advancements.spacereloaded.green_air.description": (
+        "Let the greenhouse make more oxygen than the crew breathes", "Пусть оранжерея даёт больше кислорода, чем дышит экипаж",
+        "Нехай оранжерея дає більше кисню, ніж дихає екіпаж"),
+    "advancements.spacereloaded.coriolis.title": ("Coriolis", "Кориолис", "Коріоліс"),
+    "advancements.spacereloaded.coriolis.description": (
+        "Stand on the floor of a spinning ring at 0.3 g or more", "Встаньте на пол вращающегося кольца при 0,3 g и больше",
+        "Станьте на підлогу кільця, що обертається, при 0,3 g і більше"),
+    "advancements.spacereloaded.first_track.title": ("First Track", "Первая колея", "Перша колія"),
+    "advancements.spacereloaded.first_track.description": (
+        "Drive a rover a kilometre on another world", "Проедьте на ровере километр по другому миру",
+        "Проїдьте ровером кілометр іншим світом"),
+    "advancements.spacereloaded.view_from_above.title": ("View from Above", "Взгляд сверху", "Погляд згори"),
+    "advancements.spacereloaded.view_from_above.description": (
+        "Receive an orbital image from your own satellite", "Получите снимок с орбиты от своего спутника",
+        "Отримайте знімок з орбіти від свого супутника"),
+    "message.spacereloaded.imaging.no_satellite": (
+        "Mission control: no imaging satellite over this body — launch one (to Earth orbit, or unmanned to the Moon or Mars)",
+        "ЦУП: над этим телом нет спутника-камеры — запустите его (на орбиту Земли или беспилотно к Луне или Марсу)",
+        "ЦУП: над цим тілом немає супутника-камери — запустіть його (на орбіту Землі або безпілотно до Місяця чи Марса)"),
+    "message.spacereloaded.imaging.no_orbit": ("Mission control: this body has no parking orbit for a camera",
+                                               "ЦУП: у этого тела нет парковочной орбиты для камеры",
+                                               "ЦУП: у цього тіла немає паркувальної орбіти для камери"),
+    "message.spacereloaded.imaging.diffraction": (
+        "Diffraction limit: the 10 cm telescope resolves %s m here — the finest map scale is %s",
+        "Дифракционный предел: телескоп 10 см здесь различает %s м — самый мелкий масштаб карты %s",
+        "Дифракційна межа: телескоп 10 см тут розрізняє %s м — найдрібніший масштаб карти %s"),
+    "message.spacereloaded.imaging.scale": (
+        "Scale %s: %s m per pixel (optics resolve %s m) · swath %s km · wait up to %s min",
+        "Масштаб %s: %s м на пиксель (оптика различает %s м) · полоса %s км · ожидание до %s мин",
+        "Масштаб %s: %s м на піксель (оптика розрізняє %s м) · смуга %s км · очікування до %s хв"),
+    "message.spacereloaded.imaging.ordered": (
+        "Image ordered: scale %s (%s m/px), swath %s km, %s satellite(s) — ready in %s min",
+        "Снимок заказан: масштаб %s (%s м/пикс), полоса %s км, спутников %s — готов через %s мин",
+        "Знімок замовлено: масштаб %s (%s м/пікс), смуга %s км, супутників %s — готовий за %s хв"),
+    "message.spacereloaded.imaging.waiting": ("The satellite has not passed over yet — %s min left",
+                                              "Спутник ещё не пролетал над точкой — осталось %s мин",
+                                              "Супутник ще не пролітав над точкою — лишилося %s хв"),
+    "message.spacereloaded.imaging.developed": ("Orbital image received: scale %s, %s m per pixel",
+                                                "Снимок с орбиты получен: масштаб %s, %s м на пиксель",
+                                                "Знімок з орбіти отримано: масштаб %s, %s м на піксель"),
+    "message.spacereloaded.imaging.blank": ("Blank image — order one at mission control with an empty map",
+                                            "Пустой снимок — закажите его в ЦУПе пустой картой",
+                                            "Порожній знімок — замовте його в ЦУПі порожньою картою"),
     "entity.spacereloaded.rover": ("Rover", "Ровер", "Ровер"),
     "message.spacereloaded.tray.empty": ("empty", "пусто", "порожньо"),
     "tooltip.spacereloaded.reserve.co2_scrubber": ("%s%% · cartridge left: %s g CO₂", "%s%% · картриджа хватит на %s г CO₂",

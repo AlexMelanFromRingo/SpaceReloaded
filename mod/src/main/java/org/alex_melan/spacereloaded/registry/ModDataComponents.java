@@ -64,6 +64,17 @@ public final class ModDataComponents {
     public static final DataComponentType<Integer> GAS_KIND = registerInt("gas_kind");
     public static final DataComponentType<Float> GAS_KG = registerFloat("gas_kg");
 
+    /** Масштаб заказываемого снимка (на пустой карте), 0…4 (007, US5). */
+    public static final DataComponentType<Integer> IMAGE_SCALE = registerInt("image_scale");
+    /** Заказ орбитального снимка (007, US5). */
+    public static final DataComponentType<org.alex_melan.spacereloaded.orbit.ImageOrder> IMAGE_ORDER = Registry.register(
+            BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "image_order"),
+            new DataComponentType.Builder<org.alex_melan.spacereloaded.orbit.ImageOrder>()
+                    .persistent(org.alex_melan.spacereloaded.orbit.ImageOrder.CODEC)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.fromCodec(
+                            org.alex_melan.spacereloaded.orbit.ImageOrder.CODEC))
+                    .build());
+
     /** Частота (канал) ключа связи — прошивается в ЦУПе. */
     public static final DataComponentType<Integer> KEY_FREQUENCY = registerInt("key_frequency");
 

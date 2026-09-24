@@ -10,7 +10,7 @@ from gen_006 import ASSETS, DATA, NS, assembly, chemical, sr, write
 PROCESS = ["co2_scrubber", "biomass_oxidizer"]
 MACHINES = ["air_separator", "airlock_pump", "rover_charger"]
 ITEMS = ["lithium_hydroxide", "lioh_cartridge", "zeolite", "zeolite_bed", "straw", "rover_chassis", "rover_wheel",
-         "nife_battery"]
+         "nife_battery", "telescope_mirror", "image_sensor", "orbital_image"]
 BLOCKS = PROCESS + MACHINES + ["gas_tank", "hydroponic_tray", "grow_lamp", "spin_hub", "rim_thruster", "despin_motor"]
 
 # Культуры NASA BVAD (табл. 4-89…4-91), fresh_factor — сырая масса урожая на сухую
@@ -55,6 +55,11 @@ def recipes():
     assembly("nife_battery", ["nickel_ingot", "nickel_ingot", "minecraft:iron_ingot", "minecraft:iron_ingot",
                               "caustic_soda", "steel_plate"], "nife_battery")
     assembly("rover_charger", ["steel_plate", "steel_plate", "copper_wire", "copper_wire", "relay_logic"], "rover_charger")
+    # US5: Кассегрен Ø 10 см — стекло с алюминиевым напылением; линейка ПЗС 10⁴ пикселей на пластине
+    assembly("telescope_mirror", ["hermetic_glass", "hermetic_glass", "aluminium_ingot"], "telescope_mirror")
+    assembly("image_sensor", ["silicon_wafer", "ceramic_package", "logic_chip", "copper_wire"], "image_sensor")
+    assembly("imaging_satellite", ["aluminium_lithium_ingot", "solar_panel", "solar_panel", "flight_computer",
+                                   "telescope_mirror", "image_sensor", "radhard_processor"], "imaging_satellite")
     assembly("biomass_oxidizer", ["steel_plate", "steel_plate", "refractory_lining", "copper_wire", "relay"],
              "biomass_oxidizer")
 
@@ -76,6 +81,9 @@ MASSES = {
     "rover_wheel": (12.0, ["rover_wheel"]),
     "nife_battery": (350.0, ["nife_battery"]),           # 8.7 кВт·ч при 25 Вт·ч/кг
     "rover_charger": (60.0, ["rover_charger"]),
+    # US5: малый спутник ДЗЗ класса 100 кг (оптика 10 см, как у Dove/SkySat-мини)
+    "imaging_satellite": (110.0, ["imaging_satellite"]),
+    "telescope_optics": (1.5, ["telescope_mirror", "image_sensor"]),
     "crops_007": (0.5, ["minecraft:wheat", f"{NS}:straw"]),       # сноп/охапка 0.5 кг
     "potato": (0.2, ["minecraft:potato"]),                         # один клубень
 }
@@ -83,9 +91,11 @@ MASSES = {
 
 SOILS = {
     # Lunar Sourcebook, табл. 9.14; Carrier 2006
-    "moon": {"dimension": f"{NS}:moon", "n": 1.0, "kc": 0.14, "kphi": 0.82, "c": 0.017, "phi_deg": 35, "k_cm": 1.78},
+    "moon": {"dimension": f"{NS}:moon", "n": 1.0, "kc": 0.14, "kphi": 0.82, "c": 0.017, "phi_deg": 35, "k_cm": 1.78,
+             "surface": f"{NS}:moon_regolith"},
     # Марс: рыхлый наносный песок (оценка по данным MER/Pathfinder)
-    "mars": {"dimension": f"{NS}:mars", "n": 1.0, "kc": 0.068, "kphi": 0.82, "c": 0.02, "phi_deg": 30, "k_cm": 1.8},
+    "mars": {"dimension": f"{NS}:mars", "n": 1.0, "kc": 0.068, "kphi": 0.82, "c": 0.02, "phi_deg": 30, "k_cm": 1.8,
+             "surface": "minecraft:red_sand"},
     # Земля: сухой песок (Wong), переведено в Н и см
     "earth": {"dimension": "minecraft:overworld", "n": 1.1, "kc": 0.0625, "kphi": 0.964, "c": 0.104, "phi_deg": 28,
               "k_cm": 2.5},
@@ -134,8 +144,20 @@ def data():
                 {"function": "minecraft:copy_components", "source": "block_entity",
                  "include": [f"{NS}:gas_kind", f"{NS}:gas_kg"]}]}],
                        "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+    write(os.path.join(DATA, "loot_table", "blocks", "imaging_satellite.json"), {
+        "type": "minecraft:block", "pools": [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": sr("imaging_satellite")}],
+                                              "conditions": [{"condition": "minecraft:survives_explosion"}]}]})
+    # спутник-камера — деталь ракеты (полезная нагрузка), масса как у малого ДЗЗ-аппарата
+    write(os.path.join(DATA, NS, "part_properties", "imaging_satellite.json"),
+          {"block": sr("imaging_satellite"), "mass_kg": 110.0, "role": "hull"})
+    path = os.path.join(DATA, "tags", "block", "rocket_parts.json")
+    with open(path, encoding="utf-8") as f:
+        obj = json.load(f)
+    if sr("imaging_satellite") not in obj["values"]:
+        obj["values"].append(sr("imaging_satellite"))
+    write(path, obj)
     base = os.path.join(os.path.dirname(DATA), "minecraft", "tags", "block")
-    for tag, blocks in (("mineable/pickaxe", BLOCKS),):
+    for tag, blocks in (("mineable/pickaxe", BLOCKS + ["imaging_satellite"]),):
         path = os.path.join(base, tag + ".json")
         with open(path, encoding="utf-8") as f:
             obj = json.load(f)
@@ -183,6 +205,7 @@ def assets():
         g.item_def(b, f"{NS}:block/{b}")
     tray_models()
     rover_models()
+    imaging_model()
     for b in ("spin_hub", "despin_motor"):
         g.model(b, {"parent": "minecraft:block/cube_column",
                     "textures": {"end": f"{NS}:block/{b}_end", "side": f"{NS}:block/{b}_side"}})
@@ -229,6 +252,26 @@ def assets():
     g.item_def("gas_tank", f"{NS}:block/gas_tank_none_0")
 
 
+def imaging_model():
+    """Спутник-камера: шина в золотистой ЭВТИ, бленда телескопа сверху, два крыла солнечных батарей.
+    Все элементы — отдельные объёмы без общих плоскостей (без z-fighting)."""
+    faces = ("up", "down", "north", "south", "east", "west")
+    def box(f, t, tex, **over):
+        return {"from": f, "to": t, "faces": {x: {"texture": over.get(x, tex)} for x in faces}}
+    g.model("imaging_satellite", {"parent": "minecraft:block/block", "textures": {
+        "particle": f"{NS}:block/imaging_satellite", "bus": f"{NS}:block/imaging_satellite",
+        "tube": f"{NS}:block/imaging_satellite_tube", "lens": f"{NS}:block/imaging_satellite_lens",
+        "panel": f"{NS}:block/solar_panel_top", "frame": f"{NS}:block/satellite"},
+        "elements": [box([5, 0, 5], [11, 9, 11], "#bus"),
+                     box([6, 9, 6], [10, 16, 10], "#tube", up="#lens"),
+                     box([3, 5, 7.5], [5, 6, 8.5], "#frame"), box([11, 5, 7.5], [13, 6, 8.5], "#frame"),
+                     box([0, 1.5, 7.25], [3, 9.5, 8.75], "#frame", north="#panel", south="#panel"),
+                     box([13, 1.5, 7.25], [16, 9.5, 8.75], "#frame", north="#panel", south="#panel")]})
+    write(os.path.join(ASSETS, "blockstates", "imaging_satellite.json"),
+          {"variants": {"": {"model": f"{NS}:block/imaging_satellite"}}})
+    g.item_def("imaging_satellite", f"{NS}:block/imaging_satellite")
+
+
 def tray_models():
     faces = ("up", "down", "north", "south", "east", "west")
     tray = [{"from": [0, 0, 0], "to": [16, 8, 16], "faces": {f: {"texture": "#tray" if f != "up" else "#top"} for f in faces}}]
@@ -260,7 +303,27 @@ def tray_models():
     g.item_def("hydroponic_tray", f"{NS}:block/hydroponic_tray")
 
 
+ADVANCEMENTS = {  # id: (иконка, родитель, рамка)
+    "green_air": ("hydroponic_tray", "sealed", "goal"),
+    "coriolis": ("spin_hub", "orbit", "challenge"),
+    "first_track": ("rover_wheel", "moon", "task"),
+    "view_from_above": ("imaging_satellite", "satellite", "goal"),
+}
+
+
+def advancements():
+    for a, (icon, parent, frame) in ADVANCEMENTS.items():
+        write(os.path.join(DATA, "advancement", a + ".json"), {
+            "criteria": {"done": {"trigger": "minecraft:impossible"}},
+            "display": {"icon": {"id": sr(icon)},
+                        "title": {"translate": f"advancements.{NS}.{a}.title"},
+                        "description": {"translate": f"advancements.{NS}.{a}.description"},
+                        "frame": frame},
+            "requirements": [["done"]], "sends_telemetry_event": False, "parent": sr(parent)})
+
+
 def main():
+    advancements()
     recipes()
     data()
     assets()

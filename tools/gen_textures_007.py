@@ -235,6 +235,52 @@ def rover():
     icon("nife_battery", img)
 
 
+def imaging():
+    # ЭВТИ: золотистая каптоновая плёнка с морщинами
+    foil = Image.new("RGBA", (16, 16), (0xD8, 0xA8, 0x40, 255))
+    for x in range(16):
+        for y in range(16):
+            w = (x * 7 + y * 3) % 11
+            if w < 2:
+                put(foil, x, y, (0xF0, 0xCC, 0x70))
+            elif w > 8:
+                put(foil, x, y, (0xA8, 0x7C, 0x28))
+    save(foil, "block/imaging_satellite.png")
+    tube = Image.new("RGBA", (16, 16), (0x30, 0x32, 0x38, 255))
+    for y in range(0, 16, 4):
+        for x in range(16):
+            put(tube, x, y, (0x44, 0x46, 0x4E))
+    save(tube, "block/imaging_satellite_tube.png")
+    lens = Image.new("RGBA", (16, 16), (0x30, 0x32, 0x38, 255))
+    disc(lens, 7.5, 7.5, 6.5, lambda x, y, d: (0x10, 0x14, 0x28) if d > 2.2 else (0x60, 0x64, 0x70))  # вторичное зеркало
+    put(lens, 5, 5, (0x80, 0x90, 0xC0))
+    save(lens, "block/imaging_satellite_lens.png")
+    img = blank()
+    disc(img, 7.5, 7.5, 6.5, lambda x, y, d: (0xC8, 0xD0, 0xDC) if d < 5.5 else (0x70, 0x74, 0x7C))
+    for x, y in ((5, 5), (6, 5), (5, 6)):
+        put(img, x, y, (0xF4, 0xF8, 0xFF))
+    icon("telescope_mirror", img)
+    img = blank()
+    for x in range(2, 14):
+        for y in range(5, 11):
+            put(img, x, y, (0xE8, 0xE0, 0xD0) if y in (5, 10) else (0x3A, 0x30, 0x60))
+    for x in range(3, 13):
+        put(img, x, 7, (0x70, 0x60, 0xC0))
+        put(img, x, 8, (0x70, 0x60, 0xC0))
+    for x in range(3, 13, 2):
+        put(img, x, 4, (0xD0, 0xA0, 0x40))
+        put(img, x, 11, (0xD0, 0xA0, 0x40))
+    icon("image_sensor", img)
+    img = blank()
+    for x in range(1, 15):
+        for y in range(1, 15):
+            edge = x in (1, 14) or y in (1, 14)
+            relief = (x * 5 + y * 3 + (x * y) % 7) % 9
+            put(img, x, y, (0xE8, 0xE0, 0xC8) if edge else (0x90, 0x8C, 0x84) if relief < 3 else (0xB4, 0xB0, 0xA8))
+    disc(img, 9.5, 6.5, 2.2, lambda x, y, d: (0x60, 0x5C, 0x58) if d < 1.4 else (0xD0, 0xCC, 0xC4))  # кратер
+    icon("orbital_image", img)
+
+
 def guis():
     base = mod("gui/machine_single.png")
     arrow = base.crop((72, 35, 72 + 22, 35 + 16))
@@ -256,6 +302,7 @@ def guis():
 
 
 def main():
+    imaging()
     items()
     blocks()
     greenhouse()

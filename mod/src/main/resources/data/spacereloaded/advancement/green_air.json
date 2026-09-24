@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:hydroponic_tray"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.green_air.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.green_air.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:sealed"
+}

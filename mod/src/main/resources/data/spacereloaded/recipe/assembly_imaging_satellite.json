@@ -1,0 +1,15 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:aluminium_lithium_ingot",
+		"spacereloaded:solar_panel",
+		"spacereloaded:solar_panel",
+		"spacereloaded:flight_computer",
+		"spacereloaded:telescope_mirror",
+		"spacereloaded:image_sensor",
+		"spacereloaded:radhard_processor"
+	],
+	"result": {
+		"id": "spacereloaded:imaging_satellite"
+	}
+}

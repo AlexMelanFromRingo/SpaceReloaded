@@ -102,6 +102,7 @@
 		"spacereloaded:spin_hub",
 		"spacereloaded:rim_thruster",
 		"spacereloaded:despin_motor",
-		"spacereloaded:rover_charger"
+		"spacereloaded:rover_charger",
+		"spacereloaded:imaging_satellite"
 	]
 }

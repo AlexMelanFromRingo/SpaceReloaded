@@ -273,6 +273,13 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops().noOcclusion());
 
+    /** Спутник-камера (007, US5): телескоп Кассегрена D = 10 см, пушбрум-линейка 10⁴ пикселей. */
+    public static final Block IMAGING_SATELLITE = register("imaging_satellite",
+            props -> new ShapedBlock(props, net.minecraft.world.phys.shapes.Shapes.or(Block.box(5, 0, 5, 11, 16, 11),
+                    Block.box(0, 1.5, 7, 16, 9.5, 9))),
+            BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops().noOcclusion());
+
     /** Возвратная капсула (T075): лёгкий командный пост с теплозащитой. */
     public static final Block RETURN_CAPSULE = register("return_capsule", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 12.0f).sound(SoundType.METAL)

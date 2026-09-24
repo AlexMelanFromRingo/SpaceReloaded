@@ -87,6 +87,7 @@ public final class ModCreativeTab {
                         output.accept(ModBlocks.STAGE_SEPARATOR);
                         output.accept(ModBlocks.SATELLITE);
                         output.accept(ModBlocks.POWER_SATELLITE);
+                        output.accept(ModBlocks.IMAGING_SATELLITE);
                         output.accept(ModBlocks.RECTENNA);
                         output.accept(ModBlocks.ASTEROID_STONE);
                         output.accept(ModBlocks.RETURN_CAPSULE);
@@ -174,7 +175,8 @@ public final class ModCreativeTab {
                                 ModItems.AL_LI_BLEND, ModItems.ALUMINIUM_LITHIUM_INGOT, ModItems.NICKEL_INGOT,
                                 ModItems.SUPERALLOY_BLEND, ModItems.NICKEL_SUPERALLOY_INGOT,
                                 ModItems.LITHIUM_HYDROXIDE, ModItems.LIOH_CARTRIDGE, ModItems.ZEOLITE, ModItems.ZEOLITE_BED, ModItems.STRAW,
-                                ModItems.ROVER_CHASSIS, ModItems.ROVER_WHEEL, ModItems.NIFE_BATTERY}) {
+                                ModItems.ROVER_CHASSIS, ModItems.ROVER_WHEEL, ModItems.NIFE_BATTERY,
+                                ModItems.TELESCOPE_MIRROR, ModItems.IMAGE_SENSOR}) {
                             output.accept(item);
                         }
                     })

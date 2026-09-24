@@ -18,7 +18,7 @@ import java.util.Locale;
 
 /**
  * ЦУП: ПКМ — телеметрия всех бортов в радиусе 64 блока (статус, топливо,
- * высота); Sneak+ПКМ — карта полёта. Данные из честной физики.
+ * высота); Sneak+ПКМ — карта полёта; пустая карта в руке — заказ орбитального снимка (007). Данные из честной физики.
  */
 public class MissionControlBlock extends Block {
 
@@ -26,6 +26,25 @@ public class MissionControlBlock extends Block {
 
     public MissionControlBlock(Properties properties) {
         super(properties);
+    }
+
+    /** 007 (US5): пустая карта — заказ орбитального снимка; Sneak — выбор масштаба. */
+    @Override
+    protected InteractionResult useItemOn(net.minecraft.world.item.ItemStack stack, BlockState state, Level level,
+                                          BlockPos pos, Player player, net.minecraft.world.InteractionHand hand,
+                                          BlockHitResult hit) {
+        if (!org.alex_melan.spacereloaded.orbit.OrbitalImages.isBlankMap(stack)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {
+            if (player.isSecondaryUseActive()) {
+                org.alex_melan.spacereloaded.orbit.OrbitalImages.cycleScale(serverLevel, serverPlayer, stack);
+            } else {
+                org.alex_melan.spacereloaded.orbit.OrbitalImages.order(serverLevel, pos, serverPlayer, stack);
+            }
+            return InteractionResult.SUCCESS_SERVER;
+        }
+        return InteractionResult.SUCCESS;
     }
 
     @Override

@@ -101,6 +101,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testGreenhouse", () -> testGreenhouse(context, sp));
             scenarios.put("testSpinRing", () -> testSpinRing(context, sp));
             scenarios.put("testRover", () -> testRover(context, sp));
+            scenarios.put("testOrbitalImaging", () -> testOrbitalImaging(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
                 if (selected == null || selected.contains(name) || name.equals("testSealing")) {
@@ -3005,6 +3006,93 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                 .getEntitiesOfClass(org.alex_melan.spacereloaded.vehicle.RoverEntity.class, hard).get(0).speed());
         assertThat(stopped < r[1] - 0.015 * g * 4.5 && stopped > r[1] - 0.015 * g * 5.5, "Накат: сопротивление качению тормозит ровер, v = " + stopped);
         log(String.format(java.util.Locale.ROOT, "ровер: накат 5 с, v %.2f → %.2f м/с ✓", r[1], stopped));
+    }
+
+    /**
+     * Съёмка с орбиты Земли: телескоп 10 см с 200 км различает 1.22·λ·h/D = 1.34 м, поэтому самый мелкий
+     * масштаб — 1 (2 м/пикс); ожидание не дольше T_cov/N; на снимке видна поверхность (синяя шерсть),
+     * но не руда под камнем.
+     */
+    private static net.minecraft.world.item.ItemStack slotOf(net.minecraft.world.entity.player.Player player,
+                                                            net.minecraft.world.item.Item item) {
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            if (player.getInventory().getItem(i).is(item)) {
+                return player.getInventory().getItem(i);
+            }
+        }
+        return net.minecraft.world.item.ItemStack.EMPTY;
+    }
+
+    private void testOrbitalImaging(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1340;
+        int z0 = BZ;
+        moveTo(context, sp, x0 - 4, z0);
+        sp.getServer().runCommand(String.format("forceload add %d %d %d %d", x0 - 8, z0 - 8, x0 + 16, z0 + 24));
+        sp.getServer().runCommand(set(x0, BY, z0, "spacereloaded:mission_control"));
+        sp.getServer().runCommand(fill(x0 + 4, BY, z0, x0 + 11, BY, z0 + 7, "minecraft:blue_wool"));
+        sp.getServer().runCommand(fill(x0 + 4, BY, z0 + 12, x0 + 11, BY, z0 + 19, "minecraft:diamond_ore"));
+        sp.getServer().runCommand(fill(x0 + 4, BY + 1, z0 + 12, x0 + 11, BY + 1, z0 + 19, "minecraft:stone"));
+        context.waitTicks(5);
+        BlockPos mc = new BlockPos(x0, BY, z0);
+        String ordered = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var player = server.getPlayerList().getPlayers().get(0);
+            player.getInventory().clearContent();
+            var network = org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server);
+            network.setImagingSats(level.dimension(), 0);
+            var map = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.MAP, 2);
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.order(level, mc, player, map);
+            boolean refused = map.getCount() == 2;
+            network.setImagingSats(level.dimension(), 1);
+            var o = org.alex_melan.spacereloaded.orbit.OrbitalImages.optics(level).orElseThrow();
+            map.set(ModDataComponents.IMAGE_SCALE, 0);
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.order(level, mc, player, map);
+            boolean diffraction = map.getCount() == 2;
+            map.set(ModDataComponents.IMAGE_SCALE, 1);
+            long now = level.getGameTime();
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.order(level, mc, player, map);
+            var image = slotOf(player, ModItems.ORBITAL_IMAGE);
+            var order = image.get(ModDataComponents.IMAGE_ORDER);
+            long worst = org.alex_melan.spacereloaded.core.orbit.OrbitalImaging.waitTicks(o.radius(), o.altitude(), o.mu(), 1, 1, 1.0);
+            // до срока снимок не проявляется
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.develop(player, image, order);
+            boolean early = image.is(ModItems.ORBITAL_IMAGE);
+            // стенд не ждёт пролёта: срок наступил
+            var due = new org.alex_melan.spacereloaded.orbit.ImageOrder(order.dimension(), order.x(), order.z(), order.scale(), now);
+            image.set(ModDataComponents.IMAGE_ORDER, due);
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.develop(player, image, due);
+            return String.format(java.util.Locale.ROOT, "%b %b %.3f %d %d %d %b", refused, diffraction, o.gsd(), o.minScale(),
+                    order.readyTick() - now, worst, early);
+        });
+        String[] f = ordered.split(" ");
+        long wait = Long.parseLong(f[4]);
+        long worst = Long.parseLong(f[5]);
+        assertThat(f[0].equals("true") && f[1].equals("true") && f[3].equals("1") && wait >= 0 && wait <= worst
+                        && f[6].equals("true"),
+                "Заказ: без спутника отказ, масштаб 0 — дифракция, ожидание в [0, T_cov/N], до срока не проявляется: " + ordered);
+        log("съёмка: GSD " + f[2] + " м с 200 км → масштаб ≥ " + f[3] + "; ожидание " + wait + " из " + worst
+                + " тиков (T_cov/N÷130) ✓");
+        context.waitTicks(40);
+        String pixels = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var player = server.getPlayerList().getPlayers().get(0);
+            var filled = slotOf(player, net.minecraft.world.item.Items.FILLED_MAP);
+            if (filled.isEmpty()) {
+                return "no map";
+            }
+            var data = net.minecraft.world.item.MapItem.getSavedData(filled, level);
+            int step = 1 << data.scale;
+            int left = data.centerX - 64 * step;
+            int top = data.centerZ - 64 * step;
+            int wool = (data.colors[(z0 + 4 - top) / step * 128 + (x0 + 8 - left) / step] & 0xFF) >> 2;
+            int ore = (data.colors[(z0 + 16 - top) / step * 128 + (x0 + 8 - left) / step] & 0xFF) >> 2;
+            return wool + " " + ore + " " + data.locked + " " + data.scale;
+        });
+        String expected = net.minecraft.world.level.material.MapColor.COLOR_BLUE.id + " "
+                + net.minecraft.world.level.material.MapColor.STONE.id + " true 1";
+        assertThat(pixels.equals(expected), "Снимок: шерсть синяя, над рудой камень, карта заперта — ожидалось " + expected
+                + ", получено " + pixels);
+        log("съёмка: снимок проявлен в запертую карту масштаба 1, поверхность видна, руда под камнем — нет ✓");
     }
 
     // ---------- 36. Взрыв и герметичность (T024) ----------

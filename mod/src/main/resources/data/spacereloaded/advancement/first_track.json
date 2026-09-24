@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:rover_wheel"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.first_track.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.first_track.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:moon"
+}

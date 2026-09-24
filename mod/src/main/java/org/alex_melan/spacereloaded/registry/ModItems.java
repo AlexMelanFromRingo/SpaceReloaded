@@ -234,6 +234,13 @@ public final class ModItems {
             props -> new org.alex_melan.spacereloaded.vehicle.RoverChassisItem(props.stacksTo(1)));
     public static final Item ROVER_WHEEL = register("rover_wheel", props -> new Item(props.stacksTo(4)));
     public static final Item NIFE_BATTERY = register("nife_battery", props -> new Item(props.stacksTo(1)));
+    /** Главное зеркало Кассегрена Ø 10 см: стекло с напылением алюминия (007, US5). */
+    public static final Item TELESCOPE_MIRROR = simple("telescope_mirror");
+    /** Пушбрум-линейка ПЗС 10⁴ пикселей на кремниевой пластине в керамическом корпусе. */
+    public static final Item IMAGE_SENSOR = simple("image_sensor");
+    /** Орбитальный снимок: заказ в ЦУПе, проявляется в карту по готовности. */
+    public static final Item ORBITAL_IMAGE = register("orbital_image",
+            props -> new org.alex_melan.spacereloaded.orbit.OrbitalImageItem(props.stacksTo(1)));
     public static final Item ZEOLITE_BED = register("zeolite_bed", props -> new Item(props.stacksTo(1)));
 
     public static boolean isEnginePart(Item item) {

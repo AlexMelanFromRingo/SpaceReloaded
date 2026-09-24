@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:silicon_wafer",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:logic_chip",
+		"spacereloaded:copper_wire"
+	],
+	"result": {
+		"id": "spacereloaded:image_sensor"
+	}
+}

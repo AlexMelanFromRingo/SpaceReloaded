@@ -1,0 +1,11 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:hermetic_glass",
+		"spacereloaded:hermetic_glass",
+		"spacereloaded:aluminium_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:telescope_mirror"
+	}
+}
