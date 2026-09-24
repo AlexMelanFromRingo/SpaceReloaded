@@ -219,6 +219,18 @@ public final class ModItems {
     /** Фотошаблон: контактная печать изнашивает его — 50 экспозиций. */
     public static final Item PHOTOMASK_RADHARD = register("photomask_radhard", props -> new Item(props.durability(50)));
 
+    // --- Жизнь на станции (007) ---
+    /** Гидроксид лития: каустификация хлорида лития щёлочью. */
+    public static final Item LITHIUM_HYDROXIDE = simple("lithium_hydroxide");
+    /** Картридж LiOH (Аполлон): прочность — граммы поглощаемого CO₂ (0.75 кг). */
+    public static final Item LIOH_CARTRIDGE = register("lioh_cartridge", props -> new Item(props.durability(750)));
+    /** Цеолит 5A (натриевый алюмосиликат). */
+    public static final Item ZEOLITE = simple("zeolite");
+    /** Цеолитовый слой (CDRA МКС): регенерируемый нагревом. */
+    /** Солома — несъедобная биомасса пшеницы (60 % сухой массы), в окислитель. */
+    public static final Item STRAW = simple("straw");
+    public static final Item ZEOLITE_BED = register("zeolite_bed", props -> new Item(props.stacksTo(1)));
+
     public static boolean isEnginePart(Item item) {
         return item == TURBOPUMP || item == INJECTOR_PLATE || item == REGEN_NOZZLE || item == CIRCUIT_BOARD;
     }

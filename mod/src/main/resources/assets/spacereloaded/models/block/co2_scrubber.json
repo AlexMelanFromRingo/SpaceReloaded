@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"top": "spacereloaded:block/co2_scrubber_top",
+		"front": "spacereloaded:block/co2_scrubber_front",
+		"side": "spacereloaded:block/co2_scrubber_side"
+	}
+}

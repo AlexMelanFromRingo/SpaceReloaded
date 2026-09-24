@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:carbon_fiber",
+		"spacereloaded:carbon_fiber"
+	],
+	"result": {
+		"id": "spacereloaded:gas_tank"
+	}
+}

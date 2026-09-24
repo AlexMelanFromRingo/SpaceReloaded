@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"top": "spacereloaded:block/biomass_oxidizer_top",
+		"front": "spacereloaded:block/biomass_oxidizer_front_on",
+		"side": "spacereloaded:block/biomass_oxidizer_side"
+	}
+}

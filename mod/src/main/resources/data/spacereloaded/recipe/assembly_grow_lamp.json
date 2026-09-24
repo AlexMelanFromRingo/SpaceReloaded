@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"minecraft:glowstone_dust",
+		"minecraft:glowstone_dust",
+		"spacereloaded:copper_wire",
+		"spacereloaded:hermetic_glass",
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:grow_lamp"
+	}
+}

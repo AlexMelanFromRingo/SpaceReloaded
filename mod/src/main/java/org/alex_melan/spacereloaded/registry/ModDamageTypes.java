@@ -21,6 +21,14 @@ public final class ModDamageTypes {
                 .getOrThrow(VACUUM));
     }
 
+    /** Удушье в зоне (007): CO₂ выше 7 кПа или pO₂ ниже 10 кПа — потеря сознания. */
+    public static final ResourceKey<DamageType> ASPHYXIA = ResourceKey.create(Registries.DAMAGE_TYPE,
+            Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "asphyxia"));
+
+    public static DamageSource asphyxia(ServerLevel level) {
+        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(ASPHYXIA));
+    }
+
     /** Экстремальная среда (US: EVA): маска дышит, но без полного скафандра — холод/радиация. */
     public static final ResourceKey<DamageType> EXPOSURE = ResourceKey.create(Registries.DAMAGE_TYPE,
             Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "exposure"));

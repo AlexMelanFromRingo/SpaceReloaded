@@ -1,6 +1,6 @@
 {
 	"dimension": "spacereloaded:earth_orbit",
-	"gravity": 1.62,
+	"gravity": 0.196,
 	"breathable": false,
 	"solar_efficiency": 1.5,
 	"coordinate_scale": 8.0,

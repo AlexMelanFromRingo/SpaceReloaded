@@ -219,6 +219,8 @@ public final class ModRegistries {
         DynamicRegistries.registerSynced(FUELS, FuelEntry.CODEC);
         DynamicRegistries.registerSynced(PLANETS, PlanetProfile.CODEC);
         DynamicRegistries.register(ItemMasses.ITEM_MASS, ItemMasses.Entry.CODEC);
+        DynamicRegistries.register(org.alex_melan.spacereloaded.lifesupport.CropProfiles.CROPS,
+                org.alex_melan.spacereloaded.lifesupport.CropProfiles.Profile.CODEC);
         DynamicRegistries.registerSynced(org.alex_melan.spacereloaded.multiblock.MultiblockTemplates.MULTIBLOCKS,
                 org.alex_melan.spacereloaded.multiblock.MultiblockTemplates.TemplateEntry.CODEC);
     }

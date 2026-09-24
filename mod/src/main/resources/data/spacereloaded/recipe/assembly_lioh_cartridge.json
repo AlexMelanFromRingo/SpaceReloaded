@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:lithium_hydroxide",
+		"spacereloaded:lithium_hydroxide",
+		"spacereloaded:steel_plate",
+		"spacereloaded:glass_fiber"
+	],
+	"result": {
+		"id": "spacereloaded:lioh_cartridge"
+	}
+}

@@ -1,0 +1,13 @@
+{
+	"seed": "minecraft:wheat_seeds",
+	"harvest": "minecraft:wheat",
+	"byproduct": "spacereloaded:straw",
+	"dli": 115,
+	"cycle_days": 80,
+	"edible_g_m2_day": 20.0,
+	"harvest_index": 0.4,
+	"o2_g_m2_day": 56.0,
+	"co2_g_m2_day": 77.0,
+	"water_kg_m2_day": 11.8,
+	"fresh_factor": 1.14
+}

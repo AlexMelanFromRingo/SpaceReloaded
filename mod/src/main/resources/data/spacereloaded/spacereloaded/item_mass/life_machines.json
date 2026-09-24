@@ -1,0 +1,9 @@
+{
+	"items": [
+		"spacereloaded:air_separator",
+		"spacereloaded:airlock_pump",
+		"spacereloaded:co2_scrubber",
+		"spacereloaded:biomass_oxidizer"
+	],
+	"kg": 150.0
+}

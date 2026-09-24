@@ -12,20 +12,22 @@ import org.alex_melan.spacereloaded.energy.MachineBlockEntity;
 import org.alex_melan.spacereloaded.registry.ModBlockEntities;
 
 /**
- * Контроллер атмосферы (T023 + T033): владелец зоны, накопитель атмосферы,
- * потребитель энергии (FR-009). Без энергии атмосфера не восстанавливается —
- * контроллер «деградирует предсказуемо» (сценарий US2-4).
- * Зона пересчитывается при загрузке (кэш не персистится — мир мог измениться,
- * пока чанк был выгружен).
+ * Контроллер атмосферы (T023 + T033; 007 D71): владелец зоны и регулятор её газа. Газ берётся
+ * только из соседних баков O₂ и N₂ (энергия воздух не создаёт — решение автора для всех зон):
+ * регулятор доводит pO₂ до 21 % уставки, а азотом — общее давление, с расходом через клапан не
+ * больше {@link #VALVE_KG_PER_S}; избыток кислорода (оранжерея) компрессор возвращает в бак.
+ * Энергия идёт на климат-контроль и компрессор; без энергии зона держит газ, но не пополняется.
+ * Зона пересчитывается при загрузке (кэш не персистится — мир мог измениться, пока чанк был
+ * выгружен); газ зоны — {@link org.alex_melan.spacereloaded.lifesupport.LifeSupportState}.
  */
 public class AtmosphereControllerBlockEntity extends MachineBlockEntity {
 
-    /** Прирост атмосферы за секунду при герметичной зоне и наличии энергии. */
-    private static final double FILL_RATE = 0.05;
-    /** Скорость потери при разгерметизации — быстрее заполнения (осознанный хардкор). */
-    private static final double DECAY_RATE = 0.25;
+    /** Расход клапана регулятора, кг/с (редуктор баллона). */
+    public static final double VALVE_KG_PER_S = 1.0;
+    /** Верх коридора O₂ (объёмная доля) — выше компрессор возвращает кислород в бак. */
+    private static final double O2_UPPER = 0.235;
 
-    private double atmosphere;
+    private double pressure;
     private boolean scanQueued;
     private boolean powered;
     private SealingStatus lastStatus = SealingStatus.INVALID_ORIGIN;
@@ -57,15 +59,51 @@ public class AtmosphereControllerBlockEntity extends MachineBlockEntity {
         }
 
         SealedZone zone = ZoneManager.zoneAt(level, getBlockPos());
-        if (zone != null && zone.isSealed()) {
-            if (powered) {
-                atmosphere = Math.min(1.0, atmosphere + FILL_RATE);
-            }
-            // Без энергии герметичная зона держит атмосферу, но не пополняет её (FR-009)
-        } else {
-            atmosphere = Math.max(0.0, atmosphere - DECAY_RATE);
+        var gas = zone != null && zone.isSealed()
+                ? org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(level, zone) : null;
+        pressure = gas == null ? 0 : gas.pressure();
+        if (gas != null && powered) {
+            regulate(level, zone, gas);
         }
         setChanged();
+    }
+
+    /** Регулятор: O₂ до уставки, N₂ — буфер давления, избыток O₂ — обратно в бак. */
+    private void regulate(ServerLevel level, SealedZone zone,
+                          org.alex_melan.spacereloaded.lifesupport.LifeSupportState.Gas gas) {
+        var o2 = org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN;
+        var n2 = org.alex_melan.spacereloaded.lifesupport.GasKind.NITROGEN;
+        var config = SpaceReloaded.config();
+        double v = gas.volume();
+        double t = org.alex_melan.spacereloaded.core.lifesupport.CabinAtmosphere.T_CABIN;
+        double targetO2 = org.alex_melan.spacereloaded.core.lifesupport.CabinAtmosphere.massFor(
+                config.cabinPressureKpa * config.cabinO2Fraction,
+                org.alex_melan.spacereloaded.core.lifesupport.CabinAtmosphere.M_O2, v, t);
+        double targetN2 = org.alex_melan.spacereloaded.core.lifesupport.CabinAtmosphere.massFor(
+                config.cabinPressureKpa * (1 - config.cabinO2Fraction),
+                org.alex_melan.spacereloaded.core.lifesupport.CabinAtmosphere.M_N2, v, t);
+        double budget = VALVE_KG_PER_S;
+        double dO2 = 0;
+        double dN2 = 0;
+        if (gas.mO2() < targetO2) {
+            dO2 = org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity.pullFromNeighbors(level, getBlockPos(),
+                    o2, Math.min(budget, targetO2 - gas.mO2()));
+            budget -= dO2;
+        } else {
+            double upper = targetO2 * O2_UPPER / config.cabinO2Fraction;
+            if (gas.mO2() > upper) {
+                dO2 = -org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity.pushToNeighbors(level, getBlockPos(),
+                        o2, Math.min(budget, gas.mO2() - targetO2));
+                budget += dO2;
+            }
+        }
+        if (gas.mN2() < targetN2 && budget > 0) {
+            dN2 = org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity.pullFromNeighbors(level, getBlockPos(),
+                    n2, Math.min(budget, targetN2 - gas.mN2()));
+        }
+        if (dO2 != 0 || dN2 != 0) {
+            org.alex_melan.spacereloaded.lifesupport.LifeSupportState.add(level, zone, dO2, dN2, 0);
+        }
     }
 
     /** Вызывается ZoneManager'ом из главного потока после пересчёта. */
@@ -74,8 +112,9 @@ public class AtmosphereControllerBlockEntity extends MachineBlockEntity {
         setChanged();
     }
 
-    public double atmosphere() {
-        return atmosphere;
+    /** Давление зоны при последней регулировке, кПа. */
+    public double pressure() {
+        return pressure;
     }
 
     public boolean powered() {
@@ -91,6 +130,7 @@ public class AtmosphereControllerBlockEntity extends MachineBlockEntity {
         if (getLevel() instanceof ServerLevel serverLevel) {
             // контроллер сломан (не выгрузка чанка) — воздух чистой комнаты забыт
             org.alex_melan.spacereloaded.electronics.CleanroomTracker.onZoneRemoved(serverLevel, pos);
+            org.alex_melan.spacereloaded.lifesupport.LifeSupportState.onZoneRemoved(serverLevel, pos);
         }
         super.preRemoveSideEffects(pos, state);
     }
@@ -106,12 +146,12 @@ public class AtmosphereControllerBlockEntity extends MachineBlockEntity {
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
-        output.putDouble("atmosphere", atmosphere);
+        output.putDouble("pressure", pressure);
     }
 
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
-        atmosphere = input.getDoubleOr("atmosphere", 0.0);
+        pressure = input.getDoubleOr("pressure", 0.0);
     }
 }

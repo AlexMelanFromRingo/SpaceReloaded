@@ -47,6 +47,8 @@ public class ProcessMenu extends AbstractContainerMenu {
                 SlotSpec.in(3, 50, 53), SlotSpec.out(4, 116, 35)),
         LITHOGRAPHY_STATION(76, 35, true, SlotSpec.in(0, 26, 35), SlotSpec.in(1, 50, 26), SlotSpec.in(2, 50, 48),
                 SlotSpec.out(3, 116, 35)),
+        BIOMASS_OXIDIZER(76, 35, false, SlotSpec.in(0, 56, 35)),
+        CO2_SCRUBBER(76, 35, false, SlotSpec.in(0, 50, 35), SlotSpec.out(1, 116, 35)),
         ETCH_BATH(76, 35, true, SlotSpec.in(0, 26, 35), SlotSpec.in(1, 50, 35), SlotSpec.out(2, 116, 35));
 
         public final int arrowX;
@@ -98,6 +100,8 @@ public class ProcessMenu extends AbstractContainerMenu {
                     case 1 -> WaferKind.byMask(stack) != null;
                     default -> stack.is(ModItems.PHOTORESIST);
                 };
+                case BIOMASS_OXIDIZER -> stack.is(ModTags.BIOMASS);
+                case CO2_SCRUBBER -> stack.is(ModItems.LIOH_CARTRIDGE) || stack.is(ModItems.ZEOLITE_BED);
                 case ETCH_BATH -> index == 0 ? WaferKind.isWafer(stack)
                         : stack.is(ModItems.HYDROFLUORIC_ACID) || stack.is(ModItems.CAUSTIC_SODA);
             };

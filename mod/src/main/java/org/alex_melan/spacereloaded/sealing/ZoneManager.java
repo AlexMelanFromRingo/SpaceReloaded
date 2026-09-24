@@ -267,6 +267,7 @@ public final class ZoneManager {
                     computation.footprint(), leaks);
             addToIndex(lz, zone);
             org.alex_melan.spacereloaded.electronics.CleanroomTracker.onZoneUpdated(level, zone);
+            org.alex_melan.spacereloaded.lifesupport.LifeSupportState.onZoneUpdated(level, zone);
 
             BlockEntity blockEntity = level.getBlockEntity(controllerPos);
             if (blockEntity instanceof AtmosphereControllerBlockEntity controller) {
@@ -298,6 +299,14 @@ public final class ZoneManager {
             long cell = it.nextLong();
             if (lz.posIndex.get(cell) == zone) {
                 lz.posIndex.remove(cell);
+                // клетку могут покрывать и другие зоны (тамбур шлюза при открытом люке — общий объём
+                // двух владельцев): индекс переходит к ним, а не теряется
+                for (SealedZone other : lz.zones.values()) {
+                    if (other != zone && other.footprint().contains(cell)) {
+                        lz.posIndex.put(cell, other);
+                        break;
+                    }
+                }
             }
         }
     }

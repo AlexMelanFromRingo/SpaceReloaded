@@ -12,9 +12,10 @@ class RegolithYieldTest {
 
     @Test
     void meansMatch() {
-        RegolithYield yield = new RegolithYield(150, 1, 0.2, 1);
+        RegolithYield yield = new RegolithYield(3.0, 1, 0.2, 1);
         SplittableRandom random = new SplittableRandom(7);
-        long o2 = 0, fe = 0, ti = 0, slag = 0;
+        double o2 = 0;
+        long fe = 0, ti = 0, slag = 0;
         int n = 10_000;
         for (int i = 0; i < n; i++) {
             RegolithYield.Output out = yield.roll(random);
@@ -23,7 +24,7 @@ class RegolithYieldTest {
             ti += out.titaniumDust();
             slag += out.slag();
         }
-        assertEquals(150.0, o2 / (double) n, 1e-9);
+        assertEquals(3.0, o2 / n, 1e-9);
         assertEquals(1.0, fe / (double) n, 1e-9);
         assertEquals(1.0, slag / (double) n, 1e-9);
         assertEquals(0.2, ti / (double) n, 0.02);

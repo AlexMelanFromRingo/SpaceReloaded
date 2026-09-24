@@ -188,6 +188,38 @@ public final class ModBlockEntities {
             register("lithography_station", new BlockEntityType<>(org.alex_melan.spacereloaded.electronics.LithographyStationBlockEntity::new,
                     Set.of(ModBlocks.LITHOGRAPHY_STATION)));
 
+    // --- Жизнь на станции (007) ---
+    public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity> GAS_TANK =
+            register("gas_tank", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity::new,
+                    Set.of(ModBlocks.GAS_TANK)));
+
+    public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.AirSeparatorBlockEntity> AIR_SEPARATOR =
+            register("air_separator", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.AirSeparatorBlockEntity::new,
+                    Set.of(ModBlocks.AIR_SEPARATOR)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.AirlockPumpBlockEntity> AIRLOCK_PUMP =
+            register("airlock_pump", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.AirlockPumpBlockEntity::new,
+                    Set.of(ModBlocks.AIRLOCK_PUMP)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.Co2ScrubberBlockEntity> CO2_SCRUBBER =
+            register("co2_scrubber", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.Co2ScrubberBlockEntity::new,
+                    Set.of(ModBlocks.CO2_SCRUBBER)));
+
+    public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.HydroponicTrayBlockEntity> HYDROPONIC_TRAY =
+            register("hydroponic_tray", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.HydroponicTrayBlockEntity::new,
+                    Set.of(ModBlocks.HYDROPONIC_TRAY)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.GrowLampBlockEntity> GROW_LAMP =
+            register("grow_lamp", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.GrowLampBlockEntity::new,
+                    Set.of(ModBlocks.GROW_LAMP)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.BiomassOxidizerBlockEntity> BIOMASS_OXIDIZER =
+            register("biomass_oxidizer", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.BiomassOxidizerBlockEntity::new,
+                    Set.of(ModBlocks.BIOMASS_OXIDIZER)));
+
+    public static final BlockEntityType<org.alex_melan.spacereloaded.station.SpinHubBlockEntity> SPIN_HUB =
+            register("spin_hub", new BlockEntityType<>(org.alex_melan.spacereloaded.station.SpinHubBlockEntity::new,
+                    Set.of(ModBlocks.SPIN_HUB)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.station.DespinMotorBlockEntity> DESPIN_MOTOR =
+            register("despin_motor", new BlockEntityType<>(org.alex_melan.spacereloaded.station.DespinMotorBlockEntity::new,
+                    Set.of(ModBlocks.DESPIN_MOTOR)));
+
     public static void init() {
         // Публикация энергохранилищ в Fabric API lookup (решение D7: Team Reborn Energy)
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SOLAR_PANEL);
@@ -213,6 +245,11 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), DIFFUSION_FURNACE);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ETCH_BATH);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CRYSTAL_PULLER);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), AIR_SEPARATOR);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), AIRLOCK_PUMP);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CO2_SCRUBBER);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), GROW_LAMP);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), DESPIN_MOTOR);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), REGOLITH_REACTOR);
         EnergyStorage.SIDED.registerForBlocks((level, pos, state, blockEntity, direction) ->
                 org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity.energyThroughLining(level, pos),

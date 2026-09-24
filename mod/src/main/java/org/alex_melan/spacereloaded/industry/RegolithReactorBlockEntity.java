@@ -97,7 +97,7 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
         return bathCapacity >= 1 && anodeCarbon >= CARBON_PER_ALUMINIUM && items.get(SLOT_INPUT).is(ModItems.ALUMINA);
     }
     private int progress;
-    private int oxygenBuffer;
+    private double oxygenBuffer;
     private boolean formed;
     private int badIndex = -1;
     private boolean dirty = true;
@@ -110,8 +110,8 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
                 case 1 -> melt.working() ? melt.maxProgress() : SpaceReloaded.config().reactorCycleTicks;
                 case 2 -> (int) energy.amount;
                 case 3 -> (int) energy.capacity;
-                case 4 -> oxygenBuffer;
-                case 5 -> SpaceReloaded.config().reactorOxygenBuffer;
+                case 4 -> (int) Math.round(oxygenBuffer * 10); // 0.1 кг
+                case 5 -> (int) Math.round(SpaceReloaded.config().reactorOxygenBufferKg * 10);
                 case 6 -> formed ? 1 : 0;
                 case 7 -> badIndex;
                 default -> 0;
@@ -145,7 +145,8 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
         return formed;
     }
 
-    public int oxygenBuffer() {
+    /** Кислород во внутреннем буфере, кг. */
+    public double oxygenBuffer() {
         return oxygenBuffer;
     }
 
@@ -241,7 +242,7 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
             boolean hh = hallHeroult();
             melt.setEnergyFactor(hh ? HALL_HEROULT_ENERGY : 1.0);
             var done = melt.tick(level, items, new int[] {SLOT_INPUT}, MELT_OUT, energy, 1,
-                    oxygen -> hh || oxygenBuffer + oxygen <= config.reactorOxygenBuffer + canisterRoom());
+                    oxygen -> hh || oxygenBuffer + oxygen <= config.reactorOxygenBufferKg);
             progress = melt.progress();
             if (done != null && hh) {
                 double aluminium = 0;
@@ -255,7 +256,6 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
             } else if (done != null) {
                 oxygenBuffer += done.recipe().oxygen() * done.batches();
                 drainBufferToCanister();
-                oxygenBuffer = Math.min(oxygenBuffer, config.reactorOxygenBuffer);
             }
             setChanged();
             return melt.working() || done != null;
@@ -265,7 +265,7 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
                 && energy.amount >= perTick
                 && fits(SLOT_IRON, ModItems.IRON_DUST) && fits(SLOT_TITANIUM, ModItems.TITANIUM_DUST)
                 && fits(SLOT_SLAG, ModItems.SLAG)
-                && oxygenBuffer + config.reactorOxygenPerBlock <= config.reactorOxygenBuffer + canisterRoom();
+                && oxygenBuffer + config.reactorOxygenKgPerBlock <= config.reactorOxygenBufferKg;
         if (!canWork) {
             if (progress > 0 && !formed) {
                 progress = 0;
@@ -277,11 +277,10 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
         if (progress >= config.reactorCycleTicks) {
             progress = 0;
             input.shrink(1);
-            RegolithYield yield = new RegolithYield(config.reactorOxygenPerBlock, 1, config.reactorTitaniumChance, 1);
+            RegolithYield yield = new RegolithYield(config.reactorOxygenKgPerBlock, 1, config.reactorTitaniumChance, 1);
             RegolithYield.Output out = yield.roll(new java.util.SplittableRandom(level.getRandom().nextLong()));
             oxygenBuffer += out.oxygen();
             drainBufferToCanister();
-            oxygenBuffer = Math.min(oxygenBuffer, config.reactorOxygenBuffer);
             grow(SLOT_IRON, new ItemStack(ModItems.IRON_DUST, out.ironDust()));
             if (out.titaniumDust() > 0) {
                 grow(SLOT_TITANIUM, new ItemStack(ModItems.TITANIUM_DUST, out.titaniumDust()));
@@ -293,20 +292,23 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
         return true;
     }
 
-    private int canisterRoom() {
-        ItemStack canister = items.get(SLOT_CANISTER);
-        return canister.is(ModItems.OXYGEN_CANISTER) ? canister.getDamageValue() : 0;
-    }
-
+    /**
+     * Кислород буфера — в баллон, затем в соседние газовые баки (007): у реактора на Луне кислород
+     * наконец становится воздухом базы, а не единицами баллона.
+     */
     private void drainBufferToCanister() {
-        ItemStack canister = items.get(SLOT_CANISTER);
-        if (oxygenBuffer <= 0 || !canister.is(ModItems.OXYGEN_CANISTER) || canister.getDamageValue() <= 0) {
+        if (oxygenBuffer <= 1e-9) {
             return;
         }
-        int move = Math.min(oxygenBuffer, canister.getDamageValue());
-        canister.setDamageValue(canister.getDamageValue() - move);
-        oxygenBuffer -= move;
-        setChanged();
+        double moved = org.alex_melan.spacereloaded.lifesupport.OxygenCanisters.charge(items.get(SLOT_CANISTER), oxygenBuffer);
+        if (level instanceof ServerLevel serverLevel) {
+            moved += org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity.pushToNeighbors(serverLevel, getBlockPos(),
+                    org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN, oxygenBuffer - moved);
+        }
+        if (moved > 0) {
+            oxygenBuffer = Math.max(0, oxygenBuffer - moved);
+            setChanged();
+        }
     }
 
     private boolean fits(int slot, net.minecraft.world.item.Item item) {
@@ -442,7 +444,7 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
         super.saveAdditional(output);
         ContainerHelper.saveAllItems(output, items);
         output.putInt("progress", progress);
-        output.putInt("oxygen", oxygenBuffer);
+        output.putDouble("oxygen_kg", oxygenBuffer);
         output.putLong("energy", energy.amount);
         melt.save(output.child("melt"));
         output.putDouble("bath", bathCapacity);
@@ -455,7 +457,7 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
         items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
         progress = input.getIntOr("progress", 0);
-        oxygenBuffer = input.getIntOr("oxygen", 0);
+        oxygenBuffer = input.getDoubleOr("oxygen_kg", 0);
         energy.amount = Math.min(energy.capacity, input.getLongOr("energy", 0));
         melt.load(input.childOrEmpty("melt"));
         bathCapacity = input.getDoubleOr("bath", 0);

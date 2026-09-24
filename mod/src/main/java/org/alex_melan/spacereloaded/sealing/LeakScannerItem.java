@@ -83,6 +83,8 @@ public class LeakScannerItem extends Item {
                 player.sendSystemMessage(Component.translatable(
                         "message.spacereloaded.scanner.sealed", zone.volume().size())
                         .withStyle(ChatFormatting.GREEN));
+                org.alex_melan.spacereloaded.lifesupport.LifeSupportReport.lines(level, zone)
+                        .forEach(player::sendSystemMessage);
                 level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME.value(),
                         SoundSource.PLAYERS, 0.7f, 1.6f);
             }

@@ -59,6 +59,10 @@ public final class ModMenus {
             process("diffusion_furnace", org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout.DIFFUSION_FURNACE);
     public static final MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu> LITHOGRAPHY_STATION =
             process("lithography_station", org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout.LITHOGRAPHY_STATION);
+    public static final MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu> BIOMASS_OXIDIZER =
+            process("biomass_oxidizer", org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout.BIOMASS_OXIDIZER);
+    public static final MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu> CO2_SCRUBBER =
+            process("co2_scrubber", org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout.CO2_SCRUBBER);
     public static final MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu> ETCH_BATH =
             process("etch_bath", org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout.ETCH_BATH);
 

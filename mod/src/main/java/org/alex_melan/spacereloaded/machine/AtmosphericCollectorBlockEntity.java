@@ -17,8 +17,14 @@ import org.alex_melan.spacereloaded.registry.ModItems;
  * атмосферы измерения в выходной слот. На co2-мире (Марс) быстро, на
  * воздушном (Земля) во много раз медленнее (в воздухе Земли CO2 это след),
  * в вакууме не работает вовсе. Слот [0] — выход, забирается хоппером.
+ * <p>007: вместе с CO₂ Марса (95 %) компрессор забирает буферный газ — азот 2.8 % и аргон 1.9 % по
+ * объёму, 0.037 кг на килограмм CO₂; он уходит в соседний газовый бак как «азот» (аргон — такой же
+ * инертный разбавитель кабины, отнесён к нему).
  */
 public class AtmosphericCollectorBlockEntity extends ChemMachineBlockEntity {
+
+    /** Буферный газ (N₂ + Ar) на килограмм CO₂ атмосферы Марса, кг. */
+    public static final double MARS_BUFFER_GAS_PER_CO2 = (0.028 * 28.01 + 0.019 * 39.95) / (0.95 * 44.01);
 
     public AtmosphericCollectorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.ATMOSPHERIC_COLLECTOR, pos, state, 1);
@@ -51,6 +57,10 @@ public class AtmosphericCollectorBlockEntity extends ChemMachineBlockEntity {
                     items.set(0, new ItemStack(ModItems.CARBON_DIOXIDE));
                 } else {
                     out.grow(1);
+                }
+                if (atmosphere.equals("co2")) {
+                    org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity.pushToNeighbors(level, getBlockPos(),
+                            org.alex_melan.spacereloaded.lifesupport.GasKind.NITROGEN, MARS_BUFFER_GAS_PER_CO2);
                 }
             }
             setChanged();

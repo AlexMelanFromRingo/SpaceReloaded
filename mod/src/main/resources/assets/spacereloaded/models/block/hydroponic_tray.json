@@ -1,0 +1,42 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"particle": "spacereloaded:block/hydroponic_tray",
+		"tray": "spacereloaded:block/hydroponic_tray",
+		"top": "spacereloaded:block/hydroponic_tray_top"
+	},
+	"elements": [
+		{
+			"from": [
+				0,
+				0,
+				0
+			],
+			"to": [
+				16,
+				8,
+				16
+			],
+			"faces": {
+				"up": {
+					"texture": "#top"
+				},
+				"down": {
+					"texture": "#tray"
+				},
+				"north": {
+					"texture": "#tray"
+				},
+				"south": {
+					"texture": "#tray"
+				},
+				"east": {
+					"texture": "#tray"
+				},
+				"west": {
+					"texture": "#tray"
+				}
+			}
+		}
+	]
+}

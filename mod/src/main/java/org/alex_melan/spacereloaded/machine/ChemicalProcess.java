@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.IntPredicate;
+import java.util.function.DoublePredicate;
 
 /**
  * Исполнитель процессных рецептов (006, D60) — общий для всего химического парка. Машина отдаёт
@@ -92,7 +92,7 @@ public final class ChemicalProcess {
      * @return завершённая реакция или {@code null}
      */
     public Finished tick(ServerLevel level, NonNullList<ItemStack> items, int[] in, int[] out,
-                         SimpleEnergyStorage energy, int maxBatches, IntPredicate oxygenFits) {
+                         SimpleEnergyStorage energy, int maxBatches, DoublePredicate oxygenFits) {
         List<ItemStack> stacks = new ArrayList<>(in.length);
         for (int slot : in) {
             stacks.add(items.get(slot));

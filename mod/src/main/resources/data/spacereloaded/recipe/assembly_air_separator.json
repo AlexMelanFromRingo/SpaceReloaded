@@ -1,0 +1,15 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:copper_plate",
+		"spacereloaded:copper_plate",
+		"spacereloaded:steel_shaft",
+		"spacereloaded:relay_logic",
+		"spacereloaded:glass_fiber"
+	],
+	"result": {
+		"id": "spacereloaded:air_separator"
+	}
+}

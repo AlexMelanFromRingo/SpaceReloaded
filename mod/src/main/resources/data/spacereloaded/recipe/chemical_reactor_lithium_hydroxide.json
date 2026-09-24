@@ -1,0 +1,22 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:lithium_chloride"
+		},
+		{
+			"item": "spacereloaded:caustic_soda"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:lithium_hydroxide"
+		},
+		{
+			"id": "spacereloaded:rock_salt"
+		}
+	],
+	"energy": 150,
+	"ticks": 160
+}

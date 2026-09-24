@@ -57,7 +57,8 @@ public final class VacuumHazard {
         List<LivingEntity> victims = new ArrayList<>();
         level.getEntities(LIVING, entity -> true, victims);
         for (LivingEntity entity : victims) {
-            boolean insideZone = ZoneManager.isInsideSealedZone(level, entity.blockPosition());
+            boolean insideZone = ZoneManager.isInsideSealedZone(level, entity.blockPosition())
+                    && pressurized(level, entity.blockPosition());
             // Звук глушится в открытом вакууме независимо от режима игры — физика
             if (entity instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
                 syncExposure(serverPlayer, !insideZone);
@@ -92,6 +93,15 @@ public final class VacuumHazard {
         }
     }
 
+    /**
+     * Герметичная зона дышит, только если в ней есть газ (007): давление выше армстронговой
+     * границы 6.3 кПа. Пустая зона — тот же вакуум.
+     */
+    private static boolean pressurized(ServerLevel level, net.minecraft.core.BlockPos pos) {
+        var gas = org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(level, ZoneManager.zoneContaining(level, pos));
+        return gas != null && gas.pressure() >= org.alex_melan.spacereloaded.lifesupport.CrewHazard.VACUUM_KPA;
+    }
+
     /** Полный сет EVA: грудь+ноги+ботинки из тега space_suit. */
     public static boolean hasFullSuit(net.minecraft.world.entity.player.Player player) {
         return player.getItemBySlot(EquipmentSlot.CHEST)
@@ -103,7 +113,7 @@ public final class VacuumHazard {
     }
 
     /** Баллоны (US6): маска дышит из первого заряженного баллона в инвентаре. */
-    private static boolean consumeOxygen(net.minecraft.world.entity.player.Player player) {
+    public static boolean consumeOxygen(net.minecraft.world.entity.player.Player player) {
         if (player.getAbilities().instabuild) {
             return true; // креатив дышит бесплатно, баллоны не расходуются
         }

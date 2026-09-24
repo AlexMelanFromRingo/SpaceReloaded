@@ -570,6 +570,33 @@ public final class ModBlocks {
                         .lightLevel(state -> state.getValue(org.alex_melan.spacereloaded.machine.MachineActivity.ACTIVE) ? light : 0));
     }
 
+    // --- Жизнь на станции (007) ---
+    public static final Block AIR_SEPARATOR = register("air_separator",
+            props -> new MachineBlock<>(props, org.alex_melan.spacereloaded.lifesupport.AirSeparatorBlockEntity::new,
+                    () -> ModBlockEntities.AIR_SEPARATOR, org.alex_melan.spacereloaded.lifesupport.AirSeparatorBlockEntity::serverTick),
+            BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block AIRLOCK_PUMP = register("airlock_pump",
+            props -> new MachineBlock<>(props, org.alex_melan.spacereloaded.lifesupport.AirlockPumpBlockEntity::new,
+                    () -> ModBlockEntities.AIRLOCK_PUMP, org.alex_melan.spacereloaded.lifesupport.AirlockPumpBlockEntity::serverTick),
+            BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block CO2_SCRUBBER = process("co2_scrubber",
+            org.alex_melan.spacereloaded.lifesupport.Co2ScrubberBlockEntity::new, () -> ModBlockEntities.CO2_SCRUBBER, 3);
+    public static final Block HYDROPONIC_TRAY = register("hydroponic_tray", org.alex_melan.spacereloaded.lifesupport.HydroponicTrayBlock::new,
+            BlockBehaviour.Properties.of().strength(2.0f, 6.0f).sound(SoundType.METAL).noOcclusion());
+    public static final Block GROW_LAMP = register("grow_lamp", org.alex_melan.spacereloaded.lifesupport.GrowLampBlock::new,
+            BlockBehaviour.Properties.of().strength(1.5f, 4.0f).sound(SoundType.GLASS).noOcclusion()
+                    .lightLevel(state -> state.getValue(org.alex_melan.spacereloaded.lifesupport.GrowLampBlock.LIT) ? 14 : 0));
+    public static final Block BIOMASS_OXIDIZER = process("biomass_oxidizer",
+            org.alex_melan.spacereloaded.lifesupport.BiomassOxidizerBlockEntity::new, () -> ModBlockEntities.BIOMASS_OXIDIZER, 8);
+    public static final Block SPIN_HUB = register("spin_hub", org.alex_melan.spacereloaded.station.SpinHubBlock::new,
+            BlockBehaviour.Properties.of().strength(5.0f, 12.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block RIM_THRUSTER = register("rim_thruster", org.alex_melan.spacereloaded.station.RimThrusterBlock::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block DESPIN_MOTOR = register("despin_motor", org.alex_melan.spacereloaded.station.DespinMotorBlock::new,
+            BlockBehaviour.Properties.of().strength(4.0f, 10.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block GAS_TANK = register("gas_tank", org.alex_melan.spacereloaded.lifesupport.GasTankBlock::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+
     private static <T extends Block> T registerNoItem(String name,
                                                       Function<BlockBehaviour.Properties, T> factory,
                                                       BlockBehaviour.Properties properties) {

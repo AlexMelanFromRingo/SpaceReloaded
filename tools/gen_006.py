@@ -165,13 +165,13 @@ def recipes():
              [("alumina", 1), ("minecraft:sand", 1), ("hydrogen_chloride", 2, 0.9)], energy=600, ticks=200)
     chemical("cryolite", "chemical_reactor", [("hydrofluoric_acid", 3), ("alumina", 1), ("caustic_soda", 3)],
              [("cryolite", 2)], energy=200, ticks=160)
-    # 2 куска глинозёма (8.8 кг) несут 4.65 кг Al = 1.55 слитка по 3.0 кг; O₂ 4.1 кг ≈ 250 ед. баллона
+    # 2 куска глинозёма (8.8 кг) несут 4.65 кг Al = 1.55 слитка по 3.0 кг и 4.1 кг O₂
     chemical("alumina_electrolysis", "regolith_reactor", [("alumina", 2)], [("aluminium_ingot", 2, 0.775)],
-             kwh=20 * 4.65, ticks=300, oxygen=250)
+             kwh=20 * 4.65, ticks=300, oxygen=4.1)
     # анортозит CaAl₂Si₂O₈, блок 27.3 кг: Al 5.3 кг, Si 5.5 кг, O₂ ~11 кг, CaO — шлак
     chemical("anorthosite", "regolith_reactor", [("anorthosite", 1)],
              [("aluminium_ingot", 2, 0.88), ("metallurgical_silicon", 2), ("slag", 1)],
-             kwh=20 * 5.3 + 13 * 5.5, ticks=400, oxygen=660)
+             kwh=20 * 5.3 + 13 * 5.5, ticks=400, oxygen=11.0)
     smelting("beta_spodumene", "spodumene", "beta_spodumene")
     chemical("lithium_chloride", "chemical_reactor", [("beta_spodumene", 1), ("hydrogen_chloride", 2)],
              [("lithium_chloride", 1), ("minecraft:sand", 1)], energy=300, ticks=200)

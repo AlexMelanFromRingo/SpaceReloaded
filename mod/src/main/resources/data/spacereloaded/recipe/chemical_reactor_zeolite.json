@@ -1,0 +1,23 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:alumina"
+		},
+		{
+			"item": "minecraft:sand"
+		},
+		{
+			"item": "spacereloaded:caustic_soda"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:zeolite",
+			"count": 4
+		}
+	],
+	"energy": 300,
+	"ticks": 240
+}

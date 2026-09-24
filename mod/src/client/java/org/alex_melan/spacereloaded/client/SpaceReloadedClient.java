@@ -45,7 +45,7 @@ public class SpaceReloadedClient implements ClientModInitializer {
 				org.alex_melan.spacereloaded.client.gui.RegolithReactorScreen::new);
 		// 006: процессные машины — одно окно по раскладке меню
 		for (var type : java.util.List.of(ModMenus.CHEMICAL_REACTOR, ModMenus.SABATIER_REACTOR, ModMenus.DEPOSITION_REACTOR,
-				ModMenus.DIFFUSION_FURNACE, ModMenus.LITHOGRAPHY_STATION, ModMenus.ETCH_BATH)) {
+				ModMenus.DIFFUSION_FURNACE, ModMenus.LITHOGRAPHY_STATION, ModMenus.ETCH_BATH, ModMenus.CO2_SCRUBBER, ModMenus.BIOMASS_OXIDIZER)) {
 			MenuScreens.register(type, org.alex_melan.spacereloaded.client.gui.ProcessScreen::new);
 		}
 

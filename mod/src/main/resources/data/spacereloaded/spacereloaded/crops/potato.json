@@ -1,0 +1,13 @@
+{
+	"seed": "minecraft:potato",
+	"harvest": "minecraft:potato",
+	"byproduct": "spacereloaded:straw",
+	"dli": 28,
+	"cycle_days": 132,
+	"edible_g_m2_day": 21.1,
+	"harvest_index": 0.7,
+	"o2_g_m2_day": 32.2,
+	"co2_g_m2_day": 45.2,
+	"water_kg_m2_day": 4.0,
+	"fresh_factor": 5.0
+}

@@ -101,10 +101,7 @@ public class HermeticHatchBlock extends Block {
         if (anyCycling) {
             return InteractionResult.SUCCESS_SERVER; // цикл уже идёт
         }
-        if (!beginCycle(serverLevel, pos, group) && player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendOverlayMessage(
-                    Component.translatable("message.spacereloaded.airlock_interlock"));
-        }
+        beginCycle(serverLevel, pos, group, player instanceof ServerPlayer serverPlayer ? serverPlayer : null);
         return InteractionResult.SUCCESS_SERVER;
     }
 
@@ -112,16 +109,28 @@ public class HermeticHatchBlock extends Block {
      * Запуск цикла выравнивания давления (общий для ПКМ и редстоуна).
      * @return false, если интерлок не пустил (рядом открыт другой люк)
      */
-    private boolean beginCycle(ServerLevel level, BlockPos pos, List<BlockPos> group) {
+    private boolean beginCycle(ServerLevel level, BlockPos pos, List<BlockPos> group, ServerPlayer player) {
         if (findOpenHatchNearby(level, pos, group)) {
             level.playSound(null, pos, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 0.5f, 1.6f);
+            if (player != null) {
+                player.sendOverlayMessage(Component.translatable("message.spacereloaded.airlock_interlock"));
+            }
+            return false;
+        }
+        // 007: люк под перепадом не открыть — цикл сначала выравнивает давление (насос или клапан)
+        var plan = org.alex_melan.spacereloaded.lifesupport.AirlockLogic.plan(level, pos, group);
+        if (plan.refusal() != null) {
+            level.playSound(null, pos, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 0.5f, 1.6f);
+            if (player != null) {
+                player.sendOverlayMessage(plan.refusal());
+            }
             return false;
         }
         for (BlockPos member : group) {
             level.setBlock(member, level.getBlockState(member).setValue(CYCLING, true), 3);
         }
         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.6f, 1.4f);
-        level.scheduleTick(pos, this, SpaceReloaded.config().airlockCycleTicks);
+        level.scheduleTick(pos, this, plan.ticks());
         return true;
     }
 
@@ -157,7 +166,7 @@ public class HermeticHatchBlock extends Block {
         boolean cycling = current.getValue(CYCLING);
         List<BlockPos> group = collectGroup(serverLevel, pos);
         if (powered && !open && !cycling) {
-            beginCycle(serverLevel, pos, group);
+            beginCycle(serverLevel, pos, group, null);
         } else if (!powered && open) {
             setGroup(serverLevel, group, false, false);
             serverLevel.playSound(null, pos, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -172,9 +181,11 @@ public class HermeticHatchBlock extends Block {
         List<BlockPos> group = collectGroup(level, pos);
         // Повторная проверка интерлока: чужой люк могли открыть за время цикла
         if (findOpenHatchNearby(level, pos, group)) {
+            org.alex_melan.spacereloaded.lifesupport.AirlockLogic.cancel(pos);
             setGroup(level, group, false, false);
             return;
         }
+        org.alex_melan.spacereloaded.lifesupport.AirlockLogic.complete(pos);
         setGroup(level, group, true, false);
         level.playSound(null, pos, SoundEvents.IRON_DOOR_OPEN, SoundSource.BLOCKS, 1.0f, 1.0f);
     }

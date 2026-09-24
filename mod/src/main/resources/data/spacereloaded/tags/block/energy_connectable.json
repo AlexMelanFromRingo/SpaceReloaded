@@ -27,6 +27,12 @@
 		"spacereloaded:lithography_station",
 		"spacereloaded:etch_bath",
 		"spacereloaded:crystal_puller",
-		"spacereloaded:mono_solar_panel"
+		"spacereloaded:mono_solar_panel",
+		"spacereloaded:co2_scrubber",
+		"spacereloaded:air_separator",
+		"spacereloaded:airlock_pump",
+		"spacereloaded:biomass_oxidizer",
+		"spacereloaded:hydroponic_tray",
+		"spacereloaded:grow_lamp"
 	]
 }

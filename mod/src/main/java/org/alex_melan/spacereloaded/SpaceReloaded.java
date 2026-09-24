@@ -119,6 +119,9 @@ public class SpaceReloaded implements ModInitializer {
 			org.alex_melan.spacereloaded.industry.IndustryAdvancements.tick(level);
 			org.alex_melan.spacereloaded.kinetics.KineticNetworks.tick(level);
 			org.alex_melan.spacereloaded.electronics.CleanroomTracker.tick(level);
+			org.alex_melan.spacereloaded.lifesupport.LifeSupportState.tick(level);
+			org.alex_melan.spacereloaded.lifesupport.CrewHazard.tick(level);
+			org.alex_melan.spacereloaded.station.SpinRings.tick(level);
 		});
 		ServerTickEvents.END_SERVER_TICK.register(
 				org.alex_melan.spacereloaded.industry.PodTransitState::tick);
@@ -130,6 +133,8 @@ public class SpaceReloaded implements ModInitializer {
 			org.alex_melan.spacereloaded.rocket.FuelingHose.clearAll();
 			org.alex_melan.spacereloaded.sealing.VacuumHazard.clearAll();
 			org.alex_melan.spacereloaded.electronics.CleanroomTracker.clearTransient();
+			org.alex_melan.spacereloaded.lifesupport.LifeSupportState.clearTransient();
+			org.alex_melan.spacereloaded.station.SpinRings.clearAll();
 		});
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->

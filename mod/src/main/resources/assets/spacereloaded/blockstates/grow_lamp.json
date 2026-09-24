@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"lit=false": {
+			"model": "spacereloaded:block/grow_lamp"
+		},
+		"lit=true": {
+			"model": "spacereloaded:block/grow_lamp_on"
+		}
+	}
+}

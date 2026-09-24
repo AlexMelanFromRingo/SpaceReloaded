@@ -1,0 +1,52 @@
+{
+	"variants": {
+		"crop=none,stage=0": {
+			"model": "spacereloaded:block/hydroponic_tray"
+		},
+		"crop=none,stage=1": {
+			"model": "spacereloaded:block/hydroponic_tray"
+		},
+		"crop=none,stage=2": {
+			"model": "spacereloaded:block/hydroponic_tray"
+		},
+		"crop=none,stage=3": {
+			"model": "spacereloaded:block/hydroponic_tray"
+		},
+		"crop=wheat,stage=0": {
+			"model": "spacereloaded:block/hydroponic_tray_wheat_0"
+		},
+		"crop=wheat,stage=1": {
+			"model": "spacereloaded:block/hydroponic_tray_wheat_1"
+		},
+		"crop=wheat,stage=2": {
+			"model": "spacereloaded:block/hydroponic_tray_wheat_2"
+		},
+		"crop=wheat,stage=3": {
+			"model": "spacereloaded:block/hydroponic_tray_wheat_3"
+		},
+		"crop=potato,stage=0": {
+			"model": "spacereloaded:block/hydroponic_tray_potato_0"
+		},
+		"crop=potato,stage=1": {
+			"model": "spacereloaded:block/hydroponic_tray_potato_1"
+		},
+		"crop=potato,stage=2": {
+			"model": "spacereloaded:block/hydroponic_tray_potato_2"
+		},
+		"crop=potato,stage=3": {
+			"model": "spacereloaded:block/hydroponic_tray_potato_3"
+		},
+		"crop=other,stage=0": {
+			"model": "spacereloaded:block/hydroponic_tray_other_0"
+		},
+		"crop=other,stage=1": {
+			"model": "spacereloaded:block/hydroponic_tray_other_1"
+		},
+		"crop=other,stage=2": {
+			"model": "spacereloaded:block/hydroponic_tray_other_2"
+		},
+		"crop=other,stage=3": {
+			"model": "spacereloaded:block/hydroponic_tray_other_3"
+		}
+	}
+}

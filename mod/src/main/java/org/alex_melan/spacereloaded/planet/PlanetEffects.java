@@ -27,21 +27,26 @@ public final class PlanetEffects {
         if (level.getGameTime() % 20 != 0) {
             return;
         }
-        double gravity = PlanetManager.gravity(level);
-        boolean lowGravity = gravity < PlanetManager.EARTH_GRAVITY - 0.01;
-        double amount = gravity / PlanetManager.EARTH_GRAVITY - 1.0; // ADD_MULTIPLIED_TOTAL
-
+        double planet = PlanetManager.gravity(level);
+        var crew = org.alex_melan.spacereloaded.station.CrewState.get(level.getServer());
         for (ServerPlayer player : List.copyOf(level.players())) {
             AttributeInstance attribute = player.getAttribute(Attributes.GRAVITY);
             if (attribute == null) {
                 continue;
             }
-            boolean has = attribute.hasModifier(GRAVITY_MODIFIER_ID);
-            if (lowGravity && !has) {
+            // 007: во вращающемся кольце вес — ω²·r по высоте над ободом, а не гравитация тела
+            double gravity = org.alex_melan.spacereloaded.station.SpinRings.gravityFor(level, player).orElse(planet);
+            crew.update(player, gravity, 20 / 24000.0);
+            double amount = gravity / PlanetManager.EARTH_GRAVITY - 1.0; // ADD_MULTIPLIED_TOTAL
+            AttributeModifier current = attribute.getModifier(GRAVITY_MODIFIER_ID);
+            boolean needed = Math.abs(amount) > 0.001;
+            if (current != null && (!needed || Math.abs(current.amount() - amount) > 1e-4)) {
+                attribute.removeModifier(GRAVITY_MODIFIER_ID);
+                current = null;
+            }
+            if (needed && current == null) {
                 attribute.addTransientModifier(new AttributeModifier(GRAVITY_MODIFIER_ID,
                         amount, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
-            } else if (!lowGravity && has) {
-                attribute.removeModifier(GRAVITY_MODIFIER_ID);
             }
         }
     }

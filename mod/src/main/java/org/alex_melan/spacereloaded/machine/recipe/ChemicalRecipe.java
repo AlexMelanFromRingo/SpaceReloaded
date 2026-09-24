@@ -25,7 +25,7 @@ import java.util.Optional;
  * Процессный рецепт (006, FR-410, D60): машина-исполнитель ({@code machine}), до двух реагентов
  * (с количеством), до трёх продуктов с выходом ({@code yield} — доля от количества, дробная часть
  * копится в машине: возврат HCl в цикле Сименса 95 %), энергия (E, масштаб κ химии 005: честны
- * соотношения цен процессов), время и кислород ({@code oxygen}, единиц баллона — для электролиза
+ * соотношения цен процессов), время и кислород ({@code oxygen}, кг — для электролиза
  * оксидных расплавов). Чистота кремния: {@code purity} ≥ 0 — задать продукту №1,
  * {@code keep_purity} — перенести с реагента №1. Реакции — данные: карботермия в печи,
  * хлор-щелочной электролиз в стеке, трихлорсилан и Монд в Сабатье, осаждение Сименса, мокрая
@@ -78,7 +78,7 @@ public class ChemicalRecipe implements Recipe<ChemicalRecipeInput> {
             Codec.INT.optionalFieldOf("ticks", 200).forGetter(r -> r.ticks),
             Codec.DOUBLE.optionalFieldOf("purity", -1.0).forGetter(r -> r.purity),
             Codec.BOOL.optionalFieldOf("keep_purity", false).forGetter(r -> r.keepPurity),
-            Codec.INT.optionalFieldOf("oxygen", 0).forGetter(r -> r.oxygen)
+            Codec.DOUBLE.optionalFieldOf("oxygen", 0.0).forGetter(r -> r.oxygen)
     ).apply(i, ChemicalRecipe::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ChemicalRecipe> STREAM_CODEC = StreamCodec.of(
@@ -90,13 +90,13 @@ public class ChemicalRecipe implements Recipe<ChemicalRecipeInput> {
                 ByteBufCodecs.VAR_INT.encode(buf, r.ticks);
                 ByteBufCodecs.DOUBLE.encode(buf, r.purity);
                 ByteBufCodecs.BOOL.encode(buf, r.keepPurity);
-                ByteBufCodecs.VAR_INT.encode(buf, r.oxygen);
+                ByteBufCodecs.DOUBLE.encode(buf, r.oxygen);
             },
             buf -> new ChemicalRecipe(ByteBufCodecs.STRING_UTF8.decode(buf),
                     Reagent.STREAM.apply(ByteBufCodecs.list()).decode(buf),
                     Product.STREAM.apply(ByteBufCodecs.list()).decode(buf),
                     ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.VAR_INT.decode(buf),
-                    ByteBufCodecs.DOUBLE.decode(buf), ByteBufCodecs.BOOL.decode(buf), ByteBufCodecs.VAR_INT.decode(buf)));
+                    ByteBufCodecs.DOUBLE.decode(buf), ByteBufCodecs.BOOL.decode(buf), ByteBufCodecs.DOUBLE.decode(buf)));
 
     private final String machine;
     private final List<Reagent> inputs;
@@ -105,11 +105,11 @@ public class ChemicalRecipe implements Recipe<ChemicalRecipeInput> {
     private final int ticks;
     private final double purity;
     private final boolean keepPurity;
-    private final int oxygen;
+    private final double oxygen;
     private PlacementInfo placementInfo;
 
     public ChemicalRecipe(String machine, List<Reagent> inputs, List<Product> outputs, long energy, int ticks,
-                          double purity, boolean keepPurity, int oxygen) {
+                          double purity, boolean keepPurity, double oxygen) {
         this.machine = machine;
         this.inputs = List.copyOf(inputs);
         this.outputs = List.copyOf(outputs);
@@ -132,7 +132,8 @@ public class ChemicalRecipe implements Recipe<ChemicalRecipeInput> {
         return outputs;
     }
 
-    public int oxygen() {
+    /** Кислород реакции, кг (электролиз оксидных расплавов). */
+    public double oxygen() {
         return oxygen;
     }
 

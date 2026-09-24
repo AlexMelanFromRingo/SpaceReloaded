@@ -1,0 +1,9 @@
+{
+	"replace": false,
+	"values": [
+		"spacereloaded:straw",
+		"minecraft:short_grass",
+		"minecraft:kelp",
+		"minecraft:hay_block"
+	]
+}

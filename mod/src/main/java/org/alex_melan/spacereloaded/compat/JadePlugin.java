@@ -66,8 +66,8 @@ public class JadePlugin implements IWailaPlugin {
                         data.putInt("sr_mc_lost", catcher.lost());
                     } else if (be instanceof org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity reactor) {
                         data.putBoolean("sr_rr_formed", reactor.formed());
-                        data.putInt("sr_rr_o2", reactor.oxygenBuffer());
-                        data.putInt("sr_rr_o2_max", SpaceReloaded.config().reactorOxygenBuffer);
+                        data.putInt("sr_rr_o2", (int) Math.round(reactor.oxygenBuffer() * 10));
+                        data.putInt("sr_rr_o2_max", (int) Math.round(SpaceReloaded.config().reactorOxygenBufferKg * 10));
                         data.putLong("sr_energy", reactor.energyStorage().getAmount());
                         data.putLong("sr_energy_max", reactor.energyStorage().getCapacity());
                     }

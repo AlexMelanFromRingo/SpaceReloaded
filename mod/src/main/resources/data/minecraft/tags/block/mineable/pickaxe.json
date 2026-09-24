@@ -91,6 +91,13 @@
 		"spacereloaded:anorthosite",
 		"spacereloaded:halite_ore",
 		"spacereloaded:fluorite_ore",
-		"spacereloaded:spodumene_ore"
+		"spacereloaded:spodumene_ore",
+		"spacereloaded:co2_scrubber",
+		"spacereloaded:air_separator",
+		"spacereloaded:airlock_pump",
+		"spacereloaded:gas_tank",
+		"spacereloaded:biomass_oxidizer",
+		"spacereloaded:hydroponic_tray",
+		"spacereloaded:grow_lamp"
 	]
 }

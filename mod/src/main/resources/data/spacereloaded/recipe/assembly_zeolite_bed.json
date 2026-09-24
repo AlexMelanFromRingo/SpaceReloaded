@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:zeolite",
+		"spacereloaded:zeolite",
+		"spacereloaded:zeolite",
+		"spacereloaded:zeolite",
+		"spacereloaded:steel_plate",
+		"spacereloaded:copper_wire"
+	],
+	"result": {
+		"id": "spacereloaded:zeolite_bed"
+	}
+}

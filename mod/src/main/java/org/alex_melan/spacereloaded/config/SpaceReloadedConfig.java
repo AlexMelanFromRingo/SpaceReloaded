@@ -72,8 +72,7 @@ public final class SpaceReloadedConfig {
     public int electrolyzerTicks = 100;
     /** Топлива за операцию, кг. */
     public double electrolyzerFuelPerOp = 50.0;
-    /** Кислорода в баллон за операцию (единицы прочности). */
-    public int electrolyzerOxygenPerOp = 300;
+    // Кислород электролизёра с 007 — не параметр, а стехиометрия: 2/9 массы льда сверх окислителя
     /** Длительность операции перегонного куба, тики. */
     public int refineryTicks = 120;
     /** Топлива за операцию перегонки, кг. */
@@ -224,6 +223,14 @@ public final class SpaceReloadedConfig {
      * траектория пересчитывается в полёте, ошибки гасятся по ходу), %.
      */
     public double guidedDeltaVMarginPercent = 2.0;
+
+    // --- Жизнь на станции (007) ---
+    /** Уставка давления кабины, кПа (NASA: 101.3 — стандарт; «исследовательская» 56.5 при 34 % O₂). */
+    public double cabinPressureKpa = 101.325;
+    /** Доля O₂ по объёму в уставке. */
+    public double cabinO2Fraction = 0.21;
+    /** Защитный интерлок шлюза: наружная группа не откачивает, пока в тамбуре кто-то без скафандра. */
+    public boolean airlockSuitInterlock = true;
     /** Задержка пересадки автопилота на промежуточной платформе, тики (время «перепрограммирования»). */
     public int autopilotRelaunchDelayTicks = 100;
     /**
@@ -294,14 +301,14 @@ public final class SpaceReloadedConfig {
     public boolean massCatcherAnyDimension = false;
     /** Длительность цикла реголитового реактора, тики. */
     public int reactorCycleTicks = 200;
-    /** Энергия цикла реактора, E (электролиз расплава ~21 кВт·ч/кг O₂, масштаб от электролизёра мода). */
-    public long reactorEnergyPerCycle = 1_600L;
-    /** Кислород из блока реголита, единицы баллона (половина льда: реголит беднее и дороже). */
-    public int reactorOxygenPerBlock = 150;
+    /** Энергия цикла реактора, E: MRE ~21 кВт·ч на кг O₂ × 3 кг × 31 E/кВт·ч (масштаб 006). */
+    public long reactorEnergyPerCycle = 1_950L;
+    /** Кислород из блока реголита, кг: 15 кг реголита × 20 % (MRE извлекает 20–30 % массы). */
+    public double reactorOxygenKgPerBlock = 3.0;
     /** Шанс титановой пыли за цикл (ильменит в морском реголите). */
     public double reactorTitaniumChance = 0.2;
-    /** Внутренний буфер кислорода реактора, единицы. */
-    public int reactorOxygenBuffer = 1_500;
+    /** Внутренний буфер кислорода реактора, кг (сверх баллона и соседних баков). */
+    public double reactorOxygenBufferKg = 20.0;
     /** Толща непрозрачных блоков над головой, начиная с которой позиция — «укрытие» (стабильная температура). */
     public int shelterMinRockBlocks = 4;
 
@@ -479,6 +486,9 @@ public final class SpaceReloadedConfig {
         if (cargoLineDeltaVMarginPercent < 0 || cargoLineDeltaVMarginPercent > 100) {
             throw new IllegalArgumentException("cargoLineDeltaVMarginPercent должен быть в [0, 100]");
         }
+        if (cabinPressureKpa < 20 || cabinPressureKpa > 120 || cabinO2Fraction < 0.15 || cabinO2Fraction > 0.4) {
+            throw new IllegalArgumentException("cabinPressureKpa ∈ [20, 120], cabinO2Fraction ∈ [0.15, 0.4]");
+        }
         if (guidedDeltaVMarginPercent < 0 || guidedDeltaVMarginPercent > cargoLineDeltaVMarginPercent) {
             throw new IllegalArgumentException("guidedDeltaVMarginPercent должен быть в [0, cargoLineDeltaVMarginPercent]");
         }
@@ -517,8 +527,8 @@ public final class SpaceReloadedConfig {
                 || catcherNetMaxBlocks < 1 || catcherNetMaxBlocks > 4096) {
             throw new IllegalArgumentException("параметры ловушки: радиусы >= 0, max >= base, catcherNetMaxBlocks в [1, 4096]");
         }
-        if (reactorCycleTicks < 1 || reactorEnergyPerCycle < 0 || reactorOxygenPerBlock < 0
-                || reactorTitaniumChance < 0 || reactorTitaniumChance > 1 || reactorOxygenBuffer < 0) {
+        if (reactorCycleTicks < 1 || reactorEnergyPerCycle < 0 || reactorOxygenKgPerBlock < 0
+                || reactorTitaniumChance < 0 || reactorTitaniumChance > 1 || reactorOxygenBufferKg < 0) {
             throw new IllegalArgumentException("параметры реактора: цикл >= 1, энергия/O2/буфер >= 0, шанс в [0, 1]");
         }
         if (shelterMinRockBlocks < 1 || shelterMinRockBlocks > 64) {

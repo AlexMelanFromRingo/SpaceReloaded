@@ -27,6 +27,8 @@ public final class ModTags {
     public static final TagKey<Item> REGOLITH_REACTOR_INPUT = item("regolith_reactor_input");
     /** Сырьё электролиза расплавов (006): глинозём, анортозит, хлорид лития. */
     public static final TagKey<Item> MOLTEN_SALT_FEED = item("molten_salt_feed");
+    /** Несъедобная биомасса для окислителя (007): солома, ботва, листья. */
+    public static final TagKey<Item> BIOMASS = item("biomass");
 
     /** Части скафандра EVA: полный сет (грудь+ноги+ботинки) защищает от среды. */
     public static final TagKey<Item> SPACE_SUIT = item("space_suit");

@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_shaft",
+		"spacereloaded:copper_wire",
+		"spacereloaded:copper_wire",
+		"spacereloaded:relay"
+	],
+	"result": {
+		"id": "spacereloaded:airlock_pump"
+	}
+}

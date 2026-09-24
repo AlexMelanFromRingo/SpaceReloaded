@@ -1,0 +1,41 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"particle": "spacereloaded:block/grow_lamp_on",
+		"panel": "spacereloaded:block/grow_lamp_on"
+	},
+	"elements": [
+		{
+			"from": [
+				1,
+				12,
+				1
+			],
+			"to": [
+				15,
+				16,
+				15
+			],
+			"faces": {
+				"up": {
+					"texture": "#panel"
+				},
+				"down": {
+					"texture": "#panel"
+				},
+				"north": {
+					"texture": "#panel"
+				},
+				"south": {
+					"texture": "#panel"
+				},
+				"east": {
+					"texture": "#panel"
+				},
+				"west": {
+					"texture": "#panel"
+				}
+			}
+		}
+	]
+}

@@ -86,6 +86,8 @@ public class TelemetryScreenBlock extends Block implements EntityBlock {
                         zone.volume().size(),
                         vacuum ? Component.translatable("message.spacereloaded.telemetry.env_vacuum")
                                : Component.translatable("message.spacereloaded.telemetry.env_air")));
+                org.alex_melan.spacereloaded.lifesupport.LifeSupportReport.lines(serverLevel, zone)
+                        .forEach(serverPlayer::sendSystemMessage);
             }
         }
         return InteractionResult.SUCCESS_SERVER;

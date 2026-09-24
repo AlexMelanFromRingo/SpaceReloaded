@@ -55,44 +55,56 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         try (TestSingleplayerContext sp = context.worldBuilder().create()) {
             sp.getClientLevel().waitForChunksRender();
 
-            testSealing(context, sp);
-            testCrusher(context, sp);
-            testRocketAssembly(context, sp);
-            testOrbitalCannon(context, sp);
-            testDocking(context, sp);
-            testScanAndProgram(context, sp);
-            testBatteryBalancing(context, sp);
-            testCargoLoop(context, sp);
-            testMeteor(context, sp);
-            testRedstoneAirlock(context, sp);
-            testTelemetryScreen(context, sp);
-            testMarsChemistry(context, sp);
-            testOrbitalNetwork(context, sp);
-            testDeepSpace(context, sp);
-            testNavigation(context, sp);
-            testPlanetTerrain(context, sp);
-            testPropellantFluids(context, sp);
-            testBodyExclusiveOres(context, sp);
-            testStaging(context, sp);
-            testAttitude(context, sp);
-            testAtmosphere(context, sp);
-            testStrikeGuidance(context, sp);
-            testCargoLine(context, sp);
-            testWetWorkshop(context, sp);
-            testMassDriver(context, sp);
-            testMassCatcher(context, sp);
-            testRegolithReactor(context, sp);
-            testTransmission(context, sp);
-            testShaftShear(context, sp);
-            testPressFlywheel(context, sp);
-            testStackColumn(context, sp);
-            testEngineQuality(context, sp);
-            testExplosionSealing(context, sp);
-            testChemistryChain(context, sp);
-            testCrystalAndSaw(context, sp);
-            testCleanroomFab(context, sp);
-            testSuperalloyEngine(context, sp);
-            testVisualShowcase(context, sp);
+            // SR_ONLY=testA,testB — только выбранные сценарии (testSealing включает вакуум — идёт всегда)
+            String only = System.getenv("SR_ONLY");
+            java.util.Set<String> selected = only == null || only.isBlank() ? null
+                    : new java.util.HashSet<>(java.util.Arrays.asList(only.split(",")));
+            java.util.LinkedHashMap<String, Runnable> scenarios = new java.util.LinkedHashMap<>();
+            scenarios.put("testSealing", () -> testSealing(context, sp));
+            scenarios.put("testCrusher", () -> testCrusher(context, sp));
+            scenarios.put("testRocketAssembly", () -> testRocketAssembly(context, sp));
+            scenarios.put("testOrbitalCannon", () -> testOrbitalCannon(context, sp));
+            scenarios.put("testDocking", () -> testDocking(context, sp));
+            scenarios.put("testScanAndProgram", () -> testScanAndProgram(context, sp));
+            scenarios.put("testBatteryBalancing", () -> testBatteryBalancing(context, sp));
+            scenarios.put("testCargoLoop", () -> testCargoLoop(context, sp));
+            scenarios.put("testMeteor", () -> testMeteor(context, sp));
+            scenarios.put("testRedstoneAirlock", () -> testRedstoneAirlock(context, sp));
+            scenarios.put("testTelemetryScreen", () -> testTelemetryScreen(context, sp));
+            scenarios.put("testMarsChemistry", () -> testMarsChemistry(context, sp));
+            scenarios.put("testOrbitalNetwork", () -> testOrbitalNetwork(context, sp));
+            scenarios.put("testDeepSpace", () -> testDeepSpace(context, sp));
+            scenarios.put("testNavigation", () -> testNavigation(context, sp));
+            scenarios.put("testPlanetTerrain", () -> testPlanetTerrain(context, sp));
+            scenarios.put("testPropellantFluids", () -> testPropellantFluids(context, sp));
+            scenarios.put("testBodyExclusiveOres", () -> testBodyExclusiveOres(context, sp));
+            scenarios.put("testStaging", () -> testStaging(context, sp));
+            scenarios.put("testAttitude", () -> testAttitude(context, sp));
+            scenarios.put("testAtmosphere", () -> testAtmosphere(context, sp));
+            scenarios.put("testStrikeGuidance", () -> testStrikeGuidance(context, sp));
+            scenarios.put("testCargoLine", () -> testCargoLine(context, sp));
+            scenarios.put("testWetWorkshop", () -> testWetWorkshop(context, sp));
+            scenarios.put("testMassDriver", () -> testMassDriver(context, sp));
+            scenarios.put("testMassCatcher", () -> testMassCatcher(context, sp));
+            scenarios.put("testRegolithReactor", () -> testRegolithReactor(context, sp));
+            scenarios.put("testTransmission", () -> testTransmission(context, sp));
+            scenarios.put("testShaftShear", () -> testShaftShear(context, sp));
+            scenarios.put("testPressFlywheel", () -> testPressFlywheel(context, sp));
+            scenarios.put("testStackColumn", () -> testStackColumn(context, sp));
+            scenarios.put("testEngineQuality", () -> testEngineQuality(context, sp));
+            scenarios.put("testExplosionSealing", () -> testExplosionSealing(context, sp));
+            scenarios.put("testChemistryChain", () -> testChemistryChain(context, sp));
+            scenarios.put("testCrystalAndSaw", () -> testCrystalAndSaw(context, sp));
+            scenarios.put("testCleanroomFab", () -> testCleanroomFab(context, sp));
+            scenarios.put("testSuperalloyEngine", () -> testSuperalloyEngine(context, sp));
+            scenarios.put("testCabinAir", () -> testCabinAir(context, sp));
+            scenarios.put("testGreenhouse", () -> testGreenhouse(context, sp));
+            scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
+            scenarios.forEach((name, scenario) -> {
+                if (selected == null || selected.contains(name) || name.equals("testSealing")) {
+                    scenario.run();
+                }
+            });
         }
     }
 
@@ -1315,16 +1327,34 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         sp.getServer().runCommand(set(tsx + 2, BY + 1, BZ + 2, "spacereloaded:atmosphere_controller"));
         sp.getServer().runCommand(set(tsx + 1, BY + 1, BZ + 2, "spacereloaded:creative_power"));
         sp.getServer().runCommand(set(tsx + 6, BY + 1, BZ + 2, "spacereloaded:telemetry_screen"));
-        // Ждём: зона SEALED, экран показывает status=1
+        // 007: герметичная, но пустая зона в вакууме непригодна — экран красный, пока нет газа
+        int emptyStatus = 0;
+        for (int waited = 0; waited < 200 && emptyStatus != 2; waited += 10) {
+            context.waitTicks(10);
+            emptyStatus = sp.getServer().computeOnServer(server ->
+                    server.overworld().getBlockState(new BlockPos(tsx + 6, BY + 1, BZ + 2))
+                            .getValue(org.alex_melan.spacereloaded.sealing.TelemetryScreenBlock.STATUS));
+        }
+        assertThat(emptyStatus == 2, "Пустая зона без газа — экран красный (2), получено: " + emptyStatus);
+        // Баллоны у контроллера: зона наполняется газом, экран зеленеет
+        BlockPos o2 = new BlockPos(tsx + 2, BY, BZ + 2);
+        BlockPos n2 = new BlockPos(tsx + 3, BY + 1, BZ + 2);
+        sp.getServer().runCommand(set(o2.getX(), o2.getY(), o2.getZ(), "spacereloaded:gas_tank"));
+        sp.getServer().runCommand(set(n2.getX(), n2.getY(), n2.getZ(), "spacereloaded:gas_tank"));
+        context.waitTicks(2);
+        sp.getServer().runOnServer(server -> {
+            tank(server, o2).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN, 20);
+            tank(server, n2).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.NITROGEN, 60);
+        });
         int sealedStatus = 0;
-        for (int waited = 0; waited < 300 && sealedStatus != 1; waited += 10) {
+        for (int waited = 0; waited < 900 && sealedStatus != 1; waited += 10) {
             context.waitTicks(10);
             sealedStatus = sp.getServer().computeOnServer(server ->
                     server.overworld().getBlockState(new BlockPos(tsx + 6, BY + 1, BZ + 2))
                             .getValue(org.alex_melan.spacereloaded.sealing.TelemetryScreenBlock.STATUS));
         }
         assertThat(sealedStatus == 1, "Экран должен показать ЗАМКНУТО (1), получено: " + sealedStatus);
-        log("экран телеметрии: ЗАМКНУТО ✓");
+        log("экран телеметрии: пустая зона красная, после наполнения из баллонов — ЗАМКНУТО ✓");
         // Пробить куб — экран должен переключиться на УТЕЧКУ (2)
         sp.getServer().runCommand(set(tsx + 2, BY + 4, BZ + 2, "minecraft:air"));
         int leakStatus = 0;
@@ -1958,17 +1988,18 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                     var reactor = (org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity)
                             server.overworld().getBlockEntity(controller);
                     ItemStack canister = reactor.getItem(1);
-                    int oxygen = canister.getMaxDamage() - canister.getDamageValue() + reactor.oxygenBuffer();
+                    double oxygen = (canister.getMaxDamage() - canister.getDamageValue())
+                            * org.alex_melan.spacereloaded.lifesupport.OxygenCanisters.KG_PER_UNIT + reactor.oxygenBuffer();
                     return (reactor.formed() ? "formed" : "unformed") + " rego=" + reactor.getItem(0).getCount()
-                            + " o2=" + oxygen + " fe=" + reactor.getItem(2).getCount()
+                            + " o2=" + String.format(java.util.Locale.ROOT, "%.2f", oxygen) + " fe=" + reactor.getItem(2).getCount()
                             + " slag=" + reactor.getItem(4).getCount();
                 });
                 if (result.contains("rego=0 ") && result.contains("slag=4")) {
                     break;
                 }
             }
-            assertThat(result.equals("formed rego=0 o2=600 fe=4 slag=4"),
-                    "Реактор: 4 реголита → 600 O₂, 4 железной пыли, 4 шлака; получено: " + result);
+            assertThat(result.equals("formed rego=0 o2=12.00 fe=4 slag=4"),
+                    "Реактор: 4 реголита → 12 кг O₂ (баллон + буфер), 4 железной пыли, 4 шлака; получено: " + result);
             log("реголитовый реактор: " + result + " ✓");
 
             sp.getServer().runCommand(set(rx + 1, BY + 2, rz + 2, "minecraft:air"));
@@ -2366,7 +2397,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         String hall = sp.getServer().computeOnServer(server -> {
             var r = (org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity) server.overworld()
                     .getBlockEntity(controller);
-            return "al=" + r.getItem(2).getCount() + " o2=" + r.oxygenBuffer() + " anode="
+            return "al=" + r.getItem(2).getCount() + " o2=" + (int) r.oxygenBuffer() + " anode="
                     + String.format(java.util.Locale.ROOT, "%.2f", r.anodeCarbon()) + " bath="
                     + String.format(java.util.Locale.ROOT, "%.2f", r.bathCapacity());
         });
@@ -2589,6 +2620,225 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         }
         assertThat(engine.equals("true 1.300"), "Колесо из суперсплава: SUPERALLOY и тяга ×1.3; получено " + engine);
         log("суперсплавный турбонасос: " + engine + " ✓");
+    }
+
+    // ---------- 41. Воздух кабины и шлюз (007, US1) ----------
+
+    private static org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity tank(net.minecraft.server.MinecraftServer server,
+                                                                                   BlockPos pos) {
+        return (org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity) server.overworld().getBlockEntity(pos);
+    }
+
+    /**
+     * Комната 3×3×3 (вакуумный режим): контроллер наполняет её из баллонов O₂/N₂ до 101 кПа —
+     * масса газа уходит из баллонов; игрок дышит (CO₂ растёт по BVAD); картридж LiOH поглощает;
+     * шлюз 1×2 с насосом: наддув из комнаты, откачка ≈ 79 с с возвратом газа в баллоны.
+     */
+    private void testCabinAir(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1200;
+        int z0 = BZ;
+        // игрок дышит (не наблюдатель) и не гибнет в вакууме, пока кабина наполняется (творческий)
+        context.runOnClient(mc -> {
+            if (mc.player != null && mc.player.isDeadOrDying()) {
+                mc.player.respawn();
+            }
+        });
+        context.waitTicks(10);
+        sp.getServer().runCommand("gamemode creative @a");
+        moveTo(context, sp, x0 - 6, z0 + 2);
+        // комната: снаружи 5×5×5 из обшивки, полость 3×3×3
+        sp.getServer().runCommand(fill(x0, BY, z0, x0 + 4, BY + 4, z0 + 4, "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(fill(x0 + 1, BY + 1, z0 + 1, x0 + 3, BY + 3, z0 + 3, "minecraft:air"));
+        BlockPos controller = new BlockPos(x0 + 3, BY + 1, z0 + 3);
+        sp.getServer().runCommand(set(x0 + 3, BY + 1, z0 + 3, "spacereloaded:atmosphere_controller"));
+        sp.getServer().runCommand(set(x0 + 3, BY + 1, z0 + 4, "spacereloaded:creative_power"));
+        BlockPos o2Tank = new BlockPos(x0 + 4, BY + 1, z0 + 3);
+        BlockPos n2Tank = new BlockPos(x0 + 3, BY, z0 + 3);
+        sp.getServer().runCommand(set(o2Tank.getX(), o2Tank.getY(), o2Tank.getZ(), "spacereloaded:gas_tank"));
+        sp.getServer().runCommand(set(n2Tank.getX(), n2Tank.getY(), n2Tank.getZ(), "spacereloaded:gas_tank"));
+        context.waitTicks(2);
+        sp.getServer().runOnServer(server -> {
+            tank(server, o2Tank).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN, 50);
+            tank(server, n2Tank).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.NITROGEN, 100);
+        });
+        String state = "";
+        for (int waited = 0; waited < 900; waited += 20) {
+            context.waitTicks(20);
+            state = sp.getServer().computeOnServer(server -> {
+                SealedZone zone = ZoneManager.zoneAt(server.overworld(), controller);
+                var gas = zone == null ? null : org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(server.overworld(), zone);
+                return gas == null ? "none" : String.format(java.util.Locale.ROOT, "V=%.0f p=%.1f pO2=%.1f",
+                        gas.volume(), gas.pressure(), gas.pO2());
+            });
+            if (state.contains("p=101.")) {
+                break;
+            }
+        }
+        double used = sp.getServer().computeOnServer(server ->
+                50 - tank(server, o2Tank).mass() + 100 - tank(server, n2Tank).mass());
+        double expected = org.alex_melan.spacereloaded.core.lifesupport.CabinAtmosphere.fill(101.325, 0.21, 26)[0]
+                + org.alex_melan.spacereloaded.core.lifesupport.CabinAtmosphere.fill(101.325, 0.21, 26)[1];
+        assertThat(state.startsWith("V=26 p=101.") && Math.abs(used - expected) < 1.0,
+                String.format(java.util.Locale.ROOT, "Наполнение из баллонов: %s, израсходовано %.2f кг (ожидалось %.2f)",
+                        state, used, expected));
+        log(String.format(java.util.Locale.ROOT, "воздух кабины: %s из баллонов, %.1f кг газа ✓", state, used));
+
+        // дыхание: игрок в комнате — CO₂ растёт на 1.01 кг за игровые сутки (наблюдатель не дышит)
+        sp.getServer().runCommand(String.format("tp @p %d %d %d", x0 + 2, BY + 1, z0 + 2));
+        context.waitTicks(40);
+        double[] co2 = new double[2];
+        co2[0] = sp.getServer().computeOnServer(server -> org.alex_melan.spacereloaded.lifesupport.LifeSupportState
+                .now(server.overworld(), ZoneManager.zoneAt(server.overworld(), controller)).mCo2());
+        context.waitTicks(400);
+        co2[1] = sp.getServer().computeOnServer(server -> org.alex_melan.spacereloaded.lifesupport.LifeSupportState
+                .now(server.overworld(), ZoneManager.zoneAt(server.overworld(), controller)).mCo2());
+        double rate = (co2[1] - co2[0]) / (400 / 24000.0);
+        assertThat(Math.abs(rate - 1.01) < 0.06, "Выдох CO₂ 1.01 кг/сут, получено " + rate);
+        log(String.format(java.util.Locale.ROOT, "дыхание: CO₂ %.3f кг/игровые сутки ✓", rate));
+
+        // картридж LiOH в стене комнаты
+        BlockPos scrubber = new BlockPos(x0 + 2, BY + 2, z0);
+        sp.getServer().runCommand(set(x0 + 2, BY + 2, z0, "spacereloaded:co2_scrubber"));
+        context.waitTicks(2);
+        sp.getServer().runOnServer(server -> ((net.minecraft.world.Container) server.overworld().getBlockEntity(scrubber))
+                .setItem(0, new ItemStack(ModItems.LIOH_CARTRIDGE)));
+        context.waitTicks(400);
+        String scrub = sp.getServer().computeOnServer(server -> {
+            ItemStack c = ((net.minecraft.world.Container) server.overworld().getBlockEntity(scrubber)).getItem(0);
+            var gas = org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(server.overworld(),
+                    ZoneManager.zoneAt(server.overworld(), controller));
+            return c.getDamageValue() + "g pCO2=" + String.format(java.util.Locale.ROOT, "%.3f", gas.pCo2());
+        });
+        int grams = Integer.parseInt(scrub.substring(0, scrub.indexOf('g')));
+        assertThat(grams > 0, "Картридж LiOH поглощает CO₂: " + scrub);
+        log("поглотитель LiOH: " + scrub + " ✓");
+        sp.getServer().runCommand(String.format("tp @p %d %d %d", x0 - 6, BY, z0 + 2));
+
+        // шлюз: тамбур 1×2 за западной стеной, насос в полу, баллоны у насоса
+        sp.getServer().runCommand(fill(x0 - 2, BY - 1, z0 + 1, x0 - 1, BY + 3, z0 + 3, "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(fill(x0 - 1, BY + 1, z0 + 2, x0 - 1, BY + 2, z0 + 2, "minecraft:air"));
+        sp.getServer().runCommand(set(x0 - 1, BY, z0 + 2, "spacereloaded:airlock_pump"));
+        // питание насоса: герметичный кабель в стене тамбура, источник снаружи
+        sp.getServer().runCommand(set(x0 - 2, BY, z0 + 2, "spacereloaded:energy_cable"));
+        sp.getServer().runCommand(set(x0 - 3, BY, z0 + 2, "spacereloaded:creative_power"));
+        BlockPos pumpO2 = new BlockPos(x0 - 1, BY - 1, z0 + 2);
+        BlockPos pumpN2 = new BlockPos(x0 - 1, BY, z0 + 1);
+        sp.getServer().runCommand(set(pumpO2.getX(), pumpO2.getY(), pumpO2.getZ(), "spacereloaded:gas_tank"));
+        sp.getServer().runCommand(set(pumpN2.getX(), pumpN2.getY(), pumpN2.getZ(), "spacereloaded:gas_tank"));
+        sp.getServer().runCommand(fill(x0, BY + 1, z0 + 2, x0, BY + 2, z0 + 2, "spacereloaded:hermetic_hatch"));
+        sp.getServer().runCommand(fill(x0 - 2, BY + 1, z0 + 2, x0 - 2, BY + 2, z0 + 2, "spacereloaded:hermetic_hatch"));
+        context.waitTicks(40);
+        BlockPos pump = new BlockPos(x0 - 1, BY, z0 + 2);
+        // внутренний люк: наддув тамбура из комнаты
+        sp.getServer().runCommand(set(x0 + 1, BY + 1, z0 + 2, "minecraft:redstone_block"));
+        context.waitTicks(SpaceReloaded.config().airlockCycleTicks + 40);
+        sp.getServer().runCommand(set(x0 + 1, BY + 1, z0 + 2, "minecraft:air"));
+        context.waitTicks(60);
+        String chamber = sp.getServer().computeOnServer(server -> {
+            var zone = ZoneManager.zoneAt(server.overworld(), pump);
+            var gas = zone == null ? null : org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(server.overworld(), zone);
+            return gas == null ? "none" : String.format(java.util.Locale.ROOT, "%s V=%.0f p=%.0f",
+                    zone.status(), gas.volume(), gas.pressure());
+        });
+        assertThat(chamber.startsWith("SEALED V=2 p=10") || chamber.startsWith("SEALED V=2 p=9"),
+                "Тамбур после наддува из комнаты и закрытия люка: " + chamber);
+        log("шлюз: наддув тамбура " + chamber + " ✓");
+        // наружный люк: откачка насосом ≈ 79 с, газ в баллоны у насоса
+        sp.getServer().runCommand(set(x0 - 3, BY + 2, z0 + 2, "minecraft:redstone_block"));
+        context.waitTicks(1400);
+        boolean stillClosed = sp.getServer().computeOnServer(server -> !server.overworld()
+                .getBlockState(new BlockPos(x0 - 2, BY + 1, z0 + 2)).getValue(org.alex_melan.spacereloaded.sealing.HermeticHatchBlock.OPEN));
+        assertThat(stillClosed, "За 70 с откачка ещё идёт — люк закрыт");
+        context.waitTicks(260);
+        String pumped = sp.getServer().computeOnServer(server -> {
+            boolean open = server.overworld().getBlockState(new BlockPos(x0 - 2, BY + 1, z0 + 2))
+                    .getValue(org.alex_melan.spacereloaded.sealing.HermeticHatchBlock.OPEN);
+            return open + String.format(java.util.Locale.ROOT, " O2=%.2f N2=%.2f", tank(server, pumpO2).mass(),
+                    tank(server, pumpN2).mass());
+        });
+        assertThat(pumped.startsWith("true"), "После ~79 с откачки люк открыт: " + pumped);
+        double back = Double.parseDouble(pumped.substring(pumped.indexOf("O2=") + 3, pumped.indexOf(" N2")))
+                + Double.parseDouble(pumped.substring(pumped.indexOf("N2=") + 3));
+        assertThat(back > 1.8 && back < 2.3, "Насос вернул в баллоны ~2.1 кг из 2.4: " + pumped);
+        sp.getServer().runCommand(set(x0 - 3, BY + 2, z0 + 2, "minecraft:air"));
+        log("шлюз: откачка насосом, " + pumped + " кг в баллонах, стравлено ~0.33 кг ✓");
+    }
+
+    // ---------- 42. Оранжерея (007, US2) ----------
+
+    /**
+     * Комната 3×3×3 из баллонов, лоток пшеницы под фитолампой: без CO₂ (газ из баллонов) рост
+     * стоит; с CO₂ выше насыщения лоток поглощает 77 г CO₂ и даёт 56 г O₂ за игровые сутки.
+     */
+    private void testGreenhouse(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1240;
+        int z0 = BZ;
+        moveTo(context, sp, x0 - 4, z0 + 2);
+        sp.getServer().runCommand(fill(x0, BY, z0, x0 + 4, BY + 4, z0 + 4, "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(fill(x0 + 1, BY + 1, z0 + 1, x0 + 3, BY + 3, z0 + 3, "minecraft:air"));
+        BlockPos controller = new BlockPos(x0 + 3, BY + 1, z0 + 3);
+        sp.getServer().runCommand(set(x0 + 3, BY + 1, z0 + 3, "spacereloaded:atmosphere_controller"));
+        sp.getServer().runCommand(set(x0 + 3, BY + 1, z0 + 4, "spacereloaded:creative_power"));
+        BlockPos o2 = new BlockPos(x0 + 4, BY + 1, z0 + 3);
+        BlockPos n2 = new BlockPos(x0 + 3, BY, z0 + 3);
+        sp.getServer().runCommand(set(o2.getX(), o2.getY(), o2.getZ(), "spacereloaded:gas_tank"));
+        sp.getServer().runCommand(set(n2.getX(), n2.getY(), n2.getZ(), "spacereloaded:gas_tank"));
+        BlockPos tray = new BlockPos(x0 + 1, BY + 1, z0 + 1);
+        sp.getServer().runCommand(set(x0 + 1, BY + 1, z0 + 1, "spacereloaded:hydroponic_tray"));
+        sp.getServer().runCommand(set(x0 + 1, BY + 2, z0 + 1, "spacereloaded:grow_lamp"));
+        sp.getServer().runCommand(set(x0 + 1, BY + 3, z0 + 1, "spacereloaded:creative_power"));
+        context.waitTicks(2);
+        sp.getServer().runOnServer(server -> {
+            tank(server, o2).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN, 30);
+            tank(server, n2).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.NITROGEN, 60);
+            var t = (org.alex_melan.spacereloaded.lifesupport.HydroponicTrayBlockEntity) server.overworld().getBlockEntity(tray);
+            t.plant(new ItemStack(net.minecraft.world.item.Items.WHEAT_SEEDS));
+            t.fertilize(new ItemStack(net.minecraft.world.item.Items.BONE_MEAL));
+            t.water();
+        });
+        for (int waited = 0; waited < 900; waited += 20) {
+            context.waitTicks(20);
+            boolean full = sp.getServer().computeOnServer(server -> {
+                var gas = org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(server.overworld(),
+                        ZoneManager.zoneAt(server.overworld(), controller));
+                return gas != null && gas.pressure() > 100;
+            });
+            if (full) {
+                break;
+            }
+        }
+        double idle = sp.getServer().computeOnServer(server -> ((org.alex_melan.spacereloaded.lifesupport.HydroponicTrayBlockEntity)
+                server.overworld().getBlockEntity(tray)).rate());
+        assertThat(idle == 0, "Без CO₂ фотосинтеза нет, темп роста " + idle);
+        // CO₂ 0.3 кПа — выше насыщения
+        sp.getServer().runOnServer(server -> {
+            var zone = ZoneManager.zoneAt(server.overworld(), controller);
+            var gas = org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(server.overworld(), zone);
+            org.alex_melan.spacereloaded.lifesupport.LifeSupportState.add(server.overworld(), zone, 0, 0,
+                    org.alex_melan.spacereloaded.core.lifesupport.CabinAtmosphere.massFor(0.3,
+                            org.alex_melan.spacereloaded.core.lifesupport.CabinAtmosphere.M_CO2, gas.volume(), 293.15));
+        });
+        context.waitTicks(60);
+        double[] m0 = sp.getServer().computeOnServer(server -> {
+            var gas = org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(server.overworld(),
+                    ZoneManager.zoneAt(server.overworld(), controller));
+            return new double[] {gas.mCo2(), ((org.alex_melan.spacereloaded.lifesupport.HydroponicTrayBlockEntity)
+                    server.overworld().getBlockEntity(tray)).growth()};
+        });
+        context.waitTicks(400);
+        double[] m1 = sp.getServer().computeOnServer(server -> {
+            var gas = org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(server.overworld(),
+                    ZoneManager.zoneAt(server.overworld(), controller));
+            return new double[] {gas.mCo2(), ((org.alex_melan.spacereloaded.lifesupport.HydroponicTrayBlockEntity)
+                    server.overworld().getBlockEntity(tray)).growth()};
+        });
+        double days = 400 / 24000.0;
+        double uptake = (m0[0] - m1[0]) / days * 1000;
+        double growth = (m1[1] - m0[1]) / days;
+        assertThat(Math.abs(uptake - 77) < 8 && Math.abs(growth - 1) < 0.1,
+                String.format(java.util.Locale.ROOT, "Пшеница под лампой: CO₂ %.1f г/сут (77), темп роста %.2f (1.0)", uptake, growth));
+        log(String.format(java.util.Locale.ROOT, "оранжерея: лоток пшеницы поглощает %.1f г CO₂ в сутки, рост %.2f номинала ✓",
+                uptake, growth));
     }
 
     // ---------- 36. Взрыв и герметичность (T024) ----------

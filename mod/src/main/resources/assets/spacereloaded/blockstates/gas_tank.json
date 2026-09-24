@@ -1,0 +1,49 @@
+{
+	"variants": {
+		"fill=0,gas=none": {
+			"model": "spacereloaded:block/gas_tank_none_0"
+		},
+		"fill=1,gas=none": {
+			"model": "spacereloaded:block/gas_tank_none_1"
+		},
+		"fill=2,gas=none": {
+			"model": "spacereloaded:block/gas_tank_none_2"
+		},
+		"fill=3,gas=none": {
+			"model": "spacereloaded:block/gas_tank_none_3"
+		},
+		"fill=4,gas=none": {
+			"model": "spacereloaded:block/gas_tank_none_4"
+		},
+		"fill=0,gas=oxygen": {
+			"model": "spacereloaded:block/gas_tank_oxygen_0"
+		},
+		"fill=1,gas=oxygen": {
+			"model": "spacereloaded:block/gas_tank_oxygen_1"
+		},
+		"fill=2,gas=oxygen": {
+			"model": "spacereloaded:block/gas_tank_oxygen_2"
+		},
+		"fill=3,gas=oxygen": {
+			"model": "spacereloaded:block/gas_tank_oxygen_3"
+		},
+		"fill=4,gas=oxygen": {
+			"model": "spacereloaded:block/gas_tank_oxygen_4"
+		},
+		"fill=0,gas=nitrogen": {
+			"model": "spacereloaded:block/gas_tank_nitrogen_0"
+		},
+		"fill=1,gas=nitrogen": {
+			"model": "spacereloaded:block/gas_tank_nitrogen_1"
+		},
+		"fill=2,gas=nitrogen": {
+			"model": "spacereloaded:block/gas_tank_nitrogen_2"
+		},
+		"fill=3,gas=nitrogen": {
+			"model": "spacereloaded:block/gas_tank_nitrogen_3"
+		},
+		"fill=4,gas=nitrogen": {
+			"model": "spacereloaded:block/gas_tank_nitrogen_4"
+		}
+	}
+}

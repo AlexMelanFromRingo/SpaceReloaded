@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:glass_fiber",
+		"minecraft:bucket"
+	],
+	"result": {
+		"id": "spacereloaded:hydroponic_tray",
+		"count": 2
+	}
+}

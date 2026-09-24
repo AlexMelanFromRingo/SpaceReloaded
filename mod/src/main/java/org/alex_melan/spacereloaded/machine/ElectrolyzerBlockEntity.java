@@ -20,7 +20,8 @@ import org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity;
 
 /**
  * Электролизёр (US6 ISRU): лёд + энергия → топливо (гидролокс) во внутренний
- * буфер (перекачивается в соседние баки) + кислород (заряжает баллоны).
+ * буфер (перекачивается в соседние баки) + кислород сверх окислителя (2/9 массы льда — баллон,
+ * затем газовые баки 007).
  * Слоты: [0] — лёд или рассол, [1] — баллон, [2–3] — продукты хлор-щелочного режима.
  *
  * <p>Хлор-щелочной режим (006): рассол в ячейках — 2NaCl + 2H₂O → Cl₂ + H₂ + 2NaOH, хлор и
@@ -159,9 +160,7 @@ public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity
                 progress = 0;
                 ice.shrink(units);
                 fuelBuffer += SpaceReloaded.config().electrolyzerFuelPerOp * units;
-                for (int i = 0; i < units; i++) {
-                    chargeCanister();
-                }
+                surplusOxygen(level, units);
                 if (structure.formed()) {
                     workParticles(level);
                 }
@@ -183,13 +182,22 @@ public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity
         }
     }
 
-    /** Кислород электролиза — в баллон (уменьшение damage = зарядка). */
-    private void chargeCanister() {
-        ItemStack canister = items.get(1);
-        if (canister.is(ModItems.OXYGEN_CANISTER) && canister.getDamageValue() > 0) {
-            canister.setDamageValue(Math.max(0,
-                    canister.getDamageValue() - SpaceReloaded.config().electrolyzerOxygenPerOp));
-        }
+    /** Лишний кислород на единицу льда, кг: вода 8:1 по массе O:H, гидролоксу нужно 6:1 → 2/9 массы. */
+    public static double surplusOxygenKg(double iceKg) {
+        return iceKg * 2.0 / 9.0;
+    }
+
+    /**
+     * Кислород электролиза сверх окислителя гидролокса (007): в баллон, затем в соседние газовые
+     * баки; остальное стравливается (топливо в приоритете, электролизёр не встаёт).
+     */
+    private void surplusOxygen(ServerLevel level, int units) {
+        double ice = org.alex_melan.spacereloaded.registry.ItemMasses.massOf(level.registryAccess(),
+                new ItemStack(net.minecraft.world.item.Items.ICE));
+        double kg = surplusOxygenKg(ice) * units;
+        kg -= org.alex_melan.spacereloaded.lifesupport.OxygenCanisters.charge(items.get(1), kg);
+        org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity.pushToNeighbors(level, getBlockPos(),
+                org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN, kg);
     }
 
     /** Перекачка буфера в соседние баки (шланги/трубы — следующий срез). */

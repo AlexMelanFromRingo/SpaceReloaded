@@ -148,7 +148,9 @@ public final class ModCreativeTab {
                                 ModBlocks.CHEMICAL_REACTOR, ModBlocks.DEPOSITION_REACTOR, ModBlocks.CRYSTAL_PULLER,
                                 ModBlocks.WAFER_SAW, ModBlocks.FAN_FILTER_UNIT, ModBlocks.DIFFUSION_FURNACE,
                                 ModBlocks.LITHOGRAPHY_STATION, ModBlocks.ETCH_BATH, ModBlocks.MONO_SOLAR_PANEL,
-                                ModBlocks.ALUMINIUM_FUEL_TANK, ModBlocks.AL_LI_FUEL_TANK}) {
+                                ModBlocks.ALUMINIUM_FUEL_TANK, ModBlocks.AL_LI_FUEL_TANK,
+                                ModBlocks.GAS_TANK, ModBlocks.AIR_SEPARATOR, ModBlocks.CO2_SCRUBBER, ModBlocks.AIRLOCK_PUMP,
+                                ModBlocks.HYDROPONIC_TRAY, ModBlocks.GROW_LAMP, ModBlocks.BIOMASS_OXIDIZER}) {
                             output.accept(block);
                         }
                         for (var item : new net.minecraft.world.item.Item[] {
@@ -169,7 +171,8 @@ public final class ModCreativeTab {
                                 ModItems.ALUMINIUM_INGOT, ModItems.AL_CU_BLEND, ModItems.ALUMINIUM_COPPER_INGOT,
                                 ModItems.SPODUMENE, ModItems.BETA_SPODUMENE, ModItems.LITHIUM_CHLORIDE, ModItems.LITHIUM_INGOT,
                                 ModItems.AL_LI_BLEND, ModItems.ALUMINIUM_LITHIUM_INGOT, ModItems.NICKEL_INGOT,
-                                ModItems.SUPERALLOY_BLEND, ModItems.NICKEL_SUPERALLOY_INGOT}) {
+                                ModItems.SUPERALLOY_BLEND, ModItems.NICKEL_SUPERALLOY_INGOT,
+                                ModItems.LITHIUM_HYDROXIDE, ModItems.LIOH_CARTRIDGE, ModItems.ZEOLITE, ModItems.ZEOLITE_BED, ModItems.STRAW}) {
                             output.accept(item);
                         }
                     })

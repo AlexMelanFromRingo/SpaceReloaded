@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:refractory_lining",
+		"spacereloaded:copper_wire",
+		"spacereloaded:relay"
+	],
+	"result": {
+		"id": "spacereloaded:biomass_oxidizer"
+	}
+}
