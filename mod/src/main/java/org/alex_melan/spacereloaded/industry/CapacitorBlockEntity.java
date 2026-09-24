@@ -22,6 +22,14 @@ public class CapacitorBlockEntity extends MachineBlockEntity {
     public static void serverTick(CapacitorBlockEntity capacitor, ServerLevel level) {
         if (level.getGameTime() % 20 == 0) {
             capacitor.ensureAdjacentCableNetworks(level);
+            BlockState state = capacitor.getBlockState();
+            if (state.hasProperty(CapacitorBlock.CHARGE)) {
+                int wanted = (int) Math.round(4.0 * capacitor.stored() / Math.max(1, capacitor.capacity()));
+                if (state.getValue(CapacitorBlock.CHARGE) != wanted) {
+                    level.setBlock(capacitor.getBlockPos(), state.setValue(CapacitorBlock.CHARGE, wanted),
+                            net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                }
+            }
         }
     }
 

@@ -23,7 +23,9 @@ public abstract class ServerLevelMixin {
     @Inject(method = "sendBlockUpdated", at = @At("HEAD"))
     private void spacereloaded$onBlockUpdated(BlockPos pos, BlockState oldState,
                                               BlockState newState, int flags, CallbackInfo ci) {
-        if (oldState != newState) {
+        if (oldState != newState && !(oldState.getBlock() == newState.getBlock()
+                && newState.getBlock() instanceof org.alex_melan.spacereloaded.registry.CosmeticState cosmetic
+                && cosmetic.onlyCosmetic(oldState, newState))) {
             ServerLevel level = (ServerLevel) (Object) this;
             ZoneManager.markBlockChanged(level, pos);
             CableNetworkManager.markBlockChanged(level, pos);

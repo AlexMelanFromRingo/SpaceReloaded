@@ -81,6 +81,17 @@ public class KineticAxisBlock extends RotatedPillarBlock implements EntityBlock,
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (kind == Kind.SMALL_GEAR || kind == Kind.LARGE_GEAR || kind == Kind.FLYWHEEL) {
+            // Диск: полный в плоскости вращения, тонкий вдоль оси
+            double half = kind == Kind.FLYWHEEL ? 0.25 : 0.125;
+            double lo = 0.5 - half;
+            double hi = 0.5 + half;
+            return switch (state.getValue(AXIS)) {
+                case X -> Shapes.box(lo, 0, 0, hi, 1, 1);
+                case Y -> Shapes.box(0, lo, 0, 1, hi, 1);
+                case Z -> Shapes.box(0, 0, lo, 1, 1, hi);
+            };
+        }
         if (shapeRadius >= 0.5) {
             return Shapes.block();
         }

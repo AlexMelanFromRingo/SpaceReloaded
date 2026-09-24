@@ -24,7 +24,8 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /** Блок станка: BE-фабрика, серверный тикер, открытие меню по ПКМ, поворот к игроку. */
-public class ProcessingMachineBlock extends Block implements EntityBlock {
+public class ProcessingMachineBlock extends Block implements EntityBlock,
+        org.alex_melan.spacereloaded.registry.CosmeticState {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -37,12 +38,18 @@ public class ProcessingMachineBlock extends Block implements EntityBlock {
         super(properties);
         this.factory = factory;
         this.typeSupplier = typeSupplier;
-        registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH)
+                .setValue(MachineActivity.ACTIVE, false));
+    }
+
+    @Override
+    public boolean onlyCosmetic(BlockState before, BlockState after) {
+        return before.getValue(FACING) == after.getValue(FACING);
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, MachineActivity.ACTIVE);
     }
 
     @Override
@@ -61,8 +68,11 @@ public class ProcessingMachineBlock extends Block implements EntityBlock {
         if (level.isClientSide() || type != typeSupplier.get()) {
             return null;
         }
-        return (tickLevel, pos, tickState, blockEntity) ->
-                ((ProcessingMachineBlockEntity) blockEntity).serverTick((ServerLevel) tickLevel);
+        return (tickLevel, pos, tickState, blockEntity) -> {
+            ProcessingMachineBlockEntity machine = (ProcessingMachineBlockEntity) blockEntity;
+            machine.serverTick((ServerLevel) tickLevel);
+            MachineActivity.update((ServerLevel) tickLevel, pos, machine.getBlockState(), machine);
+        };
     }
 
     @Override

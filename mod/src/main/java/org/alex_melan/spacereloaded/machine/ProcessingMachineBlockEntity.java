@@ -27,7 +27,26 @@ import team.reborn.energy.api.base.SimpleEnergyStorage;
  *
  * <p>Слоты: [0..inputSlots-1] — входы, [inputSlots] — выход.
  */
-public abstract class ProcessingMachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
+public abstract class ProcessingMachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer,
+        MachineActivity.Source {
+
+    private int activeHold;
+
+    @Override
+    public boolean isWorking() {
+        return progress > 0;
+    }
+
+    @Override
+    public int activeHold() {
+        return activeHold;
+    }
+
+    @Override
+    public void setActiveHold(int hold) {
+        this.activeHold = hold;
+    }
+
 
     protected final int inputSlots;
     protected NonNullList<ItemStack> items;

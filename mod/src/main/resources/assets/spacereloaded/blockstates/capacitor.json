@@ -1,7 +1,19 @@
 {
 	"variants": {
-		"": {
-			"model": "spacereloaded:block/capacitor"
+		"charge=0": {
+			"model": "spacereloaded:block/capacitor_0"
+		},
+		"charge=1": {
+			"model": "spacereloaded:block/capacitor_1"
+		},
+		"charge=2": {
+			"model": "spacereloaded:block/capacitor_2"
+		},
+		"charge=3": {
+			"model": "spacereloaded:block/capacitor_3"
+		},
+		"charge=4": {
+			"model": "spacereloaded:block/capacitor_4"
 		}
 	}
 }

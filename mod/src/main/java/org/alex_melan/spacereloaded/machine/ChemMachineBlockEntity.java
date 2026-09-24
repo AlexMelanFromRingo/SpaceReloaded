@@ -23,7 +23,26 @@ import team.reborn.energy.api.base.SimpleEnergyStorage;
  * Ввод/вывод через хопперы (WorldlyContainer), статус по ПКМ через блок.
  * Реальная логика — в {@link #serverTick(ServerLevel)} подклассов.
  */
-public abstract class ChemMachineBlockEntity extends BlockEntity implements WorldlyContainer {
+public abstract class ChemMachineBlockEntity extends BlockEntity implements WorldlyContainer,
+        MachineActivity.Source {
+
+    private int activeHold;
+
+    @Override
+    public boolean isWorking() {
+        return progress > 0;
+    }
+
+    @Override
+    public int activeHold() {
+        return activeHold;
+    }
+
+    @Override
+    public void setActiveHold(int hold) {
+        this.activeHold = hold;
+    }
+
 
     protected final NonNullList<ItemStack> items;
     protected final SimpleEnergyStorage energy;

@@ -15,10 +15,26 @@ import net.minecraft.world.phys.BlockHitResult;
 import java.util.Locale;
 
 /** Бак: ПКМ показывает заполнение. */
-public class FuelTankBlock extends Block implements EntityBlock {
+public class FuelTankBlock extends Block implements EntityBlock, org.alex_melan.spacereloaded.registry.CosmeticState {
+
+    /** Уровень топлива в смотровом стекле (0…4 по доле заполнения). */
+    public static final net.minecraft.world.level.block.state.properties.IntegerProperty LEVEL =
+            net.minecraft.world.level.block.state.properties.IntegerProperty.create("level", 0, 4);
 
     public FuelTankBlock(Properties properties) {
         super(properties);
+        registerDefaultState(getStateDefinition().any().setValue(LEVEL, 0));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(
+            net.minecraft.world.level.block.state.StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(LEVEL);
+    }
+
+    @Override
+    public boolean onlyCosmetic(BlockState before, BlockState after) {
+        return true;
     }
 
     @Override

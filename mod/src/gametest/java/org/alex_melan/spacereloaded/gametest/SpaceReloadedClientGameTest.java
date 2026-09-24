@@ -88,6 +88,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testStackColumn(context, sp);
             testEngineQuality(context, sp);
             testExplosionSealing(context, sp);
+            testVisualShowcase(context, sp);
         }
     }
 
@@ -2275,6 +2276,68 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         }
         assertThat(after != SealingStatus.SEALED, "Взрыв пробил стену — зона должна потерять герметичность: " + after);
         log("взрыв → герметичность обновлена (" + after + ") ✓ — T024 закрыт");
+    }
+
+    // ---------- 37. Витрина облика: рабочие состояния (005, визуальный проход) ----------
+
+    private void testVisualShowcase(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1000;
+        int z = BZ;
+        moveTo(context, sp, x0 - 6, z);
+        sp.getServer().runCommand("time set 3000");
+        sp.getServer().runCommand(fill(x0 - 1, BY - 1, z - 1, x0 + 12, BY - 1, z + 3, "minecraft:smooth_stone"));
+        sp.getServer().runCommand(set(x0, BY, z, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(fill(x0, BY, z + 1, x0 + 10, BY, z + 1, "spacereloaded:energy_cable"));
+        sp.getServer().runCommand(set(x0 + 2, BY, z, "spacereloaded:electric_furnace[facing=north]"));
+        sp.getServer().runCommand(set(x0 + 4, BY, z, "spacereloaded:coal_generator[facing=north]"));
+        sp.getServer().runCommand(set(x0 + 6, BY, z, "spacereloaded:electrolyzer[facing=north]"));
+        sp.getServer().runCommand(set(x0 + 8, BY, z, "spacereloaded:capacitor"));
+        sp.getServer().runCommand(set(x0 + 10, BY, z, "spacereloaded:crusher[facing=north]"));
+        sp.getServer().runCommand(set(x0 + 1, BY, z + 3, "spacereloaded:solar_panel"));
+        sp.getServer().runCommand(set(x0 + 3, BY, z + 3, "spacereloaded:fuel_tank"));
+        sp.getServer().runCommand(set(x0 + 5, BY, z + 3, "spacereloaded:hermetic_hatch[open=true]"));
+        sp.getServer().runCommand(set(x0 + 7, BY, z + 3, "spacereloaded:rocket_engine"));
+        context.waitTicks(3);
+        sp.getServer().runOnServer(server -> {
+            var level = server.overworld();
+            if (level.getBlockEntity(new BlockPos(x0 + 2, BY, z))
+                    instanceof org.alex_melan.spacereloaded.machine.ProcessingMachineBlockEntity furnace) {
+                furnace.setItem(0, new ItemStack(net.minecraft.world.item.Items.RAW_IRON, 64));
+            }
+            if (level.getBlockEntity(new BlockPos(x0 + 4, BY, z))
+                    instanceof org.alex_melan.spacereloaded.machine.ProcessingMachineBlockEntity gen) {
+                gen.setItem(0, new ItemStack(net.minecraft.world.item.Items.COAL, 64));
+            }
+            if (level.getBlockEntity(new BlockPos(x0 + 6, BY, z))
+                    instanceof org.alex_melan.spacereloaded.machine.ProcessingMachineBlockEntity el) {
+                el.setItem(0, new ItemStack(net.minecraft.world.item.Items.ICE, 64));
+            }
+            if (level.getBlockEntity(new BlockPos(x0 + 10, BY, z))
+                    instanceof org.alex_melan.spacereloaded.machine.ProcessingMachineBlockEntity cr) {
+                cr.setItem(0, new ItemStack(net.minecraft.world.item.Items.RAW_IRON, 64));
+            }
+            if (level.getBlockEntity(new BlockPos(x0 + 3, BY, z + 3)) instanceof FuelTankBlockEntity tank) {
+                tank.fill(1000, "spacereloaded:kerolox");
+            }
+        });
+        context.waitTicks(80);
+        String states = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            boolean furnace = level.getBlockState(new BlockPos(x0 + 2, BY, z))
+                    .getValue(org.alex_melan.spacereloaded.machine.MachineActivity.ACTIVE);
+            boolean cable = level.getBlockState(new BlockPos(x0 + 3, BY, z + 1))
+                    .getValue(org.alex_melan.spacereloaded.energy.CableBlock.ENERGIZED);
+            int tank = level.getBlockState(new BlockPos(x0 + 3, BY, z + 3))
+                    .getValue(org.alex_melan.spacereloaded.rocket.FuelTankBlock.LEVEL);
+            return "печь=" + furnace + " кабель=" + cable + " бак=" + tank;
+        });
+        assertThat(states.equals("печь=true кабель=true бак=2"), "Облик рабочих состояний: " + states);
+        prepareCamera(context, sp, x0 + 5, BY + 2.5, z - 4.5, 0f, 22f);
+        snapshot(context, "showcase_front", 5);
+        prepareCamera(context, sp, x0 + 4, BY + 3, z + 7.5, 180f, 28f);
+        snapshot(context, "showcase_back", 5);
+        sp.getServer().runCommand("gamemode survival @a");
+        log("облик: " + states + " ✓");
     }
 
     // ---------- Утилиты ----------

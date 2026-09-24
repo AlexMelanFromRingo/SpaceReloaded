@@ -21,6 +21,18 @@ public class EngineBlock extends Block {
         registerDefaultState(getStateDefinition().any().setValue(QUALITY, EngineQuality.DEFAULT_LEVEL));
     }
 
+    /** Хитбокс по модели: монтажная плита, горловина, раструб сопла. */
+    private static final net.minecraft.world.phys.shapes.VoxelShape SHAPE = net.minecraft.world.phys.shapes.Shapes.or(
+            Block.box(0, 12, 0, 16, 16, 16), Block.box(5, 8, 5, 11, 12, 11),
+            Block.box(3, 4, 3, 13, 8, 13), Block.box(1, 0, 1, 15, 4, 15));
+
+    @Override
+    protected net.minecraft.world.phys.shapes.VoxelShape getShape(BlockState state,
+            net.minecraft.world.level.BlockGetter level, net.minecraft.core.BlockPos pos,
+            net.minecraft.world.phys.shapes.CollisionContext context) {
+        return SHAPE;
+    }
+
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(QUALITY);

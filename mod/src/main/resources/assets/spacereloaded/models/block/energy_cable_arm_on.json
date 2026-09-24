@@ -1,0 +1,37 @@
+{
+	"textures": {
+		"all": "spacereloaded:block/energy_cable_on",
+		"particle": "#all"
+	},
+	"elements": [
+		{
+			"from": [
+				4.95,
+				4.95,
+				0
+			],
+			"to": [
+				11.05,
+				11.05,
+				4.95
+			],
+			"faces": {
+				"down": {
+					"texture": "#all"
+				},
+				"up": {
+					"texture": "#all"
+				},
+				"north": {
+					"texture": "#all"
+				},
+				"west": {
+					"texture": "#all"
+				},
+				"east": {
+					"texture": "#all"
+				}
+			}
+		}
+	]
+}

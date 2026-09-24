@@ -74,7 +74,7 @@ public final class ModBlocks {
     public static final Block SOLAR_PANEL = register("solar_panel",
             props -> new MachineBlock<>(props, SolarPanelBlockEntity::new,
                     () -> ModBlockEntities.SOLAR_PANEL, SolarPanelBlockEntity::serverTick),
-            BlockBehaviour.Properties.of()
+            BlockBehaviour.Properties.of().noOcclusion()
                     .strength(2.5f, 6.0f)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
@@ -118,7 +118,7 @@ public final class ModBlocks {
                     () -> ModBlockEntities.COAL_GENERATOR),
             BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
-                    .lightLevel(state -> 8));
+                    .lightLevel(state -> state.getValue(org.alex_melan.spacereloaded.machine.MachineActivity.ACTIVE) ? 8 + 4 : 0));
 
     // --- Станки (US3, T041) ---
     public static final Block CRUSHER = register("crusher",
@@ -131,7 +131,7 @@ public final class ModBlocks {
                     () -> ModBlockEntities.ELECTRIC_FURNACE),
             BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
-                    .lightLevel(state -> 6));
+                    .lightLevel(state -> state.getValue(org.alex_melan.spacereloaded.machine.MachineActivity.ACTIVE) ? 6 + 4 : 0));
     public static final Block ASSEMBLY_TABLE = register("assembly_table",
             props -> new ProcessingMachineBlock(props, AssemblyTableBlockEntity::new,
                     () -> ModBlockEntities.ASSEMBLY_TABLE),
@@ -238,7 +238,8 @@ public final class ModBlocks {
                     org.alex_melan.spacereloaded.machine.SabatierReactorBlockEntity::new,
                     () -> ModBlockEntities.SABATIER_REACTOR),
             BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops());
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(org.alex_melan.spacereloaded.machine.MachineActivity.ACTIVE) ? 7 : 0));
 
     /** Тарелка-перехватчик (Phase 12 CTF): уводит грузы с открытого канала на свою площадку. */
     public static final Block INTERCEPTOR_DISH = register("interceptor_dish",
@@ -342,7 +343,7 @@ public final class ModBlocks {
                     () -> ModBlockEntities.REFINERY),
             BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
-                    .lightLevel(state -> 5));
+                    .lightLevel(state -> state.getValue(org.alex_melan.spacereloaded.machine.MachineActivity.ACTIVE) ? 5 + 4 : 0));
 
     /** Электролизёр (US6 ISRU): лёд → топливо + кислород. */
     public static final Block ELECTROLYZER = register("electrolyzer",
@@ -350,7 +351,7 @@ public final class ModBlocks {
                     () -> ModBlockEntities.ELECTROLYZER),
             BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
-                    .lightLevel(state -> 5));
+                    .lightLevel(state -> state.getValue(org.alex_melan.spacereloaded.machine.MachineActivity.ACTIVE) ? 5 + 4 : 0));
 
     // --- Стартовая инфраструктура и кресло (US4, срез 2) ---
     public static final Block LAUNCH_PAD = register("launch_pad", LaunchPadBlock::new,
@@ -381,10 +382,7 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops().noOcclusion());
     /** Конденсатор батареи катапульты (FR-202). */
     public static final Block CAPACITOR = register("capacitor",
-            props -> new MachineBlock<>(props,
-                    org.alex_melan.spacereloaded.industry.CapacitorBlockEntity::new,
-                    () -> ModBlockEntities.CAPACITOR,
-                    org.alex_melan.spacereloaded.industry.CapacitorBlockEntity::serverTick),
+            org.alex_melan.spacereloaded.industry.CapacitorBlock::new,
             BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
     /** Салазки рельса — только модель для рендера анимации (без предмета). */
@@ -494,6 +492,14 @@ public final class ModBlocks {
     public static final Block ROTOR_LARGE_GEAR = registerNoItem("rotor_large_gear", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block ROTOR_FLYWHEEL = registerNoItem("rotor_flywheel", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROTOR_SHAFT_STUB = registerNoItem("rotor_shaft_stub", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROTOR_LATHE_CHUCK = registerNoItem("rotor_lathe_chuck", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROTOR_WIND_HUB = registerNoItem("rotor_wind_hub", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROTOR_SOLAR_ARRAY = registerNoItem("rotor_solar_array", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block ROTOR_PRESS_RAM = registerNoItem("rotor_press_ram", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());

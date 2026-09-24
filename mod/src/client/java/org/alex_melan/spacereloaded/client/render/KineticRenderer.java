@@ -45,6 +45,7 @@ public class KineticRenderer<T extends KineticBlockEntity> implements BlockEntit
         state.angleDeg = (float) Math.toDegrees(be.visualAngle(time) % (2 * Math.PI));
         state.hasShaft = false;
         state.hasPart = false;
+        state.gearbox = false;
         state.isRam = false;
         switch (block.kind()) {
             case SHAFT -> {
@@ -77,6 +78,25 @@ public class KineticRenderer<T extends KineticBlockEntity> implements BlockEntit
                     blocks.update(state.part, ModBlocks.ROTOR_PRESS_RAM.defaultBlockState(), state.context);
                 }
             }
+            case MOTOR, CLUTCH -> {
+                state.hasShaft = true;
+                blocks.update(state.shaft, ModBlocks.ROTOR_SHAFT_STUB.defaultBlockState(), state.context);
+            }
+            case GEARBOX -> {
+                // Редуктор: концы валов на всех гранях (осевая скорость — «окружная» s узла)
+                state.hasShaft = true;
+                state.axis = Direction.Axis.Y;
+                state.gearbox = true;
+                blocks.update(state.shaft, ModBlocks.ROTOR_SHAFT_STUB.defaultBlockState(), state.context);
+            }
+            case LATHE -> {
+                state.hasShaft = true;
+                blocks.update(state.shaft, ModBlocks.ROTOR_LATHE_CHUCK.defaultBlockState(), state.context);
+            }
+            case WIND_HUB -> {
+                state.hasShaft = true;
+                blocks.update(state.shaft, ModBlocks.ROTOR_WIND_HUB.defaultBlockState(), state.context);
+            }
             default -> {
             }
         }
@@ -92,12 +112,26 @@ public class KineticRenderer<T extends KineticBlockEntity> implements BlockEntit
             pose.popPose();
             return;
         }
-        if (!state.hasShaft && !state.hasPart) {
+        if (state.gearbox) {
+            for (Direction.Axis axis : Direction.Axis.values()) {
+                rotor(state, state.shaft, axis, pose, collector);
+            }
             return;
         }
+        if (state.hasShaft) {
+            rotor(state, state.shaft, state.axis, pose, collector);
+        }
+        if (state.hasPart) {
+            rotor(state, state.part, state.axis, pose, collector);
+        }
+    }
+
+    /** Модель-ротор (построена вдоль Y) — повернуть к оси и провернуть на угол узла. */
+    private static void rotor(KineticRenderState state, net.minecraft.client.renderer.block.BlockModelRenderState model,
+                              Direction.Axis axis, PoseStack pose, SubmitNodeCollector collector) {
         pose.pushPose();
         pose.translate(0.5f, 0.5f, 0.5f);
-        switch (state.axis) {
+        switch (axis) {
             case X -> pose.mulPose(Axis.ZP.rotationDegrees(-90));
             case Z -> pose.mulPose(Axis.XP.rotationDegrees(90));
             default -> {
@@ -105,12 +139,7 @@ public class KineticRenderer<T extends KineticBlockEntity> implements BlockEntit
         }
         pose.mulPose(Axis.YP.rotationDegrees(state.angleDeg));
         pose.translate(-0.5f, -0.5f, -0.5f);
-        if (state.hasShaft) {
-            state.shaft.submit(pose, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
-        }
-        if (state.hasPart) {
-            state.part.submit(pose, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
-        }
+        model.submit(pose, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
         pose.popPose();
     }
 

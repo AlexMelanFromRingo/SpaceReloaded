@@ -104,6 +104,10 @@ public class MassDriverBreechBlockEntity extends BaseContainerBlockEntity
         if (level.getGameTime() - breech.lastChargeSync >= 10) {
             breech.lastChargeSync = level.getGameTime();
             int charge = breech.chargeByteNow(level);
+            if (charge > breech.chargeByte + 8 && charge < 255 && level.getGameTime() % 40 == 0) {
+                level.playSound(null, breech.getBlockPos(), ModSounds.MASS_DRIVER_CHARGE, SoundSource.BLOCKS, 0.6f,
+                        0.8f + charge / 255f * 0.6f);
+            }
             if (Math.abs(charge - breech.chargeByte) >= 8) {
                 breech.chargeByte = charge;
                 breech.syncToClient();

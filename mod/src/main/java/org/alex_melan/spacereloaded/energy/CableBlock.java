@@ -24,7 +24,15 @@ import java.util.Map;
  * {@code #spacereloaded:energy_connectable} (кабели и все энергоблоки),
  * состояние обновляется через getStateForPlacement/updateShape.
  */
-public class CableBlock extends Block {
+public class CableBlock extends Block implements org.alex_melan.spacereloaded.registry.CosmeticState {
+
+    /** Ток в сети: жила светится, пока по сети идёт энергия (с гистерезисом, чтобы не мигать). */
+    public static final BooleanProperty ENERGIZED = BooleanProperty.create("energized");
+
+    @Override
+    public boolean onlyCosmetic(BlockState before, BlockState after) {
+        return before.setValue(ENERGIZED, after.getValue(ENERGIZED)) == after;
+    }
 
     public static final Map<Direction, BooleanProperty> CONNECTIONS = Map.of(
             Direction.NORTH, BlockStateProperties.NORTH,
@@ -49,14 +57,14 @@ public class CableBlock extends Block {
         for (BooleanProperty property : CONNECTIONS.values()) {
             state = state.setValue(property, false);
         }
-        registerDefaultState(state);
+        registerDefaultState(state.setValue(ENERGIZED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(BlockStateProperties.NORTH, BlockStateProperties.SOUTH,
                 BlockStateProperties.EAST, BlockStateProperties.WEST,
-                BlockStateProperties.UP, BlockStateProperties.DOWN);
+                BlockStateProperties.UP, BlockStateProperties.DOWN, ENERGIZED);
     }
 
     @Override

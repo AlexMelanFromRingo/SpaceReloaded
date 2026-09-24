@@ -67,12 +67,16 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.REGOLITH_REACTOR,
 				org.alex_melan.spacereloaded.client.render.RegolithReactorRenderer::new);
+		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.SOLAR_PANEL,
+				org.alex_melan.spacereloaded.client.render.SolarPanelRenderer::new);
 		// 005: вращение механики
 		for (var type : java.util.List.of(org.alex_melan.spacereloaded.registry.ModBlockEntities.KINETIC,
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.MOTOR,
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.FLYWHEEL,
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.PRESS,
-				org.alex_melan.spacereloaded.registry.ModBlockEntities.LATHE)) {
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.LATHE,
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.WIND_HUB)) {
 			registerKinetic(type);
 		}
 		EntityRendererRegistry.register(ModEntities.KINETIC_PROJECTILE,

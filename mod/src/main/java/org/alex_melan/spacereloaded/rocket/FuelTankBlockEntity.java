@@ -113,4 +113,20 @@ public class FuelTankBlockEntity extends BlockEntity {
         propellantKg = Math.clamp(input.getDoubleOr("propellant", 0), 0, CAPACITY_KG);
         fuelType = input.getStringOr("fuel_type", "");
     }
+
+    /** Смотровое стекло: при изменении запаса обновить уровень в состоянии блока. */
+    @Override
+    public void setChanged() {
+        super.setChanged();
+        if (level != null && !level.isClientSide()) {
+            BlockState state = getBlockState();
+            if (state.hasProperty(FuelTankBlock.LEVEL)) {
+                int wanted = (int) Math.round(propellantKg / Math.max(1.0, capacityKg()) * 4);
+                if (state.getValue(FuelTankBlock.LEVEL) != wanted) {
+                    level.setBlock(getBlockPos(), state.setValue(FuelTankBlock.LEVEL, wanted),
+                            net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                }
+            }
+        }
+    }
 }

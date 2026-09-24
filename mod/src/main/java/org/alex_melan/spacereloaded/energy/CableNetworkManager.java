@@ -5,6 +5,8 @@ import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -39,7 +41,12 @@ public final class CableNetworkManager {
 
     private static final class CableNetwork {
         final LongOpenHashSet cables = new LongOpenHashSet();
+        int idleTicks = Integer.MAX_VALUE / 2;
+        boolean energized;
     }
+
+    /** Тиков без передачи энергии до погасания жил. */
+    private static final int ENERGIZED_HOLD_TICKS = 40;
 
     private CableNetworkManager() {
     }
@@ -116,7 +123,13 @@ public final class CableNetworkManager {
         }
         long throughput = SpaceReloaded.config().cableThroughput;
         for (CableNetwork network : ln.networks) {
-            distributeEnergy(level, network, throughput);
+            long moved = distributeEnergy(level, network, throughput);
+            network.idleTicks = moved > 0 ? 0 : network.idleTicks + 1;
+            boolean energized = network.idleTicks < ENERGIZED_HOLD_TICKS;
+            if (energized != network.energized) {
+                network.energized = energized;
+                applyEnergized(level, network, energized);
+            }
         }
     }
 
@@ -128,7 +141,24 @@ public final class CableNetworkManager {
      * первой). В конце буферы ВЫРАВНИВАЮТСЯ к средней доле заряда — но только
      * при разнице долей > 5% (гистерезис против вечного перекачивания).
      */
-    private static void distributeEnergy(ServerLevel level, CableNetwork network, long budget) {
+    /** Облик жил сети (косметическое свойство — не будит пересчёт сетей и зон). */
+    private static void applyEnergized(ServerLevel level, CableNetwork network, boolean energized) {
+        var it = network.cables.iterator();
+        while (it.hasNext()) {
+            BlockPos pos = BlockPos.of(it.nextLong());
+            if (!level.isLoaded(pos)) {
+                continue;
+            }
+            BlockState state = level.getBlockState(pos);
+            if (state.getBlock() instanceof CableBlock && state.getValue(CableBlock.ENERGIZED) != energized) {
+                level.setBlock(pos, state.setValue(CableBlock.ENERGIZED, energized), Block.UPDATE_CLIENTS);
+            }
+        }
+    }
+
+    /** @return сколько энергии передано за тик (для облика жил) */
+    private static long distributeEnergy(ServerLevel level, CableNetwork network, long budget) {
+        long startBudget = budget;
         List<EnergyStorage> sources = new ArrayList<>();
         List<EnergyStorage> sinks = new ArrayList<>();
         List<EnergyStorage> buffers = new ArrayList<>();
@@ -150,7 +180,7 @@ public final class CableNetworkManager {
             }
         }
         if (sources.isEmpty() && buffers.isEmpty()) {
-            return;
+            return 0;
         }
         try (Transaction transaction = Transaction.openOuter()) {
             // 1. Генераторы кормят машины напрямую
@@ -175,6 +205,7 @@ public final class CableNetworkManager {
             }
             transaction.commit();
         }
+        return startBudget - budget;
     }
 
     private static void classify(EnergyStorage storage, List<EnergyStorage> sources,

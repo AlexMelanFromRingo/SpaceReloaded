@@ -23,7 +23,8 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /** Химическая машина Марса (GUI нет): FACING, серверный тикер, статус по ПКМ. */
-public class ChemMachineBlock<T extends ChemMachineBlockEntity> extends Block implements EntityBlock {
+public class ChemMachineBlock<T extends ChemMachineBlockEntity> extends Block implements EntityBlock,
+        org.alex_melan.spacereloaded.registry.CosmeticState {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -35,12 +36,18 @@ public class ChemMachineBlock<T extends ChemMachineBlockEntity> extends Block im
         super(properties);
         this.factory = factory;
         this.typeSupplier = typeSupplier;
-        registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH)
+                .setValue(MachineActivity.ACTIVE, false));
+    }
+
+    @Override
+    public boolean onlyCosmetic(BlockState before, BlockState after) {
+        return before.getValue(FACING) == after.getValue(FACING);
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, MachineActivity.ACTIVE);
     }
 
     @Override
@@ -60,8 +67,11 @@ public class ChemMachineBlock<T extends ChemMachineBlockEntity> extends Block im
         if (level.isClientSide() || type != typeSupplier.get()) {
             return null;
         }
-        return (tickLevel, pos, tickState, be) ->
-                ((T) be).serverTick((ServerLevel) tickLevel);
+        return (tickLevel, pos, tickState, be) -> {
+            T machine = (T) be;
+            machine.serverTick((ServerLevel) tickLevel);
+            MachineActivity.update((ServerLevel) tickLevel, pos, machine.getBlockState(), machine);
+        };
     }
 
     @Override

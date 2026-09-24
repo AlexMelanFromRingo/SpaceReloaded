@@ -13,6 +13,7 @@ public class KineticRenderState extends BlockEntityRenderState {
     public boolean hasPart;
     public float ramOffset;
     public boolean isRam;
+    public boolean gearbox;
     public final BlockModelRenderState shaft = new BlockModelRenderState();
     public final BlockModelRenderState part = new BlockModelRenderState();
     public final BlockDisplayContext context = BlockDisplayContext.create();

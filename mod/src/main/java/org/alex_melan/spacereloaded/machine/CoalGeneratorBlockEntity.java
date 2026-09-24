@@ -21,6 +21,11 @@ import org.alex_melan.spacereloaded.registry.ModBlockEntities;
 public class CoalGeneratorBlockEntity extends ProcessingMachineBlockEntity {
 
     private int burnTime;
+
+    @Override
+    public boolean isWorking() {
+        return burnTime > 0;
+    }
     private int burnDuration;
 
     private final ContainerData generatorData = new ContainerData() {

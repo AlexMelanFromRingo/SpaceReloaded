@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/cube_bottom_top",
+	"textures": {
+		"top": "spacereloaded:block/capacitor_top",
+		"bottom": "spacereloaded:block/capacitor_top",
+		"side": "spacereloaded:block/capacitor_side_4"
+	}
+}

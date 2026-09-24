@@ -1,11 +1,129 @@
 {
 	"multipart": [
-		{ "apply": { "model": "spacereloaded:block/energy_cable_core" } },
-		{ "when": { "north": "true" }, "apply": { "model": "spacereloaded:block/energy_cable_arm" } },
-		{ "when": { "east": "true" }, "apply": { "model": "spacereloaded:block/energy_cable_arm", "y": 90 } },
-		{ "when": { "south": "true" }, "apply": { "model": "spacereloaded:block/energy_cable_arm", "y": 180 } },
-		{ "when": { "west": "true" }, "apply": { "model": "spacereloaded:block/energy_cable_arm", "y": 270 } },
-		{ "when": { "up": "true" }, "apply": { "model": "spacereloaded:block/energy_cable_arm", "x": 270 } },
-		{ "when": { "down": "true" }, "apply": { "model": "spacereloaded:block/energy_cable_arm", "x": 90 } }
+		{
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_core"
+			}
+		},
+		{
+			"when": {
+				"north": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm"
+			}
+		},
+		{
+			"when": {
+				"east": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm",
+				"y": 90
+			}
+		},
+		{
+			"when": {
+				"south": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm",
+				"y": 180
+			}
+		},
+		{
+			"when": {
+				"west": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm",
+				"y": 270
+			}
+		},
+		{
+			"when": {
+				"up": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm",
+				"x": 270
+			}
+		},
+		{
+			"when": {
+				"down": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm",
+				"x": 90
+			}
+		},
+		{
+			"when": {
+				"energized": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_core_on"
+			}
+		},
+		{
+			"when": {
+				"north": "true",
+				"energized": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm_on"
+			}
+		},
+		{
+			"when": {
+				"east": "true",
+				"energized": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm_on",
+				"y": 90
+			}
+		},
+		{
+			"when": {
+				"south": "true",
+				"energized": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm_on",
+				"y": 180
+			}
+		},
+		{
+			"when": {
+				"west": "true",
+				"energized": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm_on",
+				"y": 270
+			}
+		},
+		{
+			"when": {
+				"up": "true",
+				"energized": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm_on",
+				"x": 270
+			}
+		},
+		{
+			"when": {
+				"down": "true",
+				"energized": "true"
+			},
+			"apply": {
+				"model": "spacereloaded:block/energy_cable_arm_on",
+				"x": 90
+			}
+		}
 	]
 }

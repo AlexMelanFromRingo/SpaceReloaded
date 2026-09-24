@@ -93,6 +93,11 @@ public class MotorBlockEntity extends KineticBlockEntity {
         if (energy.amount > 0 && nextAvailability < 1.0 && omega == 0) {
             nextAvailability = 1.0; // запуск с места при появлении энергии
         }
+        if (level.getGameTime() % 40 == Math.floorMod(getBlockPos().asLong(), 40) && Math.abs(omega) > 5) {
+            level.playSound(null, getBlockPos(), org.alex_melan.spacereloaded.registry.ModSounds.MOTOR_HUM,
+                    net.minecraft.sounds.SoundSource.BLOCKS, 0.5f,
+                    (float) Math.max(0.5, Math.min(2.0, Math.abs(omega) / noLoadOmega() * 1.2)));
+        }
         if (Math.abs(nextAvailability - availability) > 0.02) {
             availability = nextAvailability;
             KineticNetworks.wake(level, getBlockPos());
