@@ -102,10 +102,31 @@ SOILS = {
 }
 
 
+def fit_uv(face, f, t):
+    """UV грани по умолчанию (как FaceBakery), вписанные в текстуру 0..16: у элементов крупнее блока
+    умолчание выходит за текстуру и берёт пиксели соседей по атласу."""
+    x1, y1, z1 = f
+    x2, y2, z2 = t
+    uv = {"up": [x1, z1, x2, z2], "down": [x1, 16 - z2, x2, 16 - z1],
+          "north": [16 - x2, 16 - y2, 16 - x1, 16 - y1], "south": [x1, 16 - y2, x2, 16 - y1],
+          "west": [z1, 16 - y2, z2, 16 - y1], "east": [16 - z2, 16 - y2, 16 - z1, 16 - y1]}[face]
+    out = []
+    for a, b in ((uv[0], uv[2]), (uv[1], uv[3])):
+        lo, hi = min(a, b), max(a, b)
+        if lo < 0 or hi > 16:
+            span = hi - lo
+            k = 16 / span if span > 16 else 1
+            lo2 = 0 if span > 16 else max(0, min(16 - span, lo % 16))
+            a2, b2 = lo2 + (a - lo) * k, lo2 + (b - lo) * k
+            a, b = a2, b2
+        out.append((round(a, 4), round(b, 4)))
+    return [out[0][0], out[1][0], out[0][1], out[1][1]]
+
+
 def rover_models():
     faces = ("up", "down", "north", "south", "east", "west")
     def box(f, t, tex):
-        return {"from": f, "to": t, "faces": {x: {"texture": tex} for x in faces}}
+        return {"from": f, "to": t, "faces": {x: {"texture": tex, "uv": fit_uv(x, f, t)} for x in faces}}
     body = {"parent": "minecraft:block/block", "textures": {"particle": f"{NS}:block/rover_body", "frame": f"{NS}:block/rover_body",
                                                              "seat": f"{NS}:block/rover_seat", "panel": f"{NS}:block/rover_panel"},
             "elements": [box([-8, 5, -16], [24, 8, 32], "#frame"),
@@ -114,15 +135,6 @@ def rover_models():
                          box([2, 8, 22], [14, 18, 26], "#panel"),
                          box([20, 8, -12], [21, 30, -11], "#frame"), box([15, 30, -16], [26, 31, -7], "#panel")]}
     g.model("rover_body_model", body)
-    wheel = {"parent": "minecraft:block/block", "textures": {"particle": f"{NS}:block/rover_wheel", "tire": f"{NS}:block/rover_wheel",
-                                                              "hub": f"{NS}:block/rover_wheel_hub"},
-             "elements": [{"from": [6, 1.5, 1.5], "to": [10, 14.5, 14.5], "faces": {
-                 "east": {"texture": "#hub"}, "west": {"texture": "#hub"}, "north": {"texture": "#tire"},
-                 "south": {"texture": "#tire"}, "up": {"texture": "#tire"}, "down": {"texture": "#tire"}}},
-                          {"from": [6.1, 1.5, 1.5], "to": [9.9, 14.5, 14.5], "rotation": {"origin": [8, 8, 8], "axis": "x", "angle": 45},
-                           "faces": {"north": {"texture": "#tire"}, "south": {"texture": "#tire"}, "up": {"texture": "#tire"},
-                                     "down": {"texture": "#tire"}}}]}
-    g.model("rover_wheel_model", wheel)
     g.model("rover_battery_model", {"parent": "minecraft:block/block", "textures": {"particle": f"{NS}:block/rover_battery",
                                                                                      "b": f"{NS}:block/rover_battery"},
                                     "elements": [box([0, 8, -14], [16, 14, -3], "#b")]})
@@ -205,6 +217,8 @@ def assets():
         g.item_def(b, f"{NS}:block/{b}")
     tray_models()
     rover_models()
+    import gen_wheels  # колесо и предметы ровера — 3D (перекрывают плоские модели предметов выше)
+    gen_wheels.main()
     imaging_model()
     for b in ("spin_hub", "despin_motor"):
         g.model(b, {"parent": "minecraft:block/cube_column",

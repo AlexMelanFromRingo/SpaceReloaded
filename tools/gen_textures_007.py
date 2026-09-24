@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Текстуры 007 «Жизнь на станции». Запуск: python3 tools/gen_textures_007.py"""
+import math
+
 from PIL import Image
 
 from gen_textures import _frame, _shade, _tint, mod, save, vanilla
@@ -195,9 +197,36 @@ def rover():
             if (x + y) % 4 == 0 or (x - y) % 4 == 0:
                 put(tire, x, y, (0xB8, 0xBC, 0xC4))  # сетка из стальной проволоки
     save(tire, "block/rover_wheel.png")
-    hub = tire.copy()
-    disc(hub, 7.5, 7.5, 3, lambda x, y, d: (0xD8, 0x84, 0x50) if d > 1.2 else (0x30, 0x30, 0x34))
+    # крышка мотор-редуктора: анодированный корпус, шесть болтов по окружности, вал в центре
+    hub = Image.new("RGBA", (16, 16), (0x3A, 0x3E, 0x46, 255))
+    disc(hub, 7.5, 7.5, 4.2, lambda x, y, d: (0x5A, 0x60, 0x6A) if d > 3.4 else (0x48, 0x4E, 0x58))
+    for k in range(6):
+        a = k * math.pi / 3
+        put(hub, round(7.5 + 2.6 * math.cos(a)), round(7.5 + 2.6 * math.sin(a)), (0xC8, 0xCC, 0xD2))
+    disc(hub, 7.5, 7.5, 1.2, lambda x, y, d: (0xD8, 0x84, 0x50))
     save(hub, "block/rover_wheel_hub.png")
+    # обод: шлифованный алюминий с концентрическими рисками
+    rim = Image.new("RGBA", (16, 16), (0xB8, 0xBC, 0xC4, 255))
+    for x in range(16):
+        for y in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            v = 0xB8 + int(10 * math.sin(d * 2.4))
+            put(rim, x, y, (v, v + 4, v + 12))
+    save(rim, "block/rover_wheel_rim.png")
+    # шевроны протектора: титан с тёмной кромкой
+    chev = Image.new("RGBA", (16, 16), (0x9A, 0x94, 0x8C, 255))
+    for x in range(16):
+        for y in range(16):
+            if (x + abs(y - 8)) % 6 < 2:
+                put(chev, x, y, (0xC4, 0xBE, 0xB4))
+            elif (x + abs(y - 8)) % 6 == 5:
+                put(chev, x, y, (0x6A, 0x66, 0x60))
+    save(chev, "block/rover_wheel_chevron.png")
+    for name, color in (("plus", (0xC8, 0x3A, 0x32)), ("minus", (0x2A, 0x2C, 0x30))):
+        term = Image.new("RGBA", (16, 16), color + (255,))
+        for x in range(16):
+            put(term, x, 0, tuple(min(255, c + 40) for c in color))
+        save(term, f"block/battery_terminal_{name}.png")
     bat = Image.new("RGBA", (16, 16), (0x3C, 0x40, 0x3C, 255))
     for x in range(1, 15, 3):
         for y in range(2, 14):

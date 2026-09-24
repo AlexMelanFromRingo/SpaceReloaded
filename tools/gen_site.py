@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from sitegen import res, icons, mb, pages, content as C  # noqa: E402
+from sitegen import res, icons, mb, models3d, pages, content as C  # noqa: E402
 
 
 def main():
@@ -33,6 +33,7 @@ def main():
                                        "multiblocks", pages.multiblocks_page(multiblocks)),
     }
     stale = icons.finalize()
+    stale_models = models3d.finalize()
 
     if pages.PROBLEMS:
         print("ОШИБКА: у предметов нет иконки или человеческого имени:", file=sys.stderr)
@@ -54,6 +55,7 @@ def main():
     print(f"{', '.join(html)} written to docs/. Рецептов: {len(recipes)}"
           f" (файлов {sum(len(r.get('steps', [])) or 1 for r in recipes)})"
           f" | мультиблоков: {len(multiblocks)} | иконок: {len(icons._written)} (удалено устаревших: {stale})"
+          f" | 3D-моделей: {len(models3d._written)} (удалено {stale_models})"
           f" | docs/: {size / 1e6:.2f} МБ")
     print("без описания:", missing or "нет", "| без фазы:", no_phase or "нет")
 

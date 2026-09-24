@@ -1,0 +1,1 @@
+{"textures":["models/tex/spacereloaded__block__energy_cable.png"],"elements":[{"from":[5,5,5],"to":[11,11,11],"faces":{"down":{"uv":[5,5,11,11],"t":0},"up":{"uv":[5,5,11,11],"t":0},"north":{"uv":[5,5,11,11],"t":0},"south":{"uv":[5,5,11,11],"t":0},"west":{"uv":[5,5,11,11],"t":0},"east":{"uv":[5,5,11,11],"t":0}}}]}

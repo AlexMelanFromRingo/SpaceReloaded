@@ -1,6 +1,3 @@
 {
-	"parent": "minecraft:item/generated",
-	"textures": {
-		"layer0": "spacereloaded:item/rover_wheel"
-	}
+	"parent": "spacereloaded:block/rover_wheel_model"
 }

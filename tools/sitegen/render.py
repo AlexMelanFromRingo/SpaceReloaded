@@ -63,8 +63,9 @@ class Face:
     __slots__ = ("o", "u", "v", "img", "shade", "depth")
 
 
-def model_faces(model, yrot=0, offset=(0, 0, 0), tex_cache=None):
-    """Все видимые грани модели в мировых координатах (единица = блок)."""
+def model_faces(model, yrot=0, offset=(0, 0, 0), tex_cache=None, xrot=0):
+    """Все видимые грани модели в мировых координатах (единица = блок). xrot/yrot — повороты
+    варианта blockstate (как в игре: сначала вокруг X, потом вокруг Y) и сцены."""
     tex_cache = {} if tex_cache is None else tex_cache
     out = []
     for el in model["elements"] or []:
@@ -83,6 +84,8 @@ def model_faces(model, yrot=0, offset=(0, 0, 0), tex_cache=None):
             pts = [tuple(coords[k] for k in c) for c in FACE_CORNERS[fname]]
             if rot:
                 pts = [_rot(p, rot.get("axis", "y"), rot.get("angle", 0), rot.get("origin", [8, 8, 8])) for p in pts]
+            if xrot:
+                pts = [_rot(p, "x", -xrot, (8, 8, 8)) for p in pts]
             if yrot:
                 pts = [_rot(p, "y", -yrot, (8, 8, 8)) for p in pts]
             pts = [tuple(p[i] / 16 + offset[i] for i in range(3)) for p in pts]

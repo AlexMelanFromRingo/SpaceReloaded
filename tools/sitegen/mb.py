@@ -76,21 +76,50 @@ class Multiblock:
             out.append((b, n, rng))
         return out
 
+    def line_axis(self):
+        """Ось линии структуры (катушки катапульты, ячейки стека) — по шагу повтора."""
+        step = (self.repeat or {}).get("step", [0, 0, -1])
+        return "xyz"[max(range(3), key=lambda i: abs(step[i]))]
+
+    def block_state(self, block):
+        """(модель, x, y) собранного вида: вариант blockstate с formed/in_rail, ключ — лицом наружу
+        (facing=north: шаблон строится вглубь по +z), ось — вдоль линии структуры."""
+        ns, _, name = block.partition(":")
+        bs = res.read_json(ns, f"blockstates/{name}.json")
+        if not bs or "variants" not in bs:
+            return None
+        want = {"formed": "true", "in_rail": "true", "facing": "north", "lit": "false", "axis": self.line_axis(),
+                "powered": "false", "open": "false"}
+        best, score = None, -1
+        for key, v in bs["variants"].items():
+            props = dict(kv.split("=") for kv in key.split(",") if "=" in kv)
+            s = sum(1 for k, val in props.items() if want.get(k) == val)
+            if s > score:
+                best, score = (v[0] if isinstance(v, list) else v), s
+        try:
+            model = res.resolve_model(best["model"])
+        except res.ResourceError:
+            return None
+        return model, best.get("x", 0), best.get("y", 0)
+
     def render(self, S=64, SS=2, yrot=0):
         """PNG собранного вида: все грани всех блоков сцены, общий painter-sort.
         yrot поворачивает всю сцену вокруг Y (чтобы длинная структура уходила вглубь)."""
         faces, cache = [], {}
         for c in self.cells:
-            pos = c.pos
+            # локальные клетки → мир при лице ключа на север (MultiblockTemplate.toWorld): +z — внутрь,
+            # локальная +x — вправо от смотрящего на лицо ключа, то есть −x мира
+            pos = (-c.pos[0], c.pos[1], c.pos[2])
             if yrot:
                 p = render._rot(pos, "y", -yrot, (0, 0, 0))
                 pos = tuple(round(v) for v in p)
             if c.shown == "minecraft:air":
                 continue
-            model = icons.model_for(c.shown)
+            state = self.block_state(c.shown)
+            model, bx, by = state if state else (icons.model_for(c.shown), 0, 0)
             if not model or not model.get("elements"):
                 continue
-            faces.extend(render.model_faces(model, yrot=yrot, offset=pos, tex_cache=cache))
+            faces.extend(render.model_faces(model, yrot=yrot + by, xrot=bx, offset=pos, tex_cache=cache))
         img, _ = render.draw_faces(faces, S * SS, pad=4)
         if SS > 1:
             img = img.resize((max(1, img.width // SS), max(1, img.height // SS)), Image.LANCZOS)

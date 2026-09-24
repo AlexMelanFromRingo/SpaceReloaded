@@ -1,6 +1,3 @@
 {
-	"parent": "minecraft:item/generated",
-	"textures": {
-		"layer0": "spacereloaded:item/nife_battery"
-	}
+	"parent": "spacereloaded:block/nife_battery_item"
 }

@@ -1,0 +1,273 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"particle": "spacereloaded:block/rover_battery",
+		"case": "spacereloaded:block/rover_battery",
+		"rib": "spacereloaded:block/rover_wheel_rim",
+		"plus": "spacereloaded:block/battery_terminal_plus",
+		"minus": "spacereloaded:block/battery_terminal_minus"
+	},
+	"elements": [
+		{
+			"from": [
+				2,
+				0,
+				3
+			],
+			"to": [
+				14,
+				10,
+				13
+			],
+			"faces": {
+				"up": {
+					"texture": "#case"
+				},
+				"down": {
+					"texture": "#case"
+				},
+				"north": {
+					"texture": "#case"
+				},
+				"south": {
+					"texture": "#case"
+				},
+				"east": {
+					"texture": "#case"
+				},
+				"west": {
+					"texture": "#case"
+				}
+			}
+		},
+		{
+			"from": [
+				4.0,
+				10,
+				3.5
+			],
+			"to": [
+				5.0,
+				10.5,
+				12.5
+			],
+			"faces": {
+				"up": {
+					"texture": "#rib"
+				},
+				"north": {
+					"texture": "#rib"
+				},
+				"south": {
+					"texture": "#rib"
+				},
+				"east": {
+					"texture": "#rib"
+				},
+				"west": {
+					"texture": "#rib"
+				}
+			}
+		},
+		{
+			"from": [
+				7.0,
+				10,
+				3.5
+			],
+			"to": [
+				8.0,
+				10.5,
+				12.5
+			],
+			"faces": {
+				"up": {
+					"texture": "#rib"
+				},
+				"north": {
+					"texture": "#rib"
+				},
+				"south": {
+					"texture": "#rib"
+				},
+				"east": {
+					"texture": "#rib"
+				},
+				"west": {
+					"texture": "#rib"
+				}
+			}
+		},
+		{
+			"from": [
+				10.0,
+				10,
+				3.5
+			],
+			"to": [
+				11.0,
+				10.5,
+				12.5
+			],
+			"faces": {
+				"up": {
+					"texture": "#rib"
+				},
+				"north": {
+					"texture": "#rib"
+				},
+				"south": {
+					"texture": "#rib"
+				},
+				"east": {
+					"texture": "#rib"
+				},
+				"west": {
+					"texture": "#rib"
+				}
+			}
+		},
+		{
+			"from": [
+				3.5,
+				10,
+				5
+			],
+			"to": [
+				5.5,
+				12,
+				7
+			],
+			"faces": {
+				"up": {
+					"texture": "#plus"
+				},
+				"north": {
+					"texture": "#plus"
+				},
+				"south": {
+					"texture": "#plus"
+				},
+				"east": {
+					"texture": "#plus"
+				},
+				"west": {
+					"texture": "#plus"
+				}
+			}
+		},
+		{
+			"from": [
+				10.5,
+				10,
+				5
+			],
+			"to": [
+				12.5,
+				12,
+				7
+			],
+			"faces": {
+				"up": {
+					"texture": "#minus"
+				},
+				"north": {
+					"texture": "#minus"
+				},
+				"south": {
+					"texture": "#minus"
+				},
+				"east": {
+					"texture": "#minus"
+				},
+				"west": {
+					"texture": "#minus"
+				}
+			}
+		},
+		{
+			"from": [
+				6.5,
+				12.5,
+				9.25
+			],
+			"to": [
+				9.5,
+				13.5,
+				10.75
+			],
+			"faces": {
+				"up": {
+					"texture": "#rib"
+				},
+				"down": {
+					"texture": "#rib"
+				},
+				"north": {
+					"texture": "#rib"
+				},
+				"south": {
+					"texture": "#rib"
+				}
+			}
+		},
+		{
+			"from": [
+				5.5,
+				10,
+				9.25
+			],
+			"to": [
+				6.5,
+				13.5,
+				10.75
+			],
+			"faces": {
+				"up": {
+					"texture": "#rib"
+				},
+				"north": {
+					"texture": "#rib"
+				},
+				"south": {
+					"texture": "#rib"
+				},
+				"east": {
+					"texture": "#rib"
+				},
+				"west": {
+					"texture": "#rib"
+				}
+			}
+		},
+		{
+			"from": [
+				9.5,
+				10,
+				9.25
+			],
+			"to": [
+				10.5,
+				13.5,
+				10.75
+			],
+			"faces": {
+				"up": {
+					"texture": "#rib"
+				},
+				"north": {
+					"texture": "#rib"
+				},
+				"south": {
+					"texture": "#rib"
+				},
+				"east": {
+					"texture": "#rib"
+				},
+				"west": {
+					"texture": "#rib"
+				}
+			}
+		}
+	]
+}

@@ -1,0 +1,1 @@
+{"textures":["models/tex/spacereloaded__block__flywheel.png"],"elements":[{"from":[-4,3,-4],"to":[20,13,20],"faces":{"north":{"uv":[-4,3,20,13],"t":0},"south":{"uv":[-4,3,20,13],"t":0},"east":{"uv":[-4,3,20,13],"t":0},"west":{"uv":[-4,3,20,13],"t":0},"up":{"uv":[-4,-4,20,20],"t":0},"down":{"uv":[-4,-4,20,20],"t":0}}}]}

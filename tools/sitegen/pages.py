@@ -2,12 +2,12 @@
 import json, re
 from html import escape
 
-from . import res, icons, content as C
+from . import res, icons, models3d, content as C
 from .mb import Multiblock
 
 SITE_URL = "https://alexmelanfromringo.github.io/SpaceReloaded/"
 REPO_URL = "https://github.com/AlexMelanFromRingo/SpaceReloaded"
-ASSET_VER = "8"  # сброс кэша CSS/JS при изменении
+ASSET_VER = "9"  # сброс кэша CSS/JS при изменении
 
 PROBLEMS = []  # (контекст, id, что не так) — проверка в конце генерации
 
@@ -40,12 +40,26 @@ def img_tag(icon, alt, px):
             f'loading="lazy" decoding="async">')
 
 
+def model_ref(ref):
+    """Путь к 3D-модели предмета (для тега — первого предмета тега) или None."""
+    if ref.startswith("#"):
+        try:
+            vals = res.tag_values(ref[1:], "item")
+        except res.ResourceError:
+            return None
+        ref = vals[0] if vals else None
+    return models3d.export(ref) if ref else None
+
+
 def slot(ref, ctx, count=1, big=False, extra=""):
     name, icon = item_info(ref, ctx)
     tip = f"{name} × {count}" if count > 1 else name
     inner = img_tag(icon, name, 64 if big else 48) if icon else '<span class="noicon" aria-hidden="true">?</span>'
     cnt = f'<span class="cnt" aria-hidden="true">{count}</span>' if count > 1 else ""
-    return (f'<span class="slot{" big" if big else ""}{extra}" data-tip="{escape(tip)}">'
+    model = model_ref(ref)
+    view = (f' data-model="{model}" data-name="{escape(name)}" role="button" tabindex="0"'
+            f' aria-label="{escape(name)}: открыть 3D-модель"') if model else ""
+    return (f'<span class="slot{" big" if big else ""}{" has3d" if model else ""}{extra}" data-tip="{escape(tip)}"{view}>'
             f'{inner}{cnt}</span>')
 
 
@@ -102,6 +116,8 @@ def page(fname, title, description, active, body):
 <link rel="stylesheet" href="assets/site.css?v={ASSET_VER}">
 {THEME_BOOT}
 <script src="assets/site.js?v={ASSET_VER}" defer></script>
+<script type="importmap">{{"imports":{{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}}}</script>
+<script type="module" src="assets/viewer3d.js?v={ASSET_VER}"></script>
 </head>
 <body>
 <a class="skip" href="#main">К содержимому</a>
