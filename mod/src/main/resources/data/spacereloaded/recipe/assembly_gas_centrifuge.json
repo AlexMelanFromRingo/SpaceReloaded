@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:carbon_fiber",
+		"spacereloaded:carbon_fiber",
+		"spacereloaded:motor",
+		"spacereloaded:steel_plate",
+		"spacereloaded:aluminium_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:gas_centrifuge"
+	}
+}

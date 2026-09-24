@@ -619,6 +619,17 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block STIRLING_PISTON = registerNoItem("stirling_piston", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    // --- 008: каскад газовых центрифуг ---
+    public static final Block CASCADE_CONTROLLER = register("cascade_controller",
+            props -> new org.alex_melan.spacereloaded.multiblock.ControllerBlock<>(props,
+                    org.alex_melan.spacereloaded.nuclear.CascadeBlockEntity::new, () -> ModBlockEntities.CASCADE,
+                    org.alex_melan.spacereloaded.nuclear.CascadeBlockEntity::serverTick),
+            industrial().lightLevel(s -> s.getValue(org.alex_melan.spacereloaded.multiblock.ControllerBlock.ACTIVE) ? 5 : 0));
+    public static final Block GAS_CENTRIFUGE = register("gas_centrifuge",
+            props -> new org.alex_melan.spacereloaded.multiblock.FormableBlock(props, Block.box(2, 0, 2, 14, 16, 14)),
+            industrial().noOcclusion());
+    public static final Block CENTRIFUGE_ROTOR = registerNoItem("centrifuge_rotor", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block BERYL_ORE = register("beryl_ore", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 3.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
     public static final Block BORAX_ORE = register("borax_ore", Block::new,

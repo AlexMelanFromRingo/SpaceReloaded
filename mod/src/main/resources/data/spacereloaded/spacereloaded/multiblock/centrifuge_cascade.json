@@ -1,0 +1,23 @@
+{
+	"key": "spacereloaded:cascade_controller",
+	"repeat": {
+		"cells": [
+			{
+				"offset": [
+					0,
+					0,
+					1
+				],
+				"block": "spacereloaded:gas_centrifuge"
+			}
+		],
+		"step": [
+			0,
+			0,
+			1
+		],
+		"min": 1,
+		"max": 40,
+		"display": 8
+	}
+}

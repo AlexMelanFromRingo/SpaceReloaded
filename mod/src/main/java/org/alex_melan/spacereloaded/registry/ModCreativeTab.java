@@ -157,6 +157,7 @@ public final class ModCreativeTab {
                                 ModBlocks.CDRA_MODULE, ModBlocks.WRS_MODULE, ModBlocks.ECLSS_BLANK_PANEL,
                                 ModBlocks.CONTROL_ROD_DRIVE, ModBlocks.REACTOR_CORE, ModBlocks.BEO_REFLECTOR, ModBlocks.HEAT_PIPE,
                                 ModBlocks.STIRLING_CONVERTOR, ModBlocks.REACTOR_POWER_CAP, ModBlocks.RADIATOR_PANEL,
+                                ModBlocks.CASCADE_CONTROLLER, ModBlocks.GAS_CENTRIFUGE,
                                 ModBlocks.BERYL_ORE, ModBlocks.BORAX_ORE, ModBlocks.URANINITE_ORE}) {
                             output.accept(block);
                         }

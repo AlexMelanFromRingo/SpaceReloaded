@@ -42,6 +42,8 @@ BLOCKS = {
     "stirling_convertor": ("Stirling Convertor 250 We", "Двигатель Стирлинга 250 Вт(э)", "Двигун Стірлінга 250 Вт(е)"),
     "reactor_power_cap": ("Power Slot Cap", "Заглушка гнезда", "Заглушка гнізда"),
     "radiator_panel": ("Radiator Panel", "Панель радиатора", "Панель радіатора"),
+    "cascade_controller": ("Enrichment Cascade Controller", "Контроллер каскада обогащения", "Контролер каскаду збагачення"),
+    "gas_centrifuge": ("Gas Centrifuge", "Газовая центрифуга", "Газова центрифуга"),
     "beryl_ore": ("Beryl Ore", "Бериллиевая руда", "Берилієва руда"),
     "borax_ore": ("Borax Deposit", "Залежь буры", "Поклад бури"),
     "uraninite_ore": ("Pitchblende Ore", "Урановая руда (смолка)", "Уранова руда (смолка)"),
@@ -146,6 +148,45 @@ OTHER = {
         "Щогла Kilopower: унизу привід стрижня, над ним зона в кільці BeO, теплова труба до чотирьох гнізд "
         "Стірлінгів, вище — сегменти радіатора. Виводьте стрижень повільно або ввімкніть регулятор: реактор сам "
         "слідує за навантаженням, але швидке виведення випереджає зворотний зв'язок і плавить зону."),
+    "screen.spacereloaded.cascade": ("Centrifuge Cascade", "Каскад газовых центрифуг", "Каскад газових центрифуг"),
+    "status.spacereloaded.cascade.not_formed": ("Cascade not assembled — strike the controller with the engineer's hammer",
+                                                "Каскад не собран — ударьте контроллер инженерным молотом",
+                                                "Каскад не зібрано — вдарте контролер інженерним молотом"),
+    "status.spacereloaded.cascade.stages": ("Stages: %s · feed %s%% → product %s%% · tails %s%%",
+                                            "Ступеней: %s · питание %s %% → продукт %s %% · отвал %s %%",
+                                            "Ступенів: %s · живлення %s %% → продукт %s %% · відвал %s %%"),
+    "status.spacereloaded.cascade.balance": ("Per kg of product: %s kg feed, %s SWU",
+                                             "На кг продукта: %s кг питания, %s ЕРР",
+                                             "На кг продукту: %s кг живлення, %s ОРР"),
+    "status.spacereloaded.cascade.rate": ("Output: %s kg/day (%s SWU/day)", "Выход: %s кг/сут (%s ЕРР/сут)",
+                                          "Вихід: %s кг/доб (%s ОРР/доб)"),
+    "status.spacereloaded.cascade.stock": ("Feed %s kg U · product %s kg (%s%%) · tails %s kg",
+                                           "Питание %s кг U · продукт %s кг (%s %%) · отвал %s кг",
+                                           "Живлення %s кг U · продукт %s кг (%s %%) · відвал %s кг"),
+    "gauge.spacereloaded.enrichment": ("Product enrichment", "Обогащение продукта", "Збагачення продукту"),
+    "gauge.spacereloaded.swu": ("Next kg", "Следующий кг", "Наступний кг"),
+    "action.spacereloaded.cascade.product": ("Product", "Продукт", "Продукт"),
+    "action.spacereloaded.cascade.tails": ("Tails", "Отвал", "Відвал"),
+    "action.spacereloaded.cascade.basket": ("Basket", "Корзина", "Кошик"),
+    "message.spacereloaded.cascade.no_product": ("No enriched product yet", "Обогащённого продукта пока нет",
+                                                 "Збагаченого продукту поки немає"),
+    "message.spacereloaded.cascade.need_zirconium": ("U-Zr alloy needs %s zirconium", "Для сплава U-Zr нужно циркония: %s",
+                                                     "Для сплаву U-Zr потрібно цирконію: %s"),
+    "message.spacereloaded.cascade.basket": ("Basket made: %s kg U-235 (%s%%), excess reactivity %s $",
+                                             "Корзина готова: %s кг U-235 (%s %%), запас реактивности %s $",
+                                             "Кошик готовий: %s кг U-235 (%s %%), запас реактивності %s $"),
+    "message.spacereloaded.cascade.basket_subcritical": (
+        "Basket made: %s kg U-235 (%s%%) — below the critical mass, reactivity %s $: the reactor will not start",
+        "Корзина готова: %s кг U-235 (%s %%) — меньше критической массы, реактивность %s $: реактор не запустится",
+        "Кошик готовий: %s кг U-235 (%s %%) — менше критичної маси, реактивність %s $: реактор не запуститься"),
+    "manual.spacereloaded.centrifuge_cascade.title": ("Centrifuge Cascade", "Каскад центрифуг", "Каскад центрифуг"),
+    "manual.spacereloaded.centrifuge_cascade.text": (
+        "A line of gas centrifuges behind the controller. Each stage multiplies the U-235 ratio by 1.3: 14 give "
+        "~22% (LEU), 29 give ~93% (HEU). One kilogram of 93% needs 201 kg of natural uranium and 216 SWU.",
+        "Линия газовых центрифуг за контроллером. Каждая ступень умножает отношение U-235 на 1.3: 14 дают "
+        "~22 % (НОУ), 29 — ~93 % (ВОУ). Килограмм 93 % требует 201 кг природного урана и 216 ЕРР.",
+        "Лінія газових центрифуг за контролером. Кожен ступінь множить відношення U-235 на 1.3: 14 дають "
+        "~22 % (НЗУ), 29 — ~93 % (ВЗУ). Кілограм 93 % потребує 201 кг природного урану та 216 ОРР."),
     "manual.spacereloaded.eclss_rack.title": ("Life Support Rack", "Стойка жизнеобеспечения", "Стійка життєзабезпечення"),
     "manual.spacereloaded.eclss_rack.text": (
         "A 5×4 rack in the wall of a sealed zone with four module sockets. Electrolysis turns water into O₂; "

@@ -120,6 +120,8 @@
 		"spacereloaded:heat_pipe",
 		"spacereloaded:stirling_convertor",
 		"spacereloaded:reactor_power_cap",
-		"spacereloaded:radiator_panel"
+		"spacereloaded:radiator_panel",
+		"spacereloaded:cascade_controller",
+		"spacereloaded:gas_centrifuge"
 	]
 }

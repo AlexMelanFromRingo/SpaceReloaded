@@ -1,0 +1,345 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"steel": "spacereloaded:block/centrifuge_side",
+		"particle": "spacereloaded:block/centrifuge_side"
+	},
+	"elements": [
+		{
+			"from": [
+				2,
+				0,
+				2
+			],
+			"to": [
+				14,
+				2,
+				14
+			],
+			"faces": {
+				"up": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						14,
+						14
+					]
+				},
+				"down": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						14,
+						14
+					]
+				},
+				"north": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						14,
+						14,
+						16
+					]
+				},
+				"south": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						14,
+						14,
+						16
+					]
+				},
+				"east": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						14,
+						14,
+						16
+					]
+				},
+				"west": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						14,
+						14,
+						16
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				2,
+				14,
+				2
+			],
+			"to": [
+				14,
+				16,
+				14
+			],
+			"faces": {
+				"up": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						14,
+						14
+					]
+				},
+				"down": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						14,
+						14
+					]
+				},
+				"north": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						0,
+						14,
+						2
+					]
+				},
+				"south": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						0,
+						14,
+						2
+					]
+				},
+				"east": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						0,
+						14,
+						2
+					]
+				},
+				"west": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						0,
+						14,
+						2
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				2,
+				2,
+				2
+			],
+			"to": [
+				4,
+				14,
+				4
+			],
+			"faces": {
+				"north": {
+					"texture": "#steel",
+					"uv": [
+						12,
+						2,
+						14,
+						14
+					]
+				},
+				"south": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						4,
+						14
+					]
+				},
+				"east": {
+					"texture": "#steel",
+					"uv": [
+						12,
+						2,
+						14,
+						14
+					]
+				},
+				"west": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						4,
+						14
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				2,
+				2,
+				12
+			],
+			"to": [
+				4,
+				14,
+				14
+			],
+			"faces": {
+				"north": {
+					"texture": "#steel",
+					"uv": [
+						12,
+						2,
+						14,
+						14
+					]
+				},
+				"south": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						4,
+						14
+					]
+				},
+				"east": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						4,
+						14
+					]
+				},
+				"west": {
+					"texture": "#steel",
+					"uv": [
+						12,
+						2,
+						14,
+						14
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				12,
+				2,
+				2
+			],
+			"to": [
+				14,
+				14,
+				4
+			],
+			"faces": {
+				"north": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						4,
+						14
+					]
+				},
+				"south": {
+					"texture": "#steel",
+					"uv": [
+						12,
+						2,
+						14,
+						14
+					]
+				},
+				"east": {
+					"texture": "#steel",
+					"uv": [
+						12,
+						2,
+						14,
+						14
+					]
+				},
+				"west": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						4,
+						14
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				12,
+				2,
+				12
+			],
+			"to": [
+				14,
+				14,
+				14
+			],
+			"faces": {
+				"north": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						4,
+						14
+					]
+				},
+				"south": {
+					"texture": "#steel",
+					"uv": [
+						12,
+						2,
+						14,
+						14
+					]
+				},
+				"east": {
+					"texture": "#steel",
+					"uv": [
+						2,
+						2,
+						4,
+						14
+					]
+				},
+				"west": {
+					"texture": "#steel",
+					"uv": [
+						12,
+						2,
+						14,
+						14
+					]
+				}
+			}
+		}
+	]
+}

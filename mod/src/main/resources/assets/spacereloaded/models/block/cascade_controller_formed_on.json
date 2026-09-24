@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"front": "spacereloaded:block/cascade_controller_front_on",
+		"side": "spacereloaded:block/reactor_steel",
+		"top": "spacereloaded:block/reactor_steel"
+	}
+}

@@ -197,6 +197,10 @@ public final class ModBlockEntities {
             register("reactor", new BlockEntityType<>(org.alex_melan.spacereloaded.nuclear.ReactorBlockEntity::new,
                     Set.of(ModBlocks.CONTROL_ROD_DRIVE)));
 
+    public static final BlockEntityType<org.alex_melan.spacereloaded.nuclear.CascadeBlockEntity> CASCADE =
+            register("cascade", new BlockEntityType<>(org.alex_melan.spacereloaded.nuclear.CascadeBlockEntity::new,
+                    Set.of(ModBlocks.CASCADE_CONTROLLER)));
+
     // --- Жизнь на станции (007) ---
     public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity> GAS_TANK =
             register("gas_tank", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity::new,
@@ -261,6 +265,7 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), AIR_SEPARATOR);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ECLSS_CONTROLLER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), REACTOR);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CASCADE);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), AIRLOCK_PUMP);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CO2_SCRUBBER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), GROW_LAMP);

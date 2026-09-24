@@ -33,6 +33,14 @@
 							"name": "spacereloaded:uraninite",
 							"functions": [
 								{
+									"function": "minecraft:set_count",
+									"count": {
+										"type": "minecraft:uniform",
+										"min": 2,
+										"max": 4
+									}
+								},
+								{
 									"enchantment": "minecraft:fortune",
 									"formula": "minecraft:ore_drops",
 									"function": "minecraft:apply_bonus"

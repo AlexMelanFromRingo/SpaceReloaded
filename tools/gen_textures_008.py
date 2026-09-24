@@ -217,9 +217,40 @@ def reactor():
     item_icon("fuel_basket", basket)
 
 
+def cascade():
+    for on in (False, True):
+        img = noise_fill((0x6A, 0x70, 0x78), 10, 3)
+        for x in range(2, 14):
+            for y in range(3, 11):
+                put(img, x, y, (0x10, 0x16, 0x1A))
+        # мнемосхема каскада: ряд ступеней, горящих при работе
+        for i in range(5):
+            put(img, 3 + i * 2, 6, (0x60, 0xE0, 0x80) if on else (0x40, 0x40, 0x40))
+            put(img, 3 + i * 2, 8, (0x6F, 0xD5, 0xE8) if on else (0x40, 0x40, 0x40))
+        save(img, "block/cascade_controller_front" + ("_on" if on else "") + ".png")
+    side = noise_fill((0xB8, 0xBC, 0xC4), 10, 23)
+    for x in (0, 15):
+        for y in range(16):
+            put(side, x, y, (0x88, 0x8C, 0x94))
+    save(side, "block/centrifuge_side.png")
+    end = noise_fill((0x8C, 0x90, 0x96), 8, 29)
+    disc(end, 7.5, 7.5, 5, lambda x, y, d: (0x5A, 0x5E, 0x66) if d > 4 else (0x9C, 0xA0, 0xA8))
+    save(end, "block/centrifuge_end.png")
+    rotor = Image.new("RGBA", (16, 16), (0x2C, 0x2E, 0x34, 255))  # углепластик
+    for x in range(16):
+        for y in range(16):
+            if (x + y) % 4 < 2:
+                put(rotor, x, y, (0x3C, 0x3E, 0x46))
+    for x in range(0, 16, 8):
+        for y in range(16):
+            put(rotor, x, y, (0xC8, 0xCC, 0xD4))  # светлая метка — видно вращение
+    save(rotor, "block/centrifuge_rotor.png")
+
+
 def main():
     eclss()
     reactor()
+    cascade()
 
 
 if __name__ == "__main__":

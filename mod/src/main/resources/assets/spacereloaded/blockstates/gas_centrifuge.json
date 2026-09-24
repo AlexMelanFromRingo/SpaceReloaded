@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/gas_centrifuge"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/gas_centrifuge_formed"
+		}
+	}
+}

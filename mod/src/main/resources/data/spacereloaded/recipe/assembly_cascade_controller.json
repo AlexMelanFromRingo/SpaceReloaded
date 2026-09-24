@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:circuit_board",
+		"spacereloaded:relay_logic",
+		"spacereloaded:copper_wire"
+	],
+	"result": {
+		"id": "spacereloaded:cascade_controller"
+	}
+}

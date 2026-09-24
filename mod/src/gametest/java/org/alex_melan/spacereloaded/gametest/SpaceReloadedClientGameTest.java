@@ -104,6 +104,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testOrbitalImaging", () -> testOrbitalImaging(context, sp));
             scenarios.put("testEclssRack", () -> testEclssRack(context, sp));
             scenarios.put("testReactor", () -> testReactor(context, sp));
+            scenarios.put("testCascade", () -> testCascade(context, sp));
             scenarios.put("testReadmeShots", () -> testReadmeShots(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
@@ -3321,6 +3322,70 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             var r = (org.alex_melan.spacereloaded.nuclear.ReactorBlockEntity) server.overworld().getBlockEntity(key);
             return new double[] {r.temperature(), r.electricW(), r.powerW(), r.reactivity(),
                     org.alex_melan.spacereloaded.network.Thermal.temperature(server.overworld(), key) + 273.15};
+        });
+    }
+
+    // ---------- 008. Каскад центрифуг (US3) ----------
+
+    /** Каскады из 29 и 14 центрифуг: продукт 93.5 % и 22 %, питание по балансу, корзина из продукта и циркония. */
+    private void testCascade(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1480;
+        int z0 = BZ;
+        moveTo(context, sp, x0 - 6, z0);
+        sp.getServer().runCommand(String.format("forceload add %d %d %d %d", x0 - 4, z0 - 4, x0 + 8, z0 + 34));
+        BlockPos big = new BlockPos(x0, BY, z0);
+        BlockPos small = new BlockPos(x0 + 4, BY, z0);
+        for (BlockPos k : List.of(big, small)) {
+            sp.getServer().runCommand(set(k.getX(), k.getY(), k.getZ(), "spacereloaded:cascade_controller[facing=north]"));
+            sp.getServer().runCommand(set(k.getX() + 1, k.getY(), k.getZ(), "spacereloaded:creative_power"));
+        }
+        sp.getServer().runCommand(fill(x0, BY, z0 + 1, x0, BY, z0 + 29, "spacereloaded:gas_centrifuge"));
+        sp.getServer().runCommand(fill(x0 + 4, BY, z0 + 1, x0 + 4, BY, z0 + 14, "spacereloaded:gas_centrifuge"));
+        context.waitTicks(5);
+        double[] r = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var player = server.getPlayerList().getPlayers().get(0);
+            var a = (org.alex_melan.spacereloaded.nuclear.CascadeBlockEntity) level.getBlockEntity(big);
+            var b = (org.alex_melan.spacereloaded.nuclear.CascadeBlockEntity) level.getBlockEntity(small);
+            a.hammer(level, player);
+            b.hammer(level, player);
+            double xa = a.productEnrichment();
+            double per = org.alex_melan.spacereloaded.core.nuclear.Enrichment.swu(1, 0.00711, xa, 0.0025);
+            a.testFeed(6100, 0.00711, 30 * per);
+            b.testFeed(500, 0.00711, 0);
+            return new double[] {a.centrifuges(), b.centrifuges(), xa, b.productEnrichment()};
+        });
+        assertThat(r[0] == 29 && r[1] == 14 && Math.abs(r[2] - 0.935) < 0.01 && Math.abs(r[3] - 0.22) < 0.01,
+                String.format(java.util.Locale.ROOT, "Каскады: %.0f и %.0f центрифуг → %.3f и %.3f", r[0], r[1], r[2], r[3]));
+        context.waitTicks(40);
+        double[] out = sp.getServer().computeOnServer(server -> {
+            var a = (org.alex_melan.spacereloaded.nuclear.CascadeBlockEntity) server.overworld().getBlockEntity(big);
+            return new double[] {a.productKg(), a.feedKg(), a.tailsKg(), a.productStockEnrichment()};
+        });
+        double feedUsed = 6100 - out[1];
+        assertThat(out[0] >= 30 && Math.abs(feedUsed / out[0] - 201.2) < 2 && Math.abs(out[3] - 0.935) < 0.01,
+                String.format(java.util.Locale.ROOT, "Баланс: продукт %.0f кг (%.3f), питание %.0f кг (%.1f на кг), отвал %.0f кг",
+                        out[0], out[3], feedUsed, feedUsed / out[0], out[2]));
+        log(String.format(java.util.Locale.ROOT, "каскад: 29 ступеней → %.1f %%, 14 → %.1f %%; %.1f кг питания на кг ВОУ ✓",
+                r[2] * 100, r[3] * 100, feedUsed / out[0]));
+        String basket = sp.getServer().computeOnServer(server -> {
+            var player = server.getPlayerList().getPlayers().get(0);
+            player.getInventory().clearContent();
+            player.getInventory().add(new ItemStack(ModItems.ZIRCONIUM, 2));
+            var a = (org.alex_melan.spacereloaded.nuclear.CascadeBlockEntity) server.overworld().getBlockEntity(big);
+            a.action(server.overworld(), player, "basket", 0);
+            var stack = slotOf(player, ModItems.FUEL_BASKET);
+            return stack.isEmpty() ? "none" : String.format(java.util.Locale.ROOT, "%.1f %.3f",
+                    stack.get(ModDataComponents.FUEL_U235), stack.get(ModDataComponents.ENRICHMENT));
+        });
+        assertThat(basket.startsWith("28.0 0.93"), "Корзина: " + basket);
+        log("каскад: корзина U-Zr — " + basket.split(" ")[0] + " кг U-235 ✓");
+        readmeCamera(context, sp, x0 + 2.5, BY + 1.2, z0 + 3.5, 120f, 25f);
+        readmeShot(context, "cascade");
+        context.runOnClient(mc -> {
+            if (mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
         });
     }
 

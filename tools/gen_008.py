@@ -139,7 +139,8 @@ MATERIAL_ITEMS = ["beryl", "beryllium_hydroxide", "beryllium_oxide", "sodium", "
                   "boron_carbide_blend", "boron_carbide", "zircon", "zirconium", "uraninite", "yellowcake",
                   "uranium_dioxide", "uranium_tetrafluoride", "fluorine", "uranium_hexafluoride",
                   "depleted_uranium_hexafluoride"]
-ORES = {"beryl_ore": ("beryl", 1, 1), "borax_ore": ("borax", 2, 4), "uraninite_ore": ("uraninite", 1, 1)}
+# урановая смолка — богатая жила (≈ 36 кг U в блоке, как Шинколобве); порция урановых предметов — 10 кг U
+ORES = {"beryl_ore": ("beryl", 1, 1), "borax_ore": ("borax", 2, 4), "uraninite_ore": ("uraninite", 2, 4)}
 ICE = f"#{NS}:electrolyzer_input"
 
 
@@ -193,7 +194,7 @@ def material_data():
     # пегматиты (берилл — рядом со сподуменом), эвапориты (бура — неглубоко), урановая смолка (глубоко, редко)
     g.ore_feature("ore_beryl", "beryl_ore", "#minecraft:stone_ore_replaceables", 5, 2, -32, 32)
     g.ore_feature("ore_borax", "borax_ore", "#minecraft:stone_ore_replaceables", 16, 1, 30, 72)
-    g.ore_feature("ore_uraninite", "uraninite_ore", "#minecraft:deepslate_ore_replaceables", 6, 1, -64, -16)
+    g.ore_feature("ore_uraninite", "uraninite_ore", "#minecraft:deepslate_ore_replaceables", 8, 2, -64, -16)
     base = os.path.join(os.path.dirname(DATA), "minecraft", "tags", "block")
     for tag, blocks in (("mineable/pickaxe", list(ORES)), ("needs_iron_tool", ["beryl_ore", "uraninite_ore"]),
                         ("needs_stone_tool", ["borax_ore"])):
@@ -215,6 +216,81 @@ def material_models():
         mk.plain(o, "minecraft:block/cube_all", {"all": f"{NS}:block/{o}"})
         mk.blockstate(o, {"": {"model": f"{NS}:block/{o}"}})
         mk.item(o, f"{NS}:block/{o}")
+
+
+# --- US3: каскад газовых центрифуг ------------------------------------------------------------------
+CASCADE_BLOCKS = ["cascade_controller", "gas_centrifuge"]
+
+
+def cascade_template():
+    """Линия центрифуг за контроллером: 1…40 ступеней (обогатительная часть симметричного каскада)."""
+    write(os.path.join(MB, "centrifuge_cascade.json"), {
+        "key": sr("cascade_controller"),
+        "repeat": {"cells": [{"offset": [0, 0, 1], "block": sr("gas_centrifuge")}], "step": [0, 0, 1], "min": 1,
+                   "max": 40, "display": 8}})
+
+
+def cascade_recipes():
+    assembly("cascade_controller", ["steel_plate", "steel_plate", "circuit_board", "relay_logic", "copper_wire"],
+             "cascade_controller")
+    # ротор из углепластика (прочность на разрыв задаёт окружную скорость и коэффициент разделения)
+    assembly("gas_centrifuge", ["carbon_fiber", "carbon_fiber", "motor", "steel_plate", "aluminium_ingot"],
+             "gas_centrifuge")
+
+
+def rotor_rings(r_out, cell=0.5):
+    """Круглый ротор (объёмы по сетке, без общих плоскостей) в плоскости XZ, по высоте 2…14."""
+    import math
+    n = round(16 / cell)
+    grid = [[math.hypot((i + 0.5) * cell - 8, (j + 0.5) * cell - 8) < r_out for i in range(n)] for j in range(n)]
+    used = [[False] * n for _ in range(n)]
+    out = []
+    for j in range(n):
+        i = 0
+        while i < n:
+            if not grid[j][i] or used[j][i]:
+                i += 1
+                continue
+            i2 = i
+            while i2 + 1 < n and grid[j][i2 + 1] and not used[j][i2 + 1]:
+                i2 += 1
+            j2 = j
+            while j2 + 1 < n and all(grid[j2 + 1][k] and not used[j2 + 1][k] for k in range(i, i2 + 1)):
+                j2 += 1
+            for jj in range(j, j2 + 1):
+                for k in range(i, i2 + 1):
+                    used[jj][k] = True
+            out.append((i * cell, j * cell, (i2 + 1) * cell, (j2 + 1) * cell))
+            i = i2 + 1
+    return out
+
+
+def cascade_models():
+    for formed in (False, True):
+        for active in (False, True):
+            name = "cascade_controller" + ("_formed" if formed else "") + ("_on" if active else "")
+            front = "cascade_controller_front" + ("_on" if formed and active else "")
+            mk.plain(name, "minecraft:block/orientable", {"front": f"{NS}:block/{front}", "side": f"{NS}:block/reactor_steel",
+                                                         "top": f"{NS}:block/reactor_steel"})
+    mk.blockstate("cascade_controller", mk.facing_variants(
+        lambda formed, active: f"{NS}:block/cascade_controller" + ("_formed" if formed else "") + ("_on" if active else "")))
+    mk.item("cascade_controller", f"{NS}:block/cascade_controller")
+    # центрифуга: несформирована — кожух; сформирована — кожух со смотровыми щелями, ротор рисует BER
+    mk.plain("gas_centrifuge", "minecraft:block/cube_column", {"end": f"{NS}:block/centrifuge_end", "side": f"{NS}:block/centrifuge_side"})
+    els = [mk.box([2, 0, 2], [14, 2, 14], "#steel"), mk.box([2, 14, 2], [14, 16, 14], "#steel")]
+    for x in (2, 12):
+        for z in (2, 12):
+            els.append(mk.box([x, 2, z], [x + 2, 14, z + 2], "#steel", skip=("up", "down")))
+    mk.model("gas_centrifuge_formed", {"steel": f"{NS}:block/centrifuge_side"}, els)
+    mk.blockstate("gas_centrifuge", {"formed=false": {"model": f"{NS}:block/gas_centrifuge"},
+                                     "formed=true": {"model": f"{NS}:block/gas_centrifuge_formed"}})
+    mk.item("gas_centrifuge", f"{NS}:block/gas_centrifuge")
+    rotor = [mk.box([x1, 2, z1], [x2, 13.9, z2], "#r", skip=("up", "down")) for x1, z1, x2, z2 in rotor_rings(4.6)]
+    rotor += [mk.box([x1, 14, z1], [x2, 14.5, z2], "#cap", skip=("down",)) for x1, z1, x2, z2 in rotor_rings(2.4)]
+    # крышка ротора — тонкий диск встык над телом (у тела торцы не рисуются: низ закрыт плитой кожуха)
+    rotor += [mk.box([x1, 13.9, z1], [x2, 14, z2], "#r", skip=("down",)) for x1, z1, x2, z2 in rotor_rings(4.6)]
+    mk.model("centrifuge_rotor", {"r": f"{NS}:block/centrifuge_rotor", "cap": f"{NS}:block/reactor_steel"}, rotor)
+    mk.blockstate("centrifuge_rotor", {"": {"model": f"{NS}:block/centrifuge_rotor"}})
 
 
 def reactor_models():
@@ -302,19 +378,22 @@ MASSES = {
     "beryl": (3.0, ["beryl"]), "beryllium_oxide": (3.3, ["beryllium_oxide", "beryllium_hydroxide"]),
     "sodium": (1.08, ["sodium"]), "borate": (1.9, ["borax", "boric_acid", "boron_carbide_blend"]),
     "boron_carbide": (2.8, ["boron_carbide"]), "zircon": (5.2, ["zircon"]), "zirconium": (7.2, ["zirconium"]),
-    # урановые продукты — 1 кг урана в куске (учёт топлива в кг U)
-    "uranium": (1.0, ["uraninite", "yellowcake", "uranium_dioxide", "uranium_tetrafluoride", "uranium_hexafluoride",
+    # урановые продукты — порция 10 кг урана (учёт топлива в кг U); UF₆ — вместе с фтором (1.48 кг на кг U)
+    "uranium": (10.0, ["uraninite", "yellowcake", "uranium_dioxide", "uranium_tetrafluoride", "uranium_hexafluoride",
                       "depleted_uranium_hexafluoride"]),
     "fluorine": (1.0, ["fluorine"]),
-    "fuel_basket": (40.0, ["fuel_basket"]),                 # корзина: ~30 кг сплава U-Zr + оболочка
+    "fuel_basket": (40.0, ["fuel_basket"]),
+    "cascade_controller": (60.0, ["cascade_controller"]),
+    "gas_centrifuge": (60.0, ["gas_centrifuge"]),                 # корзина: ~30 кг сплава U-Zr + оболочка
 }
 
-BLOCKS = ECLSS_BLOCKS + REACTOR_BLOCKS
+BLOCKS = ECLSS_BLOCKS + REACTOR_BLOCKS + CASCADE_BLOCKS
 
 
 def data():
     eclss_template()
     reactor_template()
+    cascade_template()
     material_data()
     write(os.path.join(DATA, "tags", "block", "reactor_power_slot.json"),
           {"replace": False, "values": [sr("stirling_convertor"), sr("reactor_power_cap")]})
@@ -342,10 +421,12 @@ def main():
     eclss_recipes()
     reactor_recipes()
     material_recipes()
+    cascade_recipes()
     data()
     eclss_models()
     reactor_models()
     material_models()
+    cascade_models()
 
 
 if __name__ == "__main__":
