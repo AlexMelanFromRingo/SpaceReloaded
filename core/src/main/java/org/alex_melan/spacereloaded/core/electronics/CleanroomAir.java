@@ -52,11 +52,8 @@ public final class CleanroomAir {
 
         /** Концентрация в момент t. */
         public double at(double t) {
-            if (removal() <= 0) {
-                return c0 + source * Math.max(0, t - t0) / Math.max(1e-9, volume); // без фильтров копится
-            }
-            double css = steadyState();
-            return css + (c0 - css) * Math.exp(-Math.max(0, t - t0) / tau());
+            return org.alex_melan.spacereloaded.core.sealing.FirstOrderMix.at(c0, source + infiltration * outside,
+                    removal(), volume, t - t0);
         }
 
         /**
@@ -65,16 +62,8 @@ public final class CleanroomAir {
          * (вход игрока, новый модуль) ни случилось внутри шага.
          */
         public double integral(double t1) {
-            double dt = Math.max(0, t1 - t0);
-            if (dt == 0) {
-                return 0;
-            }
-            if (removal() <= 0) {
-                return (c0 + at(t1)) / 2 * dt; // без фильтров рост линеен — трапеция точна
-            }
-            double css = steadyState();
-            double tau = tau();
-            return css * dt + (c0 - css) * tau * (1 - Math.exp(-dt / tau));
+            return org.alex_melan.spacereloaded.core.sealing.FirstOrderMix.integral(c0, source + infiltration * outside,
+                    removal(), volume, t1 - t0);
         }
 
         /** Средняя концентрация на [t0, t1] — точный интеграл экспоненты. */

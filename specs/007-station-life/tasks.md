@@ -12,15 +12,15 @@
 
 ## Phase 2: Foundational (ядро)
 
-- [ ] T701 [P] `K/sealing/FirstOrderMix.java` (общая первопорядковая математика) + перевод `K/electronics/CleanroomAir.java` на неё без регрессий
-- [ ] T702 [P] `KT/lifesupport/CabinAtmosphereTest.java` + `K/lifesupport/CabinAtmosphere.java` (массы → p, pᵢ; отрезки; время пересечения порога; критическое истечение)
-- [ ] T703 [P] `KT/lifesupport/MetabolismTest.java` + `K/lifesupport/Metabolism.java` (BVAD, Клейбер, уровни эффектов)
-- [ ] T704 [P] `KT/lifesupport/ScrubberTest.java` + `K/lifesupport/Scrubber.java` (LiOH, цеолит, выход Сабатье)
-- [ ] T705 [P] `KT/station/AirlockCycleTest.java` + `K/station/AirlockCycle.java` (t откачки, потери, наддув, сила на люк)
-- [ ] T706 [P] `KT/lifesupport/CropModelTest.java` + `K/lifesupport/CropModel.java` (культуры, DLI, точка компенсации, мощность лампы)
-- [ ] T707 [P] `KT/station/SpinGravityTest.java` + `K/station/SpinGravity.java`, `K/station/RotatingAssembly.java` (g, градиент, v_t, Кориолис, L, E, топливо, I, дисбаланс)
-- [ ] T708 [P] `KT/vehicle/TerramechanicsTest.java` + `K/vehicle/Terramechanics.java` (Беккер: z, R_c, H(s), склон, v_max, Вт·ч/км)
-- [ ] T709 [P] `KT/orbit/OrbitalImagingTest.java` + `K/orbit/OrbitalImaging.java` (GSD, T, полоса, T_cov)
+- [X] T701 [P] `K/sealing/FirstOrderMix.java` (общая первопорядковая математика) + перевод `K/electronics/CleanroomAir.java` на неё без регрессий
+- [X] T702 [P] `KT/lifesupport/CabinAtmosphereTest.java` + `K/lifesupport/CabinAtmosphere.java` (массы → p, pᵢ; отрезки; время пересечения порога; критическое истечение)
+- [X] T703 [P] `KT/lifesupport/MetabolismTest.java` + `K/lifesupport/Metabolism.java` (BVAD, Клейбер, уровни эффектов)
+- [X] T704 [P] `KT/lifesupport/ScrubberTest.java` + `K/lifesupport/Scrubber.java` (LiOH, цеолит, выход Сабатье)
+- [X] T705 [P] `KT/station/AirlockCycleTest.java` + `K/station/AirlockCycle.java` (t откачки, потери, наддув, сила на люк)
+- [X] T706 [P] `KT/lifesupport/CropModelTest.java` + `K/lifesupport/CropModel.java` (культуры, DLI, точка компенсации, мощность лампы)
+- [X] T707 [P] `KT/station/SpinGravityTest.java` + `K/station/SpinGravity.java`, `K/station/RotatingAssembly.java` (g, градиент, v_t, Кориолис, L, E, топливо, I, дисбаланс)
+- [X] T708 [P] `KT/vehicle/TerramechanicsTest.java` + `K/vehicle/Terramechanics.java` (Беккер: z, R_c, H(s), склон, v_max, Вт·ч/км)
+- [X] T709 [P] `KT/orbit/OrbitalImagingTest.java` + `K/orbit/OrbitalImaging.java` (GSD, T, полоса, T_cov)
 
 ## Phase 3: US1 Воздух станции и шлюз (P1) 🎯 MVP
 
