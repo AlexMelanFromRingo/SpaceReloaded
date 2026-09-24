@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:nickel_ingot",
+		"spacereloaded:nickel_ingot",
+		"minecraft:iron_ingot",
+		"minecraft:iron_ingot",
+		"spacereloaded:caustic_soda",
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:nife_battery"
+	}
+}

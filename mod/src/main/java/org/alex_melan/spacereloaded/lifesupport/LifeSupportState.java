@@ -362,6 +362,15 @@ public final class LifeSupportState extends SavedData {
             }
             double[] s = sources(level, zone, contributions);
             Gas gas = entry.getValue();
+            // «Зелёный воздух»: экипаж в зоне, а растения покрывают весь его кислород
+            if (s[0] <= 0 && s[4] > 0 && s[5] > 0) {
+                for (ServerPlayer player : level.players()) {
+                    if (zone.volume().contains(player.blockPosition().asLong())) {
+                        org.alex_melan.spacereloaded.industry.IndustryAdvancements.award(player,
+                                org.alex_melan.spacereloaded.industry.IndustryAdvancements.GREEN_AIR);
+                    }
+                }
+            }
             if (s[0] != gas.o2Rate() || s[1] != gas.co2Source() || s[2] != gas.co2Removal()
                     || s[3] != gas.o2PerIntegral()) {
                 state.zones.put(entry.getKey(), gas.at(now).withSources(s[0], s[1], s[2], s[3]));
@@ -393,7 +402,13 @@ public final class LifeSupportState extends SavedData {
                 o2PerIntegral += k.o2PerIntegral();
             }
         }
-        return new double[] {o2, co2, removal, o2PerIntegral};
+        double plantO2 = 0;
+        for (Map.Entry<Long, Object[]> c : contributions.entrySet()) {
+            if (zone.volume().contains(c.getKey()) || adjacent(zone, c.getKey())) {
+                plantO2 += Math.max(0, ((Contribution) c.getValue()[0]).o2Source());
+            }
+        }
+        return new double[] {o2, co2, removal, o2PerIntegral, people, plantO2};
     }
 
     /** Животные в зоне — «люди» по закону Клейбера. */

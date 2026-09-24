@@ -220,6 +220,10 @@ public final class ModBlockEntities {
             register("despin_motor", new BlockEntityType<>(org.alex_melan.spacereloaded.station.DespinMotorBlockEntity::new,
                     Set.of(ModBlocks.DESPIN_MOTOR)));
 
+    public static final BlockEntityType<org.alex_melan.spacereloaded.vehicle.RoverChargerBlockEntity> ROVER_CHARGER =
+            register("rover_charger", new BlockEntityType<>(org.alex_melan.spacereloaded.vehicle.RoverChargerBlockEntity::new,
+                    Set.of(ModBlocks.ROVER_CHARGER)));
+
     public static void init() {
         // Публикация энергохранилищ в Fabric API lookup (решение D7: Team Reborn Energy)
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SOLAR_PANEL);
@@ -250,6 +254,7 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CO2_SCRUBBER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), GROW_LAMP);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), DESPIN_MOTOR);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ROVER_CHARGER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), REGOLITH_REACTOR);
         EnergyStorage.SIDED.registerForBlocks((level, pos, state, blockEntity, direction) ->
                 org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity.energyThroughLining(level, pos),

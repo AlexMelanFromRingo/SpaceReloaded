@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:aluminium_copper_ingot",
+		"spacereloaded:copper_wire",
+		"spacereloaded:copper_wire",
+		"spacereloaded:steel_plate",
+		"minecraft:iron_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:rover_wheel"
+	}
+}

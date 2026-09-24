@@ -1,0 +1,41 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"particle": "spacereloaded:block/rover_battery",
+		"b": "spacereloaded:block/rover_battery"
+	},
+	"elements": [
+		{
+			"from": [
+				0,
+				8,
+				-14
+			],
+			"to": [
+				16,
+				14,
+				-3
+			],
+			"faces": {
+				"up": {
+					"texture": "#b"
+				},
+				"down": {
+					"texture": "#b"
+				},
+				"north": {
+					"texture": "#b"
+				},
+				"south": {
+					"texture": "#b"
+				},
+				"east": {
+					"texture": "#b"
+				},
+				"west": {
+					"texture": "#b"
+				}
+			}
+		}
+	]
+}

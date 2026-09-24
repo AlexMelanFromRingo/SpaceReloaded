@@ -151,7 +151,7 @@ public final class ModCreativeTab {
                                 ModBlocks.ALUMINIUM_FUEL_TANK, ModBlocks.AL_LI_FUEL_TANK,
                                 ModBlocks.GAS_TANK, ModBlocks.AIR_SEPARATOR, ModBlocks.CO2_SCRUBBER, ModBlocks.AIRLOCK_PUMP,
                                 ModBlocks.HYDROPONIC_TRAY, ModBlocks.GROW_LAMP, ModBlocks.BIOMASS_OXIDIZER,
-                                ModBlocks.SPIN_HUB, ModBlocks.RIM_THRUSTER, ModBlocks.DESPIN_MOTOR}) {
+                                ModBlocks.SPIN_HUB, ModBlocks.RIM_THRUSTER, ModBlocks.DESPIN_MOTOR, ModBlocks.ROVER_CHARGER}) {
                             output.accept(block);
                         }
                         for (var item : new net.minecraft.world.item.Item[] {
@@ -173,7 +173,8 @@ public final class ModCreativeTab {
                                 ModItems.SPODUMENE, ModItems.BETA_SPODUMENE, ModItems.LITHIUM_CHLORIDE, ModItems.LITHIUM_INGOT,
                                 ModItems.AL_LI_BLEND, ModItems.ALUMINIUM_LITHIUM_INGOT, ModItems.NICKEL_INGOT,
                                 ModItems.SUPERALLOY_BLEND, ModItems.NICKEL_SUPERALLOY_INGOT,
-                                ModItems.LITHIUM_HYDROXIDE, ModItems.LIOH_CARTRIDGE, ModItems.ZEOLITE, ModItems.ZEOLITE_BED, ModItems.STRAW}) {
+                                ModItems.LITHIUM_HYDROXIDE, ModItems.LIOH_CARTRIDGE, ModItems.ZEOLITE, ModItems.ZEOLITE_BED, ModItems.STRAW,
+                                ModItems.ROVER_CHASSIS, ModItems.ROVER_WHEEL, ModItems.NIFE_BATTERY}) {
                             output.accept(item);
                         }
                     })

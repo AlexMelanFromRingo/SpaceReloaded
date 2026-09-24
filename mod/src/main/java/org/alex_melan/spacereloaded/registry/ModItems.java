@@ -229,6 +229,11 @@ public final class ModItems {
     /** Цеолитовый слой (CDRA МКС): регенерируемый нагревом. */
     /** Солома — несъедобная биомасса пшеницы (60 % сухой массы), в окислитель. */
     public static final Item STRAW = simple("straw");
+    /** Ровер (007): шасси (рама Al-2219, 2 места, электроника), мотор-колесо Ø 81 см, батарея Ni–Fe 8.7 кВт·ч. */
+    public static final Item ROVER_CHASSIS = register("rover_chassis",
+            props -> new org.alex_melan.spacereloaded.vehicle.RoverChassisItem(props.stacksTo(1)));
+    public static final Item ROVER_WHEEL = register("rover_wheel", props -> new Item(props.stacksTo(4)));
+    public static final Item NIFE_BATTERY = register("nife_battery", props -> new Item(props.stacksTo(1)));
     public static final Item ZEOLITE_BED = register("zeolite_bed", props -> new Item(props.stacksTo(1)));
 
     public static boolean isEnginePart(Item item) {

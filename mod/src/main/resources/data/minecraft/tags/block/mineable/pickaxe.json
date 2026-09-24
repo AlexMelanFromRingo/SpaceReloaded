@@ -101,6 +101,7 @@
 		"spacereloaded:grow_lamp",
 		"spacereloaded:spin_hub",
 		"spacereloaded:rim_thruster",
-		"spacereloaded:despin_motor"
+		"spacereloaded:despin_motor",
+		"spacereloaded:rover_charger"
 	]
 }

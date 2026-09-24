@@ -12,6 +12,9 @@ ITEMS = {
     "zeolite": ("Zeolite 5A", "Цеолит 5A", "Цеоліт 5A"),
     "zeolite_bed": ("Zeolite Bed", "Цеолитовый слой", "Цеолітовий шар"),
     "straw": ("Straw", "Солома", "Солома"),
+    "rover_chassis": ("Rover Chassis", "Шасси ровера", "Шасі ровера"),
+    "rover_wheel": ("Rover Hub-Motor Wheel", "Мотор-колесо ровера", "Мотор-колесо ровера"),
+    "nife_battery": ("Ni–Fe Battery 8.7 kWh", "Ni–Fe батарея 8,7 кВт·ч", "Ni–Fe батарея 8,7 кВт·год"),
 }
 BLOCKS = {
     "gas_tank": ("Gas Tank", "Газовый баллон", "Газовий балон"),
@@ -23,6 +26,7 @@ BLOCKS = {
     "biomass_oxidizer": ("Biomass Oxidizer", "Окислитель биомассы", "Окиснювач біомаси"),
     "spin_hub": ("Spin Hub", "Ступица кольца", "Маточина кільця"),
     "rim_thruster": ("Rim Thruster", "Двигатель обода", "Двигун обода"),
+    "rover_charger": ("Rover Charger", "Зарядная станция ровера", "Зарядна станція ровера"),
     "despin_motor": ("Counter-Rotation Motor", "Мотор противовращения", "Мотор протиобертання"),
 }
 OTHER = {
@@ -61,6 +65,10 @@ OTHER = {
                                               "Кільце: %s об/хв · маса %s кг · I %s кг·м² · L %s Н·м·с · навантаження підшипника %s з %s Н"),
     "message.spacereloaded.despin.spin": ("Counter-rotation motor: spin up", "Мотор противовращения: раскрутка", "Мотор протиобертання: розкручування"),
     "message.spacereloaded.despin.brake": ("Counter-rotation motor: brake", "Мотор противовращения: торможение", "Мотор протиобертання: гальмування"),
+    "message.spacereloaded.rover.report": ("Rover: wheels %s/4 · battery %s%% · mass %s kg · %s km/h · odometer %s km",
+                                           "Ровер: колёс %s/4 · батарея %s%% · масса %s кг · %s км/ч · пробег %s км",
+                                           "Ровер: коліс %s/4 · батарея %s%% · маса %s кг · %s км/год · пробіг %s км"),
+    "entity.spacereloaded.rover": ("Rover", "Ровер", "Ровер"),
     "message.spacereloaded.tray.empty": ("empty", "пусто", "порожньо"),
     "tooltip.spacereloaded.reserve.co2_scrubber": ("%s%% · cartridge left: %s g CO₂", "%s%% · картриджа хватит на %s г CO₂",
                                                    "%s%% · картриджа вистачить на %s г CO₂"),

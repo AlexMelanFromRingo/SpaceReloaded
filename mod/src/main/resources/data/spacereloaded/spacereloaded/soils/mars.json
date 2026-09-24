@@ -1,0 +1,9 @@
+{
+	"dimension": "spacereloaded:mars",
+	"n": 1.0,
+	"kc": 0.068,
+	"kphi": 0.82,
+	"c": 0.02,
+	"phi_deg": 30,
+	"k_cm": 1.8
+}

@@ -100,6 +100,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testCabinAir", () -> testCabinAir(context, sp));
             scenarios.put("testGreenhouse", () -> testGreenhouse(context, sp));
             scenarios.put("testSpinRing", () -> testSpinRing(context, sp));
+            scenarios.put("testRover", () -> testRover(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
                 if (selected == null || selected.contains(name) || name.equals("testSealing")) {
@@ -2946,6 +2947,64 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         }
         assertThat(broken, "Однобокая сборка должна сорвать подшипник ступицы");
         log("кольцо: без противовеса дисбаланс |Σm·ρ|·ω² сорвал подшипник ✓");
+    }
+
+    /**
+     * Ровер на полосе: камень — твёрдая поверхность (сопротивление 0.015·m·g), песок — грунт Земли
+     * по Беккеру. На камне проверяется теорема об энергии η·ΔE_бат = ½·m·v² + R·s (батарея платит за
+     * кинетическую энергию и работу сопротивления, не больше), на песке — установившаяся скорость
+     * v = η·P/R_c (мощность моторов уходит на уплотнение грунта).
+     */
+    private void testRover(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1320;
+        int z0 = BZ;
+        moveTo(context, sp, x0 - 4, z0);
+        sp.getServer().runCommand(String.format("forceload add %d %d %d %d", x0 - 8, z0 - 8, x0 + 16, z0 + 140));
+        sp.getServer().runCommand(fill(x0 - 2, BY - 1, z0, x0 + 2, BY - 1, z0 + 130, "minecraft:stone"));
+        int xs = x0 + 10; // песчаная полоса на каменном основании
+        sp.getServer().runCommand(fill(xs - 2, BY - 2, z0, xs + 2, BY - 2, z0 + 60, "minecraft:stone"));
+        sp.getServer().runCommand(fill(xs - 2, BY - 1, z0, xs + 2, BY - 1, z0 + 60, "minecraft:sand"));
+        sp.getServer().runCommand(String.format("summon spacereloaded:rover %d.5 %d %d.5 {Rotation:[0f,0f]}", x0, BY, z0 + 2));
+        sp.getServer().runCommand(String.format("summon spacereloaded:rover %d.5 %d %d.5 {Rotation:[0f,0f]}", xs, BY, z0 + 2));
+        context.waitTicks(10);
+        net.minecraft.world.phys.AABB hard = new net.minecraft.world.phys.AABB(x0 - 3, BY - 2, z0 - 2, x0 + 3, BY + 3, z0 + 140);
+        net.minecraft.world.phys.AABB loose = new net.minecraft.world.phys.AABB(xs - 3, BY - 2, z0 - 2, xs + 3, BY + 3, z0 + 70);
+        double full = org.alex_melan.spacereloaded.vehicle.RoverEntity.capacityE();
+        sp.getServer().runOnServer(server -> {
+            for (var box : List.of(hard, loose)) {
+                server.overworld().getEntitiesOfClass(org.alex_melan.spacereloaded.vehicle.RoverEntity.class, box)
+                        .forEach(r -> r.testSetup(4, full, true));
+            }
+        });
+        context.waitTicks(200);
+        double[] r = sp.getServer().computeOnServer(server -> {
+            var a = server.overworld().getEntitiesOfClass(org.alex_melan.spacereloaded.vehicle.RoverEntity.class, hard).get(0);
+            var b = server.overworld().getEntitiesOfClass(org.alex_melan.spacereloaded.vehicle.RoverEntity.class, loose).get(0);
+            a.testForward(false);
+            b.testForward(false);
+            return new double[] {a.mass(), a.speed(), a.odometer(), full - a.charge(), b.speed(), b.odometer()};
+        });
+        double m = r[0];
+        double g = 9.81;
+        double eta = org.alex_melan.spacereloaded.vehicle.RoverEntity.EFFICIENCY;
+        double spentJ = r[3] / org.alex_melan.spacereloaded.lifesupport.EnergyScale.E_PER_KWH * 3.6e6;
+        double work = 0.5 * m * r[1] * r[1] + 0.015 * m * g * r[2];
+        assertThat(r[1] > 2 && Math.abs(eta * spentJ - work) < 0.03 * work, String.format(java.util.Locale.ROOT,
+                "Камень: η·ΔE = ½mv² + R·s — v %.2f м/с, s %.1f м, η·ΔE %.0f Дж, работа %.0f Дж", r[1], r[2], eta * spentJ, work));
+        log(String.format(java.util.Locale.ROOT, "ровер: камень, m = %.0f кг, за 10 с v = %.2f м/с, s = %.1f м, η·ΔE = %.0f Дж = ½mv² + R·s ✓",
+                m, r[1], r[2], eta * spentJ));
+        var soil = new org.alex_melan.spacereloaded.core.vehicle.Terramechanics.Soil(1.1, 0.0625, 0.964, 0.104, 28, 2.5);
+        double rc = 4 * org.alex_melan.spacereloaded.core.vehicle.Terramechanics.compactionN(soil,
+                org.alex_melan.spacereloaded.vehicle.RoverEntity.WHEEL, m * g / 4);
+        double vSand = eta * org.alex_melan.spacereloaded.vehicle.RoverEntity.MOTOR_W / rc;
+        assertThat(Math.abs(r[4] - vSand) < 0.03 * vSand && r[1] > 3 * r[4], String.format(java.util.Locale.ROOT,
+                "Песок: v = η·P/R_c = %.3f м/с, получено %.3f м/с (R_c %.0f Н)", vSand, r[4], rc));
+        log(String.format(java.util.Locale.ROOT, "ровер: песок, R_c = %.0f Н (Беккер), v = %.3f м/с = η·P/R_c ✓", rc, r[4]));
+        context.waitTicks(100);
+        double stopped = sp.getServer().computeOnServer(server -> server.overworld()
+                .getEntitiesOfClass(org.alex_melan.spacereloaded.vehicle.RoverEntity.class, hard).get(0).speed());
+        assertThat(stopped < r[1] - 0.015 * g * 4.5 && stopped > r[1] - 0.015 * g * 5.5, "Накат: сопротивление качению тормозит ровер, v = " + stopped);
+        log(String.format(java.util.Locale.ROOT, "ровер: накат 5 с, v %.2f → %.2f м/с ✓", r[1], stopped));
     }
 
     // ---------- 36. Взрыв и герметичность (T024) ----------

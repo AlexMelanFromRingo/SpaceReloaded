@@ -1,0 +1,14 @@
+{
+	"replace": false,
+	"values": [
+		"#minecraft:sand",
+		"minecraft:gravel",
+		"minecraft:dirt",
+		"minecraft:coarse_dirt",
+		"minecraft:grass_block",
+		"minecraft:podzol",
+		"minecraft:mud",
+		"minecraft:snow_block",
+		"spacereloaded:moon_regolith"
+	]
+}

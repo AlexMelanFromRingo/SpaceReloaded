@@ -169,6 +169,72 @@ def ring():
     save(e, "block/despin_motor_end.png")
 
 
+def rover():
+    alu = _tint(vanilla("block/iron_block.png"), (0xE0, 0xE4, 0xEA), 1.3)
+    frame = alu.copy()
+    for i in range(0, 16, 4):
+        for j in range(16):
+            put(frame, i, j, (0x9C, 0xA0, 0xA8))
+    save(frame, "block/rover_body.png")
+    seat = Image.new("RGBA", (16, 16), (0x50, 0x68, 0x90, 255))
+    for x in range(16):
+        for y in range(0, 16, 3):
+            put(seat, x, y, (0x40, 0x54, 0x74))
+    save(seat, "block/rover_seat.png")
+    panel = Image.new("RGBA", (16, 16), (0x2A, 0x2C, 0x30, 255))
+    for x, y, c in ((3, 4, (0xE0, 0x88, 0x30)), (7, 4, (0x60, 0xE0, 0x70)), (11, 4, (0xE0, 0x40, 0x40))):
+        for dx in range(2):
+            for dy in range(2):
+                put(panel, x + dx, y + dy, c)
+    for x in range(2, 14):
+        put(panel, x, 10, (0x90, 0x94, 0x9C))
+    save(panel, "block/rover_panel.png")
+    tire = Image.new("RGBA", (16, 16), (0x70, 0x74, 0x7C, 255))
+    for x in range(16):
+        for y in range(16):
+            if (x + y) % 4 == 0 or (x - y) % 4 == 0:
+                put(tire, x, y, (0xB8, 0xBC, 0xC4))  # сетка из стальной проволоки
+    save(tire, "block/rover_wheel.png")
+    hub = tire.copy()
+    disc(hub, 7.5, 7.5, 3, lambda x, y, d: (0xD8, 0x84, 0x50) if d > 1.2 else (0x30, 0x30, 0x34))
+    save(hub, "block/rover_wheel_hub.png")
+    bat = Image.new("RGBA", (16, 16), (0x3C, 0x40, 0x3C, 255))
+    for x in range(1, 15, 3):
+        for y in range(2, 14):
+            put(bat, x, y, (0x70, 0x78, 0x70))
+    save(bat, "block/rover_battery.png")
+    casing = vanilla("block/smooth_stone.png").copy()
+    _frame(casing, (0x55, 0x58, 0x60, 255), 1)
+    side = casing.copy()
+    for y in range(3, 13):
+        put(side, 7, y, (0xE0, 0x88, 0x30))
+        put(side, 8, y, (0xE0, 0x88, 0x30))
+    save(side, "block/rover_charger_side.png")
+    top = casing.copy()
+    disc(top, 7.5, 7.5, 3, lambda x, y, d: (0x60, 0xE0, 0x70) if d < 1.5 else (0x30, 0x30, 0x34))
+    save(top, "block/rover_charger_top.png")
+    # предметы
+    img = blank()
+    for x in range(1, 15):
+        for y in range(6, 10):
+            put(img, x, y, (0xE0, 0xE4, 0xEA) if y in (6, 9) else (0x9C, 0xA0, 0xA8))
+    for x in (3, 11):
+        for y in range(3, 6):
+            put(img, x, y, (0x50, 0x68, 0x90))
+            put(img, x + 1, y, (0x50, 0x68, 0x90))
+    icon("rover_chassis", img)
+    img = blank()
+    disc(img, 7.5, 7.5, 6.5, lambda x, y, d: (0xB8, 0xBC, 0xC4) if (x + y) % 3 == 0 else (0x70, 0x74, 0x7C) if d > 2 else (0xD8, 0x84, 0x50))
+    icon("rover_wheel", img)
+    img = blank()
+    for x in range(2, 14):
+        for y in range(4, 14):
+            put(img, x, y, (0x3C, 0x40, 0x3C) if (x - 2) % 3 else (0x70, 0x78, 0x70))
+    for x in (4, 11):
+        put(img, x, 3, (0xE0, 0x40, 0x40) if x == 4 else (0x30, 0x30, 0x34))
+    icon("nife_battery", img)
+
+
 def guis():
     base = mod("gui/machine_single.png")
     arrow = base.crop((72, 35, 72 + 22, 35 + 16))
@@ -194,6 +260,7 @@ def main():
     blocks()
     greenhouse()
     ring()
+    rover()
     guis()
 
 

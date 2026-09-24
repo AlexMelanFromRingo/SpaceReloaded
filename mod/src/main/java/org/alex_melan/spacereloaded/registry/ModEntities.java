@@ -78,6 +78,18 @@ public final class ModEntities {
                             .fireImmune()
                             .build(CARGO_POD_KEY));
 
+    public static final ResourceKey<EntityType<?>> ROVER_KEY = ResourceKey.create(Registries.ENTITY_TYPE,
+            Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "rover"));
+
+    /** Электрический ровер (007): рама 2 × 3 м, серверная физика Беккера. */
+    public static final EntityType<org.alex_melan.spacereloaded.vehicle.RoverEntity> ROVER =
+            Registry.register(BuiltInRegistries.ENTITY_TYPE, ROVER_KEY,
+                    EntityType.Builder.of(org.alex_melan.spacereloaded.vehicle.RoverEntity::new, MobCategory.MISC)
+                            .sized(2.0f, 1.2f)
+                            .clientTrackingRange(16)
+                            .updateInterval(1)
+                            .build(ROVER_KEY));
+
     public static void init() {
         FabricEntityDataRegistry.register(
                 Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "compound_tag"),

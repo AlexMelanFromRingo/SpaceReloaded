@@ -35,7 +35,12 @@ public final class PlanetEffects {
                 continue;
             }
             // 007: во вращающемся кольце вес — ω²·r по высоте над ободом, а не гравитация тела
-            double gravity = org.alex_melan.spacereloaded.station.SpinRings.gravityFor(level, player).orElse(planet);
+            var ring = org.alex_melan.spacereloaded.station.SpinRings.gravityFor(level, player);
+            double gravity = ring.orElse(planet);
+            if (ring.isPresent() && gravity >= org.alex_melan.spacereloaded.station.CrewState.HEALTHY_G) {
+                org.alex_melan.spacereloaded.industry.IndustryAdvancements.award(player,
+                        org.alex_melan.spacereloaded.industry.IndustryAdvancements.CORIOLIS);
+            }
             crew.update(player, gravity, 20 / 24000.0);
             double amount = gravity / PlanetManager.EARTH_GRAVITY - 1.0; // ADD_MULTIPLIED_TOTAL
             AttributeModifier current = attribute.getModifier(GRAVITY_MODIFIER_ID);

@@ -66,6 +66,7 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		}
 
 		EntityRendererRegistry.register(ModEntities.ROCKET, RocketRenderer::new);
+		EntityRendererRegistry.register(ModEntities.ROVER, org.alex_melan.spacereloaded.client.render.RoverRenderer::new);
 		// 004: анимации мультиблоков и визуальная капсула
 		EntityRendererRegistry.register(ModEntities.CARGO_POD,
 				org.alex_melan.spacereloaded.client.render.CargoPodRenderer::new);

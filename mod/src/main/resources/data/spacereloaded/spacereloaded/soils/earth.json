@@ -1,0 +1,9 @@
+{
+	"dimension": "minecraft:overworld",
+	"n": 1.1,
+	"kc": 0.0625,
+	"kphi": 0.964,
+	"c": 0.104,
+	"phi_deg": 28,
+	"k_cm": 2.5
+}

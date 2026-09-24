@@ -678,5 +678,11 @@
 	"message.spacereloaded.spin_hub.attached": "Ступица: сборка касается мира — вращать нечего (изолируйте её, оставьте только ось)",
 	"message.spacereloaded.spin_hub.report": "Кольцо: %s об/мин · масса %s кг · I %s кг·м² · L %s Н·м·с · нагрузка подшипника %s из %s Н",
 	"message.spacereloaded.despin.spin": "Мотор противовращения: раскрутка",
-	"message.spacereloaded.despin.brake": "Мотор противовращения: торможение"
+	"message.spacereloaded.despin.brake": "Мотор противовращения: торможение",
+	"item.spacereloaded.rover_chassis": "Шасси ровера",
+	"item.spacereloaded.rover_wheel": "Мотор-колесо ровера",
+	"item.spacereloaded.nife_battery": "Ni–Fe батарея 8,7 кВт·ч",
+	"block.spacereloaded.rover_charger": "Зарядная станция ровера",
+	"message.spacereloaded.rover.report": "Ровер: колёс %s/4 · батарея %s%% · масса %s кг · %s км/ч · пробег %s км",
+	"entity.spacereloaded.rover": "Ровер"
 }

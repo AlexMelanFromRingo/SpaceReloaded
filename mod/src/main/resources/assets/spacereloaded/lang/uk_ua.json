@@ -678,5 +678,11 @@
 	"message.spacereloaded.spin_hub.attached": "Маточина: збірка торкається світу — обертати нічого (ізолюйте її, лишіть тільки вісь)",
 	"message.spacereloaded.spin_hub.report": "Кільце: %s об/хв · маса %s кг · I %s кг·м² · L %s Н·м·с · навантаження підшипника %s з %s Н",
 	"message.spacereloaded.despin.spin": "Мотор протиобертання: розкручування",
-	"message.spacereloaded.despin.brake": "Мотор протиобертання: гальмування"
+	"message.spacereloaded.despin.brake": "Мотор протиобертання: гальмування",
+	"item.spacereloaded.rover_chassis": "Шасі ровера",
+	"item.spacereloaded.rover_wheel": "Мотор-колесо ровера",
+	"item.spacereloaded.nife_battery": "Ni–Fe батарея 8,7 кВт·год",
+	"block.spacereloaded.rover_charger": "Зарядна станція ровера",
+	"message.spacereloaded.rover.report": "Ровер: коліс %s/4 · батарея %s%% · маса %s кг · %s км/год · пробіг %s км",
+	"entity.spacereloaded.rover": "Ровер"
 }

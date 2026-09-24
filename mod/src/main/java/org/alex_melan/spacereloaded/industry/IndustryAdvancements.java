@@ -28,6 +28,10 @@ public final class IndustryAdvancements {
     public static final String ISO5 = "iso5";
     public static final String NINE_NINES = "nine_nines";
     public static final String LIGHT_TANK = "light_tank";
+    public static final String CORIOLIS = "coriolis";
+    public static final String GREEN_AIR = "green_air";
+    public static final String FIRST_TRACK = "first_track";
+    public static final String VIEW_FROM_ABOVE = "view_from_above";
 
     private IndustryAdvancements() {
     }

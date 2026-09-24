@@ -594,6 +594,17 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
     public static final Block DESPIN_MOTOR = register("despin_motor", org.alex_melan.spacereloaded.station.DespinMotorBlock::new,
             BlockBehaviour.Properties.of().strength(4.0f, 10.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block ROVER_CHARGER = register("rover_charger",
+            props -> new MachineBlock<>(props, org.alex_melan.spacereloaded.vehicle.RoverChargerBlockEntity::new,
+                    () -> ModBlockEntities.ROVER_CHARGER, org.alex_melan.spacereloaded.vehicle.RoverChargerBlockEntity::serverTick),
+            BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    /** Модели частей ровера для рендера (без предметов). */
+    public static final Block ROVER_BODY_MODEL = registerNoItem("rover_body_model", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROVER_WHEEL_MODEL = registerNoItem("rover_wheel_model", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROVER_BATTERY_MODEL = registerNoItem("rover_battery_model", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block GAS_TANK = register("gas_tank", org.alex_melan.spacereloaded.lifesupport.GasTankBlock::new,
             BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
 

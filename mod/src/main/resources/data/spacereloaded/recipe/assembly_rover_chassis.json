@@ -1,0 +1,16 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:aluminium_copper_ingot",
+		"spacereloaded:aluminium_copper_ingot",
+		"spacereloaded:aluminium_copper_ingot",
+		"spacereloaded:aluminium_copper_ingot",
+		"spacereloaded:relay_logic",
+		"spacereloaded:steel_plate",
+		"spacereloaded:rocket_seat",
+		"spacereloaded:rocket_seat"
+	],
+	"result": {
+		"id": "spacereloaded:rover_chassis"
+	}
+}

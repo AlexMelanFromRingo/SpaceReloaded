@@ -8,8 +8,9 @@ import gen_006 as g
 from gen_006 import ASSETS, DATA, NS, assembly, chemical, sr, write
 
 PROCESS = ["co2_scrubber", "biomass_oxidizer"]
-MACHINES = ["air_separator", "airlock_pump"]
-ITEMS = ["lithium_hydroxide", "lioh_cartridge", "zeolite", "zeolite_bed", "straw"]
+MACHINES = ["air_separator", "airlock_pump", "rover_charger"]
+ITEMS = ["lithium_hydroxide", "lioh_cartridge", "zeolite", "zeolite_bed", "straw", "rover_chassis", "rover_wheel",
+         "nife_battery"]
 BLOCKS = PROCESS + MACHINES + ["gas_tank", "hydroponic_tray", "grow_lamp", "spin_hub", "rim_thruster", "despin_motor"]
 
 # Культуры NASA BVAD (табл. 4-89…4-91), fresh_factor — сырая масса урожая на сухую
@@ -47,6 +48,13 @@ def recipes():
              "spin_hub")
     assembly("rim_thruster", ["tungsten_ingot", "steel_plate", "copper_wire", "relay"], "rim_thruster")
     assembly("despin_motor", ["motor", "gearbox", "steel_plate", "steel_plate", "relay_logic"], "despin_motor")
+    assembly("rover_chassis", ["aluminium_copper_ingot"] * 4 + ["relay_logic", "steel_plate", "rocket_seat",
+                                                                   "rocket_seat"], "rover_chassis")
+    assembly("rover_wheel", ["aluminium_copper_ingot", "copper_wire", "copper_wire", "steel_plate", "minecraft:iron_ingot"],
+             "rover_wheel")
+    assembly("nife_battery", ["nickel_ingot", "nickel_ingot", "minecraft:iron_ingot", "minecraft:iron_ingot",
+                              "caustic_soda", "steel_plate"], "nife_battery")
+    assembly("rover_charger", ["steel_plate", "steel_plate", "copper_wire", "copper_wire", "relay_logic"], "rover_charger")
     assembly("biomass_oxidizer", ["steel_plate", "steel_plate", "refractory_lining", "copper_wire", "relay"],
              "biomass_oxidizer")
 
@@ -63,12 +71,58 @@ MASSES = {
     "spin_hub": (400.0, ["spin_hub"]),        # стальная ступица с опорно-поворотным подшипником
     "rim_thruster": (15.0, ["rim_thruster"]),
     "despin_motor": (250.0, ["despin_motor"]),
+    # LRV: 210 кг пустой (с Ag–Zn 60 кг); шасси с сиденьями и электроникой ~102 кг, мотор-колесо 12 кг
+    "rover_chassis": (102.0, ["rover_chassis"]),
+    "rover_wheel": (12.0, ["rover_wheel"]),
+    "nife_battery": (350.0, ["nife_battery"]),           # 8.7 кВт·ч при 25 Вт·ч/кг
+    "rover_charger": (60.0, ["rover_charger"]),
     "crops_007": (0.5, ["minecraft:wheat", f"{NS}:straw"]),       # сноп/охапка 0.5 кг
     "potato": (0.2, ["minecraft:potato"]),                         # один клубень
 }
 
 
+SOILS = {
+    # Lunar Sourcebook, табл. 9.14; Carrier 2006
+    "moon": {"dimension": f"{NS}:moon", "n": 1.0, "kc": 0.14, "kphi": 0.82, "c": 0.017, "phi_deg": 35, "k_cm": 1.78},
+    # Марс: рыхлый наносный песок (оценка по данным MER/Pathfinder)
+    "mars": {"dimension": f"{NS}:mars", "n": 1.0, "kc": 0.068, "kphi": 0.82, "c": 0.02, "phi_deg": 30, "k_cm": 1.8},
+    # Земля: сухой песок (Wong), переведено в Н и см
+    "earth": {"dimension": "minecraft:overworld", "n": 1.1, "kc": 0.0625, "kphi": 0.964, "c": 0.104, "phi_deg": 28,
+              "k_cm": 2.5},
+}
+
+
+def rover_models():
+    faces = ("up", "down", "north", "south", "east", "west")
+    def box(f, t, tex):
+        return {"from": f, "to": t, "faces": {x: {"texture": tex} for x in faces}}
+    body = {"parent": "minecraft:block/block", "textures": {"particle": f"{NS}:block/rover_body", "frame": f"{NS}:block/rover_body",
+                                                             "seat": f"{NS}:block/rover_seat", "panel": f"{NS}:block/rover_panel"},
+            "elements": [box([-8, 5, -16], [24, 8, 32], "#frame"),
+                         box([-3, 8, 0], [6, 11, 9], "#seat"), box([-3, 11, 0], [6, 20, 2], "#seat"),
+                         box([10, 8, 0], [19, 11, 9], "#seat"), box([10, 11, 0], [19, 20, 2], "#seat"),
+                         box([2, 8, 22], [14, 18, 26], "#panel"),
+                         box([20, 8, -12], [21, 30, -11], "#frame"), box([15, 30, -16], [26, 31, -7], "#panel")]}
+    g.model("rover_body_model", body)
+    wheel = {"parent": "minecraft:block/block", "textures": {"particle": f"{NS}:block/rover_wheel", "tire": f"{NS}:block/rover_wheel",
+                                                              "hub": f"{NS}:block/rover_wheel_hub"},
+             "elements": [{"from": [6, 1.5, 1.5], "to": [10, 14.5, 14.5], "faces": {
+                 "east": {"texture": "#hub"}, "west": {"texture": "#hub"}, "north": {"texture": "#tire"},
+                 "south": {"texture": "#tire"}, "up": {"texture": "#tire"}, "down": {"texture": "#tire"}}},
+                          {"from": [6.1, 1.5, 1.5], "to": [9.9, 14.5, 14.5], "rotation": {"origin": [8, 8, 8], "axis": "x", "angle": 45},
+                           "faces": {"north": {"texture": "#tire"}, "south": {"texture": "#tire"}, "up": {"texture": "#tire"},
+                                     "down": {"texture": "#tire"}}}]}
+    g.model("rover_wheel_model", wheel)
+    g.model("rover_battery_model", {"parent": "minecraft:block/block", "textures": {"particle": f"{NS}:block/rover_battery",
+                                                                                     "b": f"{NS}:block/rover_battery"},
+                                    "elements": [box([0, 8, -14], [16, 14, -3], "#b")]})
+    for b in ("rover_body_model", "rover_wheel_model", "rover_battery_model"):
+        write(os.path.join(ASSETS, "blockstates", b + ".json"), {"variants": {"": {"model": f"{NS}:block/{b}"}}})
+
+
 def data():
+    for name, obj in SOILS.items():
+        write(os.path.join(DATA, NS, "soils", name + ".json"), obj)
     for crop, obj in CROPS.items():
         write(os.path.join(DATA, NS, "crops", crop + ".json"), obj)
     write(os.path.join(DATA, "tags", "item", "biomass.json"),
@@ -99,6 +153,10 @@ def data():
             if sr(b) not in obj["values"]:
                 obj["values"].append(sr(b))
         write(path, obj)
+    # рыхлый грунт под колесом ровера: механика Беккера по грунту тела; остальное — твёрдая поверхность
+    write(os.path.join(DATA, "tags", "block", "loose_soil.json"), {"replace": False, "values": [
+        "#minecraft:sand", "minecraft:gravel", "minecraft:dirt", "minecraft:coarse_dirt", "minecraft:grass_block",
+        "minecraft:podzol", "minecraft:mud", "minecraft:snow_block", sr("moon_regolith")]})
     for name, (kg, items) in MASSES.items():
         write(os.path.join(DATA, NS, "item_mass", name + ".json"), {"items": [sr(i) for i in items], "kg": kg})
 
@@ -124,6 +182,7 @@ def assets():
         write(os.path.join(ASSETS, "blockstates", b + ".json"), {"variants": variants})
         g.item_def(b, f"{NS}:block/{b}")
     tray_models()
+    rover_models()
     for b in ("spin_hub", "despin_motor"):
         g.model(b, {"parent": "minecraft:block/cube_column",
                     "textures": {"end": f"{NS}:block/{b}_end", "side": f"{NS}:block/{b}_side"}})

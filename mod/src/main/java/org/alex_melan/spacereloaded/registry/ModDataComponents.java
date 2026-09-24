@@ -58,6 +58,8 @@ public final class ModDataComponents {
     /** Турбонасос с колесом из жаропрочного никелевого сплава (006): 1. */
     public static final DataComponentType<Integer> TURBINE_SUPERALLOY = registerInt("turbine_superalloy");
 
+    /** Заряд батареи ровера, E (007). */
+    public static final DataComponentType<Float> ROVER_CHARGE = registerFloat("rover_charge");
     /** Газовый бак (007): род газа (ordinal GasKind) и масса, кг. */
     public static final DataComponentType<Integer> GAS_KIND = registerInt("gas_kind");
     public static final DataComponentType<Float> GAS_KG = registerFloat("gas_kg");
