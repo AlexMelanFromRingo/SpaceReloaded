@@ -1,0 +1,20 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "electric_furnace",
+	"inputs": [
+		{
+			"item": "spacereloaded:boron_carbide_blend"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:boron_carbide"
+		},
+		{
+			"id": "spacereloaded:carbon_monoxide",
+			"yield": 0.5
+		}
+	],
+	"energy": 186,
+	"ticks": 320
+}

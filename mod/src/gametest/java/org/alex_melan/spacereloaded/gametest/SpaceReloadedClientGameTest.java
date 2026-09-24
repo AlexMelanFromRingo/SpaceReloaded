@@ -103,6 +103,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testRover", () -> testRover(context, sp));
             scenarios.put("testOrbitalImaging", () -> testOrbitalImaging(context, sp));
             scenarios.put("testEclssRack", () -> testEclssRack(context, sp));
+            scenarios.put("testReactor", () -> testReactor(context, sp));
             scenarios.put("testReadmeShots", () -> testReadmeShots(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
@@ -3222,6 +3223,104 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             var tank = (FuelTankBlockEntity) level.getBlockEntity(fuel);
             var gas = org.alex_melan.spacereloaded.lifesupport.LifeSupportState.now(level, ZoneManager.zoneAt(level, inside));
             return new double[] {rack.waterKg(), tank.propellantKg(), gas.pO2(), gas.pCo2()};
+        });
+    }
+
+    // ---------- 008. Реактор Kilopower (US2) ----------
+
+    /**
+     * Мачта Kilopower: привод, зона в кольце BeO, 4 Стирлинга, сегмент радиатора. Регулятор выводит
+     * реактор на 1073 K без перегрева, мощность — по ядру; реактор следует за нагрузкой; SCRAM гасит
+     * деление, остаётся остаточное тепло; быстрый ручной вывод стержня до конца плавит зону.
+     */
+    private void testReactor(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1440;
+        int z0 = BZ;
+        moveTo(context, sp, x0 - 6, z0);
+        BlockPos key = new BlockPos(x0, BY, z0);
+        sp.getServer().runCommand(set(x0, BY, z0, "spacereloaded:control_rod_drive[facing=north]"));
+        sp.getServer().runCommand(fill(x0 - 1, BY + 1, z0 - 1, x0 + 1, BY + 1, z0 + 1, "spacereloaded:beo_reflector"));
+        sp.getServer().runCommand(set(x0, BY + 1, z0, "spacereloaded:reactor_core"));
+        sp.getServer().runCommand(set(x0, BY + 2, z0, "spacereloaded:heat_pipe"));
+        sp.getServer().runCommand(set(x0, BY + 3, z0, "spacereloaded:heat_pipe"));
+        for (int[] d : new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+            sp.getServer().runCommand(set(x0 + d[0], BY + 2, z0 + d[1], "spacereloaded:stirling_convertor"));
+            sp.getServer().runCommand(set(x0 + d[0], BY + 3, z0 + d[1], "spacereloaded:radiator_panel"));
+        }
+        context.waitTicks(3);
+        boolean formed = sp.getServer().computeOnServer(server -> {
+            var r = (org.alex_melan.spacereloaded.nuclear.ReactorBlockEntity) server.overworld().getBlockEntity(key);
+            boolean ok = r.hammer(server.overworld(), server.getPlayerList().getPlayers().get(0));
+            r.testSetup(28, true, 1073);
+            return ok;
+        });
+        assertThat(formed, "Реактор должен собраться молотом");
+        double maxT = 0;
+        double[] st = null;
+        for (int waited = 0; waited < 20 * 400; waited += 100) {
+            context.waitTicks(100);
+            st = reactorSample(sp, key);
+            maxT = Math.max(maxT, st[0]);
+            if (waited > 20 * 60 && Math.abs(st[0] - 1073) < 3 && Math.abs(st[3]) < 0.005) {
+                break;
+            }
+        }
+        double env = st[4];
+        double expected = org.alex_melan.spacereloaded.core.nuclear.ReactorThermal.extract(1073, 4, 4, env)[1];
+        assertThat(Math.abs(st[0] - 1073) < 5 && Math.abs(st[1] - expected) < 0.1 * expected
+                        && maxT < org.alex_melan.spacereloaded.core.nuclear.ReactorThermal.DAMAGE_K,
+                String.format(java.util.Locale.ROOT, "Регулятор: T %.0f K (макс %.0f), %.0f Вт(э) (ожидалось %.0f)",
+                        st[0], maxT, st[1], expected));
+        log(String.format(java.util.Locale.ROOT, "реактор: регулятор вывел зону на %.0f K (перелёт %.0f K), %.0f Вт(э) = ядро ✓",
+                st[0], maxT - 1073, st[1]));
+        readmeCamera(context, sp, x0 + 2.9, BY + 0.3, z0 - 2.9, 45f, -8f);
+        readmeShot(context, "reactor");
+        context.runOnClient(mc -> {
+            if (mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
+        });
+        // следование за нагрузкой: сняли один Стирлинг
+        sp.getServer().runCommand(set(x0 + 1, BY + 2, z0, "spacereloaded:reactor_power_cap"));
+        context.waitTicks(20 * 60);
+        double[] less = reactorSample(sp, key);
+        // меньше отбор — зона чуть теплее, обратная связь и регулятор снижают мощность; выработка — по ядру при T
+        double expected3 = org.alex_melan.spacereloaded.core.nuclear.ReactorThermal.extract(less[0], 3, 4, env)[1];
+        assertThat(less[0] < 1073 + 50 && less[1] < 0.9 * st[1] && Math.abs(less[1] - expected3) < 0.05 * expected3,
+                String.format(java.util.Locale.ROOT, "Нагрузка −1 Стирлинг: T %.0f K, %.0f Вт(э) (ожидалось %.0f)",
+                        less[0], less[1], expected3));
+        log(String.format(java.util.Locale.ROOT, "реактор: сняли Стирлинг — %.0f Вт(э), зона осталась на %.0f K ✓", less[1], less[0]));
+        // SCRAM: деление гаснет, тепло остаётся
+        double heatBefore = less[2];
+        sp.getServer().runOnServer(server -> ((org.alex_melan.spacereloaded.nuclear.ReactorBlockEntity) server.overworld()
+                .getBlockEntity(key)).action(server.overworld(), server.getPlayerList().getPlayers().get(0), "scram", 0));
+        context.waitTicks(60);
+        double[] after = reactorSample(sp, key);
+        assertThat(after[2] < 0.12 * heatBefore && after[2] > 0.005 * heatBefore,
+                String.format(java.util.Locale.ROOT, "SCRAM: тепло %.0f Вт из %.0f (остаточное)", after[2], heatBefore));
+        log(String.format(java.util.Locale.ROOT, "реактор: SCRAM — тепловыделение %.0f → %.0f Вт (остаточное) ✓", heatBefore, after[2]));
+        // быстрый ручной вывод до конца: разгон обгоняет обратную связь — расплав
+        sp.getServer().runOnServer(server -> {
+            var r = (org.alex_melan.spacereloaded.nuclear.ReactorBlockEntity) server.overworld().getBlockEntity(key);
+            r.action(server.overworld(), server.getPlayerList().getPlayers().get(0), "reset", 0);
+            r.testRodTarget(1.0);
+        });
+        int damage = 0;
+        for (int waited = 0; waited < 20 * 200 && damage < 2; waited += 40) {
+            context.waitTicks(40);
+            damage = sp.getServer().computeOnServer(server -> ((org.alex_melan.spacereloaded.nuclear.ReactorBlockEntity)
+                    server.overworld().getBlockEntity(key)).damage());
+        }
+        assertThat(damage == 2, "Быстрый вывод стержня до конца должен расплавить зону");
+        log("реактор: быстрый вывод стержня до конца — расплав зоны ✓");
+    }
+
+    /** {T зоны, Вт(э), тепловыделение Вт, реактивность $, T среды}. */
+    private double[] reactorSample(TestSingleplayerContext sp, BlockPos key) {
+        return sp.getServer().computeOnServer(server -> {
+            var r = (org.alex_melan.spacereloaded.nuclear.ReactorBlockEntity) server.overworld().getBlockEntity(key);
+            return new double[] {r.temperature(), r.electricW(), r.powerW(), r.reactivity(),
+                    org.alex_melan.spacereloaded.network.Thermal.temperature(server.overworld(), key) + 273.15};
         });
     }
 

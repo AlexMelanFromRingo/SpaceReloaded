@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/heat_pipe"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/heat_pipe_formed"
+		}
+	}
+}

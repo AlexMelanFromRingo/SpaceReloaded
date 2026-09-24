@@ -154,7 +154,10 @@ public final class ModCreativeTab {
                                 ModBlocks.HYDROPONIC_TRAY, ModBlocks.GROW_LAMP, ModBlocks.BIOMASS_OXIDIZER,
                                 ModBlocks.SPIN_HUB, ModBlocks.RIM_THRUSTER, ModBlocks.DESPIN_MOTOR, ModBlocks.ROVER_CHARGER,
                                 ModBlocks.ECLSS_CONTROLLER, ModBlocks.ECLSS_RACK_FRAME, ModBlocks.OGS_MODULE, ModBlocks.SABATIER_MODULE,
-                                ModBlocks.CDRA_MODULE, ModBlocks.WRS_MODULE, ModBlocks.ECLSS_BLANK_PANEL}) {
+                                ModBlocks.CDRA_MODULE, ModBlocks.WRS_MODULE, ModBlocks.ECLSS_BLANK_PANEL,
+                                ModBlocks.CONTROL_ROD_DRIVE, ModBlocks.REACTOR_CORE, ModBlocks.BEO_REFLECTOR, ModBlocks.HEAT_PIPE,
+                                ModBlocks.STIRLING_CONVERTOR, ModBlocks.REACTOR_POWER_CAP, ModBlocks.RADIATOR_PANEL,
+                                ModBlocks.BERYL_ORE, ModBlocks.BORAX_ORE, ModBlocks.URANINITE_ORE}) {
                             output.accept(block);
                         }
                         for (var item : new net.minecraft.world.item.Item[] {
@@ -178,9 +181,16 @@ public final class ModCreativeTab {
                                 ModItems.SUPERALLOY_BLEND, ModItems.NICKEL_SUPERALLOY_INGOT,
                                 ModItems.LITHIUM_HYDROXIDE, ModItems.LIOH_CARTRIDGE, ModItems.ZEOLITE, ModItems.ZEOLITE_BED, ModItems.STRAW,
                                 ModItems.ROVER_CHASSIS, ModItems.ROVER_WHEEL, ModItems.NIFE_BATTERY,
-                                ModItems.TELESCOPE_MIRROR, ModItems.IMAGE_SENSOR}) {
+                                ModItems.TELESCOPE_MIRROR, ModItems.IMAGE_SENSOR,
+                                ModItems.BERYL, ModItems.BERYLLIUM_HYDROXIDE, ModItems.BERYLLIUM_OXIDE, ModItems.SODIUM,
+                                ModItems.BORAX, ModItems.BORIC_ACID, ModItems.BORON_CARBIDE_BLEND, ModItems.BORON_CARBIDE,
+                                ModItems.ZIRCON, ModItems.ZIRCONIUM, ModItems.URANINITE, ModItems.YELLOWCAKE,
+                                ModItems.URANIUM_DIOXIDE, ModItems.URANIUM_TETRAFLUORIDE, ModItems.FLUORINE,
+                                ModItems.URANIUM_HEXAFLUORIDE, ModItems.DEPLETED_URANIUM_HEXAFLUORIDE}) {
                             output.accept(item);
                         }
+                        // корзина ВОУ 93 % (28 кг U-235, как KRUSTY) — для творческого режима и стенда
+                        output.accept(org.alex_melan.spacereloaded.nuclear.ReactorBlockEntity.basket(28, 0.93f));
                     })
                     .build());
 

@@ -1,0 +1,16 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "electric_furnace",
+	"inputs": [
+		{
+			"item": "spacereloaded:beryllium_hydroxide"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:beryllium_oxide"
+		}
+	],
+	"energy": 25,
+	"ticks": 160
+}

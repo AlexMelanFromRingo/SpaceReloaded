@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:heat_pipe"
+	],
+	"result": {
+		"id": "spacereloaded:radiator_panel",
+		"count": 2
+	}
+}

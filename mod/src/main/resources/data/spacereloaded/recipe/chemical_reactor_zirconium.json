@@ -1,0 +1,27 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:zircon"
+		},
+		{
+			"item": "spacereloaded:coal_dust"
+		},
+		{
+			"item": "spacereloaded:hydrogen_chloride",
+			"count": 4
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:zirconium"
+		},
+		{
+			"id": "minecraft:sand",
+			"yield": 0.5
+		}
+	],
+	"energy": 248,
+	"ticks": 320
+}

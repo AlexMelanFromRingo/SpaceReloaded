@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/stirling_convertor"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/stirling_convertor_formed"
+		}
+	}
+}

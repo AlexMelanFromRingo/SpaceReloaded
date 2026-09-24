@@ -1,0 +1,17 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "electrolyzer",
+	"inputs": [
+		{
+			"item": "spacereloaded:hydrofluoric_acid",
+			"count": 2
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:fluorine"
+		}
+	],
+	"energy": 248,
+	"ticks": 200
+}

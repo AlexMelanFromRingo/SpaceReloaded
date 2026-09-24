@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:nickel_superalloy_ingot",
+		"spacereloaded:sodium",
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:heat_pipe",
+		"count": 2
+	}
+}

@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:boric_acid",
+		"spacereloaded:boric_acid",
+		"spacereloaded:coal_dust",
+		"spacereloaded:coal_dust"
+	],
+	"result": {
+		"id": "spacereloaded:boron_carbide_blend"
+	}
+}

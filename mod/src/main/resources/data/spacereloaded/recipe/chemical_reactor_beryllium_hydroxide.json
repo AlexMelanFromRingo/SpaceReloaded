@@ -1,0 +1,31 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:beryl"
+		},
+		{
+			"item": "spacereloaded:sulfuric_acid",
+			"count": 2
+		},
+		{
+			"item": "spacereloaded:caustic_soda",
+			"count": 2
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:beryllium_hydroxide"
+		},
+		{
+			"id": "spacereloaded:alumina",
+			"yield": 0.5
+		},
+		{
+			"id": "minecraft:sand"
+		}
+	],
+	"energy": 62,
+	"ticks": 240
+}

@@ -595,6 +595,37 @@ public final class ModBlocks {
     public static final Block ECLSS_PISTON = registerNoItem("eclss_piston", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
 
+    // --- 008: реактор деления Kilopower ---
+    public static final Block CONTROL_ROD_DRIVE = register("control_rod_drive",
+            props -> new org.alex_melan.spacereloaded.multiblock.ControllerBlock<>(props,
+                    org.alex_melan.spacereloaded.nuclear.ReactorBlockEntity::new, () -> ModBlockEntities.REACTOR,
+                    org.alex_melan.spacereloaded.nuclear.ReactorBlockEntity::serverTick),
+            industrial().noOcclusion().lightLevel(s -> s.getValue(org.alex_melan.spacereloaded.multiblock.ControllerBlock.ACTIVE) ? 5 : 0));
+    public static final Block REACTOR_CORE = register("reactor_core",
+            org.alex_melan.spacereloaded.multiblock.FormableBlock::new, industrial().strength(8f, 30f));
+    public static final Block BEO_REFLECTOR = register("beo_reflector",
+            org.alex_melan.spacereloaded.multiblock.FormableBlock::new, industrial());
+    public static final Block HEAT_PIPE = register("heat_pipe",
+            props -> new org.alex_melan.spacereloaded.multiblock.FormableBlock(props, Block.box(5, 0, 5, 11, 16, 11)),
+            industrial().noOcclusion());
+    public static final Block STIRLING_CONVERTOR = register("stirling_convertor",
+            props -> new org.alex_melan.spacereloaded.multiblock.FormableBlock(props, Block.box(3, 0, 3, 13, 13, 13)),
+            industrial().noOcclusion());
+    public static final Block REACTOR_POWER_CAP = register("reactor_power_cap",
+            org.alex_melan.spacereloaded.multiblock.FormableBlock::new, industrial());
+    public static final Block RADIATOR_PANEL = register("radiator_panel",
+            org.alex_melan.spacereloaded.multiblock.FormableBlock::new, industrial().noOcclusion());
+    public static final Block CONTROL_ROD = registerNoItem("control_rod", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block STIRLING_PISTON = registerNoItem("stirling_piston", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block BERYL_ORE = register("beryl_ore", Block::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 3.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
+    public static final Block BORAX_ORE = register("borax_ore", Block::new,
+            BlockBehaviour.Properties.of().strength(1.5f, 3.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
+    public static final Block URANINITE_ORE = register("uraninite_ore", Block::new,
+            BlockBehaviour.Properties.of().strength(4.5f, 3.0f).sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops());
+
     private static BlockBehaviour.Properties industrial() {
         return BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL).requiresCorrectToolForDrops();
     }

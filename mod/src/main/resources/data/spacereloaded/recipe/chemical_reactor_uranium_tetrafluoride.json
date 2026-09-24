@@ -1,0 +1,20 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:uranium_dioxide"
+		},
+		{
+			"item": "spacereloaded:hydrofluoric_acid",
+			"count": 4
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:uranium_tetrafluoride"
+		}
+	],
+	"energy": 31,
+	"ticks": 200
+}

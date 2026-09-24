@@ -1,0 +1,19 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "deposition_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:yellowcake"
+		},
+		{
+			"item": "#spacereloaded:electrolyzer_input"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:uranium_dioxide"
+		}
+	],
+	"energy": 62,
+	"ticks": 240
+}

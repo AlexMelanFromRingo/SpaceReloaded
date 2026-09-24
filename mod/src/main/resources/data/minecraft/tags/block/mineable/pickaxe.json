@@ -110,6 +110,16 @@
 		"spacereloaded:sabatier_module",
 		"spacereloaded:cdra_module",
 		"spacereloaded:wrs_module",
-		"spacereloaded:eclss_blank_panel"
+		"spacereloaded:eclss_blank_panel",
+		"spacereloaded:beryl_ore",
+		"spacereloaded:borax_ore",
+		"spacereloaded:uraninite_ore",
+		"spacereloaded:control_rod_drive",
+		"spacereloaded:reactor_core",
+		"spacereloaded:beo_reflector",
+		"spacereloaded:heat_pipe",
+		"spacereloaded:stirling_convertor",
+		"spacereloaded:reactor_power_cap",
+		"spacereloaded:radiator_panel"
 	]
 }

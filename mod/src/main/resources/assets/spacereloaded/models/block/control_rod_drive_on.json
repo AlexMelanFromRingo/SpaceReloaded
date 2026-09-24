@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"front": "spacereloaded:block/control_rod_drive_front",
+		"side": "spacereloaded:block/reactor_steel",
+		"top": "spacereloaded:block/reactor_steel"
+	}
+}

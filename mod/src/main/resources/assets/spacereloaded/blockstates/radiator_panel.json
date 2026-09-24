@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/radiator_panel"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/radiator_panel_formed"
+		}
+	}
+}

@@ -1,0 +1,68 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"p": "spacereloaded:block/reactor_steel",
+		"particle": "spacereloaded:block/reactor_steel"
+	},
+	"elements": [
+		{
+			"from": [
+				7,
+				13,
+				7
+			],
+			"to": [
+				9,
+				16,
+				9
+			],
+			"faces": {
+				"up": {
+					"texture": "#p",
+					"uv": [
+						7,
+						7,
+						9,
+						9
+					]
+				},
+				"north": {
+					"texture": "#p",
+					"uv": [
+						7,
+						0,
+						9,
+						3
+					]
+				},
+				"south": {
+					"texture": "#p",
+					"uv": [
+						7,
+						0,
+						9,
+						3
+					]
+				},
+				"east": {
+					"texture": "#p",
+					"uv": [
+						7,
+						0,
+						9,
+						3
+					]
+				},
+				"west": {
+					"texture": "#p",
+					"uv": [
+						7,
+						0,
+						9,
+						3
+					]
+				}
+			}
+		}
+	]
+}

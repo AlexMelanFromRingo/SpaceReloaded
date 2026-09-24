@@ -1,0 +1,16 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "electrolyzer",
+	"inputs": [
+		{
+			"item": "spacereloaded:rock_salt"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:sodium"
+		}
+	],
+	"energy": 310,
+	"ticks": 200
+}

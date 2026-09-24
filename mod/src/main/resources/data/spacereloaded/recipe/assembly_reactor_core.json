@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:nickel_superalloy_ingot",
+		"spacereloaded:nickel_superalloy_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:reactor_core"
+	}
+}

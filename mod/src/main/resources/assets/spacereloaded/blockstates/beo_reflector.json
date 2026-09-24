@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/beo_reflector"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/beo_reflector_formed"
+		}
+	}
+}

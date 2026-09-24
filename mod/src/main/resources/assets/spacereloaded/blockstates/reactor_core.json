@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/reactor_core"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/reactor_core_formed"
+		}
+	}
+}

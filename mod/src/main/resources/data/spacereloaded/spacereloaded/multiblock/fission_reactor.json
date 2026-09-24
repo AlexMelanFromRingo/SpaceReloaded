@@ -1,0 +1,169 @@
+{
+	"key": "spacereloaded:control_rod_drive",
+	"cells": [
+		{
+			"offset": [
+				0,
+				1,
+				0
+			],
+			"block": "spacereloaded:reactor_core"
+		},
+		{
+			"offset": [
+				-1,
+				1,
+				-1
+			],
+			"block": "spacereloaded:beo_reflector"
+		},
+		{
+			"offset": [
+				-1,
+				1,
+				0
+			],
+			"block": "spacereloaded:beo_reflector"
+		},
+		{
+			"offset": [
+				-1,
+				1,
+				1
+			],
+			"block": "spacereloaded:beo_reflector"
+		},
+		{
+			"offset": [
+				0,
+				1,
+				-1
+			],
+			"block": "spacereloaded:beo_reflector"
+		},
+		{
+			"offset": [
+				0,
+				1,
+				1
+			],
+			"block": "spacereloaded:beo_reflector"
+		},
+		{
+			"offset": [
+				1,
+				1,
+				-1
+			],
+			"block": "spacereloaded:beo_reflector"
+		},
+		{
+			"offset": [
+				1,
+				1,
+				0
+			],
+			"block": "spacereloaded:beo_reflector"
+		},
+		{
+			"offset": [
+				1,
+				1,
+				1
+			],
+			"block": "spacereloaded:beo_reflector"
+		},
+		{
+			"offset": [
+				0,
+				2,
+				0
+			],
+			"block": "spacereloaded:heat_pipe"
+		},
+		{
+			"offset": [
+				1,
+				2,
+				0
+			],
+			"block": "#spacereloaded:reactor_power_slot"
+		},
+		{
+			"offset": [
+				-1,
+				2,
+				0
+			],
+			"block": "#spacereloaded:reactor_power_slot"
+		},
+		{
+			"offset": [
+				0,
+				2,
+				1
+			],
+			"block": "#spacereloaded:reactor_power_slot"
+		},
+		{
+			"offset": [
+				0,
+				2,
+				-1
+			],
+			"block": "#spacereloaded:reactor_power_slot"
+		}
+	],
+	"repeat": {
+		"cells": [
+			{
+				"offset": [
+					0,
+					3,
+					0
+				],
+				"block": "spacereloaded:heat_pipe"
+			},
+			{
+				"offset": [
+					1,
+					3,
+					0
+				],
+				"block": "spacereloaded:radiator_panel"
+			},
+			{
+				"offset": [
+					-1,
+					3,
+					0
+				],
+				"block": "spacereloaded:radiator_panel"
+			},
+			{
+				"offset": [
+					0,
+					3,
+					1
+				],
+				"block": "spacereloaded:radiator_panel"
+			},
+			{
+				"offset": [
+					0,
+					3,
+					-1
+				],
+				"block": "spacereloaded:radiator_panel"
+			}
+		],
+		"step": [
+			0,
+			1,
+			0
+		],
+		"min": 1,
+		"max": 12,
+		"display": 3
+	}
+}

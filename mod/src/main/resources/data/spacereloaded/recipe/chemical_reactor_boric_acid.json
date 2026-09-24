@@ -1,0 +1,20 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:borax"
+		},
+		{
+			"item": "spacereloaded:sulfuric_acid"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:boric_acid",
+			"count": 4
+		}
+	],
+	"energy": 16,
+	"ticks": 160
+}

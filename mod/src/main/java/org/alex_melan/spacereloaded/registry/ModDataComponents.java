@@ -64,6 +64,11 @@ public final class ModDataComponents {
     public static final DataComponentType<Integer> GAS_KIND = registerInt("gas_kind");
     public static final DataComponentType<Float> GAS_KG = registerFloat("gas_kg");
 
+    /** Топливная корзина реактора (008): масса U-235, кг; обогащение, доля; выгорание, МВт·сут. */
+    public static final DataComponentType<Float> FUEL_U235 = registerFloat("fuel_u235_kg");
+    public static final DataComponentType<Float> ENRICHMENT = registerFloat("enrichment");
+    public static final DataComponentType<Float> FUEL_BURNUP = registerFloat("fuel_burnup_mwd");
+
     /** Масштаб заказываемого снимка (на пустой карте), 0…4 (007, US5). */
     public static final DataComponentType<Integer> IMAGE_SCALE = registerInt("image_scale");
     /** Заказ орбитального снимка (007, US5). */

@@ -1,0 +1,9 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:reactor_power_cap"
+	}
+}

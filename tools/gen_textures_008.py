@@ -100,8 +100,126 @@ def eclss():
     save(steel, "block/eclss_piston.png")
 
 
+def noise_fill(base, var, seed):
+    img = Image.new("RGBA", (16, 16), base + (255,))
+    for x in range(16):
+        for y in range(16):
+            h = (x * 73 + y * 151 + seed * 37) % 97 / 97.0
+            k = int((h - 0.5) * var)
+            put(img, x, y, tuple(max(0, min(255, c + k)) for c in base))
+    return img
+
+
+def ore(name, host, spots, seed):
+    img = noise_fill(host, 24, seed)
+    for i in range(7):
+        x, y = (seed * 5 + i * 7) % 14 + 1, (seed * 3 + i * 5) % 14 + 1
+        for dx, dy in ((0, 0), (1, 0), (0, 1)):
+            put(img, x + dx, y + dy, spots[(i + dx) % len(spots)])
+    save(img, f"block/{name}.png")
+
+
+def item_icon(name, draw):
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    draw(img)
+    save(img, f"item/{name}.png")
+
+
+def blob(img, color, cx=7.5, cy=8.5, r=5.2, edge=None):
+    disc(img, cx, cy, r, lambda x, y, d: tuple(max(0, c - int(d * 9)) for c in color) if d < r - 1 else (edge or tuple(max(0, c - 50) for c in color)))
+
+
+def reactor():
+    save(noise_fill((0x6A, 0x70, 0x78), 14, 3), "block/reactor_steel.png")
+    save(noise_fill((0x30, 0x32, 0x36), 10, 5), "block/reactor_dark.png")
+    for on in (False, True):
+        img = noise_fill((0x6A, 0x70, 0x78), 10, 3)
+        for x in range(2, 14):
+            for y in range(3, 10):
+                put(img, x, y, (0x10, 0x16, 0x1A))
+        # шкала хода стержня и лампы режима
+        for y in range(4, 9):
+            put(img, 4, y, (0xE0, 0xB2, 0x3C) if on else (0x50, 0x50, 0x50))
+        for i, c in enumerate(((0x60, 0xE0, 0x80), (0xE0, 0xB2, 0x3C), (0xDD, 0x4B, 0x4B))):
+            put(img, 7 + i * 2, 12, c if on else (0x44, 0x44, 0x44))
+        save(img, "block/control_rod_drive_front" + ("_on" if on else "") + ".png")
+    core = noise_fill((0x4A, 0x4E, 0x54), 12, 7)
+    for x in range(16):
+        for y in range(16):
+            if x in (0, 15) or y in (0, 15):
+                put(core, x, y, (0x2E, 0x30, 0x34))
+    save(core, "block/reactor_core.png")
+    formed = core.copy()
+    for cx, cy in ((4, 4), (11, 4), (4, 11), (11, 11), (7, 7)):
+        disc(formed, cx + 0.5, cy + 0.5, 1.6, lambda x, y, d: (0x8C, 0x90, 0x96))
+    save(formed, "block/reactor_core_formed.png")
+    beo = noise_fill((0xE8, 0xE6, 0xDE), 10, 11)
+    save(beo, "block/beo_reflector.png")
+    beo_f = beo.copy()
+    for i in range(16):
+        put(beo_f, i, 0, (0xC0, 0xBE, 0xB6))
+        put(beo_f, i, 15, (0xC0, 0xBE, 0xB6))
+    save(beo_f, "block/beo_reflector_formed.png")
+    pipe = noise_fill((0x9A, 0x8E, 0x80), 12, 13)
+    for y in range(0, 16, 4):
+        for x in range(16):
+            put(pipe, x, y, (0x7A, 0x70, 0x66))
+    save(pipe, "block/heat_pipe.png")
+    save(pipe, "block/heat_pipe_side.png")
+    end = noise_fill((0x6A, 0x70, 0x78), 10, 3)
+    disc(end, 7.5, 7.5, 2.4, lambda x, y, d: (0x9A, 0x8E, 0x80))
+    save(end, "block/heat_pipe_end.png")
+    body = noise_fill((0xB8, 0x9C, 0x5C), 12, 17)  # позолоченный корпус вытеснителя
+    save(body, "block/stirling_body.png")
+    rad = noise_fill((0xC8, 0xCC, 0xD2), 8, 19)
+    for x in range(0, 16, 5):
+        for y in range(16):
+            put(rad, x, y, (0x8A, 0x8E, 0x94))
+    save(rad, "block/radiator_panel.png")
+    rod = Image.new("RGBA", (16, 16), (0x26, 0x26, 0x2A, 255))
+    for y in range(0, 16, 4):
+        for x in range(16):
+            put(rod, x, y, (0xE0, 0xB2, 0x3C))
+    save(rod, "block/control_rod.png")
+    # руды
+    ore("beryl_ore", (0x80, 0x80, 0x80), [(0x6C, 0xC8, 0xA8), (0x58, 0xB0, 0x94)], 2)
+    ore("borax_ore", (0x9C, 0x96, 0x8C), [(0xF4, 0xF2, 0xEC), (0xE0, 0xDE, 0xD6)], 4)
+    ore("uraninite_ore", (0x4A, 0x4A, 0x50), [(0x26, 0x24, 0x22), (0x3C, 0x3A, 0x30), (0xC8, 0xC0, 0x40)], 6)
+    # предметы цепочки
+    items = {"beryl": (0x6C, 0xC8, 0xA8), "beryllium_hydroxide": (0xF0, 0xF0, 0xEA), "beryllium_oxide": (0xF6, 0xF6, 0xF2),
+             "sodium": (0xC8, 0xCC, 0xD0), "borax": (0xF2, 0xF0, 0xEA), "boric_acid": (0xFA, 0xFA, 0xF6),
+             "boron_carbide_blend": (0x6A, 0x6A, 0x6E), "boron_carbide": (0x30, 0x30, 0x34),
+             "zircon": (0xB8, 0x80, 0x5C), "zirconium": (0xA8, 0xAC, 0xB2), "uraninite": (0x2C, 0x2A, 0x28),
+             "yellowcake": (0xE8, 0xD0, 0x30), "uranium_dioxide": (0x3A, 0x3A, 0x32), "uranium_tetrafluoride": (0x58, 0xA0, 0x50),
+             "fluorine": (0xE8, 0xE8, 0xA0), "uranium_hexafluoride": (0xF0, 0xF0, 0xF0),
+             "depleted_uranium_hexafluoride": (0xA0, 0xA0, 0xA4)}
+    for name, c in items.items():
+        if name in ("fluorine", "uranium_hexafluoride", "depleted_uranium_hexafluoride"):
+            def cyl(img, c=c, name=name):
+                for x in range(4, 12):
+                    for y in range(2, 15):
+                        put(img, x, y, (0x88, 0x8C, 0x92) if x in (4, 11) else c)
+                for x in range(6, 10):
+                    put(img, x, 1, (0x60, 0x64, 0x6A))
+                if name == "uranium_hexafluoride":
+                    for x in range(5, 11):
+                        put(img, x, 7, (0x3C, 0x8C, 0xD8))
+            item_icon(name, cyl)
+        else:
+            item_icon(name, lambda img, c=c: blob(img, c))
+    def basket(img):
+        for x in range(3, 13):
+            for y in range(2, 15):
+                put(img, x, y, (0x8C, 0x90, 0x96) if x in (3, 12) or y in (2, 14) else (0x4A, 0x4E, 0x54))
+        for x in (5, 7, 9):
+            for y in range(4, 13):
+                put(img, x + (1 if x == 9 else 0), y, (0x9A, 0xA0, 0x60))
+    item_icon("fuel_basket", basket)
+
+
 def main():
     eclss()
+    reactor()
 
 
 if __name__ == "__main__":

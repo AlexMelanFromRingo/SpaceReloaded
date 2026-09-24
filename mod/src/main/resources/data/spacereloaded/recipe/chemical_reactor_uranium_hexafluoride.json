@@ -1,0 +1,19 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:uranium_tetrafluoride"
+		},
+		{
+			"item": "spacereloaded:fluorine"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:uranium_hexafluoride"
+		}
+	],
+	"energy": 16,
+	"ticks": 160
+}

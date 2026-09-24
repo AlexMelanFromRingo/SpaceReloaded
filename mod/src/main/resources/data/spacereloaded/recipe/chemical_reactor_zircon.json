@@ -1,0 +1,21 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "minecraft:sand",
+			"count": 16
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:zircon"
+		},
+		{
+			"id": "minecraft:sand",
+			"count": 15
+		}
+	],
+	"energy": 9,
+	"ticks": 200
+}

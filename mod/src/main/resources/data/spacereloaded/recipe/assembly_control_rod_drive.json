@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:motor",
+		"spacereloaded:radhard_processor",
+		"spacereloaded:boron_carbide"
+	],
+	"result": {
+		"id": "spacereloaded:control_rod_drive"
+	}
+}

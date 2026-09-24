@@ -241,6 +241,26 @@ public final class ModItems {
     /** Орбитальный снимок: заказ в ЦУПе, проявляется в карту по готовности. */
     public static final Item ORBITAL_IMAGE = register("orbital_image",
             props -> new org.alex_melan.spacereloaded.orbit.OrbitalImageItem(props.stacksTo(1)));
+    // --- 008: материалы реактора и топлива ---
+    public static final Item BERYL = simple("beryl");
+    public static final Item BERYLLIUM_HYDROXIDE = simple("beryllium_hydroxide");
+    public static final Item BERYLLIUM_OXIDE = simple("beryllium_oxide");
+    public static final Item SODIUM = simple("sodium");
+    public static final Item BORAX = simple("borax");
+    public static final Item BORIC_ACID = simple("boric_acid");
+    public static final Item BORON_CARBIDE_BLEND = simple("boron_carbide_blend");
+    public static final Item BORON_CARBIDE = simple("boron_carbide");
+    public static final Item ZIRCON = simple("zircon");
+    public static final Item ZIRCONIUM = simple("zirconium");
+    public static final Item URANINITE = simple("uraninite");
+    public static final Item YELLOWCAKE = simple("yellowcake");
+    public static final Item URANIUM_DIOXIDE = simple("uranium_dioxide");
+    public static final Item URANIUM_TETRAFLUORIDE = simple("uranium_tetrafluoride");
+    public static final Item FLUORINE = simple("fluorine");
+    public static final Item URANIUM_HEXAFLUORIDE = simple("uranium_hexafluoride");
+    public static final Item DEPLETED_URANIUM_HEXAFLUORIDE = simple("depleted_uranium_hexafluoride");
+    /** Топливная корзина Kilopower: сплав U-Zr, компоненты — U-235, обогащение, выгорание. */
+    public static final Item FUEL_BASKET = register("fuel_basket", props -> new Item(props.stacksTo(1)));
     public static final Item ZEOLITE_BED = register("zeolite_bed", props -> new Item(props.stacksTo(1)));
 
     public static boolean isEnginePart(Item item) {

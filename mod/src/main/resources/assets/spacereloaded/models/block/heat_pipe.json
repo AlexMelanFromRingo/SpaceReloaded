@@ -1,0 +1,7 @@
+{
+	"parent": "minecraft:block/cube_column",
+	"textures": {
+		"end": "spacereloaded:block/heat_pipe_end",
+		"side": "spacereloaded:block/heat_pipe_side"
+	}
+}

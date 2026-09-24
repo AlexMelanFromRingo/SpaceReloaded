@@ -1,0 +1,11 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:beryllium_oxide",
+		"spacereloaded:beryllium_oxide",
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:beo_reflector"
+	}
+}
