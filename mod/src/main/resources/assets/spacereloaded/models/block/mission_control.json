@@ -1,8 +1,107 @@
 {
-	"parent": "minecraft:block/cube_bottom_top",
+	"parent": "minecraft:block/block",
 	"textures": {
-		"top": "spacereloaded:block/mission_control_top",
-		"side": "spacereloaded:block/mission_control_side",
-		"bottom": "spacereloaded:block/launch_pad_side"
-	}
+		"s": "spacereloaded:block/mission_control_side",
+		"t": "spacereloaded:block/mission_control_top",
+		"b": "spacereloaded:block/launch_pad_side",
+		"particle": "spacereloaded:block/mission_control_side"
+	},
+	"elements": [
+		{
+			"from": [
+				0,
+				0,
+				0
+			],
+			"to": [
+				16,
+				9,
+				16
+			],
+			"faces": {
+				"north": {
+					"texture": "#s"
+				},
+				"south": {
+					"texture": "#s"
+				},
+				"east": {
+					"texture": "#s"
+				},
+				"west": {
+					"texture": "#s"
+				},
+				"up": {
+					"texture": "#t"
+				},
+				"down": {
+					"texture": "#b"
+				}
+			}
+		},
+		{
+			"from": [
+				1,
+				9,
+				9
+			],
+			"to": [
+				15,
+				17,
+				11
+			],
+			"faces": {
+				"north": {
+					"texture": "#t"
+				},
+				"south": {
+					"texture": "#t"
+				},
+				"east": {
+					"texture": "#t"
+				},
+				"west": {
+					"texture": "#t"
+				},
+				"up": {
+					"texture": "#t"
+				},
+				"down": {
+					"texture": "#t"
+				}
+			}
+		},
+		{
+			"from": [
+				3,
+				9,
+				4
+			],
+			"to": [
+				13,
+				10,
+				8
+			],
+			"faces": {
+				"north": {
+					"texture": "#b"
+				},
+				"south": {
+					"texture": "#b"
+				},
+				"east": {
+					"texture": "#b"
+				},
+				"west": {
+					"texture": "#b"
+				},
+				"up": {
+					"texture": "#b"
+				},
+				"down": {
+					"texture": "#b"
+				}
+			}
+		}
+	]
 }

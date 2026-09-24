@@ -2297,6 +2297,12 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         sp.getServer().runCommand(set(x0 + 3, BY, z + 3, "spacereloaded:fuel_tank"));
         sp.getServer().runCommand(set(x0 + 5, BY, z + 3, "spacereloaded:hermetic_hatch[open=true]"));
         sp.getServer().runCommand(set(x0 + 7, BY, z + 3, "spacereloaded:rocket_engine"));
+        sp.getServer().runCommand(fill(x0 - 1, BY - 1, z + 4, x0 + 12, BY - 1, z + 7, "minecraft:smooth_stone"));
+        String[] wave2 = {"command_module", "satellite", "power_satellite", "orbital_cannon", "mission_control",
+                "rectenna", "atmosphere_controller"};
+        for (int i = 0; i < wave2.length; i++) {
+            sp.getServer().runCommand(set(x0 + i * 2, BY, z + 6, "spacereloaded:" + wave2[i]));
+        }
         context.waitTicks(3);
         sp.getServer().runOnServer(server -> {
             var level = server.overworld();
@@ -2336,6 +2342,8 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         snapshot(context, "showcase_front", 5);
         prepareCamera(context, sp, x0 + 4, BY + 3, z + 7.5, 180f, 28f);
         snapshot(context, "showcase_back", 5);
+        prepareCamera(context, sp, x0 + 6, BY + 3.5, z + 12.5, 180f, 25f);
+        snapshot(context, "showcase_models", 5);
         sp.getServer().runCommand("gamemode survival @a");
         log("облик: " + states + " ✓");
     }

@@ -51,7 +51,7 @@ public final class ModBlocks {
                     .strength(3.5f, 8.0f)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
-                    .lightLevel(state -> 4));
+                    .lightLevel(state -> state.getValue(org.alex_melan.spacereloaded.machine.MachineActivity.ACTIVE) ? 6 : 0));
 
     /** Герметичное стекло: прозрачное, но держит атмосферу (тег airtight). */
     public static final Block HERMETIC_GLASS = register("hermetic_glass",
@@ -159,14 +159,17 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
                     .noOcclusion());
-    public static final Block COMMAND_MODULE = register("command_module", Block::new,
+    public static final Block COMMAND_MODULE = register("command_module",
+            props -> new ShapedBlock(props, net.minecraft.world.phys.shapes.Shapes.or(Block.box(0, 0, 0, 16, 4, 16),
+                    Block.box(1, 4, 1, 15, 8, 15), Block.box(2.5, 8, 2.5, 13.5, 11.5, 13.5),
+                    Block.box(4, 11.5, 4, 12, 16, 12))),
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops());
+                    .requiresCorrectToolForDrops().noOcclusion());
     /** Орбитальная кинетическая пушка (US7): работает только на орбите. */
     public static final Block ORBITAL_CANNON = register("orbital_cannon",
             org.alex_melan.spacereloaded.cannon.OrbitalCannonBlock::new,
             BlockBehaviour.Properties.of().strength(6.0f, 1200.0f).sound(SoundType.NETHERITE_BLOCK)
-                    .requiresCorrectToolForDrops());
+                    .requiresCorrectToolForDrops().noOcclusion());
 
     /** Посадочный маяк: точка прибытия полётной программы (беспилотные рейсы). */
     public static final Block LANDING_BEACON = register("landing_beacon", Block::new,
@@ -177,7 +180,7 @@ public final class ModBlocks {
     public static final Block MISSION_CONTROL = register("mission_control",
             org.alex_melan.spacereloaded.rocket.MissionControlBlock::new,
             BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops());
+                    .requiresCorrectToolForDrops().noOcclusion());
 
     /** Вентиляционная решётка: выглядит цельно, но газ проходит (тег passes_gas). */
     public static final Block VENT_GRATE = register("vent_grate", Block::new,
@@ -253,7 +256,8 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops());
 
     /** Энергоспутник (Phase 14): на орбите добавляет мощность для наземных ректенн. */
-    public static final Block POWER_SATELLITE = register("power_satellite", Block::new,
+    public static final Block POWER_SATELLITE = register("power_satellite",
+            props -> new ShapedBlock(props, Block.box(0, 0, 4, 16, 12, 12)),
             BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops().noOcclusion());
 
@@ -261,10 +265,11 @@ public final class ModBlocks {
     public static final Block RECTENNA = register("rectenna",
             props -> new org.alex_melan.spacereloaded.energy.RectennaBlock(props),
             BlockBehaviour.Properties.of().strength(3.0f, 6.0f).sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops());
+                    .requiresCorrectToolForDrops().noOcclusion());
 
     /** Спутник (Phase 12): полезная нагрузка ракеты; на орбите разворачивается в узел связи. */
-    public static final Block SATELLITE = register("satellite", Block::new,
+    public static final Block SATELLITE = register("satellite",
+            props -> new ShapedBlock(props, Block.box(0, 3, 4, 16, 16, 12)),
             BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops().noOcclusion());
 
