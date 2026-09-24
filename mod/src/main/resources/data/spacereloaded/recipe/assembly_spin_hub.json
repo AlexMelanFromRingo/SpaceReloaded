@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_shaft",
+		"spacereloaded:steel_shaft",
+		"spacereloaded:large_gear",
+		"spacereloaded:steel_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:spin_hub"
+	}
+}

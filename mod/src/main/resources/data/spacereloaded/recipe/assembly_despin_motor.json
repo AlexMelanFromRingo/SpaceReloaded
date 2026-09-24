@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:motor",
+		"spacereloaded:gearbox",
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:relay_logic"
+	],
+	"result": {
+		"id": "spacereloaded:despin_motor"
+	}
+}

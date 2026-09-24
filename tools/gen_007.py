@@ -10,7 +10,7 @@ from gen_006 import ASSETS, DATA, NS, assembly, chemical, sr, write
 PROCESS = ["co2_scrubber", "biomass_oxidizer"]
 MACHINES = ["air_separator", "airlock_pump"]
 ITEMS = ["lithium_hydroxide", "lioh_cartridge", "zeolite", "zeolite_bed", "straw"]
-BLOCKS = PROCESS + MACHINES + ["gas_tank", "hydroponic_tray", "grow_lamp"]
+BLOCKS = PROCESS + MACHINES + ["gas_tank", "hydroponic_tray", "grow_lamp", "spin_hub", "rim_thruster", "despin_motor"]
 
 # Культуры NASA BVAD (табл. 4-89…4-91), fresh_factor — сырая масса урожая на сухую
 CROPS = {
@@ -43,6 +43,10 @@ def recipes():
     assembly("hydroponic_tray", ["steel_plate", "steel_plate", "glass_fiber", "minecraft:bucket"], "hydroponic_tray", 2)
     assembly("grow_lamp", ["minecraft:glowstone_dust", "minecraft:glowstone_dust", "copper_wire", "hermetic_glass",
                            "steel_plate"], "grow_lamp")
+    assembly("spin_hub", ["steel_plate", "steel_plate", "steel_shaft", "steel_shaft", "large_gear", "steel_ingot"],
+             "spin_hub")
+    assembly("rim_thruster", ["tungsten_ingot", "steel_plate", "copper_wire", "relay"], "rim_thruster")
+    assembly("despin_motor", ["motor", "gearbox", "steel_plate", "steel_plate", "relay_logic"], "despin_motor")
     assembly("biomass_oxidizer", ["steel_plate", "steel_plate", "refractory_lining", "copper_wire", "relay"],
              "biomass_oxidizer")
 
@@ -56,6 +60,9 @@ MASSES = {
     "life_machines": (150.0, ["air_separator", "airlock_pump", "co2_scrubber", "biomass_oxidizer"]),
     "greenhouse": (40.0, ["hydroponic_tray"]),
     "grow_lamp": (6.0, ["grow_lamp"]),
+    "spin_hub": (400.0, ["spin_hub"]),        # стальная ступица с опорно-поворотным подшипником
+    "rim_thruster": (15.0, ["rim_thruster"]),
+    "despin_motor": (250.0, ["despin_motor"]),
     "crops_007": (0.5, ["minecraft:wheat", f"{NS}:straw"]),       # сноп/охапка 0.5 кг
     "potato": (0.2, ["minecraft:potato"]),                         # один клубень
 }
@@ -117,6 +124,27 @@ def assets():
         write(os.path.join(ASSETS, "blockstates", b + ".json"), {"variants": variants})
         g.item_def(b, f"{NS}:block/{b}")
     tray_models()
+    for b in ("spin_hub", "despin_motor"):
+        g.model(b, {"parent": "minecraft:block/cube_column",
+                    "textures": {"end": f"{NS}:block/{b}_end", "side": f"{NS}:block/{b}_side"}})
+        write(os.path.join(ASSETS, "blockstates", b + ".json"), {"variants": {
+            "axis=x": {"model": f"{NS}:block/{b}", "x": 90, "y": 90}, "axis=z": {"model": f"{NS}:block/{b}", "x": 90}}})
+        g.item_def(b, f"{NS}:block/{b}")
+    g.model("rim_thruster", {"parent": "minecraft:block/orientable_vertical",
+                             "textures": {"front": f"{NS}:block/rim_thruster_front", "side": f"{NS}:block/rim_thruster_side"}})
+    rot = {"north": (0, 0), "east": (0, 90), "south": (0, 180), "west": (0, 270), "up": (270, 0), "down": (90, 0)}
+    # orientable_vertical смотрит лицом вверх: поворот к нужной грани
+    rv = {"up": (0, 0), "down": (180, 0), "north": (90, 0), "south": (90, 180), "east": (90, 90), "west": (90, 270)}
+    variants = {}
+    for facing, (x, y) in rv.items():
+        v = {"model": f"{NS}:block/rim_thruster"}
+        if x:
+            v["x"] = x
+        if y:
+            v["y"] = y
+        variants[f"facing={facing}"] = v
+    write(os.path.join(ASSETS, "blockstates", "rim_thruster.json"), {"variants": variants})
+    g.item_def("rim_thruster", f"{NS}:block/rim_thruster")
     lamp = {"parent": "minecraft:block/block", "textures": {"particle": f"{NS}:block/grow_lamp", "panel": f"{NS}:block/grow_lamp"},
             "elements": [{"from": [1, 12, 1], "to": [15, 16, 15], "faces": {f: {"texture": "#panel"} for f in
                                                                           ("up", "down", "north", "south", "east", "west")}}]}

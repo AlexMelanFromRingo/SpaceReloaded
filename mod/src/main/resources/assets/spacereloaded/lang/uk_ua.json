@@ -671,5 +671,12 @@
 	"block.spacereloaded.grow_lamp": "Фітолампа",
 	"block.spacereloaded.biomass_oxidizer": "Окиснювач біомаси",
 	"message.spacereloaded.tray": "Лоток: %s · темп росту %s%% · готовність %s%% · добрива %s м²·діб · вода %s кг",
-	"message.spacereloaded.tray.empty": "порожньо"
+	"message.spacereloaded.tray.empty": "порожньо",
+	"block.spacereloaded.spin_hub": "Маточина кільця",
+	"block.spacereloaded.rim_thruster": "Двигун обода",
+	"block.spacereloaded.despin_motor": "Мотор протиобертання",
+	"message.spacereloaded.spin_hub.attached": "Маточина: збірка торкається світу — обертати нічого (ізолюйте її, лишіть тільки вісь)",
+	"message.spacereloaded.spin_hub.report": "Кільце: %s об/хв · маса %s кг · I %s кг·м² · L %s Н·м·с · навантаження підшипника %s з %s Н",
+	"message.spacereloaded.despin.spin": "Мотор протиобертання: розкручування",
+	"message.spacereloaded.despin.brake": "Мотор протиобертання: гальмування"
 }

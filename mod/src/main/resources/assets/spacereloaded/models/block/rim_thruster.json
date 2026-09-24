@@ -1,0 +1,7 @@
+{
+	"parent": "minecraft:block/orientable_vertical",
+	"textures": {
+		"front": "spacereloaded:block/rim_thruster_front",
+		"side": "spacereloaded:block/rim_thruster_side"
+	}
+}

@@ -99,6 +99,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testSuperalloyEngine", () -> testSuperalloyEngine(context, sp));
             scenarios.put("testCabinAir", () -> testCabinAir(context, sp));
             scenarios.put("testGreenhouse", () -> testGreenhouse(context, sp));
+            scenarios.put("testSpinRing", () -> testSpinRing(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
                 if (selected == null || selected.contains(name) || name.equals("testSealing")) {
@@ -2839,6 +2840,112 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                 String.format(java.util.Locale.ROOT, "Пшеница под лампой: CO₂ %.1f г/сут (77), темп роста %.2f (1.0)", uptake, growth));
         log(String.format(java.util.Locale.ROOT, "оранжерея: лоток пшеницы поглощает %.1f г CO₂ в сутки, рост %.2f номинала ✓",
                 uptake, growth));
+    }
+
+    // ---------- 43. Кольцо: вес из вращения (007, US3) ----------
+
+    /** Гантель: ступица на оси X, спицы по 21 блоку вверх и вниз, площадки 3×3. */
+    private void buildDumbbell(TestSingleplayerContext sp, int x0, int hy, int z0, boolean counterweight) {
+        sp.getServer().runCommand(set(x0, hy, z0, "spacereloaded:spin_hub[axis=x]"));
+        sp.getServer().runCommand(fill(x0, hy - 21, z0, x0, hy - 1, z0, "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(fill(x0 - 1, hy - 21, z0 - 1, x0 + 1, hy - 21, z0 + 1, "spacereloaded:hull_plating"));
+        if (counterweight) {
+            sp.getServer().runCommand(fill(x0, hy + 1, z0, x0, hy + 21, z0, "spacereloaded:hull_plating"));
+            sp.getServer().runCommand(fill(x0 - 1, hy + 21, z0 - 1, x0 + 1, hy + 21, z0 + 1, "spacereloaded:hull_plating"));
+        }
+    }
+
+    /**
+     * Гантель r = 21 м: двигатели обода (2 × 2 кН на плече 21 м) раскручивают её по I·dω/dt = τ,
+     * топливо расходуется F/(Isp·g₀); игрок у пола получает вес ω²·r; однобокая сборка срывает
+     * подшипник, когда |Σm·ρ|·ω² превышает его грузоподъёмность.
+     */
+    private void testSpinRing(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1280;
+        int z0 = BZ;
+        int hy = BY + 40;
+        moveTo(context, sp, x0 - 4, z0);
+        sp.getServer().runCommand(String.format("forceload add %d %d %d %d", x0 - 8, z0 - 8, x0 + 8, z0 + 8));
+        buildDumbbell(sp, x0, hy, z0, true);
+        // двигатели: снизу сопло на юг, сверху на север — оба закручивают вокруг +X; сигнал — блок редстоуна
+        sp.getServer().runCommand(set(x0, hy - 21, z0 + 2, "spacereloaded:rim_thruster[facing=south]"));
+        sp.getServer().runCommand(set(x0, hy - 21, z0 + 3, "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(set(x0, hy + 21, z0 - 2, "spacereloaded:rim_thruster[facing=north]"));
+        sp.getServer().runCommand(set(x0, hy + 21, z0 - 3, "spacereloaded:hull_plating"));
+        BlockPos tank = new BlockPos(x0 + 1, hy - 20, z0);
+        sp.getServer().runCommand(set(tank.getX(), tank.getY(), tank.getZ(), "spacereloaded:fuel_tank"));
+        BlockPos tank2 = new BlockPos(x0 + 1, hy + 20, z0);
+        sp.getServer().runCommand(set(tank2.getX(), tank2.getY(), tank2.getZ(), "spacereloaded:fuel_tank"));
+        context.waitTicks(2);
+        sp.getServer().runOnServer(server -> {
+            for (BlockPos t : List.of(tank, tank2)) {
+                ((org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity) server.overworld().getBlockEntity(t))
+                        .setPropellant(500, "spacereloaded:kerolox");
+            }
+        });
+        BlockPos hub = new BlockPos(x0, hy, z0);
+        context.waitTicks(60);
+        double[] a = sp.getServer().computeOnServer(server -> {
+            var h = (org.alex_melan.spacereloaded.station.SpinHubBlockEntity) server.overworld().getBlockEntity(hub);
+            return new double[] {h.omega(), h.assembly().inertia(), h.isolated() ? 1 : 0, h.assembly().imbalance()};
+        });
+        assertThat(a[2] == 1 && a[1] > 0 && a[0] == 0, "Гантель изолирована, покоится, имеет момент инерции: "
+                + java.util.Arrays.toString(a));
+        // импульс тяги: сигнал на ~1.5 с (редстоун того же веса, что обшивка — масса сборки та же)
+        sp.getServer().runCommand(set(x0, hy - 21, z0 + 3, "minecraft:redstone_block"));
+        sp.getServer().runCommand(set(x0, hy + 21, z0 - 3, "minecraft:redstone_block"));
+        context.waitTicks(30);
+        sp.getServer().runCommand(set(x0, hy - 21, z0 + 3, "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(set(x0, hy + 21, z0 - 3, "spacereloaded:hull_plating"));
+        context.waitTicks(40);
+        double[] b = sp.getServer().computeOnServer(server -> {
+            var h = (org.alex_melan.spacereloaded.station.SpinHubBlockEntity) server.overworld().getBlockEntity(hub);
+            double fuel = ((org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity) server.overworld().getBlockEntity(tank)).propellantKg();
+            return new double[] {h.omega(), fuel};
+        });
+        double step = 2 * 2000 * 21 / a[1]; // Δω за секунду тяги
+        long steps = Math.round(b[0] / step);
+        assertThat(steps >= 1 && steps <= 2 && Math.abs(b[0] - steps * step) < step * 0.02,
+                String.format(java.util.Locale.ROOT, "Раскрутка I·Δω = τ·t: ω %.5f, шаг τ/I %.5f", b[0], step));
+        log(String.format(java.util.Locale.ROOT, "кольцо: I = %.3g кг·м², %d с тяги → ω = %.4f рад/с (τ·t/I) ✓",
+                a[1], steps, b[0]));
+        // игрок на нижней площадке: вес ω²·r
+        sp.getServer().runCommand("gamemode creative @a");
+        sp.getServer().runCommand(String.format("tp @p %d %d %d", x0 + 1, hy - 20, z0 + 1));
+        context.waitTicks(60);
+        String weight = sp.getServer().computeOnServer(server -> {
+            var h = (org.alex_melan.spacereloaded.station.SpinHubBlockEntity) server.overworld().getBlockEntity(hub);
+            var player = server.getPlayerList().getPlayers().get(0);
+            double attr = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY);
+            double g = attr / 0.08 * 9.81;
+            double expectedG = org.alex_melan.spacereloaded.core.station.SpinGravity.gravity(Math.abs(h.omega()),
+                    hub.getY() + 0.5 - player.getY());
+            return String.format(java.util.Locale.ROOT, "%.3f %.3f", g, expectedG);
+        });
+        double g = Double.parseDouble(weight.split(" ")[0]);
+        double eg = Double.parseDouble(weight.split(" ")[1]);
+        assertThat(eg > 1 && Math.abs(g - eg) < 0.05, "Вес у пола кольца ω²·r: получено " + weight);
+        log("кольцо: вес у пола " + weight.split(" ")[0] + " м/с² (ω²·r) ✓");
+        sp.getServer().runCommand(String.format("tp @p %d %d %d", x0 - 4, BY, z0));
+
+        // однобокая сборка (без противовеса) срывает подшипник
+        int x1 = x0 + 12;
+        buildDumbbell(sp, x1, hy, z0, false);
+        sp.getServer().runCommand(set(x1, hy - 21, z0 + 2, "spacereloaded:rim_thruster[facing=south]"));
+        sp.getServer().runCommand(set(x1, hy - 21, z0 + 3, "minecraft:redstone_block"));
+        BlockPos tank3 = new BlockPos(x1 + 1, hy - 20, z0);
+        sp.getServer().runCommand(set(tank3.getX(), tank3.getY(), tank3.getZ(), "spacereloaded:fuel_tank"));
+        context.waitTicks(2);
+        sp.getServer().runOnServer(server -> ((org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity) server.overworld()
+                .getBlockEntity(tank3)).setPropellant(1000, "spacereloaded:kerolox"));
+        BlockPos hub2 = new BlockPos(x1, hy, z0);
+        boolean broken = false;
+        for (int waited = 0; waited < 2400 && !broken; waited += 20) {
+            context.waitTicks(20);
+            broken = sp.getServer().computeOnServer(server -> !server.overworld().getBlockState(hub2).is(ModBlocks.SPIN_HUB));
+        }
+        assertThat(broken, "Однобокая сборка должна сорвать подшипник ступицы");
+        log("кольцо: без противовеса дисбаланс |Σm·ρ|·ω² сорвал подшипник ✓");
     }
 
     // ---------- 36. Взрыв и герметичность (T024) ----------

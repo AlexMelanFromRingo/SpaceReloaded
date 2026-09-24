@@ -671,5 +671,12 @@
 	"block.spacereloaded.grow_lamp": "Grow Lamp",
 	"block.spacereloaded.biomass_oxidizer": "Biomass Oxidizer",
 	"message.spacereloaded.tray": "Tray: %s · growth rate %s%% · ready %s%% · fertiliser %s m²·days · water %s kg",
-	"message.spacereloaded.tray.empty": "empty"
+	"message.spacereloaded.tray.empty": "empty",
+	"block.spacereloaded.spin_hub": "Spin Hub",
+	"block.spacereloaded.rim_thruster": "Rim Thruster",
+	"block.spacereloaded.despin_motor": "Counter-Rotation Motor",
+	"message.spacereloaded.spin_hub.attached": "Hub: the assembly touches the world — nothing to spin (isolate it, leave only the axle)",
+	"message.spacereloaded.spin_hub.report": "Ring: %s rpm · mass %s kg · I %s kg·m² · L %s N·m·s · bearing load %s of %s N",
+	"message.spacereloaded.despin.spin": "Counter-rotation motor: spin up",
+	"message.spacereloaded.despin.brake": "Counter-rotation motor: brake"
 }

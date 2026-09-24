@@ -1,0 +1,13 @@
+{
+	"variants": {
+		"axis=x": {
+			"model": "spacereloaded:block/spin_hub",
+			"x": 90,
+			"y": 90
+		},
+		"axis=z": {
+			"model": "spacereloaded:block/spin_hub",
+			"x": 90
+		}
+	}
+}

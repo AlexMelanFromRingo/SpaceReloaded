@@ -98,6 +98,9 @@
 		"spacereloaded:gas_tank",
 		"spacereloaded:biomass_oxidizer",
 		"spacereloaded:hydroponic_tray",
-		"spacereloaded:grow_lamp"
+		"spacereloaded:grow_lamp",
+		"spacereloaded:spin_hub",
+		"spacereloaded:rim_thruster",
+		"spacereloaded:despin_motor"
 	]
 }

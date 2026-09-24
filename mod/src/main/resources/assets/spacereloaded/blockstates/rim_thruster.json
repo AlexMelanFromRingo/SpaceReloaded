@@ -1,0 +1,30 @@
+{
+	"variants": {
+		"facing=up": {
+			"model": "spacereloaded:block/rim_thruster"
+		},
+		"facing=down": {
+			"model": "spacereloaded:block/rim_thruster",
+			"x": 180
+		},
+		"facing=north": {
+			"model": "spacereloaded:block/rim_thruster",
+			"x": 90
+		},
+		"facing=south": {
+			"model": "spacereloaded:block/rim_thruster",
+			"x": 90,
+			"y": 180
+		},
+		"facing=east": {
+			"model": "spacereloaded:block/rim_thruster",
+			"x": 90,
+			"y": 90
+		},
+		"facing=west": {
+			"model": "spacereloaded:block/rim_thruster",
+			"x": 90,
+			"y": 270
+		}
+	}
+}

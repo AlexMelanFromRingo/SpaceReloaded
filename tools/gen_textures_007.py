@@ -134,6 +134,41 @@ def greenhouse():
     save(casing, "block/biomass_oxidizer_top.png")
 
 
+def ring():
+    steel = vanilla("block/iron_block.png")
+    side = steel.copy()
+    for x in range(16):
+        for y in (4, 11):
+            put(side, x, y, (0x50, 0x54, 0x5C))
+    for x in range(16):
+        for y in range(5, 11):
+            put(side, x, y, (0xE0, 0x88, 0x30) if (x // 2) % 2 else (0x2A, 0x2A, 0x30))  # полосы вращающейся части
+    save(side, "block/spin_hub_side.png")
+    end = steel.copy()
+    disc(end, 7.5, 7.5, 7, lambda x, y, d: (0x3A, 0x3C, 0x44) if 6 < d else (0xB8, 0xBC, 0xC4) if d > 3 else (0x70, 0x72, 0x78))
+    for i in range(8):
+        import math
+        a = i * math.pi / 4
+        for r in (4, 5):
+            put(end, int(7.5 + r * math.cos(a)), int(7.5 + r * math.sin(a)), (0x30, 0x30, 0x34))
+    save(end, "block/spin_hub_end.png")
+    casing = vanilla("block/smooth_stone.png").copy()
+    _frame(casing, (0x55, 0x58, 0x60, 255), 1)
+    f = casing.copy()
+    disc(f, 7.5, 7.5, 5, lambda x, y, d: (0x2A, 0x2A, 0x30) if d > 3.5 else (0x60, 0x40, 0x30) if d > 1.5 else (0x10, 0x10, 0x12))
+    save(f, "block/rim_thruster_front.png")
+    s2 = casing.copy()
+    for y in range(4, 12):
+        put(s2, 7, y, (0xD8, 0x84, 0x50))
+        put(s2, 8, y, (0xD8, 0x84, 0x50))
+    save(s2, "block/rim_thruster_side.png")
+    m = mod("block/motor_side.png") if True else casing
+    save(m, "block/despin_motor_side.png")
+    e = casing.copy()
+    disc(e, 7.5, 7.5, 5, lambda x, y, d: (0xE0, 0x88, 0x30) if int(d) % 2 else (0x40, 0x42, 0x48))
+    save(e, "block/despin_motor_end.png")
+
+
 def guis():
     base = mod("gui/machine_single.png")
     arrow = base.crop((72, 35, 72 + 22, 35 + 16))
@@ -158,6 +193,7 @@ def main():
     items()
     blocks()
     greenhouse()
+    ring()
     guis()
 
 

@@ -671,5 +671,12 @@
 	"block.spacereloaded.grow_lamp": "Фитолампа",
 	"block.spacereloaded.biomass_oxidizer": "Окислитель биомассы",
 	"message.spacereloaded.tray": "Лоток: %s · темп роста %s%% · готовность %s%% · удобрения %s м²·сут · вода %s кг",
-	"message.spacereloaded.tray.empty": "пусто"
+	"message.spacereloaded.tray.empty": "пусто",
+	"block.spacereloaded.spin_hub": "Ступица кольца",
+	"block.spacereloaded.rim_thruster": "Двигатель обода",
+	"block.spacereloaded.despin_motor": "Мотор противовращения",
+	"message.spacereloaded.spin_hub.attached": "Ступица: сборка касается мира — вращать нечего (изолируйте её, оставьте только ось)",
+	"message.spacereloaded.spin_hub.report": "Кольцо: %s об/мин · масса %s кг · I %s кг·м² · L %s Н·м·с · нагрузка подшипника %s из %s Н",
+	"message.spacereloaded.despin.spin": "Мотор противовращения: раскрутка",
+	"message.spacereloaded.despin.brake": "Мотор противовращения: торможение"
 }

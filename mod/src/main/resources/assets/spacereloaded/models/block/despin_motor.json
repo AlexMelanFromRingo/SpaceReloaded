@@ -1,0 +1,7 @@
+{
+	"parent": "minecraft:block/cube_column",
+	"textures": {
+		"end": "spacereloaded:block/despin_motor_end",
+		"side": "spacereloaded:block/despin_motor_side"
+	}
+}

@@ -32,8 +32,11 @@ import java.util.Set;
 public class SpinHubBlockEntity extends BlockEntity {
 
     public static final int MAX_BLOCKS = 4096;
-    /** Допустимая радиальная нагрузка подшипника ступицы, Н (**оценка**: крупный опорно-поворотный подшипник). */
-    public static final double BEARING_LIMIT_N = 5e5;
+    /**
+     * Допустимая радиальная нагрузка подшипника ступицы, Н (**оценка**: опорно-поворотный подшипник
+     * Ø ~300 мм, динамическая грузоподъёмность ~50 кН).
+     */
+    public static final double BEARING_LIMIT_N = 5e4;
     /** Трение подшипника: выбег за ~10 реальных суток. */
     public static final double FRICTION_TAU_S = 10 * 86400;
 

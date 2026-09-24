@@ -150,7 +150,8 @@ public final class ModCreativeTab {
                                 ModBlocks.LITHOGRAPHY_STATION, ModBlocks.ETCH_BATH, ModBlocks.MONO_SOLAR_PANEL,
                                 ModBlocks.ALUMINIUM_FUEL_TANK, ModBlocks.AL_LI_FUEL_TANK,
                                 ModBlocks.GAS_TANK, ModBlocks.AIR_SEPARATOR, ModBlocks.CO2_SCRUBBER, ModBlocks.AIRLOCK_PUMP,
-                                ModBlocks.HYDROPONIC_TRAY, ModBlocks.GROW_LAMP, ModBlocks.BIOMASS_OXIDIZER}) {
+                                ModBlocks.HYDROPONIC_TRAY, ModBlocks.GROW_LAMP, ModBlocks.BIOMASS_OXIDIZER,
+                                ModBlocks.SPIN_HUB, ModBlocks.RIM_THRUSTER, ModBlocks.DESPIN_MOTOR}) {
                             output.accept(block);
                         }
                         for (var item : new net.minecraft.world.item.Item[] {

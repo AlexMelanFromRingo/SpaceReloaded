@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:tungsten_ingot",
+		"spacereloaded:steel_plate",
+		"spacereloaded:copper_wire",
+		"spacereloaded:relay"
+	],
+	"result": {
+		"id": "spacereloaded:rim_thruster"
+	}
+}
