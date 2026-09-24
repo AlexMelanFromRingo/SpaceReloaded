@@ -83,6 +83,9 @@ public class SpaceReloadedClient implements ClientModInitializer {
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.CASCADE,
 				org.alex_melan.spacereloaded.client.render.CascadeRenderer::new);
 		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.ASU,
+				org.alex_melan.spacereloaded.client.render.AirColumnRenderer::new);
+		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.REGOLITH_REACTOR,
 				org.alex_melan.spacereloaded.client.render.RegolithReactorRenderer::new);
 		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
@@ -94,7 +97,8 @@ public class SpaceReloadedClient implements ClientModInitializer {
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.FLYWHEEL,
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.PRESS,
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.LATHE,
-				org.alex_melan.spacereloaded.registry.ModBlockEntities.WIND_HUB)) {
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.WIND_HUB,
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.ASU_COMPRESSOR)) {
 			registerKinetic(type);
 		}
 		EntityRendererRegistry.register(ModEntities.KINETIC_PROJECTILE,

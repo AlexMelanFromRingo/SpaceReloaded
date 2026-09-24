@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/asu_tray"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/asu_tray_formed"
+		}
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/asu_heat_exchanger"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/asu_heat_exchanger_formed"
+		}
+	}
+}

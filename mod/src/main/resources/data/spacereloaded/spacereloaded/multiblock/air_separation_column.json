@@ -1,0 +1,41 @@
+{
+	"key": "spacereloaded:asu_sump",
+	"cells": [
+		{
+			"offset": [
+				1,
+				0,
+				0
+			],
+			"block": "spacereloaded:asu_heat_exchanger"
+		},
+		{
+			"offset": [
+				2,
+				0,
+				0
+			],
+			"block": "spacereloaded:asu_compressor"
+		}
+	],
+	"repeat": {
+		"cells": [
+			{
+				"offset": [
+					0,
+					1,
+					0
+				],
+				"block": "spacereloaded:asu_tray"
+			}
+		],
+		"step": [
+			0,
+			1,
+			0
+		],
+		"min": 3,
+		"max": 40,
+		"display": 11
+	}
+}

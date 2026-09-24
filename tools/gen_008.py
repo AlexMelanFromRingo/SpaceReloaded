@@ -293,6 +293,92 @@ def cascade_models():
     mk.blockstate("centrifuge_rotor", {"": {"model": f"{NS}:block/centrifuge_rotor"}})
 
 
+# --- US4: криогенная воздухоразделительная колонна ---------------------------------------------------
+ASU_BLOCKS = ["asu_sump", "asu_tray", "asu_heat_exchanger"]
+ASU_PARTS = ["asu_expander_wheel", "asu_column_cap"]
+
+
+def asu_template():
+    """Испаритель (ключ) внизу, сбоку теплообменник с детандером и компрессор на валу, вверх — тарелки 3…40."""
+    write(os.path.join(MB, "air_separation_column.json"), {
+        "key": sr("asu_sump"),
+        "cells": [{"offset": [1, 0, 0], "block": sr("asu_heat_exchanger")},
+                  {"offset": [2, 0, 0], "block": sr("asu_compressor")}],
+        "repeat": {"cells": [{"offset": [0, 1, 0], "block": sr("asu_tray")}], "step": [0, 1, 0], "min": 3, "max": 40,
+                   "display": 11}})
+
+
+def asu_recipes():
+    assembly("asu_sump", ["steel_plate", "steel_plate", "copper_plate", "hermetic_glass", "relay_logic"], "asu_sump")
+    assembly("asu_tray", ["aluminium_ingot", "aluminium_ingot", "copper_plate", "glass_fiber"], "asu_tray", 2)
+    # пластинчато-ребристый теплообменник из паяного алюминия + турбодетандер (цикл Клода)
+    assembly("asu_heat_exchanger", ["aluminium_ingot", "aluminium_ingot", "aluminium_ingot", "copper_wire",
+                                    "nickel_superalloy_ingot"], "asu_heat_exchanger")
+    assembly("asu_compressor", ["steel_plate", "steel_plate", "steel_shaft", "nickel_superalloy_ingot", "large_gear"],
+             "asu_compressor")
+    assembly("argon_canister", ["steel_plate", "steel_plate"], "argon_canister", 1)
+
+
+def asu_models():
+    for formed in (False, True):
+        for active in (False, True):
+            name = "asu_sump" + ("_formed" if formed else "") + ("_on" if active else "")
+            if not formed:
+                mk.plain(name, "minecraft:block/orientable", {"front": f"{NS}:block/asu_sump_front",
+                                                             "side": f"{NS}:block/asu_coldbox", "top": f"{NS}:block/asu_coldbox"})
+                continue
+            # смотровое стекло испарителя: ниша 2 px, уровень жидкого O₂ рисует BER
+            els = [mk.box([0, 0, 2], [16, 16, 16], "#box", over={"north": "#inner"}),
+                   mk.box([0, 0, 0], [3, 16, 2], "#box", skip=("south",)),
+                   mk.box([13, 0, 0], [16, 16, 2], "#box", skip=("south",)),
+                   mk.box([3, 12, 0], [13, 16, 2], "#box", skip=("south", "east", "west")),
+                   mk.box([3, 0, 0], [13, 3, 2], "#box", skip=("south", "east", "west"))]
+            mk.model(name, {"box": f"{NS}:block/asu_coldbox", "inner": f"{NS}:block/asu_sump_inner"}, els)
+    mk.blockstate("asu_sump", mk.facing_variants(
+        lambda formed, active: f"{NS}:block/asu_sump" + ("_formed" if formed else "") + ("_on" if active and formed else "")))
+    mk.item("asu_sump", f"{NS}:block/asu_sump")
+    # тарелки: несформированы — кассета; сформированы — колонна в холодильном кожухе с бандажами
+    mk.plain("asu_tray", "minecraft:block/cube_column", {"end": f"{NS}:block/asu_tray_end", "side": f"{NS}:block/asu_tray_side"})
+    mk.model("asu_tray_formed", {"shell": f"{NS}:block/asu_coldbox", "band": f"{NS}:block/reactor_steel"},
+             [mk.box([2, 0, 2], [14, 7, 14], "#shell", skip=("up", "down")),
+              mk.box([1.5, 7, 1.5], [14.5, 9, 14.5], "#band", skip=()),
+              mk.box([2, 9, 2], [14, 16, 14], "#shell", skip=("up", "down"))])
+    mk.blockstate("asu_tray", {"formed=false": {"model": f"{NS}:block/asu_tray"}, "formed=true": {"model": f"{NS}:block/asu_tray_formed"}})
+    mk.item("asu_tray", f"{NS}:block/asu_tray")
+    # теплообменник: паяный алюминиевый блок, сверху корпус турбодетандера (крыльчатку рисует BER)
+    mk.plain("asu_heat_exchanger", "minecraft:block/cube_column",
+             {"end": f"{NS}:block/asu_exchanger_top", "side": f"{NS}:block/asu_exchanger_side"})
+    mk.model("asu_heat_exchanger_formed", {"core": f"{NS}:block/asu_exchanger_side", "top": f"{NS}:block/asu_exchanger_top",
+                                           "housing": f"{NS}:block/reactor_steel"},
+             [mk.box([1, 0, 1], [15, 12, 15], "#core", over={"up": "#top"}),
+              mk.box([4, 12, 4], [12, 13, 12], "#housing", skip=("down",))])
+    mk.blockstate("asu_heat_exchanger", {"formed=false": {"model": f"{NS}:block/asu_heat_exchanger"},
+                                         "formed=true": {"model": f"{NS}:block/asu_heat_exchanger_formed"}})
+    mk.item("asu_heat_exchanger", f"{NS}:block/asu_heat_exchanger")
+    # компрессор: корпус-улитка на валу (ось по свойству axis)
+    mk.plain("asu_compressor", "minecraft:block/cube_column",
+             {"end": f"{NS}:block/asu_compressor_end", "side": f"{NS}:block/asu_compressor_side"})
+    mk.blockstate("asu_compressor", {"axis=y": {"model": f"{NS}:block/asu_compressor"},
+                                     "axis=z": {"model": f"{NS}:block/asu_compressor", "x": 90},
+                                     "axis=x": {"model": f"{NS}:block/asu_compressor", "x": 90, "y": 90}})
+    mk.item("asu_compressor", f"{NS}:block/asu_compressor")
+    # части: крыльчатка детандера, шапка колонны со сбросным клапаном
+    wheel = [mk.box([7, 13, 7], [9, 14.5, 9], "#w")]
+    for f, t in (([9, 13.2, 7.4], [11.5, 14.2, 8.6]), ([4.5, 13.2, 7.4], [7, 14.2, 8.6]),
+                 ([7.4, 13.2, 9], [8.6, 14.2, 11.5]), ([7.4, 13.2, 4.5], [8.6, 14.2, 7])):
+        wheel.append(mk.box(f, t, "#w"))
+    mk.model("asu_expander_wheel", {"w": f"{NS}:block/eclss_fan"}, wheel)
+    mk.model("asu_column_cap", {"shell": f"{NS}:block/asu_coldbox", "valve": f"{NS}:block/reactor_steel"},
+             [mk.box([2, 0, 2], [14, 3, 14], "#shell", skip=("down",)),
+              mk.box([7, 3, 7], [9, 7, 9], "#valve", skip=("down",)),
+              mk.box([9, 5, 7.25], [12, 6.5, 8.75], "#valve")])
+    for p in ASU_PARTS:
+        mk.blockstate(p, {"": {"model": f"{NS}:block/{p}"}})
+    write(os.path.join(g.ASSETS, "models", "item", "argon_canister.json"),
+          {"parent": "minecraft:item/generated", "textures": {"layer0": f"{NS}:item/argon_canister"}})
+    g.item_def("argon_canister", f"{NS}:item/argon_canister")
+
+
 def reactor_models():
     faces_all = mk.FACES
     # привод: несформирован — корпус с пультом; сформирован — открытый каркас (виден ход стержня)
@@ -384,16 +470,20 @@ MASSES = {
     "fluorine": (1.0, ["fluorine"]),
     "fuel_basket": (40.0, ["fuel_basket"]),
     "cascade_controller": (60.0, ["cascade_controller"]),
-    "gas_centrifuge": (60.0, ["gas_centrifuge"]),                 # корзина: ~30 кг сплава U-Zr + оболочка
+    "gas_centrifuge": (60.0, ["gas_centrifuge"]),
+    "asu": (120.0, ["asu_sump", "asu_heat_exchanger", "asu_compressor"]),
+    "asu_tray": (40.0, ["asu_tray"]),
+    "argon_canister": (60.0, ["argon_canister"]),           # баллон 50 л + 10 кг аргона                 # корзина: ~30 кг сплава U-Zr + оболочка
 }
 
-BLOCKS = ECLSS_BLOCKS + REACTOR_BLOCKS + CASCADE_BLOCKS
+BLOCKS = ECLSS_BLOCKS + REACTOR_BLOCKS + CASCADE_BLOCKS + ASU_BLOCKS + ["asu_compressor"]
 
 
 def data():
     eclss_template()
     reactor_template()
     cascade_template()
+    asu_template()
     material_data()
     write(os.path.join(DATA, "tags", "block", "reactor_power_slot.json"),
           {"replace": False, "values": [sr("stirling_convertor"), sr("reactor_power_cap")]})
@@ -422,11 +512,13 @@ def main():
     reactor_recipes()
     material_recipes()
     cascade_recipes()
+    asu_recipes()
     data()
     eclss_models()
     reactor_models()
     material_models()
     cascade_models()
+    asu_models()
 
 
 if __name__ == "__main__":

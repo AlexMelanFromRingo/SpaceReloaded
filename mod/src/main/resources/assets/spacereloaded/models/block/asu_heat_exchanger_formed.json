@@ -1,0 +1,138 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"core": "spacereloaded:block/asu_exchanger_side",
+		"top": "spacereloaded:block/asu_exchanger_top",
+		"housing": "spacereloaded:block/reactor_steel",
+		"particle": "spacereloaded:block/asu_exchanger_side"
+	},
+	"elements": [
+		{
+			"from": [
+				1,
+				0,
+				1
+			],
+			"to": [
+				15,
+				12,
+				15
+			],
+			"faces": {
+				"up": {
+					"texture": "#top",
+					"uv": [
+						1,
+						1,
+						15,
+						15
+					]
+				},
+				"down": {
+					"texture": "#core",
+					"uv": [
+						1,
+						1,
+						15,
+						15
+					]
+				},
+				"north": {
+					"texture": "#core",
+					"uv": [
+						1,
+						4,
+						15,
+						16
+					]
+				},
+				"south": {
+					"texture": "#core",
+					"uv": [
+						1,
+						4,
+						15,
+						16
+					]
+				},
+				"east": {
+					"texture": "#core",
+					"uv": [
+						1,
+						4,
+						15,
+						16
+					]
+				},
+				"west": {
+					"texture": "#core",
+					"uv": [
+						1,
+						4,
+						15,
+						16
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				4,
+				12,
+				4
+			],
+			"to": [
+				12,
+				13,
+				12
+			],
+			"faces": {
+				"up": {
+					"texture": "#housing",
+					"uv": [
+						4,
+						4,
+						12,
+						12
+					]
+				},
+				"north": {
+					"texture": "#housing",
+					"uv": [
+						4,
+						3,
+						12,
+						4
+					]
+				},
+				"south": {
+					"texture": "#housing",
+					"uv": [
+						4,
+						3,
+						12,
+						4
+					]
+				},
+				"east": {
+					"texture": "#housing",
+					"uv": [
+						4,
+						3,
+						12,
+						4
+					]
+				},
+				"west": {
+					"texture": "#housing",
+					"uv": [
+						4,
+						3,
+						12,
+						4
+					]
+				}
+			}
+		}
+	]
+}

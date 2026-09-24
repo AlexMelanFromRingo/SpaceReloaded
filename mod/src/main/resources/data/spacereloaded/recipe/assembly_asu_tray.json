@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:copper_plate",
+		"spacereloaded:glass_fiber"
+	],
+	"result": {
+		"id": "spacereloaded:asu_tray",
+		"count": 2
+	}
+}

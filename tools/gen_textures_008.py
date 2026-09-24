@@ -247,10 +247,61 @@ def cascade():
     save(rotor, "block/centrifuge_rotor.png")
 
 
+def asu():
+    box = noise_fill((0x3C, 0x5C, 0x86), 10, 31)  # синий холодильный кожух ВРУ
+    for x in range(16):
+        put(box, x, 0, (0x2C, 0x44, 0x66))
+        put(box, x, 15, (0x2C, 0x44, 0x66))
+    save(box, "block/asu_coldbox.png")
+    front = box.copy()
+    for x in range(4, 12):
+        for y in range(4, 11):
+            put(front, x, y, (0x14, 0x20, 0x2C))
+    save(front, "block/asu_sump_front.png")
+    inner = Image.new("RGBA", (16, 16), (0x1A, 0x26, 0x32, 255))  # тёмная полость испарителя
+    for y in range(3, 12, 3):
+        for x in range(4, 12):
+            put(inner, x, y, (0x2A, 0x38, 0x46))
+    save(inner, "block/asu_sump_inner.png")
+    tray_side = noise_fill((0xB0, 0xB4, 0xBA), 8, 33)
+    for x in range(16):
+        put(tray_side, x, 7, (0x80, 0x84, 0x8A))
+        put(tray_side, x, 8, (0x80, 0x84, 0x8A))
+    save(tray_side, "block/asu_tray_side.png")
+    tray_end = noise_fill((0xB0, 0xB4, 0xBA), 8, 35)
+    for x in range(2, 14, 3):
+        for y in range(2, 14, 3):
+            put(tray_end, x, y, (0x50, 0x54, 0x5A))  # колпачки/сита тарелки
+    save(tray_end, "block/asu_tray_end.png")
+    ex = noise_fill((0xC4, 0xC8, 0xCE), 6, 37)
+    for x in range(16):
+        for y in range(0, 16, 2):
+            put(ex, x, y, (0xA4, 0xA8, 0xAE))  # пластины и рёбра
+    save(ex, "block/asu_exchanger_side.png")
+    ext = noise_fill((0xC4, 0xC8, 0xCE), 6, 39)
+    for i in range(2, 14):
+        put(ext, i, 3, (0x80, 0x84, 0x8A))
+        put(ext, i, 12, (0x80, 0x84, 0x8A))
+    save(ext, "block/asu_exchanger_top.png")
+    cs = noise_fill((0x5C, 0x7C, 0x5C), 12, 41)  # зелёный корпус компрессора
+    save(cs, "block/asu_compressor_side.png")
+    ce = noise_fill((0x5C, 0x7C, 0x5C), 12, 43)
+    disc(ce, 7.5, 7.5, 5.5, lambda x, y, d: (0x3C, 0x5C, 0x3C) if d > 4 else (0x8C, 0x90, 0x96))
+    save(ce, "block/asu_compressor_end.png")
+    def cyl(img):
+        for x in range(4, 12):
+            for y in range(2, 15):
+                put(img, x, y, (0x88, 0x8C, 0x92) if x in (4, 11) else (0x3C, 0x8C, 0x5C))
+        for x in range(6, 10):
+            put(img, x, 1, (0x60, 0x64, 0x6A))
+    item_icon("argon_canister", cyl)
+
+
 def main():
     eclss()
     reactor()
     cascade()
+    asu()
 
 
 if __name__ == "__main__":

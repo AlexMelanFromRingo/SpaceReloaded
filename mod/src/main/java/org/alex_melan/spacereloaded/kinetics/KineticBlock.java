@@ -20,7 +20,9 @@ public interface KineticBlock {
         FLYWHEEL,
         PRESS,
         LATHE,
-        WIND_HUB
+        WIND_HUB,
+        /** Центробежный компрессор ВРУ (008): нагрузка ∝ ω, мощность ∝ ω². */
+        COMPRESSOR
     }
 
     /** Материал вала — предел кручения из конфига. */

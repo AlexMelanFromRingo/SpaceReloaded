@@ -25,6 +25,7 @@ ITEMS = {
     "fluorine": ("Fluorine Cylinder", "Баллон фтора", "Балон фтору"),
     "uranium_hexafluoride": ("Uranium Hexafluoride (UF₆)", "Гексафторид урана (UF₆)", "Гексафторид урану (UF₆)"),
     "depleted_uranium_hexafluoride": ("Depleted UF₆ (tails)", "Обеднённый UF₆ (отвал)", "Збіднений UF₆ (відвал)"),
+    "argon_canister": ("Argon Cylinder (10 kg)", "Баллон аргона (10 кг)", "Балон аргону (10 кг)"),
     "fuel_basket": ("Fuel Basket (U-Zr)", "Топливная корзина (U-Zr)", "Паливний кошик (U-Zr)"),
 }
 BLOCKS = {
@@ -44,6 +45,9 @@ BLOCKS = {
     "radiator_panel": ("Radiator Panel", "Панель радиатора", "Панель радіатора"),
     "cascade_controller": ("Enrichment Cascade Controller", "Контроллер каскада обогащения", "Контролер каскаду збагачення"),
     "gas_centrifuge": ("Gas Centrifuge", "Газовая центрифуга", "Газова центрифуга"),
+    "asu_tray": ("Rectification Tray", "Ректификационная тарелка ВРУ", "Ректифікаційна тарілка ПРУ"),
+    "asu_heat_exchanger": ("Plate-Fin Heat Exchanger", "Пластинчато-ребристый теплообменник", "Пластинчасто-ребристий теплообмінник"),
+    "asu_compressor": ("Centrifugal Air Compressor", "Центробежный компрессор воздуха", "Відцентровий компресор повітря"),
     "beryl_ore": ("Beryl Ore", "Бериллиевая руда", "Берилієва руда"),
     "borax_ore": ("Borax Deposit", "Залежь буры", "Поклад бури"),
     "uraninite_ore": ("Pitchblende Ore", "Урановая руда (смолка)", "Уранова руда (смолка)"),
@@ -187,6 +191,40 @@ OTHER = {
         "~22 % (НОУ), 29 — ~93 % (ВОУ). Килограмм 93 % требует 201 кг природного урана и 216 ЕРР.",
         "Лінія газових центрифуг за контролером. Кожен ступінь множить відношення U-235 на 1.3: 14 дають "
         "~22 % (НЗУ), 29 — ~93 % (ВЗУ). Кілограм 93 % потребує 201 кг природного урану та 216 ОРР."),
+    "block.spacereloaded.asu_sump": ("ASU Reboiler (sump)", "Испаритель ВРУ (куб)", "Випарник ПРУ (куб)"),
+    "screen.spacereloaded.asu": ("Air Separation Column", "Воздухоразделительная колонна", "Повітророзподільна колона"),
+    "status.spacereloaded.asu.not_formed": ("Column not assembled — strike the sump with the engineer's hammer",
+                                            "Колонна не собрана — ударьте испаритель инженерным молотом",
+                                            "Колону не зібрано — вдарте випарник інженерним молотом"),
+    "status.spacereloaded.asu.no_air": ("No oxygen-bearing air on this body", "На этом теле нет воздуха с кислородом",
+                                        "На цьому тілі немає повітря з киснем"),
+    "status.spacereloaded.asu.no_shaft": ("The compressor needs shaft power (≥ 5 kW)", "Компрессору нужна мощность вала (≥ 5 кВт)",
+                                          "Компресору потрібна потужність вала (≥ 5 кВт)"),
+    "status.spacereloaded.asu.trays": ("Trays: %s · O₂ %s%% · N₂ %s%% (argon side draw from %s trays)",
+                                       "Тарелок: %s · O₂ %s %% · N₂ %s %% (боковой отбор аргона с %s тарелок)",
+                                       "Тарілок: %s · O₂ %s %% · N₂ %s %% (бічний відбір аргону з %s тарілок)"),
+    "status.spacereloaded.asu.flow": ("Shaft %s kW → air %s kg/s", "Вал %s кВт → воздух %s кг/с", "Вал %s кВт → повітря %s кг/с"),
+    "status.spacereloaded.asu.products": ("O₂ %s · N₂ %s · Ar %s · vented %s kg/min",
+                                          "O₂ %s · N₂ %s · Ar %s · сброс %s кг/мин",
+                                          "O₂ %s · N₂ %s · Ar %s · скид %s кг/хв"),
+    "status.spacereloaded.asu.argon": ("Argon stored: %s kg", "Аргона накоплено: %s кг", "Аргону накопичено: %s кг"),
+    "status.spacereloaded.asu.argon_need": ("Argon: %s kg — side draw needs %s trays", "Аргон: %s кг — для бокового отбора нужно %s тарелок",
+                                            "Аргон: %s кг — для бічного відбору потрібно %s тарілок"),
+    "gauge.spacereloaded.o2_purity": ("O₂ purity", "Чистота O₂", "Чистота O₂"),
+    "gauge.spacereloaded.shaft": ("Shaft power", "Мощность вала", "Потужність вала"),
+    "action.spacereloaded.asu.argon": ("Argon", "Аргон", "Аргон"),
+    "manual.spacereloaded.air_separation_column.title": ("Air Separation Column", "Воздухоразделительная колонна",
+                                                         "Повітророзподільна колона"),
+    "manual.spacereloaded.air_separation_column.text": (
+        "Reboiler at the bottom, trays above, a heat exchanger with a turbo-expander and a shaft-driven compressor "
+        "beside. Purity follows the Fenske equation: 11 trays strip nitrogen to 99.99%, but argon stays in the "
+        "oxygen (≈94.5%) until 20 trays allow its side draw (O₂ ≈ 99.8%).",
+        "Внизу испаритель, над ним тарелки, сбоку теплообменник с турбодетандером и компрессор на валу. Чистота — "
+        "по уравнению Фенске: 11 тарелок отделяют азот до 99.99 %, но аргон остаётся в кислороде (≈ 94.5 %), пока "
+        "20 тарелок не позволят его боковой отбор (O₂ ≈ 99.8 %).",
+        "Унизу випарник, над ним тарілки, збоку теплообмінник із турбодетандером і компресор на валу. Чистота — "
+        "за рівнянням Фенске: 11 тарілок відділяють азот до 99.99 %, але аргон лишається в кисні (≈ 94.5 %), доки "
+        "20 тарілок не дозволять його бічний відбір (O₂ ≈ 99.8 %)."),
     "manual.spacereloaded.eclss_rack.title": ("Life Support Rack", "Стойка жизнеобеспечения", "Стійка життєзабезпечення"),
     "manual.spacereloaded.eclss_rack.text": (
         "A 5×4 rack in the wall of a sealed zone with four module sockets. Electrolysis turns water into O₂; "

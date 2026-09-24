@@ -201,6 +201,13 @@ public final class ModBlockEntities {
             register("cascade", new BlockEntityType<>(org.alex_melan.spacereloaded.nuclear.CascadeBlockEntity::new,
                     Set.of(ModBlocks.CASCADE_CONTROLLER)));
 
+    public static final BlockEntityType<org.alex_melan.spacereloaded.cryo.AirColumnBlockEntity> ASU =
+            register("asu", new BlockEntityType<>(org.alex_melan.spacereloaded.cryo.AirColumnBlockEntity::new,
+                    Set.of(ModBlocks.ASU_SUMP)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.cryo.AsuCompressorBlockEntity> ASU_COMPRESSOR =
+            register("asu_compressor", new BlockEntityType<>(org.alex_melan.spacereloaded.cryo.AsuCompressorBlockEntity::new,
+                    Set.of(ModBlocks.ASU_COMPRESSOR)));
+
     // --- Жизнь на станции (007) ---
     public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity> GAS_TANK =
             register("gas_tank", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity::new,

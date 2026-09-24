@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:copper_plate",
+		"spacereloaded:hermetic_glass",
+		"spacereloaded:relay_logic"
+	],
+	"result": {
+		"id": "spacereloaded:asu_sump"
+	}
+}

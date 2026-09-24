@@ -260,6 +260,8 @@ public final class ModItems {
     public static final Item URANIUM_HEXAFLUORIDE = simple("uranium_hexafluoride");
     public static final Item DEPLETED_URANIUM_HEXAFLUORIDE = simple("depleted_uranium_hexafluoride");
     /** Топливная корзина Kilopower: сплав U-Zr, компоненты — U-235, обогащение, выгорание. */
+    /** Баллон аргона 50 л, 10 кг Ar (колонна при ≥ 20 тарелках). */
+    public static final Item ARGON_CANISTER = register("argon_canister", props -> new Item(props.stacksTo(16)));
     public static final Item FUEL_BASKET = register("fuel_basket", props -> new Item(props.stacksTo(1)));
     public static final Item ZEOLITE_BED = register("zeolite_bed", props -> new Item(props.stacksTo(1)));
 

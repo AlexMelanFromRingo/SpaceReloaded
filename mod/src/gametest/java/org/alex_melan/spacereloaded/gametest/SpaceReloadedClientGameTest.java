@@ -105,6 +105,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testEclssRack", () -> testEclssRack(context, sp));
             scenarios.put("testReactor", () -> testReactor(context, sp));
             scenarios.put("testCascade", () -> testCascade(context, sp));
+            scenarios.put("testAirColumn", () -> testAirColumn(context, sp));
             scenarios.put("testReadmeShots", () -> testReadmeShots(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
@@ -3382,6 +3383,60 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         log("каскад: корзина U-Zr — " + basket.split(" ")[0] + " кг U-235 ✓");
         readmeCamera(context, sp, x0 + 2.5, BY + 1.2, z0 + 3.5, 120f, 25f);
         readmeShot(context, "cascade");
+        context.runOnClient(mc -> {
+            if (mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
+        });
+    }
+
+    // ---------- 008. Воздухоразделительная колонна (US4) ----------
+
+    /** Колонна 20 тарелок на валу мотора: поток воздуха по мощности, O₂ и N₂ в баллоны, аргон боковым отбором. */
+    private void testAirColumn(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1520;
+        int z0 = BZ;
+        moveTo(context, sp, x0 + 4, z0 - 4);
+        BlockPos key = new BlockPos(x0, BY, z0);
+        sp.getServer().runCommand(set(x0, BY, z0, "spacereloaded:asu_sump[facing=north]"));
+        sp.getServer().runCommand(set(x0 - 1, BY, z0, "spacereloaded:asu_heat_exchanger"));
+        sp.getServer().runCommand(set(x0 - 2, BY, z0, "spacereloaded:asu_compressor[axis=x]"));
+        sp.getServer().runCommand(set(x0 - 3, BY, z0, "spacereloaded:motor[axis=x]"));
+        sp.getServer().runCommand(set(x0 - 4, BY, z0, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(fill(x0, BY + 1, z0, x0, BY + 20, z0, "spacereloaded:asu_tray"));
+        BlockPos tankA = new BlockPos(x0 + 1, BY, z0);
+        BlockPos tankB = new BlockPos(x0, BY, z0 + 1);
+        sp.getServer().runCommand(set(tankA.getX(), tankA.getY(), tankA.getZ(), "spacereloaded:gas_tank"));
+        sp.getServer().runCommand(set(tankB.getX(), tankB.getY(), tankB.getZ(), "spacereloaded:gas_tank"));
+        context.waitTicks(5);
+        boolean formed = sp.getServer().computeOnServer(server -> ((org.alex_melan.spacereloaded.cryo.AirColumnBlockEntity)
+                server.overworld().getBlockEntity(key)).hammer(server.overworld(), server.getPlayerList().getPlayers().get(0)));
+        assertThat(formed, "Колонна должна собраться молотом");
+        context.waitTicks(400);
+        double[] r = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var col = (org.alex_melan.spacereloaded.cryo.AirColumnBlockEntity) level.getBlockEntity(key);
+            var comp = (org.alex_melan.spacereloaded.cryo.AsuCompressorBlockEntity) level.getBlockEntity(new BlockPos(x0 - 2, BY, z0));
+            return new double[] {col.trays(), comp.absorbedW(), col.airKgS(), col.o2KgS(), col.argonKg(),
+                    tank(server, tankA).mass(), tank(server, tankA).kind().ordinal(),
+                    tank(server, tankB).mass(), tank(server, tankB).kind().ordinal()};
+        });
+        double air = org.alex_melan.spacereloaded.core.cryo.AirSeparation.airFlow(r[1]);
+        double o2 = air * 0.231 * 0.95;
+        String report = String.format(java.util.Locale.ROOT,
+                "%.0f тарелок, вал %.1f кВт → воздух %.3f кг/с (ожидалось %.3f), O₂ %.4f кг/с (ожидалось %.4f), аргон %.2f кг, баллоны %.2f и %.2f кг, чистота O₂ %.2f %%",
+                r[0], r[1] / 1000, r[2], air, r[3], o2, r[4], r[5], r[7],
+                org.alex_melan.spacereloaded.cryo.AirColumnBlockEntity.oxygenPurity(20) * 100);
+        assertThat(r[0] == 20 && r[1] > 50e3 && Math.abs(r[2] - air) < 0.02 * air && Math.abs(r[3] - o2) < 0.03 * o2
+                        && r[4] > 0 && r[6] != r[8] && r[5] > 1 && r[7] > 1
+                        && Math.abs((r[6] == org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN.ordinal() ? r[7] / r[5] : r[5] / r[7])
+                                - 0.718 / 0.2195) < 0.3
+                        && org.alex_melan.spacereloaded.cryo.AirColumnBlockEntity.oxygenPurity(20) > 0.995
+                        && Math.abs(org.alex_melan.spacereloaded.cryo.AirColumnBlockEntity.oxygenPurity(11) - 0.945) < 0.005,
+                "Колонна: " + report);
+        log("воздухоразделительная колонна: " + report + " ✓");
+        readmeCamera(context, sp, x0 + 3.5, BY + 2, z0 - 4.5, 35f, -15f);
+        readmeShot(context, "air-column");
         context.runOnClient(mc -> {
             if (mc.gui.hud.isHidden()) {
                 mc.gui.hud.toggle();

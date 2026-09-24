@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"front": "spacereloaded:block/asu_sump_front",
+		"side": "spacereloaded:block/asu_coldbox",
+		"top": "spacereloaded:block/asu_coldbox"
+	}
+}

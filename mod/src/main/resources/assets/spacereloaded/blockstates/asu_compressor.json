@@ -1,0 +1,16 @@
+{
+	"variants": {
+		"axis=y": {
+			"model": "spacereloaded:block/asu_compressor"
+		},
+		"axis=z": {
+			"model": "spacereloaded:block/asu_compressor",
+			"x": 90
+		},
+		"axis=x": {
+			"model": "spacereloaded:block/asu_compressor",
+			"x": 90,
+			"y": 90
+		}
+	}
+}

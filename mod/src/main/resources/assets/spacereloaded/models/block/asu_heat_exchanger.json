@@ -1,0 +1,7 @@
+{
+	"parent": "minecraft:block/cube_column",
+	"textures": {
+		"end": "spacereloaded:block/asu_exchanger_top",
+		"side": "spacereloaded:block/asu_exchanger_side"
+	}
+}

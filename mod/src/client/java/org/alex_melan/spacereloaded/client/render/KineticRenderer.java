@@ -85,7 +85,7 @@ public class KineticRenderer<T extends KineticBlockEntity> implements BlockEntit
                     blocks.update(state.part, ModBlocks.ROTOR_PRESS_RAM.defaultBlockState(), state.context);
                 }
             }
-            case MOTOR, CLUTCH -> {
+            case MOTOR, CLUTCH, COMPRESSOR -> {
                 state.hasShaft = true;
                 blocks.update(state.shaft, ModBlocks.ROTOR_SHAFT_STUB.defaultBlockState(), state.context);
             }

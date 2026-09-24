@@ -1,0 +1,7 @@
+{
+	"parent": "minecraft:block/cube_column",
+	"textures": {
+		"end": "spacereloaded:block/asu_compressor_end",
+		"side": "spacereloaded:block/asu_compressor_side"
+	}
+}

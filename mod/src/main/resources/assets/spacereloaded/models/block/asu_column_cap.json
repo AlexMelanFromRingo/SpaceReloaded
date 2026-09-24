@@ -1,0 +1,196 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"shell": "spacereloaded:block/asu_coldbox",
+		"valve": "spacereloaded:block/reactor_steel",
+		"particle": "spacereloaded:block/asu_coldbox"
+	},
+	"elements": [
+		{
+			"from": [
+				2,
+				0,
+				2
+			],
+			"to": [
+				14,
+				3,
+				14
+			],
+			"faces": {
+				"up": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						2,
+						14,
+						14
+					]
+				},
+				"north": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						13,
+						14,
+						16
+					]
+				},
+				"south": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						13,
+						14,
+						16
+					]
+				},
+				"east": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						13,
+						14,
+						16
+					]
+				},
+				"west": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						13,
+						14,
+						16
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				7,
+				3,
+				7
+			],
+			"to": [
+				9,
+				7,
+				9
+			],
+			"faces": {
+				"up": {
+					"texture": "#valve",
+					"uv": [
+						7,
+						7,
+						9,
+						9
+					]
+				},
+				"north": {
+					"texture": "#valve",
+					"uv": [
+						7,
+						9,
+						9,
+						13
+					]
+				},
+				"south": {
+					"texture": "#valve",
+					"uv": [
+						7,
+						9,
+						9,
+						13
+					]
+				},
+				"east": {
+					"texture": "#valve",
+					"uv": [
+						7,
+						9,
+						9,
+						13
+					]
+				},
+				"west": {
+					"texture": "#valve",
+					"uv": [
+						7,
+						9,
+						9,
+						13
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				9,
+				5,
+				7.25
+			],
+			"to": [
+				12,
+				6.5,
+				8.75
+			],
+			"faces": {
+				"up": {
+					"texture": "#valve",
+					"uv": [
+						9,
+						7.25,
+						12,
+						8.75
+					]
+				},
+				"down": {
+					"texture": "#valve",
+					"uv": [
+						9,
+						7.25,
+						12,
+						8.75
+					]
+				},
+				"north": {
+					"texture": "#valve",
+					"uv": [
+						4,
+						9.5,
+						7,
+						11
+					]
+				},
+				"south": {
+					"texture": "#valve",
+					"uv": [
+						9,
+						9.5,
+						12,
+						11
+					]
+				},
+				"east": {
+					"texture": "#valve",
+					"uv": [
+						7.25,
+						9.5,
+						8.75,
+						11
+					]
+				},
+				"west": {
+					"texture": "#valve",
+					"uv": [
+						7.25,
+						9.5,
+						8.75,
+						11
+					]
+				}
+			}
+		}
+	]
+}

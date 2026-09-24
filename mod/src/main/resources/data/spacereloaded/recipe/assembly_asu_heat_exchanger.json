@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:copper_wire",
+		"spacereloaded:nickel_superalloy_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:asu_heat_exchanger"
+	}
+}

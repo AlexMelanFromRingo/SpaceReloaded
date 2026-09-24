@@ -630,6 +630,27 @@ public final class ModBlocks {
             industrial().noOcclusion());
     public static final Block CENTRIFUGE_ROTOR = registerNoItem("centrifuge_rotor", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    // --- 008: воздухоразделительная колонна ---
+    public static final Block ASU_SUMP = register("asu_sump",
+            props -> new org.alex_melan.spacereloaded.multiblock.ControllerBlock<>(props,
+                    org.alex_melan.spacereloaded.cryo.AirColumnBlockEntity::new, () -> ModBlockEntities.ASU,
+                    org.alex_melan.spacereloaded.cryo.AirColumnBlockEntity::serverTick),
+            industrial().noOcclusion());
+    public static final Block ASU_TRAY = register("asu_tray",
+            props -> new org.alex_melan.spacereloaded.multiblock.FormableBlock(props, Block.box(1.5, 0, 1.5, 14.5, 16, 14.5)),
+            industrial().noOcclusion());
+    public static final Block ASU_HEAT_EXCHANGER = register("asu_heat_exchanger",
+            props -> new org.alex_melan.spacereloaded.multiblock.FormableBlock(props, Block.box(1, 0, 1, 15, 13, 15)),
+            industrial().noOcclusion());
+    public static final Block ASU_COMPRESSOR = register("asu_compressor",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticMachineBlock(props,
+                    org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.COMPRESSOR, 3.0,
+                    org.alex_melan.spacereloaded.cryo.AsuCompressorBlockEntity::new, () -> ModBlockEntities.ASU_COMPRESSOR),
+            industrial());
+    public static final Block ASU_EXPANDER_WHEEL = registerNoItem("asu_expander_wheel", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ASU_COLUMN_CAP = registerNoItem("asu_column_cap", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block BERYL_ORE = register("beryl_ore", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 3.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
     public static final Block BORAX_ORE = register("borax_ore", Block::new,

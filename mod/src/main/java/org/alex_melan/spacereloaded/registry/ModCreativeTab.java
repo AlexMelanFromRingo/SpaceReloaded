@@ -158,6 +158,7 @@ public final class ModCreativeTab {
                                 ModBlocks.CONTROL_ROD_DRIVE, ModBlocks.REACTOR_CORE, ModBlocks.BEO_REFLECTOR, ModBlocks.HEAT_PIPE,
                                 ModBlocks.STIRLING_CONVERTOR, ModBlocks.REACTOR_POWER_CAP, ModBlocks.RADIATOR_PANEL,
                                 ModBlocks.CASCADE_CONTROLLER, ModBlocks.GAS_CENTRIFUGE,
+                                ModBlocks.ASU_SUMP, ModBlocks.ASU_TRAY, ModBlocks.ASU_HEAT_EXCHANGER, ModBlocks.ASU_COMPRESSOR,
                                 ModBlocks.BERYL_ORE, ModBlocks.BORAX_ORE, ModBlocks.URANINITE_ORE}) {
                             output.accept(block);
                         }
@@ -187,7 +188,7 @@ public final class ModCreativeTab {
                                 ModItems.BORAX, ModItems.BORIC_ACID, ModItems.BORON_CARBIDE_BLEND, ModItems.BORON_CARBIDE,
                                 ModItems.ZIRCON, ModItems.ZIRCONIUM, ModItems.URANINITE, ModItems.YELLOWCAKE,
                                 ModItems.URANIUM_DIOXIDE, ModItems.URANIUM_TETRAFLUORIDE, ModItems.FLUORINE,
-                                ModItems.URANIUM_HEXAFLUORIDE, ModItems.DEPLETED_URANIUM_HEXAFLUORIDE}) {
+                                ModItems.URANIUM_HEXAFLUORIDE, ModItems.DEPLETED_URANIUM_HEXAFLUORIDE, ModItems.ARGON_CANISTER}) {
                             output.accept(item);
                         }
                         // корзина ВОУ 93 % (28 кг U-235, как KRUSTY) — для творческого режима и стенда

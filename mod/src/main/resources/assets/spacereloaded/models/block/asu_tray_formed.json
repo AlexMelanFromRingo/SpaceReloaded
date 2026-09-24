@@ -1,0 +1,178 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"shell": "spacereloaded:block/asu_coldbox",
+		"band": "spacereloaded:block/reactor_steel",
+		"particle": "spacereloaded:block/asu_coldbox"
+	},
+	"elements": [
+		{
+			"from": [
+				2,
+				0,
+				2
+			],
+			"to": [
+				14,
+				7,
+				14
+			],
+			"faces": {
+				"north": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						9,
+						14,
+						16
+					]
+				},
+				"south": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						9,
+						14,
+						16
+					]
+				},
+				"east": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						9,
+						14,
+						16
+					]
+				},
+				"west": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						9,
+						14,
+						16
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				1.5,
+				7,
+				1.5
+			],
+			"to": [
+				14.5,
+				9,
+				14.5
+			],
+			"faces": {
+				"up": {
+					"texture": "#band",
+					"uv": [
+						1.5,
+						1.5,
+						14.5,
+						14.5
+					]
+				},
+				"down": {
+					"texture": "#band",
+					"uv": [
+						1.5,
+						1.5,
+						14.5,
+						14.5
+					]
+				},
+				"north": {
+					"texture": "#band",
+					"uv": [
+						1.5,
+						7,
+						14.5,
+						9
+					]
+				},
+				"south": {
+					"texture": "#band",
+					"uv": [
+						1.5,
+						7,
+						14.5,
+						9
+					]
+				},
+				"east": {
+					"texture": "#band",
+					"uv": [
+						1.5,
+						7,
+						14.5,
+						9
+					]
+				},
+				"west": {
+					"texture": "#band",
+					"uv": [
+						1.5,
+						7,
+						14.5,
+						9
+					]
+				}
+			}
+		},
+		{
+			"from": [
+				2,
+				9,
+				2
+			],
+			"to": [
+				14,
+				16,
+				14
+			],
+			"faces": {
+				"north": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						0,
+						14,
+						7
+					]
+				},
+				"south": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						0,
+						14,
+						7
+					]
+				},
+				"east": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						0,
+						14,
+						7
+					]
+				},
+				"west": {
+					"texture": "#shell",
+					"uv": [
+						2,
+						0,
+						14,
+						7
+					]
+				}
+			}
+		}
+	]
+}

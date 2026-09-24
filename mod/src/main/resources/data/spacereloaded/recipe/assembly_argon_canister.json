@@ -1,0 +1,10 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:argon_canister"
+	}
+}
