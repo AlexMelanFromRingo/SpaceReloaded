@@ -24,6 +24,8 @@ public final class SpinRings {
 
     private static final Map<ResourceKey<Level>, Set<Long>> HUBS = new HashMap<>();
     private static final Map<UUID, Long> RIDERS = new HashMap<>();
+    /** Последняя ω, отправленная клиенту для вращения неба. */
+    private static final Map<UUID, Double> SKY = new HashMap<>();
 
     private SpinRings() {
     }
@@ -31,6 +33,7 @@ public final class SpinRings {
     public static void clearAll() {
         HUBS.clear();
         RIDERS.clear();
+        SKY.clear();
     }
 
     public static void register(ServerLevel level, BlockPos hub) {
@@ -88,9 +91,20 @@ public final class SpinRings {
                     fling(player, old);
                 }
                 RIDERS.remove(player.getUUID());
+                if (SKY.remove(player.getUUID()) != null) {
+                    net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,
+                            new org.alex_melan.spacereloaded.network.SpinSkyPayload(0, 0f));
+                }
                 continue;
             }
             RIDERS.put(player.getUUID(), hub.getBlockPos().asLong());
+            Double sent = SKY.get(player.getUUID());
+            if (sent == null || Math.abs(sent - hub.omega()) > 1e-3) {
+                SKY.put(player.getUUID(), hub.omega());
+                net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,
+                        new org.alex_melan.spacereloaded.network.SpinSkyPayload(
+                                hub.axis() == Direction.Axis.X ? 1 : 2, (float) hub.omega()));
+            }
             if (level.getGameTime() % 2 != 0 || hub.omega() == 0) {
                 continue;
             }

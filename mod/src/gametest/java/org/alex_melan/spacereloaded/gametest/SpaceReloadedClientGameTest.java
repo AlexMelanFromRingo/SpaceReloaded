@@ -2893,10 +2893,13 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         });
         assertThat(a[2] == 1 && a[1] > 0 && a[0] == 0, "Гантель изолирована, покоится, имеет момент инерции: "
                 + java.util.Arrays.toString(a));
-        // импульс тяги: сигнал на ~1.5 с (редстоун того же веса, что обшивка — масса сборки та же)
+        // импульс тяги: ступица считает по секундам (gameTime % 20 == 0); сигнал с середины секунды
+        // на 20 тиков захватывает ровно одну границу — одно срабатывание двигателей
+        long phase = sp.getServer().computeOnServer(server -> server.overworld().getGameTime() % 20);
+        context.waitTicks((int) ((30 - phase) % 20));
         sp.getServer().runCommand(set(x0, hy - 21, z0 + 3, "minecraft:redstone_block"));
         sp.getServer().runCommand(set(x0, hy + 21, z0 - 3, "minecraft:redstone_block"));
-        context.waitTicks(30);
+        context.waitTicks(20);
         sp.getServer().runCommand(set(x0, hy - 21, z0 + 3, "spacereloaded:hull_plating"));
         sp.getServer().runCommand(set(x0, hy + 21, z0 - 3, "spacereloaded:hull_plating"));
         context.waitTicks(40);
@@ -2907,7 +2910,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         });
         double step = 2 * 2000 * 21 / a[1]; // Δω за секунду тяги
         long steps = Math.round(b[0] / step);
-        assertThat(steps >= 1 && steps <= 2 && Math.abs(b[0] - steps * step) < step * 0.02,
+        assertThat(steps == 1 && Math.abs(b[0] - steps * step) < step * 0.02,
                 String.format(java.util.Locale.ROOT, "Раскрутка I·Δω = τ·t: ω %.5f, шаг τ/I %.5f", b[0], step));
         log(String.format(java.util.Locale.ROOT, "кольцо: I = %.3g кг·м², %d с тяги → ω = %.4f рад/с (τ·t/I) ✓",
                 a[1], steps, b[0]));
@@ -2928,6 +2931,9 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         double eg = Double.parseDouble(weight.split(" ")[1]);
         assertThat(eg > 1 && Math.abs(g - eg) < 0.05, "Вес у пола кольца ω²·r: получено " + weight);
         log("кольцо: вес у пола " + weight.split(" ")[0] + " м/с² (ω²·r) ✓");
+        int skyAxis = context.computeOnClient(client -> org.alex_melan.spacereloaded.client.SpinSky.axis());
+        assertThat(skyAxis == 1, "Небо в кольце вращается вокруг оси X ступицы: ось " + skyAxis);
+        log("кольцо: небо у клиента вращается вокруг оси ступицы ✓");
         sp.getServer().runCommand(String.format("tp @p %d %d %d", x0 - 4, BY, z0));
 
         // однобокая сборка (без противовеса) срывает подшипник

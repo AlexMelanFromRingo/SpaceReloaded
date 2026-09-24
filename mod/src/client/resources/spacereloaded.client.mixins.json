@@ -3,7 +3,8 @@
 	"package": "org.alex_melan.spacereloaded.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
-		"SoundEngineMixin"
+		"SoundEngineMixin",
+		"SkyRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

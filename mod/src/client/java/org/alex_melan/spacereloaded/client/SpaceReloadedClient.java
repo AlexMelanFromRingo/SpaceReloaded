@@ -96,6 +96,9 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
 				org.alex_melan.spacereloaded.network.VacuumStatePayload.TYPE,
 				(payload, context) -> VacuumAmbience.setExposed(payload.exposed()));
+		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
+				org.alex_melan.spacereloaded.network.SpinSkyPayload.TYPE,
+				(payload, context) -> SpinSky.set(payload.axis(), payload.omega()));
 
 		// Терминал орудия: первый пакет открывает экран, следующие его обновляют
 		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
