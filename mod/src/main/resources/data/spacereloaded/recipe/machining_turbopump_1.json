@@ -1,0 +1,9 @@
+{
+	"type": "spacereloaded:machining",
+	"ingredient": "spacereloaded:titanium_alloy_ingot",
+	"step": 0,
+	"result": {
+		"id": "spacereloaded:incomplete_turbopump"
+	},
+	"energy_j": 180000
+}

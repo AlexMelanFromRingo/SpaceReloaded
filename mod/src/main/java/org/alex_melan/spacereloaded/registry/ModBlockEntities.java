@@ -148,6 +148,24 @@ public final class ModBlockEntities {
                     org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity::new,
                     Set.of(ModBlocks.REGOLITH_REACTOR)));
 
+    // --- Инженерия (005) ---
+    public static final BlockEntityType<org.alex_melan.spacereloaded.kinetics.KineticBlockEntity> KINETIC =
+            register("kinetic", new BlockEntityType<>(org.alex_melan.spacereloaded.kinetics.KineticBlockEntity::new,
+                    Set.of(ModBlocks.WOODEN_SHAFT, ModBlocks.STEEL_SHAFT, ModBlocks.SMALL_GEAR, ModBlocks.LARGE_GEAR,
+                            ModBlocks.GEARBOX, ModBlocks.CLUTCH)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.kinetics.MotorBlockEntity> MOTOR =
+            register("motor", new BlockEntityType<>(org.alex_melan.spacereloaded.kinetics.MotorBlockEntity::new, Set.of(ModBlocks.MOTOR)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.kinetics.FlywheelBlockEntity> FLYWHEEL =
+            register("flywheel", new BlockEntityType<>(org.alex_melan.spacereloaded.kinetics.FlywheelBlockEntity::new, Set.of(ModBlocks.FLYWHEEL)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.kinetics.PressBlockEntity> PRESS =
+            register("mechanical_press", new BlockEntityType<>(org.alex_melan.spacereloaded.kinetics.PressBlockEntity::new,
+                    Set.of(ModBlocks.MECHANICAL_PRESS)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.kinetics.LatheBlockEntity> LATHE =
+            register("lathe", new BlockEntityType<>(org.alex_melan.spacereloaded.kinetics.LatheBlockEntity::new, Set.of(ModBlocks.LATHE)));
+
+    public static final BlockEntityType<org.alex_melan.spacereloaded.kinetics.WindHubBlockEntity> WIND_HUB =
+            register("wind_hub", new BlockEntityType<>(org.alex_melan.spacereloaded.kinetics.WindHubBlockEntity::new, Set.of(ModBlocks.WIND_HUB)));
+
     public static void init() {
         // Публикация энергохранилищ в Fabric API lookup (решение D7: Team Reborn Energy)
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SOLAR_PANEL);
@@ -166,6 +184,7 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SABATIER_REACTOR);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), RECTENNA);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CAPACITOR);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), MOTOR);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), REGOLITH_REACTOR);
         EnergyStorage.SIDED.registerForBlocks((level, pos, state, blockEntity, direction) ->
                 org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity.energyThroughLining(level, pos),

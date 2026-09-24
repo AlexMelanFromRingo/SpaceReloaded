@@ -28,6 +28,7 @@ public abstract class ServerLevelMixin {
             ZoneManager.markBlockChanged(level, pos);
             CableNetworkManager.markBlockChanged(level, pos);
             org.alex_melan.spacereloaded.industry.IndustryStructures.onBlockChanged(level, pos, oldState, newState);
+            org.alex_melan.spacereloaded.kinetics.KineticNetworks.onBlockChanged(level, pos, oldState, newState);
         }
     }
 }

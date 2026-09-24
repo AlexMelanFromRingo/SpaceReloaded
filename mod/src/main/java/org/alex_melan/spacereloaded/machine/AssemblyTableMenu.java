@@ -8,7 +8,7 @@ import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import org.alex_melan.spacereloaded.registry.ModMenus;
 
-/** Меню сборочного стола: 5 входов (8..80, 35) → стрелка → выход (134,35). */
+/** Меню сборочного стола: сетка входов 3×3 (30..66, 17..53) → стрелка → выход (134,35). */
 public class AssemblyTableMenu extends MachineMenu {
 
     public AssemblyTableMenu(int containerId, Inventory playerInventory,
@@ -25,7 +25,7 @@ public class AssemblyTableMenu extends MachineMenu {
     @Override
     protected void addMachineSlots() {
         for (int i = 0; i < AssemblyTableBlockEntity.INPUT_SLOTS; i++) {
-            addSlot(new Slot(container, i, 8 + i * 18, 35));
+            addSlot(new Slot(container, i, 30 + (i % 3) * 18, 17 + (i / 3) * 18));
         }
         addSlot(new OutputSlot(container, AssemblyTableBlockEntity.INPUT_SLOTS, 134, 35));
     }

@@ -1,0 +1,12 @@
+{
+	"parent": "minecraft:block/cube",
+	"textures": {
+		"particle": "spacereloaded:block/electrolysis_cell_formed",
+		"down": "spacereloaded:block/electrolysis_cell_formed",
+		"up": "spacereloaded:block/electrolysis_cell_formed_top",
+		"north": "spacereloaded:block/electrolysis_cell_formed",
+		"south": "spacereloaded:block/electrolysis_cell_formed",
+		"east": "spacereloaded:block/electrolysis_cell_formed",
+		"west": "spacereloaded:block/electrolysis_cell_formed"
+	}
+}

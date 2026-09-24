@@ -1,79 +1,43 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SpaceReloaded · руководство</title><style>
-:root{--bg:#0c1216;--panel:#141d23;--panel2:#101820;--line:#243039;--ink:#dbe3e8;--dim:#8795a0;--accent:#6fd5e8;--amber:#e0b23c;--slot:#0c1418;--slot-line:#2a3742;}
-@media (prefers-color-scheme:light){:root{--bg:#e7e9ea;--panel:#f6f8f9;--panel2:#eef1f3;--line:#d0d7dc;--ink:#1a2228;--dim:#5a6670;--accent:#137a90;--slot:#e4e9ec;--slot-line:#c6ced4;}}
-:root[data-theme="dark"]{--bg:#0c1216;--panel:#141d23;--panel2:#101820;--line:#243039;--ink:#dbe3e8;--dim:#8795a0;--accent:#6fd5e8;--slot:#0c1418;--slot-line:#2a3742;}
-:root[data-theme="light"]{--bg:#e7e9ea;--panel:#f6f8f9;--panel2:#eef1f3;--line:#d0d7dc;--ink:#1a2228;--dim:#5a6670;--accent:#137a90;--slot:#e4e9ec;--slot-line:#c6ced4;}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-.mono{font-family:ui-monospace,"Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace}
-a{color:var(--accent);text-decoration:none}
-a:hover{text-decoration:underline}
-.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
-.top{position:sticky;top:0;z-index:9;background:var(--panel2);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
-.top .wrap{display:flex;align-items:center;gap:20px;height:52px}
-.top .brand{font:700 15px/1 ui-monospace,monospace;letter-spacing:.12em;color:var(--ink)}
-.top .brand b{color:var(--accent)}
-.top nav{display:flex;gap:18px;margin-left:auto;font-size:14px;flex-wrap:wrap}
-.top nav a{color:var(--dim);letter-spacing:.02em}
-.top nav a:hover{color:var(--ink);text-decoration:none}
-.hero{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),var(--panel2));margin:28px 0 8px;padding:30px 30px 26px;position:relative;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:26px 26px;opacity:.14}
-.hero .eyebrow{font:600 12px/1 ui-monospace,monospace;letter-spacing:.28em;color:var(--accent);text-transform:uppercase;margin:0 0 12px;position:relative}
-.hero h1{margin:0 0 10px;font:700 34px/1.05 ui-monospace,monospace;letter-spacing:.01em;text-wrap:balance;position:relative}
-.hero p{margin:0;max-width:64ch;color:var(--ink);position:relative}
-.hazard{height:6px;margin-top:20px;position:relative;background:repeating-linear-gradient(-45deg,var(--amber) 0 12px,#1a1a1c 12px 24px);opacity:.8}
-.tags{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 4px;position:relative}
-.tags span{font:600 11.5px/1 ui-monospace,monospace;letter-spacing:.06em;border:1px solid var(--line);color:var(--dim);padding:5px 10px;text-transform:uppercase}
-h2{font:600 21px/1.2 ui-monospace,monospace;letter-spacing:.02em;margin:0 0 4px}
-.phase>h2,.guide h2{border-left:4px solid var(--accent);padding-left:12px}
-.lead{color:var(--dim);margin:2px 0 16px;padding-left:16px}
-.guide{margin:34px 0}
-.guide section{margin:26px 0;border:1px solid var(--line);background:var(--panel);padding:20px 22px}
-.guide h3{margin:0 0 8px;font:600 16px/1.3 ui-monospace,monospace;letter-spacing:.03em}
-.guide p{margin:8px 0}
-.kbd{font:600 12.5px/1 ui-monospace,monospace;border:1px solid var(--slot-line);background:var(--slot);padding:2px 7px;color:var(--ink);white-space:nowrap}
-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px}
-th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
-th{color:var(--dim);font:600 12px/1 ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase}
-.phase{margin:34px 0}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:14px}
-.card{border:1px solid var(--line);background:var(--panel);padding:14px 14px 12px;display:flex;flex-direction:column;gap:10px}
-.io{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:48px}
-.ins{display:flex;gap:4px;flex-wrap:wrap;max-width:190px}
-.item{position:relative;width:38px;height:38px;background:var(--slot);border:1px solid var(--slot-line);display:inline-flex;align-items:center;justify-content:center;flex:none}
-.item img{width:30px;height:30px;image-rendering:pixelated}
-.item.big{width:46px;height:46px;border-color:var(--accent)}
-.item.big img{width:36px;height:36px}
-.cnt{position:absolute;right:1px;bottom:0;font:700 12px ui-monospace,monospace;color:#fff;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000}
-.arr{color:var(--dim);font-size:20px;margin-left:auto;flex:none}
-.grid3{display:grid;grid-template-columns:repeat(3,34px);gap:2px}
-.cell{width:34px;height:34px;background:var(--slot);border:1px solid var(--slot-line);display:flex;align-items:center;justify-content:center}
-.cell .item{width:32px;height:32px;border:none;background:none}
-.cell .item img{width:26px;height:26px}
-.cell.empty{opacity:.3}
-.cap{display:flex;align-items:baseline;gap:8px;border-top:1px solid var(--line);padding-top:9px}
-.cap .nm{font-weight:600}
-.cap .kind{margin-left:auto;font:600 10.5px/1 ui-monospace,monospace;letter-spacing:.06em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
-.desc{margin:0;color:var(--dim);font-size:13.5px;line-height:1.5}
-.noicon{color:var(--dim)}
-footer{border-top:1px solid var(--line);margin-top:48px;padding:24px 0 40px;color:var(--dim);font-size:13px}
-footer a{color:var(--dim);text-decoration:underline}
-</style></head><body><div class="top"><div class="wrap"><span class="brand mono">SPACE<b>RELOADED</b></span><nav><a href="index.html" style="color:var(--ink)">Руководство</a><a href="recipes.html">Рецепты</a><a href="https://github.com/AlexMelanFromRingo/SpaceReloaded/blob/main/docs/ADDONS.md">Аддоны</a><a href="https://github.com/AlexMelanFromRingo/SpaceReloaded">GitHub</a></nav></div></div><div class="wrap">
-<div class="hero">
-  <p class="eyebrow">Космос на честной физике</p>
-  <h1>Руководство командира</h1>
-  <p>Ракета собирается из блоков, которые вы поставили сами, и летит по формуле Циолковского.
-  Тяговооружённость считается по реальной массе деталей, кривая ракета заваливается на взлёте,
-  а диагональная щель в обшивке базы травит воздух в вакуум. Здесь описан весь путь
-  от первого слитка железа до замкнутой межпланетной логистики.</p>
-  <div class="tags"><span>Minecraft 26.2</span><span>Fabric</span><span>Циолковский · TWR</span>
-  <span>Герметичность 26 направлений</span><span>ISRU</span><span>Стыковка</span><span>Орбитальный удар</span><span>Jade</span><span>Топливо-жидкость</span><span>Δv по Гоману</span><span>Грузовые линии</span><span>Wet workshop</span><span>Катапульта О’Нила</span><span>Мультиблоки</span></div>
-  <div class="hazard"></div>
-</div>
-
-<div class="guide">
-<section>
-<h3>С чего начать</h3>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SpaceReloaded · руководство</title>
+<meta name="description" content="Руководство по моду SpaceReloaded для Minecraft 26.2: ракеты по Циолковскому, герметичные базы, ISRU, межпланетная логистика, лунная индустрия и инженерия.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0d1418" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef1f3" media="(prefers-color-scheme: light)">
+<link rel="canonical" href="https://alexmelanfromringo.github.io/SpaceReloaded/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SpaceReloaded">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="SpaceReloaded · руководство">
+<meta property="og:description" content="Руководство по моду SpaceReloaded для Minecraft 26.2: ракеты по Циолковскому, герметичные базы, ISRU, межпланетная логистика, лунная индустрия и инженерия.">
+<meta property="og:url" content="https://alexmelanfromringo.github.io/SpaceReloaded/">
+<meta property="og:image" content="https://alexmelanfromringo.github.io/SpaceReloaded/img/favicon.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/favicon.png">
+<link rel="stylesheet" href="assets/site.css?v=8">
+<script>try{var t=localStorage.getItem('sr-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}document.documentElement.classList.add('js')</script>
+<script src="assets/site.js?v=8" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">К содержимому</a>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="index.html" aria-label="SpaceReloaded, на главную">
+      <img src="img/favicon.png" alt="" width="28" height="28"><span>SPACE<b>RELOADED</b></span></a>
+    <nav class="nav" aria-label="Разделы сайта"><a href="index.html" aria-current="page">Руководство</a><a href="recipes.html">Рецепты</a><a href="multiblocks.html">Мультиблоки</a></nav>
+    <a class="icon-btn gh" href="https://github.com/AlexMelanFromRingo/SpaceReloaded" aria-label="Исходники на GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 0z"/></svg></a>
+    <button class="icon-btn theme" type="button" aria-label="Переключить тему" title="Тема: светлая / тёмная"><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"/></svg></button>
+  </div>
+</header>
+<main id="main" class="wrap">
+<section class="hero"><p class="eyebrow">Космос на честной физике</p><h1>Руководство командира</h1><p class="hero-lead">Ракета собирается из блоков, которые вы поставили сами, и летит по формуле Циолковского. Тяговооружённость считается по реальной массе деталей, кривая ракета заваливается на взлёте, а диагональная щель в обшивке базы травит воздух в вакуум. Здесь описан весь путь от первого слитка железа до замкнутой межпланетной логистики.</p><ul class="tags" aria-label="Ключевые темы"><li>Minecraft 26.2</li><li>Fabric</li><li>Циолковский · TWR</li><li>Герметичность 26 направлений</li><li>ISRU</li><li>Стыковка</li><li>Орбитальный удар</li><li>Jade</li><li>Топливо-жидкость</li><li>Δv по Гоману</li><li>Грузовые линии</li><li>Wet workshop</li><li>Катапульта О’Нила</li><li>Мультиблоки</li><li>P = τ·ω</li></ul><div class="hazard" aria-hidden="true"></div></section><nav class="quick" aria-label="Другие разделы"><a class="quick-card" href="recipes.html"><b>Книга рецептов</b><span>Все рецепты по фазам прогрессии, поиск и фильтр по станку</span></a><a class="quick-card" href="multiblocks.html"><b>Мультиблоки</b><span>Схемы по слоям, материалы и физика каждой структуры</span></a></nav><div class="with-toc"><aside class="toc"><details open><summary>Содержание</summary><ol><li><a href="#s-chego-nachat">С чего начать</a></li><li><a href="#energiya-i-kabeli">Энергия и кабели</a></li><li><a href="#germetichnost-bazy">Герметичность базы</a></li><li><a href="#shlyuzy">Шлюзы</a></li><li><a href="#kislorod-i-skafandr">Кислород и скафандр</a></li><li><a href="#toplivo-tri-pary">Топливо: три пары</a></li><li><a href="#startovyy-kompleks-i-sborka">Стартовый комплекс и сборка</a></li><li><a href="#ekrany-vmesto-chata">Экраны вместо чата</a></li><li><a href="#polet-i-vybor-tseli">Полёт и выбор цели</a></li><li><a href="#stupeni">Ступени</a></li><li><a href="#naklon-i-gravitatsionnyy-razvorot">Наклон и гравитационный разворот</a></li><li><a href="#atmosfera-i-vhod">Атмосфера и вход</a></li><li><a href="#okna-pereleta">Окна перелёта</a></li><li><a href="#stykovka-i-lander">Стыковка и Lander</a></li><li><a href="#bespilotnye-reysy-i-gruzy">Беспилотные рейсы и грузы</a></li><li><a href="#tsena-pereleta">Цена перелёта</a></li><li><a href="#gruzovye-linii">Грузовые линии</a></li><li><a href="#wet-workshop-bort-stanovitsya-modulem">Wet workshop: борт становится модулем</a></li><li><a href="#sputniki-pokrytie-zaschita-kanalov">Спутники, покрытие, защита каналов</a></li><li><a href="#orbitalnoe-orudie">Орбитальное орудие</a></li><li><a href="#opasnosti-meteority-buri-teplo">Опасности: метеориты, бури, тепло</a></li><li><a href="#lunnaya-industriya-katapulta-lovushka-ma">Лунная индустрия: катапульта, ловушка масс, реголит</a></li><li><a href="#mars-metanoks-asteroidy">Марс, метанокс, астероиды</a></li><li><a href="#vozvrat-domoy">Возврат домой</a></li><li><a href="#inzheneriya-valy-stanki-multibloki">Инженерия: валы, станки, мультиблоки</a></li><li><a href="#esli-chto-to-ne-rabotaet">Если что-то не работает</a></li></ol></details></aside><article class="guide prose">
+<section class="gsec" id="s-chego-nachat" aria-labelledby="s-chego-nachat-h">
+<h2 id="s-chego-nachat-h">С чего начать</h2>
 <p>В обычном верстаке собираются четыре станка: <b>сборочный стол</b> (сердце всей
 промышленности), <b>дробилка</b>, <b>электропечь</b> и <b>угольный генератор</b>. Дальше почти
 всё делается на сборочном столе.</p>
@@ -83,8 +47,8 @@ footer a{color:var(--dim);text-decoration:underline}
 и ракеты. Титан и вольфрам добываются в глубинах, углепластик прессуется из угольной пыли.</p>
 </section>
 
-<section>
-<h3>Энергия и кабели</h3>
+<section class="gsec" id="energiya-i-kabeli" aria-labelledby="energiya-i-kabeli-h">
+<h2 id="energiya-i-kabeli-h">Энергия и кабели</h2>
 <p>Все станки питаются от общей кабельной сети. Кабель соединяется с любым блоком, который
 хранит или потребляет энергию: генераторы, аккумуляторы, дробилка, печь, стол, электролизёр,
 перегонный куб, атмосферный контроллер, орудие, химические машины и ректенна. Достаточно
@@ -97,8 +61,8 @@ footer a{color:var(--dim);text-decoration:underline}
 энергоспутников.</p>
 </section>
 
-<section>
-<h3>Герметичность базы</h3>
+<section class="gsec" id="germetichnost-bazy" aria-labelledby="germetichnost-bazy-h">
+<h2 id="germetichnost-bazy-h">Герметичность базы</h2>
 <p>Объём проверяется заливкой в <b>26 направлениях</b>: диагональная щель в углу это утечка,
 как недостроенная рамка портала. Это осознанное правило, а не баг. Кому такая строгость
 мешает строить, в конфиге есть <code>sealingDiagonalLeaks: false</code>: заливка перейдёт на
@@ -117,8 +81,8 @@ footer a{color:var(--dim);text-decoration:underline}
 </ul>
 </section>
 
-<section>
-<h3>Шлюзы</h3>
+<section class="gsec" id="shlyuzy" aria-labelledby="shlyuzy-h">
+<h2 id="shlyuzy-h">Шлюзы</h2>
 <p>Гермолюк открывается по ПКМ через цикл выравнивания давления. Два люка рядом не откроются
 одновременно: это интерлок, он и делает из тамбура настоящий шлюз. Смежные люки образуют одну
 дверь (до четырёх блоков), открываются и закрываются вместе, а открытый проём становится
@@ -128,8 +92,8 @@ footer a{color:var(--dim);text-decoration:underline}
 намеренно: иначе чужой мог бы пройти следом за владельцем.</p>
 </section>
 
-<section>
-<h3>Кислород и скафандр</h3>
+<section class="gsec" id="kislorod-i-skafandr" aria-labelledby="kislorod-i-skafandr-h">
+<h2 id="kislorod-i-skafandr-h">Кислород и скафандр</h2>
 <p>Маска в слоте шлема даёт дыхание, баллоны в инвентаре хранят кислород. Прочность баллона
 и есть запас; заряжаются баллоны в слоте электролизёра. При надетой маске справа сверху
 виден суммарный запас.</p>
@@ -141,8 +105,8 @@ footer a{color:var(--dim);text-decoration:underline}
 отброшенной ступени, снова вакуум.</p>
 </section>
 
-<section>
-<h3>Топливо: три пары</h3>
+<section class="gsec" id="toplivo-tri-pary" aria-labelledby="toplivo-tri-pary-h">
+<h2 id="toplivo-tri-pary-h">Топливо: три пары</h2>
 <ul>
 <li><b>Керолокс</b>: нефтеносный сланец в перегонный куб. Плотный и тяговитый, топливо старта
 с Земли. Побочно даёт серу.</li>
@@ -168,8 +132,8 @@ Sneak+ПКМ сливает обратно.</li>
 Смешивать пары нельзя ни ведром, ни трубой.</p>
 </section>
 
-<section>
-<h3>Стартовый комплекс и сборка</h3>
+<section class="gsec" id="startovyy-kompleks-i-sborka" aria-labelledby="startovyy-kompleks-i-sborka-h">
+<h2 id="startovyy-kompleks-i-sborka-h">Стартовый комплекс и сборка</h2>
 <p>Площадка это прямоугольник плит не меньше 3&times;3. Пилон это колонна от трёх блоков на краю
 площадки; её высота ограничивает высоту ракеты. Когда площадка и пилон собраны верно,
 конструкция подсвечивается жёлтой разметкой.</p>
@@ -182,8 +146,8 @@ Sneak+ПКМ сливает обратно.</li>
 крутящий момент и опрокинет её. Гиродин компенсирует момент и стабилизирует полёт.</p>
 </section>
 
-<section>
-<h3>Экраны вместо чата</h3>
+<section class="gsec" id="ekrany-vmesto-chata" aria-labelledby="ekrany-vmesto-chata-h">
+<h2 id="ekrany-vmesto-chata-h">Экраны вместо чата</h2>
 <p><b>Скан-отчёт</b> (ПКМ по пилону) открывается панелью: масса, тяга, тяговооружённость,
 запас скорости и вердикт цветом. <b>Терминал орудия</b> (ПКМ пустой рукой по орудию) показывает
 ломы, заряд, цель и перезарядку, а пуск идёт кнопкой: случайный клик по пушке больше не отправляет
@@ -194,8 +158,8 @@ Sneak+ПКМ сливает обратно.</li>
 без единого клика.</p>
 </section>
 
-<section>
-<h3>Полёт и выбор цели</h3>
+<section class="gsec" id="polet-i-vybor-tseli" aria-labelledby="polet-i-vybor-tseli-h">
+<h2 id="polet-i-vybor-tseli-h">Полёт и выбор цели</h2>
 <table><tr><th>Действие</th><th>Ввод</th></tr>
 <tr><td>Сесть в ракету</td><td><span class="kbd">ПКМ</span> по корпусу</td></tr>
 <tr><td>Тяга</td><td><span class="kbd">Прыжок</span> удерживать</td></tr>
@@ -215,8 +179,8 @@ Sneak+ПКМ сливает обратно.</li>
 считается так же, как вертикальная.</p>
 </section>
 
-<section>
-<h3>Ступени</h3>
+<section class="gsec" id="stupeni" aria-labelledby="stupeni-h">
+<h2 id="stupeni-h">Ступени</h2>
 <p><b>Разделитель ступеней</b> (пироболтовое кольцо: две стали, титановый сплав, порох) задаёт
 плоскость отделения: всё на его ярусе и ниже становится нижней ступенью. Ступени считаются снизу
 вверх и зажигаются по очереди. Скан-отчёт показывает запас скорости каждой ступени
@@ -231,16 +195,16 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 разделителем и деталь верхней ступени, которая держится только на нижней.</p>
 </section>
 
-<section>
-<h3>Наклон и гравитационный разворот</h3>
+<section class="gsec" id="naklon-i-gravitatsionnyy-razvorot" aria-labelledby="naklon-i-gravitatsionnyy-razvorot-h">
+<h2 id="naklon-i-gravitatsionnyy-razvorot-h">Наклон и гравитационный разворот</h2>
 <p>Клавиши движения наклоняют ракету туда, куда смотрит пилот: пока клавиша удержана, угол
 плавно растёт до 45°, при отпускании возвращается к вертикали. Команду отрабатывает гироскоп,
 без него HUD честно скажет, что управления нет. Наклонённая тяга даёт горизонтальную скорость,
 и отделённые ступени падают в стороне от площадки.</p>
 </section>
 
-<section>
-<h3>Атмосфера и вход</h3>
+<section class="gsec" id="atmosfera-i-vhod" aria-labelledby="atmosfera-i-vhod-h">
+<h2 id="atmosfera-i-vhod-h">Атмосфера и вход</h2>
 <p>У Земли и Марса есть атмосфера, плотность которой убывает с высотой. Она сопротивляется ракете,
 ломам орудия и метеоритам: подъём с Земли дороже подъёма с Луны, ракета без тяги перестаёт
 разгоняться на терминальной скорости, а лом на Марсе прилетает быстрее, чем на Земле.</p>
@@ -252,15 +216,15 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 заранее или берите капсулу с теплозащитой.</p>
 </section>
 
-<section>
-<h3>Окна перелёта</h3>
+<section class="gsec" id="okna-pereleta" aria-labelledby="okna-pereleta-h">
+<h2 id="okna-pereleta-h">Окна перелёта</h2>
 <p>К Марсу нельзя лететь когда вздумается. Взаимное положение планет открывает <b>окно Гомана</b>
 периодически. Выберите цель Марс: подсказка покажет, открыто окно или сколько ждать. Вне окна
 ракета не уйдёт в перелёт, сколько бы топлива вы ни залили. У Луны и орбиты окон нет.</p>
 </section>
 
-<section>
-<h3>Стыковка и Lander</h3>
+<section class="gsec" id="stykovka-i-lander" aria-labelledby="stykovka-i-lander-h">
+<h2 id="stykovka-i-lander-h">Стыковка и Lander</h2>
 <p>Стыковочный узел в стеке ракеты задаёт плоскость разделения. Соберите двухступенчатую
 ракету: снизу лендер (двигатель, бак, кресло), затем узел, выше носитель.</p>
 <p>На орбите <span class="kbd">Sneak+ПКМ</span> по узлу расстыковывает их, топливо делится по
@@ -269,8 +233,8 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 сливает структуры и суммирует топливо. Лендер без двигателя или поста управления не отделится.</p>
 </section>
 
-<section>
-<h3>Беспилотные рейсы и грузы</h3>
+<section class="gsec" id="bespilotnye-reysy-i-gruzy" aria-labelledby="bespilotnye-reysy-i-gruzy-h">
+<h2 id="bespilotnye-reysy-i-gruzy-h">Беспилотные рейсы и грузы</h2>
 <p><b>Полётная программа</b> хранит цель и посадочный маяк: <span class="kbd">Sneak+ПКМ</span>
 в воздух циклит цель, <span class="kbd">ПКМ</span> по маяку пишет точку прибытия,
 <span class="kbd">ПКМ</span> по припаркованной ракете загружает маршрут в борт.</p>
@@ -283,8 +247,8 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 заправляется и грузится без вашего участия.</p>
 </section>
 
-<section>
-<h3>Цена перелёта</h3>
+<section class="gsec" id="tsena-pereleta" aria-labelledby="tsena-pereleta-h">
+<h2 id="tsena-pereleta-h">Цена перелёта</h2>
 <p>Переход между телами стоит Δv. У каждого профиля планеты есть таблица перелётов, выведенная
 из уравнений Гомана по реальным орбитам: орбита → Луна <b>3955</b> м/с, орбита → Марс <b>3613</b>,
 Луна → орбита 822, Марс → орбита 2103, пояс астероидов 9650 туда и 4800 обратно. На высоте
@@ -299,8 +263,8 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 топливо не сгорает зря. Пилотируемый старт планировщик не блокирует.</p>
 </section>
 
-<section>
-<h3>Грузовые линии</h3>
+<section class="gsec" id="gruzovye-linii" aria-labelledby="gruzovye-linii-h">
+<h2 id="gruzovye-linii-h">Грузовые линии</h2>
 <p><b>Грузовой терминал</b> рядом с посадочным маяком превращает пару площадок в челночную
 линию. <span class="kbd">ПКМ</span> полётной программой по терминалу записывает цель, маяк
 и канал; <span class="kbd">Sneak+ПКМ</span> переключает УДЕРЖАНИЕ / АВТО.</p>
@@ -313,8 +277,8 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 в Jade и в отчёте ЦУПа.</p>
 </section>
 
-<section>
-<h3>Wet workshop: борт становится модулем</h3>
+<section class="gsec" id="wet-workshop-bort-stanovitsya-modulem" aria-labelledby="wet-workshop-bort-stanovitsya-modulem-h">
+<h2 id="wet-workshop-bort-stanovitsya-modulem-h">Wet workshop: борт становится модулем</h2>
 <p>Выведенная на орбиту пустая ступень это масса, за которую вы уже заплатили Δv.
 <b>Стыковочный порт</b> (герметичный люк с направлением) превращает её в модуль станции:
 припаркуйте борт стенкой бака вплотную к передней грани порта, стравите топливо (не больше
@@ -325,8 +289,8 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 проверяется штатной герметичностью. Работает и на Марсе: посадочный модуль становится базой.</p>
 </section>
 
-<section>
-<h3>Спутники, покрытие, защита каналов</h3>
+<section class="gsec" id="sputniki-pokrytie-zaschita-kanalov" aria-labelledby="sputniki-pokrytie-zaschita-kanalov-h">
+<h2 id="sputniki-pokrytie-zaschita-kanalov-h">Спутники, покрытие, защита каналов</h2>
 <p><b>Спутник</b> это полезная нагрузка ракеты. На орбите он разворачивается в узел связи:
 аппарат гибнет, покрытие измерения растёт. Разворот идёт только у беспилотного борта, экипаж
 и груз не потеряются.</p>
@@ -338,8 +302,8 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 <b>тарелка-перехватчик</b> и увести груз на свою площадку. Шифруйте свои маяки.</p>
 </section>
 
-<section>
-<h3>Орбитальное орудие</h3>
+<section class="gsec" id="orbitalnoe-orudie" aria-labelledby="orbitalnoe-orudie-h">
+<h2 id="orbitalnoe-orudie-h">Орбитальное орудие</h2>
 <p>Орудие работает только на орбите, питается от кабельной сети и бьёт вольфрамовым ломом.
 Целеуказателем <span class="kbd">ПКМ</span> метит цель на поверхности, <span class="kbd">ПКМ</span>
 по орудию наводит, <span class="kbd">ПКМ</span> пустой рукой стреляет.
@@ -360,8 +324,8 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 куда именно придёт лом.</p>
 </section>
 
-<section>
-<h3>Опасности: метеориты, бури, тепло</h3>
+<section class="gsec" id="opasnosti-meteority-buri-teplo" aria-labelledby="opasnosti-meteority-buri-teplo-h">
+<h2 id="opasnosti-meteority-buri-teplo-h">Опасности: метеориты, бури, тепло</h2>
 <p>На безатмосферных поверхностях периодически падают <b>метеориты</b>: свист-предупреждение,
 затем кратер. Защита та же, что от орбитального удара: обшивка и обсидиан держат, а слой
 реголита над базой поглощает воронку. В кратере остаётся метеоритное железо, богатый источник
@@ -373,8 +337,8 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 контроллер атмосферы тратит больше энергии. Луна без атмосферы качается от жара к морозу.</p>
 </section>
 
-<section>
-<h3>Лунная индустрия: катапульта, ловушка масс, реголит</h3>
+<section class="gsec" id="lunnaya-industriya-katapulta-lovushka-ma" aria-labelledby="lunnaya-industriya-katapulta-lovushka-ma-h">
+<h2 id="lunnaya-industriya-katapulta-lovushka-ma-h">Лунная индустрия: катапульта, ловушка масс, реголит</h2>
 <p>На Луне нет воздуха, поэтому груз на орбиту можно выстрелить электричеством, без топлива.
 <b>Электромагнитная катапульта</b> собирается из блоков: казённик, от его передней грани прямая
 линия секций катушек, рядом связная группа конденсаторов. Каждая секция разгоняет со своим пределом
@@ -393,14 +357,15 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 боковой грани. Электролиз расплава превращает блок реголита в 150 единиц кислорода для баллонов,
 железную пыль, с шансом титановую и шлак. Энергия подводится к любому блоку оболочки. Пока идёт
 процесс, в окне светится расплав. Шлак спекается в электропечи в плотный спечённый реголит для
-обваловки от метеоритов.</p>
+обваловки от метеоритов. Схемы реактора и катапульты по слоям есть на странице
+<a href="multiblocks.html">Мультиблоки</a>.</p>
 <p>Под провалами Луны прячутся <b>лавовые трубки</b>: тоннели на глубине 12–30 блоков со
 стабильными +17 °C (данные LRO Diviner), куда метеориты не достают. На поверхности попадаются
 <b>места крушения зондов</b> прошлых миссий: обломки вокруг кратера и бочка с деталями.</p>
 </section>
 
-<section>
-<h3>Марс, метанокс, астероиды</h3>
+<section class="gsec" id="mars-metanoks-asteroidy" aria-labelledby="mars-metanoks-asteroidy-h">
+<h2 id="mars-metanoks-asteroidy-h">Марс, метанокс, астероиды</h2>
 <p>У Марса тонкая углекислотная атмосфера и гравитация 0.38g. Дышать нельзя, но CO2 из воздуха
 собирается: <b>атмосферный сборщик</b> сжимает его в баллоны (на Марсе быстро, на Земле во много
 раз медленнее, в вакууме никак). <b>Реактор Сабатье</b> соединяет CO2 со льдом и льёт метанокс
@@ -418,16 +383,37 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 титан, вольфрам, метеоритное железо и лёд. Астероидный камень дробится в титановую пыль.</p>
 </section>
 
-<section>
-<h3>Возврат домой</h3>
+<section class="gsec" id="vozvrat-domoy" aria-labelledby="vozvrat-domoy-h">
+<h2 id="vozvrat-domoy-h">Возврат домой</h2>
 <p>Ракета не превращается в предмет в инвентаре. Домой возвращаются тремя путями: заправиться
 на месте через ISRU, состыковаться с носителем на орбите или построить титановую возвратную
 капсулу с теплозащитой. Межпространственные рейсы держат чанки авто-протухающими билетами:
 полёт завершится даже без игроков рядом и переживёт перезапуск сервера.</p>
 </section>
 
-<section>
-<h3>Если что-то не работает</h3>
+<section class="gsec" id="inzheneriya-valy-stanki-multibloki" aria-labelledby="inzheneriya-valy-stanki-multibloki-h">
+<h2 id="inzheneriya-valy-stanki-multibloki-h">Инженерия: валы, станки, мультиблоки</h2>
+<p>Вращение передают валы и шестерни. Мощность считается честно: P = τ·ω. Пара шестерён меняет
+скорость на момент и теряет 2 % в зацеплении; малые шестерни, касающиеся гранями, сцепляются 1:1
+с реверсом, большая с малой по диагонали даёт 2:1. Кольцо с противоречивыми отношениями
+заклинивает. Деревянный вал держит 24.5 кН·м, стальной 706: передавайте мощность на высоких
+оборотах, понижайте у потребителя. <b>Фрикционная муфта</b> размыкается редстоуном и срабатывает
+при перегрузке.</p>
+<p><b>Мотор-генератор</b> даёт 300 кВт при 750 об/мин и 1500 об/мин на холостом ходу; если сеть
+крутит его быстрее, он генерирует. <b>Пресс</b> штампует листы при 60–600 об/мин, каждый удар
+(50 кДж за 0.2 с) просаживает обороты, и <b>маховик</b> сглаживает просадку. <b>Токарный станок</b>
+работает при 300–1200 об/мин.</p>
+<p><b>Детали двигателя</b> (турбонасос, форсуночная головка, регенеративное сопло) проходят цепочку
+операций пресса и токарного станка. Погрешность каждой операции растёт, когда обороты гуляют,
+и складывается по сумме квадратов. Двигатель из деталей качества 1 даёт +1.6 % Isp и +5.9 % тяги,
+кустарный рецепт даёт качество 0.5.</p>
+<p><b>Инженерный молот</b> формирует мультиблоки ударом по ключевому блоку: электролизный стек
+(выход растёт по закону Фарадея) и ректификационную колонну (уравнение Фенске). Схемы всех
+структур по слоям со списком материалов собраны на странице <a href="multiblocks.html">Мультиблоки</a>.</p>
+</section>
+
+<section class="gsec" id="esli-chto-to-ne-rabotaet" aria-labelledby="esli-chto-to-ne-rabotaet-h">
+<h2 id="esli-chto-to-ne-rabotaet-h">Если что-то не работает</h2>
 <ul>
 <li><b>Кабель не подключается к машине.</b> Проверьте, что блок действительно потребляет энергию,
 и что кабель стоит вплотную. Все станки мода подключаемы.</li>
@@ -456,7 +442,15 @@ HUD подсказывает нажать <span class="kbd">X</span>; автоп
 спутник, и орудие получит наведение.</li>
 </ul>
 </section>
-</div>
-
-<p style="margin:28px 0 8px"><a href="recipes.html">Открыть книгу рецептов &rarr;</a></p>
-</div><footer><div class="wrap">SpaceReloaded для Minecraft 26.2 (Fabric). Иконки и рецепты собраны из ресурсов мода. <a href="https://github.com/AlexMelanFromRingo/SpaceReloaded">Исходники и сборка на GitHub</a>.</div></footer></body></html>
+</article></div>
+</main>
+<footer class="footer">
+  <div class="wrap">
+    <p>SpaceReloaded для Minecraft 26.2 (Fabric). Иконки, рецепты и схемы собраны из ресурсов мода
+    генератором <code>tools/gen_site.py</code>.</p>
+    <p><a href="https://github.com/AlexMelanFromRingo/SpaceReloaded">Исходники и сборка на GitHub</a> · <a href="https://github.com/AlexMelanFromRingo/SpaceReloaded/blob/main/docs/ADDONS.md">Аддоны</a></p>
+  </div>
+</footer>
+<div class="tip" role="tooltip" hidden></div>
+</body>
+</html>

@@ -262,8 +262,11 @@ public final class SpaceReloadedConfig {
     public int capacitorMaxBlocks = 32;
     /** Масса пустой грузовой капсулы, кг. */
     public double podDryMassKg = 100.0;
-    /** «Игровые кг» на предмет груза капсулы (у ракетного груза массы нет — балансовая модель 004). */
-    public double podKgPerItem = 2.0;
+    /**
+     * Масштаб таблицы масс предметов для капсулы (1.0 — как в датапаке {@code item_mass}:
+     * блок — 10 л материала с реальной плотностью, слиток — 1/9 блока). Балансовый множитель.
+     */
+    public double podKgPerItem = 1.0;
     /** Предел скоростного напора капсулы у дульного среза, Па. */
     public double podMaxDynamicPressurePa = 1_000_000.0;
     /** Предел теплового потока капсулы (Саттон–Грейвс), Вт/м². */
@@ -296,6 +299,76 @@ public final class SpaceReloadedConfig {
     public int reactorOxygenBuffer = 1_500;
     /** Толща непрозрачных блоков над головой, начиная с которой позиция — «укрытие» (стабильная температура). */
     public int shelterMinRockBlocks = 4;
+
+    // --- Инженерия (005): трансмиссия, станки, мультиблоки, детали ---
+    /** Предел числа блоков механической сети. */
+    public int kineticMaxBlocks = 512;
+    /** КПД зацепления цилиндрических шестерён (прямозубые ≈ 0.98). */
+    public double gearMeshEfficiency = 0.98;
+    /** КПД конической пары углового редуктора. */
+    public double bevelEfficiency = 0.97;
+    /** Момент трения на блок сети (подшипники), Н·м. */
+    public double kineticFrictionTorqueNm = 2.0;
+    /** Диаметр вала, м (визуал 4 px = 0.25 м) — для предела кручения τ_max = πd³τ_y/16. */
+    public double shaftDiameterM = 0.25;
+    /** Предел текучести стали при сдвиге τ_y ≈ 0.58·σ_y, Па. */
+    public double steelShaftShearPa = 230e6;
+    /** Скалывание дерева вдоль волокон, Па. */
+    public double woodShaftShearPa = 8e6;
+    /** Предельный момент фрикционной муфты-предохранителя, Н·м. */
+    public double clutchSlipTorqueNm = 50_000;
+    /** Пиковая мощность мотора-генератора, Вт (P_max = τ_st·ω₀/4). */
+    public double motorPowerW = 300_000;
+    /** Обороты холостого хода мотора, об/мин. */
+    public double motorNoLoadRpm = 1500;
+    /** КПД мотора-генератора в обе стороны. */
+    public double motorEfficiency = 0.92;
+    /** Энергобуфер мотора, E. */
+    public long motorEnergyBuffer = 200;
+    /** Момент инерции стального маховика, кг·м² (сплошной диск r 0.5 м, толщина 0.5 м). */
+    public double flywheelInertia = 385;
+    /** Предельная угловая скорость маховика, рад/с (σ = (3+ν)/8·ρω²r² ≤ 400 МПа). */
+    public double flywheelMaxOmega = 703;
+    /** Потолок радиуса взрыва при разрыве маховика. */
+    public double flywheelBurstMaxRadius = 6;
+    /** Разрыв маховика разрушает блоки (серверы могут выключить). */
+    public boolean flywheelBurstBreaksBlocks = true;
+    /** Работа одного удара пресса, Дж (1 МН × 5 см). */
+    public double pressStrokeJ = 50_000;
+    /** Длительность удара, тики (0.2 с). */
+    public int pressStrokeTicks = 4;
+    /** Период цикла пресса, тики. */
+    public int pressCycleTicks = 40;
+    /** Рабочее окно и номинал оборотов пресса, об/мин. */
+    public double pressMinRpm = 60;
+    public double pressMaxRpm = 600;
+    public double pressNominalRpm = 300;
+    /** Номинальная мощность токарного станка, Вт (момент резания = P/ω_ном). */
+    public double latheNominalPowerW = 30_000;
+    /** Рабочее окно и номинал оборотов шпинделя, об/мин. */
+    public double latheMinRpm = 300;
+    public double latheMaxRpm = 1200;
+    public double latheNominalRpm = 750;
+    /** Погрешность операции токарного станка и пресса при номинальных оборотах, мкм. */
+    public double toleranceLatheUm = 10;
+    public double tolerancePressUm = 20;
+    /** Рост погрешности на единицу относительного отклонения оборотов. */
+    public double toleranceSpeedFactor = 2;
+    /** Порог брака по суммарной погрешности, мкм. */
+    public double toleranceScrapUm = 100;
+    /** Пределы мультиблоков: ячейки стека, тарелки колонны. */
+    public int stackMaxCells = 15;
+    public int columnMinTrays = 4;
+    public int columnMaxTrays = 16;
+    /** Синхронизация ω клиенту: относительный порог и минимальный интервал, тики. */
+    public double kineticSyncThreshold = 0.03;
+    public int kineticSyncMinTicks = 5;
+    /** Визуальный предел скорости вращения в рендере, рад/с (выше — стробоскоп). */
+    public double kineticVisualMaxOmega = 40;
+    /** Скорость ветра у поверхности, м/с: Земля, Марс, Марс в пылевую бурю. */
+    public double windSpeedEarth = 8;
+    public double windSpeedMars = 8;
+    public double windSpeedMarsStorm = 25;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -442,6 +515,43 @@ public final class SpaceReloadedConfig {
         }
         if (shelterMinRockBlocks < 1 || shelterMinRockBlocks > 64) {
             throw new IllegalArgumentException("shelterMinRockBlocks должен быть в [1, 64]");
+        }
+        // Инженерия (005)
+        if (kineticMaxBlocks < 8 || kineticMaxBlocks > 4096) {
+            throw new IllegalArgumentException("kineticMaxBlocks в [8, 4096]");
+        }
+        if (gearMeshEfficiency <= 0 || gearMeshEfficiency > 1 || bevelEfficiency <= 0 || bevelEfficiency > 1
+                || motorEfficiency <= 0 || motorEfficiency > 1) {
+            throw new IllegalArgumentException("КПД зацеплений и мотора в (0, 1]");
+        }
+        if (kineticFrictionTorqueNm < 0 || shaftDiameterM <= 0 || steelShaftShearPa <= 0 || woodShaftShearPa <= 0
+                || clutchSlipTorqueNm <= 0) {
+            throw new IllegalArgumentException("параметры валов и муфты > 0");
+        }
+        if (motorPowerW <= 0 || motorNoLoadRpm <= 0 || motorEnergyBuffer < 1) {
+            throw new IllegalArgumentException("параметры мотора > 0");
+        }
+        if (flywheelInertia <= 0 || flywheelMaxOmega <= 0 || flywheelBurstMaxRadius < 0) {
+            throw new IllegalArgumentException("параметры маховика > 0");
+        }
+        if (pressStrokeJ <= 0 || pressStrokeTicks < 1 || pressCycleTicks <= pressStrokeTicks
+                || pressMinRpm <= 0 || pressMaxRpm <= pressMinRpm || pressNominalRpm <= 0) {
+            throw new IllegalArgumentException("параметры пресса: удар > 0, цикл > удара, окно min < max");
+        }
+        if (latheNominalPowerW <= 0 || latheMinRpm <= 0 || latheMaxRpm <= latheMinRpm || latheNominalRpm <= 0) {
+            throw new IllegalArgumentException("параметры токарного станка > 0, окно min < max");
+        }
+        if (toleranceLatheUm < 0 || tolerancePressUm < 0 || toleranceSpeedFactor < 0 || toleranceScrapUm <= 0) {
+            throw new IllegalArgumentException("параметры допусков >= 0, брак > 0");
+        }
+        if (stackMaxCells < 1 || columnMinTrays < 1 || columnMaxTrays < columnMinTrays) {
+            throw new IllegalArgumentException("пределы мультиблоков");
+        }
+        if (kineticSyncThreshold <= 0 || kineticSyncMinTicks < 1 || kineticVisualMaxOmega <= 0) {
+            throw new IllegalArgumentException("параметры синхронизации вращения > 0");
+        }
+        if (windSpeedEarth < 0 || windSpeedMars < 0 || windSpeedMarsStorm < 0) {
+            throw new IllegalArgumentException("скорость ветра >= 0");
         }
     }
 }

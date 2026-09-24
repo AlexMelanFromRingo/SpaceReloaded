@@ -64,6 +64,18 @@
 		"spacereloaded:regolith_reactor",
 		"spacereloaded:refractory_lining",
 		"spacereloaded:sintered_regolith",
-		"spacereloaded:lunar_bricks"
+		"spacereloaded:lunar_bricks",
+		"spacereloaded:steel_shaft",
+		"spacereloaded:small_gear",
+		"spacereloaded:large_gear",
+		"spacereloaded:gearbox",
+		"spacereloaded:clutch",
+		"spacereloaded:motor",
+		"spacereloaded:flywheel",
+		"spacereloaded:mechanical_press",
+		"spacereloaded:lathe",
+		"spacereloaded:electrolysis_cell",
+		"spacereloaded:distillation_tray",
+		"spacereloaded:wind_hub"
 	]
 }

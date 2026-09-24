@@ -1,0 +1,9 @@
+{
+	"type": "spacereloaded:machining",
+	"ingredient": "spacereloaded:incomplete_injector",
+	"step": 2,
+	"result": {
+		"id": "spacereloaded:incomplete_injector"
+	},
+	"energy_j": 60000
+}

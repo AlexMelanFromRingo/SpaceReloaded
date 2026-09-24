@@ -1,0 +1,11 @@
+{
+	"items": [
+		"spacereloaded:canned_ration",
+		"minecraft:bread",
+		"minecraft:cooked_beef",
+		"minecraft:apple",
+		"minecraft:baked_potato",
+		"minecraft:cooked_porkchop"
+	],
+	"kg": 0.3
+}

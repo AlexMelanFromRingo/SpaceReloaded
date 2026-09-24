@@ -514,6 +514,231 @@ def lunar_industry():
     regolith_reactor_gui()
 
 
+# ---------------------------------------------------------------------------
+# Инженерия (005): валы, шестерни, машины, детали
+# ---------------------------------------------------------------------------
+
+def _tint(image, tint, gain=1.0):
+    out = Image.new("RGBA", image.size)
+    for x in range(image.width):
+        for y in range(image.height):
+            r, g, b, a = image.getpixel((x, y))
+            lum = (r + g + b) / (3 * 255)
+            out.putpixel((x, y), (min(255, int(tint[0] * lum * gain)), min(255, int(tint[1] * lum * gain)),
+                                  min(255, int(tint[2] * lum * gain)), a))
+    return out
+
+
+def _icon(pixels_fn, name):
+    image = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    pixels_fn(image)
+    save(image, f"item/{name}.png")
+
+
+def engineering():
+    iron = vanilla("block/iron_block.png")
+    save(_tint(vanilla("block/stripped_oak_log.png"), (0xC8, 0x9A, 0x60), 1.1), "block/wooden_shaft.png")
+    shaft = iron.copy()
+    for y in range(16):
+        for x in (3, 12):
+            shaft.putpixel((x, y), (0x70, 0x72, 0x78, 255))
+    save(shaft, "block/steel_shaft.png")
+    gear = _tint(vanilla("block/copper_block.png"), (0xD8, 0xB0, 0x60), 1.05)  # латунь
+    save(gear, "block/gear.png")
+    casing = vanilla("block/smooth_stone.png").copy()
+    _frame(casing, (0x55, 0x58, 0x60, 255), 1)
+    gearbox = casing.copy()
+    for i in range(4, 12):
+        gearbox.putpixel((i, 7), (0xD8, 0xB0, 0x60, 255))
+        gearbox.putpixel((7, i), (0xD8, 0xB0, 0x60, 255))
+    save(gearbox, "block/gearbox.png")
+    clutch_side = casing.copy()
+    for x in range(16):
+        for y in (5, 10):
+            clutch_side.putpixel((x, y), (0x8A, 0x40, 0x30, 255))
+    save(clutch_side, "block/clutch_side.png")
+    clutch_end = casing.copy()
+    for x in range(6, 10):
+        for y in range(6, 10):
+            clutch_end.putpixel((x, y), (0x70, 0x72, 0x78, 255))
+    save(clutch_end, "block/clutch_end.png")
+    motor_side = iron.copy()
+    for x in range(2, 14):
+        for y in range(4, 12):
+            motor_side.putpixel((x, y), (0xB8, 0x6A, 0x30, 255) if (x % 2) else (0x8C, 0x4E, 0x2A, 255))
+    _frame(motor_side, (0x3A, 0x3C, 0x44, 255), 1)
+    save(motor_side, "block/motor_side.png")
+    motor_end = iron.copy()
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d < 2.2:
+                motor_end.putpixel((x, y), (0x70, 0x72, 0x78, 255))
+            elif 4 < d < 6.5 and (x + y) % 3 == 0:
+                motor_end.putpixel((x, y), (0x30, 0x32, 0x38, 255))
+    save(motor_end, "block/motor_end.png")
+    fly = vanilla("block/netherite_block.png").copy()
+    for x in range(16):
+        fly.putpixel((x, 7), (0x90, 0x92, 0x98, 255))
+    save(fly, "block/flywheel.png")
+    press_side = iron.copy()
+    for y in range(3, 13):
+        press_side.putpixel((2, y), (0x3A, 0x3C, 0x44, 255))
+        press_side.putpixel((13, y), (0x3A, 0x3C, 0x44, 255))
+    for x in range(2, 14):
+        press_side.putpixel((x, 3), (0xE0, 0x88, 0x30, 255))
+    save(press_side, "block/mechanical_press_side.png")
+    press_top = iron.copy()
+    _frame(press_top, (0x3A, 0x3C, 0x44, 255), 2)
+    save(press_top, "block/mechanical_press_top.png")
+    ram = vanilla("block/netherite_block.png").copy()
+    save(ram, "block/press_ram.png")
+    lathe_side = casing.copy()
+    for x in range(1, 15):
+        lathe_side.putpixel((x, 11), (0x3A, 0x3C, 0x44, 255))
+    for x in range(3, 8):
+        for y in range(5, 10):
+            lathe_side.putpixel((x, y), (0x90, 0x92, 0x98, 255))
+    save(lathe_side, "block/lathe_side.png")
+    lathe_end = casing.copy()
+    for x in range(5, 11):
+        for y in range(5, 11):
+            lathe_end.putpixel((x, y), (0x90, 0x92, 0x98, 255))
+    save(lathe_end, "block/lathe_end.png")
+
+    def plate(color):
+        def draw(img):
+            for x in range(2, 14):
+                for y in range(5, 11):
+                    shade = 1.15 if y == 5 else (0.75 if y == 10 else 1.0)
+                    img.putpixel((x, y), tuple(min(255, int(c * shade)) for c in color) + (255,))
+        return draw
+    _icon(plate((0xA8, 0xAC, 0xB4)), "steel_plate")
+    _icon(plate((0xD8, 0x84, 0x50)), "copper_plate")
+    _icon(plate((0xB8, 0xC8, 0xD8)), "titanium_alloy_plate")
+
+    def turbopump(img, done):
+        body = (0xB8, 0xBC, 0xC4, 255) if done else (0x88, 0x8C, 0x94, 255)
+        for x in range(16):
+            for y in range(16):
+                d = ((x - 7.5) ** 2 + (y - 8.5) ** 2) ** 0.5
+                if d < 5.5:
+                    img.putpixel((x, y), body)
+                if d < 2:
+                    img.putpixel((x, y), (0x40, 0x42, 0x48, 255))
+        for x in range(12, 16):
+            img.putpixel((x, 4), body)
+            img.putpixel((x, 5), body)
+    _icon(lambda i: turbopump(i, True), "turbopump")
+    _icon(lambda i: turbopump(i, False), "incomplete_turbopump")
+
+    def injector(img, done):
+        c = (0xD8, 0x84, 0x50, 255) if done else (0xA0, 0x60, 0x38, 255)
+        for x in range(16):
+            for y in range(16):
+                d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+                if d < 6.5:
+                    img.putpixel((x, y), c)
+                    if done and (x % 3 == 1 and y % 3 == 1) and d < 5.5:
+                        img.putpixel((x, y), (0x30, 0x20, 0x18, 255))
+    _icon(lambda i: injector(i, True), "injector_plate")
+    _icon(lambda i: injector(i, False), "incomplete_injector")
+
+    def nozzle(img, done):
+        c = (0xD8, 0x84, 0x50, 255) if done else (0xA0, 0x60, 0x38, 255)
+        for y in range(2, 15):
+            half = 2 + (y - 2) // 2
+            for x in range(8 - half, 8 + half):
+                img.putpixel((x, y), c if (x - (8 - half)) % 3 else (0x70, 0x40, 0x28, 255))
+    _icon(lambda i: nozzle(i, True), "regen_nozzle")
+    _icon(lambda i: nozzle(i, False), "incomplete_nozzle")
+
+
+def engineering_multiblocks():
+    iron = vanilla("block/iron_block.png")
+    cell = iron.copy()
+    for x in range(3, 13):
+        for y in range(3, 13):
+            cell.putpixel((x, y), (0x3A, 0x7B, 0xC8, 255) if (y > 5) else (0xB0, 0xD8, 0xF0, 255))
+    for x in range(16):
+        cell.putpixel((x, 1), (0xD8, 0xB0, 0x60, 255))
+        cell.putpixel((x, 14), (0xD8, 0xB0, 0x60, 255))
+    save(cell, "block/electrolysis_cell.png")
+    tray = iron.copy()
+    _frame(tray, (0x5A, 0x5E, 0x66, 255), 1)
+    for x in range(2, 14, 3):
+        for y in range(2, 14, 3):
+            tray.putpixel((x, y), (0x20, 0x22, 0x28, 255))
+    save(tray, "block/distillation_tray.png")
+    tray_side = iron.copy()
+    for x in range(16):
+        tray_side.putpixel((x, 7), (0x5A, 0x5E, 0x66, 255))
+        tray_side.putpixel((x, 8), (0x5A, 0x5E, 0x66, 255))
+    for x in range(5, 11):
+        for y in range(10, 14):
+            tray_side.putpixel((x, y), (0xC9, 0x8A, 0x3C, 255))  # окошко с керосиновой фракцией
+    save(tray_side, "block/distillation_tray_side.png")
+
+    def hammer(img):
+        for i in range(3, 14):
+            img.putpixel((i, 15 - i), (0x8C, 0x5E, 0x34, 255))
+            img.putpixel((i + 1, 15 - i), (0x6A, 0x44, 0x24, 255))
+        for x in range(7, 15):
+            for y in range(1, 5):
+                img.putpixel((x, y), (0xA8, 0xAC, 0xB4, 255) if y > 1 else (0xD0, 0xD4, 0xDC, 255))
+    _icon(hammer, "engineer_hammer")
+
+    def manual(img):
+        for x in range(3, 13):
+            for y in range(2, 15):
+                img.putpixel((x, y), (0x2C, 0x5C, 0xC8, 255))
+        for y in range(2, 15):
+            img.putpixel((3, y), (0x1A, 0x3A, 0x80, 255))
+        for x in range(5, 11):
+            img.putpixel((x, 5), (0xE0, 0x88, 0x30, 255))
+            img.putpixel((x, 7), (0xD8, 0xD8, 0xE0, 255))
+            img.putpixel((x, 9), (0xD8, 0xD8, 0xE0, 255))
+    _icon(manual, "engineer_manual")
+
+
+def formed_multiblocks():
+    """Облик сформированных мультиблоков (005): шина стека, обечайка колонны, оболочка реактора."""
+    cell = mod("block/electrolysis_cell.png").copy()
+    for x in range(16):
+        for y in range(0, 3):
+            cell.putpixel((x, y), (0xE8, 0xC0, 0x68, 255) if y == 1 else (0xB0, 0x88, 0x40, 255))
+    for x in range(4, 12):
+        for y in range(6, 12):
+            cell.putpixel((x, y), (0x55, 0xC8, 0xFF, 255) if (x + y) % 3 else (0x9C, 0xE4, 0xFF, 255))
+    save(cell, "block/electrolysis_cell_formed.png")
+    top = Image.new("RGBA", (16, 16), (0xB0, 0x88, 0x40, 255))
+    for x in range(16):
+        for y in (6, 7, 8, 9):
+            top.putpixel((x, y), (0xE8, 0xC0, 0x68, 255))
+    save(top, "block/electrolysis_cell_formed_top.png")
+    shell = vanilla("block/iron_block.png").copy()
+    for y in range(16):
+        for x in (0, 15):
+            shell.putpixel((x, y), (0x6A, 0x6E, 0x78, 255))
+    for x in range(16):
+        shell.putpixel((x, 0), (0x5A, 0x5E, 0x66, 255))
+    for x in range(3, 13, 3):
+        shell.putpixel((x, 2), (0x40, 0x42, 0x48, 255))
+    for x in range(6, 10):
+        for y in range(8, 12):
+            shell.putpixel((x, y), (0xC9, 0x8A, 0x3C, 255))
+    save(shell, "block/distillation_column.png")
+    lining = mod("block/refractory_lining.png")
+    plate = _tint(vanilla("block/iron_block.png"), (0xC0, 0xB0, 0x98), 1.0)
+    for x in range(16):
+        for y in range(16):
+            if x in (1, 14) and y in (1, 14):
+                plate.putpixel((x, y), (0x50, 0x48, 0x40, 255))
+    for x in range(16):
+        plate.putpixel((x, 7), (0xE0, 0x70, 0x28, 255))
+    save(plate, "block/refractory_lining_formed.png")
+
+
 def main():
     print("руды:")
     transplant_ore(mod("block/moon_stone.png"), vanilla("block/stone.png"),
@@ -537,6 +762,10 @@ def main():
     mars_ice()
     print("лунная индустрия:")
     lunar_industry()
+    print("инженерия:")
+    engineering()
+    engineering_multiblocks()
+    formed_multiblocks()
 
 
 if __name__ == "__main__":

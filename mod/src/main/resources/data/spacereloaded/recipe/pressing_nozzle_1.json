@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:pressing",
+	"ingredient": "spacereloaded:copper_plate",
+	"step": 0,
+	"result": {
+		"id": "spacereloaded:incomplete_nozzle"
+	}
+}

@@ -1,0 +1,7 @@
+{
+	"type": "spacereloaded:pressing",
+	"ingredient": "spacereloaded:steel_ingot",
+	"result": {
+		"id": "spacereloaded:steel_plate"
+	}
+}

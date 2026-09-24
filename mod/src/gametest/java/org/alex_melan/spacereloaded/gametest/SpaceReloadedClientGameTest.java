@@ -82,6 +82,12 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testMassDriver(context, sp);
             testMassCatcher(context, sp);
             testRegolithReactor(context, sp);
+            testTransmission(context, sp);
+            testShaftShear(context, sp);
+            testPressFlywheel(context, sp);
+            testStackColumn(context, sp);
+            testEngineQuality(context, sp);
+            testExplosionSealing(context, sp);
         }
     }
 
@@ -1765,15 +1771,17 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                 var breech = (org.alex_melan.spacereloaded.industry.MassDriverBreechBlockEntity)
                         server.overworld().getBlockEntity(breechPos);
                 long before = breech.storedEnergy(server.overworld());
+                double podMass = breech.podMassKg(); // 100 кг + 64 реголита по таблице масс (15 кг)
                 var solution = breech.tryFire(server.overworld(), null);
                 long after = breech.storedEnergy(server.overworld());
                 double expected = org.alex_melan.spacereloaded.core.industry.MassDriverBallistics.shotEnergyJ(
-                        100 + 64 * 2.0, solution.vRequired(), 0.85) / 15000.0;
+                        podMass, solution.vRequired(), 0.85) / 15000.0;
                 boolean energyOk = Math.abs((before - after) - expected) <= expected * 0.01 + 1;
                 boolean podGone = breech.getItem(0).isEmpty() && breech.getItem(1).isEmpty();
                 boolean queued = org.alex_melan.spacereloaded.industry.PodTransitState.get(server).pods().stream()
                         .anyMatch(p -> p.targetPos().equals(catcherPos) && p.cargo().get(0).getCount() == 64);
-                return solution.reason() + " v=" + Math.round(solution.vRequired()) + " dE=" + (before - after)
+                return solution.reason() + " m=" + Math.round(podMass) + " v=" + Math.round(solution.vRequired())
+                        + " dE=" + (before - after)
                         + " ожид=" + Math.round(expected) + (energyOk ? " E✓" : " E✗") + (podGone ? " слоты✓" : " слоты✗")
                         + (queued ? " транзит✓" : " транзит✗");
             });
@@ -1966,6 +1974,307 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         } finally {
             sp.getServer().runOnServer(server -> SpaceReloaded.config().reactorCycleTicks = previousCycle);
         }
+    }
+
+    // ---------- 31. Трансмиссия (005, US1) ----------
+
+    private static double omegaAt(TestSingleplayerContext sp, BlockPos pos) {
+        return sp.getServer().computeOnServer(server ->
+                server.overworld().getBlockEntity(pos)
+                        instanceof org.alex_melan.spacereloaded.kinetics.KineticBlockEntity be ? be.omega() : Double.NaN);
+    }
+
+    private static String netState(TestSingleplayerContext sp, BlockPos pos) {
+        return sp.getServer().computeOnServer(server ->
+                org.alex_melan.spacereloaded.kinetics.KineticNetworks.networkState(server.overworld(), pos));
+    }
+
+    /** Мотор → вал → малая шестерня → большая (по диагонали) → вал: 2:1, реверс; затем заклинивание. */
+    private void testTransmission(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 920;
+        int z = BZ;
+        moveTo(context, sp, x0 - 5, z);
+        sp.getServer().runCommand(set(x0 - 1, BY, z, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(x0, BY, z, "spacereloaded:motor[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 1, BY, z, "spacereloaded:steel_shaft[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 2, BY, z, "spacereloaded:small_gear[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 2, BY + 1, z + 1, "spacereloaded:large_gear[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 1, BY + 1, z + 1, "spacereloaded:steel_shaft[axis=x]"));
+        BlockPos motor = new BlockPos(x0, BY, z);
+        BlockPos out = new BlockPos(x0 + 1, BY + 1, z + 1);
+        context.waitTicks(200);
+        double wm = omegaAt(sp, motor);
+        double wo = omegaAt(sp, out);
+        String state = netState(sp, motor);
+        assertThat(state.equals("running") && wm > 100, "Сеть должна разогнаться: " + state + " ω=" + wm);
+        assertThat(Math.abs(wo / wm + 0.5) < 0.01, "Выходной вал: −½ скорости мотора, получено " + wo / wm);
+        log(String.format(java.util.Locale.ROOT, "трансмиссия: мотор %.0f об/мин → выход %.0f об/мин (2:1, реверс) ✓",
+                wm * 60 / (2 * Math.PI), wo * 60 / (2 * Math.PI)));
+        prepareCamera(context, sp, x0 + 1.5, BY + 1.6, z - 2.5, 20f, 25f);
+        snapshot(context, "transmission", 5);
+        sp.getServer().runCommand("gamemode survival @a");
+
+        // Классическое заклинивание: большая на оси малой + малая на оси большой, сцепленные по диагонали
+        sp.getServer().runCommand(set(x0 + 3, BY, z, "spacereloaded:large_gear[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 3, BY + 1, z + 1, "spacereloaded:small_gear[axis=x]"));
+        context.waitTicks(10);
+        String jammed = netState(sp, motor);
+        assertThat(jammed.equals("jammed") && omegaAt(sp, motor) == 0.0, "Противоречивые передачи — заклинивание: " + jammed);
+        sp.getServer().runCommand(set(x0 + 3, BY + 1, z + 1, "minecraft:air"));
+        context.waitTicks(60);
+        assertThat(netState(sp, motor).equals("running"), "После разбора сеть снова вращается: " + netState(sp, motor));
+        log("трансмиссия: заклинивание и восстановление ✓");
+    }
+
+    // ---------- 32. Срез вала (005, US1) ----------
+
+    private void testShaftShear(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 920;
+        int z = BZ + 20;
+        moveTo(context, sp, x0 - 5, z);
+        double previous = SpaceReloaded.config().woodShaftShearPa;
+        try {
+            // Стенд проверяет механизм среза; реальные пределы (24.5/706 кН·м) — тесты ядра
+            sp.getServer().runOnServer(server -> SpaceReloaded.config().woodShaftShearPa = 1e6);
+            sp.getServer().runCommand(set(x0 - 1, BY, z, "spacereloaded:creative_power"));
+            sp.getServer().runCommand(set(x0, BY, z, "spacereloaded:motor[axis=x]"));
+            sp.getServer().runCommand(set(x0 + 1, BY, z, "spacereloaded:small_gear[axis=x]"));
+            sp.getServer().runCommand(set(x0 + 1, BY + 1, z + 1, "spacereloaded:large_gear[axis=x]"));
+            sp.getServer().runCommand(set(x0 + 2, BY + 1, z + 1, "spacereloaded:wooden_shaft[axis=x]"));
+            sp.getServer().runCommand(set(x0 + 3, BY + 1, z + 1, "spacereloaded:flywheel[axis=x]"));
+            boolean broken = false;
+            for (int waited = 0; waited < 60 && !broken; waited += 2) {
+                context.waitTicks(2);
+                broken = sp.getServer().computeOnServer(server ->
+                        server.overworld().getBlockState(new BlockPos(x0 + 2, BY + 1, z + 1)).isAir());
+            }
+            assertThat(broken, "Деревянный вал за понижением при разгоне маховика должен срезаться");
+            log("трансмиссия: деревянный вал срезан моментом разгона маховика ✓");
+        } finally {
+            sp.getServer().runOnServer(server -> SpaceReloaded.config().woodShaftShearPa = previous);
+        }
+    }
+
+    // ---------- 33. Пресс и маховик (005, US2) ----------
+
+    private void testPressFlywheel(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 920;
+        int z = BZ + 40;
+        moveTo(context, sp, x0 - 5, z);
+        // Мотор → малая → большая (×2) → малая по оси → большая (×4) → пресс: 1500 → ~375 об/мин
+        sp.getServer().runCommand(set(x0 - 1, BY, z, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(x0, BY, z, "spacereloaded:motor[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 1, BY, z, "spacereloaded:small_gear[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 1, BY + 1, z + 1, "spacereloaded:large_gear[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 2, BY + 1, z + 1, "spacereloaded:small_gear[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 2, BY + 2, z + 2, "spacereloaded:large_gear[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 3, BY + 2, z + 2, "spacereloaded:mechanical_press[axis=x]"));
+        BlockPos motor = new BlockPos(x0, BY, z);
+        BlockPos press = new BlockPos(x0 + 3, BY + 2, z + 2);
+        context.waitTicks(200);
+        double dropWithout = measurePressDrop(context, sp, motor, press);
+        assertThat(dropWithout > 0.03, "Без маховика удар пресса заметно роняет обороты, просадка " + dropWithout);
+        String plate = sp.getServer().computeOnServer(server -> ((org.alex_melan.spacereloaded.kinetics.PressBlockEntity)
+                server.overworld().getBlockEntity(press)).getItem(1).getItem().toString());
+        assertThat(plate.contains("steel_plate"), "Пресс делает стальной лист, выход: " + plate);
+
+        // Маховик на валу мотора (с другой стороны)
+        sp.getServer().runCommand(set(x0 - 1, BY, z, "spacereloaded:flywheel[axis=x]"));
+        sp.getServer().runCommand(set(x0, BY - 1, z, "spacereloaded:creative_power"));
+        context.waitTicks(400);
+        double dropWith = measurePressDrop(context, sp, motor, press);
+        assertThat(dropWith * 5 < dropWithout, String.format(java.util.Locale.ROOT,
+                "Маховик гасит просадку в 5+ раз: без %.3f, с %.3f", dropWithout, dropWith));
+        log(String.format(java.util.Locale.ROOT, "пресс: просадка без маховика %.1f %%, с маховиком %.2f %% ✓",
+                dropWithout * 100, dropWith * 100));
+    }
+
+    /** Кладёт слиток в пресс и возвращает относительную просадку оборотов мотора за удар. */
+    private double measurePressDrop(ClientGameTestContext context, TestSingleplayerContext sp, BlockPos motor,
+                                    BlockPos press) {
+        double base = omegaAt(sp, motor);
+        sp.getServer().runOnServer(server -> {
+            var be = (org.alex_melan.spacereloaded.kinetics.PressBlockEntity) server.overworld().getBlockEntity(press);
+            be.setItem(1, ItemStack.EMPTY);
+            be.setItem(0, new ItemStack(ModItems.STEEL_INGOT));
+        });
+        double min = base;
+        for (int t = 0; t < 50; t++) {
+            context.waitTick();
+            min = Math.min(min, omegaAt(sp, motor));
+        }
+        return (base - min) / base;
+    }
+
+    // ---------- 34. Молот: электролизный стек и колонна (005, US3) ----------
+
+    private void testStackColumn(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 960;
+        int z = BZ;
+        moveTo(context, sp, x0 - 5, z);
+        // Электролизёр лицом на запад, 7 ячеек за задней гранью (на восток)
+        sp.getServer().runCommand(set(x0, BY, z, "spacereloaded:electrolyzer[facing=west]"));
+        sp.getServer().runCommand(fill(x0 + 1, BY, z, x0 + 7, BY, z, "spacereloaded:electrolysis_cell"));
+        sp.getServer().runCommand(set(x0, BY + 1, z, "spacereloaded:creative_power"));
+        context.waitTicks(3);
+        BlockPos key = new BlockPos(x0, BY, z);
+        String formed = sp.getServer().computeOnServer(server -> {
+            var be = (org.alex_melan.spacereloaded.machine.ElectrolyzerBlockEntity) server.overworld().getBlockEntity(key);
+            be.hammer(server.overworld(), server.getPlayerList().getPlayers().get(0));
+            be.setItem(0, new ItemStack(net.minecraft.world.item.Items.ICE, 16));
+            return be.structure().formed() + "/" + be.structure().repeats();
+        });
+        assertThat(formed.equals("true/7"), "Молот формирует стек из 7 ячеек: " + formed);
+        int left = 16;
+        for (int waited = 0; waited < 300 && left == 16; waited += 10) {
+            context.waitTicks(10);
+            left = sp.getServer().computeOnServer(server ->
+                    ((org.alex_melan.spacereloaded.machine.ElectrolyzerBlockEntity) server.overworld()
+                            .getBlockEntity(key)).getItem(0).getCount());
+        }
+        assertThat(left == 8, "Стек N=7 перерабатывает 8 льда за цикл, осталось " + left);
+        prepareCamera(context, sp, x0 - 2.5, BY + 2.5, z - 3.5, -40f, 25f);
+        snapshot(context, "electrolysis_stack", 5);
+        sp.getServer().runCommand("gamemode survival @a");
+        sp.getServer().runCommand(set(x0 + 4, BY, z, "minecraft:air"));
+        context.waitTicks(3);
+        int repeats = sp.getServer().computeOnServer(server ->
+                ((org.alex_melan.spacereloaded.machine.ElectrolyzerBlockEntity) server.overworld()
+                        .getBlockEntity(key)).structure().repeats());
+        assertThat(repeats == 3, "Без 4-й ячейки стек укорачивается до 3, получено " + repeats);
+        log("молот: стек 7 ячеек → 8 льда за цикл; разрыв линии → 3 ячейки ✓");
+
+        // Колонна: перегонный куб + 12 тарелок
+        int cx = x0 + 12;
+        sp.getServer().runCommand(set(cx, BY, z, "spacereloaded:refinery[facing=west]"));
+        sp.getServer().runCommand(fill(cx, BY + 1, z, cx, BY + 12, z, "spacereloaded:distillation_tray"));
+        context.waitTicks(3);
+        BlockPos column = new BlockPos(cx, BY, z);
+        double yield = sp.getServer().computeOnServer(server -> {
+            var be = (org.alex_melan.spacereloaded.machine.RefineryBlockEntity) server.overworld().getBlockEntity(column);
+            be.hammer(server.overworld(), server.getPlayerList().getPlayers().get(0));
+            return be.fuelPerOperation();
+        });
+        assertThat(Math.abs(yield - 150) < 1.5, "Колонна 12 тарелок — 150 кг на сланец, получено " + yield);
+        prepareCamera(context, sp, cx - 5.5, BY + 5, z - 5.5, -45f, 5f);
+        snapshot(context, "distillation_column", 5);
+        sp.getServer().runCommand("gamemode survival @a");
+        // Ошибка: 3 тарелки — не сформирована
+        sp.getServer().runCommand(set(cx, BY + 4, z, "minecraft:air"));
+        context.waitTicks(3);
+        double broken = sp.getServer().computeOnServer(server ->
+                ((org.alex_melan.spacereloaded.machine.RefineryBlockEntity) server.overworld()
+                        .getBlockEntity(column)).fuelPerOperation());
+        assertThat(Math.abs(broken - 100) < 0.01, "3 тарелки — меньше минимума, наследные 100 кг, получено " + broken);
+        log(String.format(java.util.Locale.ROOT, "молот: колонна 12 тарелок → %.0f кг/сланец; разрыв → 100 ✓", yield));
+    }
+
+    // ---------- 35. Качество двигателя (005, US4) ----------
+
+    private void testEngineQuality(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 960;
+        int z = BZ + 30;
+        moveTo(context, sp, x0 - 5, z);
+        // Реальная операция токарного станка от мотора через 2:1 (1500 → 750 об/мин — номинал шпинделя)
+        sp.getServer().runCommand(set(x0 - 1, BY, z, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(x0, BY, z, "spacereloaded:motor[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 1, BY, z, "spacereloaded:small_gear[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 1, BY + 1, z + 1, "spacereloaded:large_gear[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 2, BY + 1, z + 1, "spacereloaded:lathe[axis=x]"));
+        BlockPos lathe = new BlockPos(x0 + 2, BY + 1, z + 1);
+        context.waitTicks(100);
+        sp.getServer().runOnServer(server -> ((org.alex_melan.spacereloaded.kinetics.LatheBlockEntity)
+                server.overworld().getBlockEntity(lathe)).setItem(0, new ItemStack(ModItems.COPPER_PLATE)));
+        String step = "";
+        for (int waited = 0; waited < 200 && !step.startsWith("1"); waited += 10) {
+            context.waitTicks(10);
+            step = sp.getServer().computeOnServer(server -> {
+                ItemStack out = ((org.alex_melan.spacereloaded.kinetics.LatheBlockEntity)
+                        server.overworld().getBlockEntity(lathe)).getItem(1);
+                Integer st = out.get(org.alex_melan.spacereloaded.registry.ModDataComponents.MACHINING_STEP);
+                Float dq = out.get(org.alex_melan.spacereloaded.registry.ModDataComponents.MACHINING_DELTA_SQ);
+                return st == null ? "" : st + " δ=" + (dq == null ? "?" : String.format(java.util.Locale.ROOT, "%.1f",
+                        Math.sqrt(dq)));
+            });
+        }
+        assertThat(step.startsWith("1"), "Токарный станок: медный лист → форсуночная головка шаг 1, получено " + step);
+        log("токарный станок: полуфабрикат форсуночной головки, шаг " + step + " мкм ✓");
+
+        // Сборка двигателя из деталей качества 1.0 на сборочном столе → уровень 10 → Isp +1.6 %
+        int tx = x0 + 6;
+        sp.getServer().runCommand(set(tx, BY, z, "spacereloaded:assembly_table"));
+        sp.getServer().runCommand(set(tx + 1, BY, z, "spacereloaded:creative_power"));
+        BlockPos table = new BlockPos(tx, BY, z);
+        sp.getServer().runOnServer(server -> {
+            var be = (org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity)
+                    server.overworld().getBlockEntity(table);
+            ItemStack[] parts = {new ItemStack(ModItems.TURBOPUMP), new ItemStack(ModItems.INJECTOR_PLATE),
+                    new ItemStack(ModItems.REGEN_NOZZLE)};
+            for (ItemStack p : parts) {
+                p.set(org.alex_melan.spacereloaded.registry.ModDataComponents.PART_QUALITY, 1.0f);
+            }
+            be.setItem(0, parts[0]);
+            be.setItem(1, parts[1]);
+            be.setItem(2, parts[2]);
+            be.setItem(3, new ItemStack(ModItems.TUNGSTEN_INGOT));
+            be.setItem(4, new ItemStack(ModItems.STEEL_INGOT));
+        });
+        String engine = "";
+        for (int waited = 0; waited < 400 && engine.isEmpty(); waited += 10) {
+            context.waitTicks(10);
+            engine = sp.getServer().computeOnServer(server -> {
+                ItemStack out = ((org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity)
+                        server.overworld().getBlockEntity(table)).getItem(
+                        org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity.INPUT_SLOTS);
+                var props = out.get(net.minecraft.core.component.DataComponents.BLOCK_STATE);
+                if (out.isEmpty() || props == null) {
+                    return "";
+                }
+                Integer q = props.get(org.alex_melan.spacereloaded.rocket.EngineBlock.QUALITY);
+                var resolver = new org.alex_melan.spacereloaded.rocket.PartPropertiesResolver(server.overworld());
+                var precise = resolver.resolve(ModBlocks.ROCKET_ENGINE.defaultBlockState()
+                        .setValue(org.alex_melan.spacereloaded.rocket.EngineBlock.QUALITY, q)).orElseThrow();
+                var table8 = resolver.resolve(ModBlocks.ROCKET_ENGINE.defaultBlockState()).orElseThrow();
+                return q + " " + String.format(java.util.Locale.ROOT, "%.4f", precise.ispSec() / table8.ispSec());
+            });
+        }
+        assertThat(engine.startsWith("10 1.016"), "Двигатель из деталей q=1: уровень 10, Isp ×1.016; получено " + engine);
+        log("качество двигателя: уровень и множитель Isp " + engine + " ✓");
+    }
+
+    // ---------- 36. Взрыв и герметичность (T024) ----------
+
+    private void testExplosionSealing(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 960;
+        int z = BZ + 60;
+        moveTo(context, sp, x0 - 6, z);
+        sp.getServer().runCommand(fill(x0, BY, z, x0 + 4, BY + 4, z + 4, "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(fill(x0 + 1, BY + 1, z + 1, x0 + 3, BY + 3, z + 3, "minecraft:air"));
+        sp.getServer().runCommand(set(x0 + 2, BY + 1, z + 2, "spacereloaded:atmosphere_controller"));
+        sp.getServer().runCommand(set(x0 + 1, BY + 1, z + 2, "spacereloaded:creative_power"));
+        sp.getServer().runCommand("spacereloaded debug vacuum on");
+        BlockPos controller = new BlockPos(x0 + 2, BY + 1, z + 2);
+        SealingStatus status = SealingStatus.INVALID_ORIGIN;
+        for (int waited = 0; waited < 300 && status != SealingStatus.SEALED; waited += 10) {
+            context.waitTicks(10);
+            status = sp.getServer().computeOnServer(server -> {
+                SealedZone zone = ZoneManager.zoneAt(server.overworld(), controller);
+                return zone == null ? SealingStatus.INVALID_ORIGIN : zone.status();
+            });
+        }
+        assertThat(status == SealingStatus.SEALED, "Комната должна быть герметична до взрыва: " + status);
+        sp.getServer().runOnServer(server -> server.overworld().explode(null, x0 + 5.5, BY + 2.5, z + 2.5, 4.0f,
+                net.minecraft.world.level.Level.ExplosionInteraction.TNT));
+        SealingStatus after = status;
+        for (int waited = 0; waited < 300 && after == SealingStatus.SEALED; waited += 10) {
+            context.waitTicks(10);
+            after = sp.getServer().computeOnServer(server -> {
+                SealedZone zone = ZoneManager.zoneAt(server.overworld(), controller);
+                return zone == null ? SealingStatus.INVALID_ORIGIN : zone.status();
+            });
+        }
+        assertThat(after != SealingStatus.SEALED, "Взрыв пробил стену — зона должна потерять герметичность: " + after);
+        log("взрыв → герметичность обновлена (" + after + ") ✓ — T024 закрыт");
     }
 
     // ---------- Утилиты ----------

@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:turbopump",
+		"spacereloaded:injector_plate",
+		"spacereloaded:regen_nozzle",
+		"spacereloaded:titanium_alloy_ingot",
+		"spacereloaded:tungsten_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:methalox_engine"
+	}
+}

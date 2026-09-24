@@ -16,6 +16,10 @@ public final class ModRecipes {
     public static final RecipeType<CrusherRecipe> CRUSHING = registerType("crushing");
     public static final RecipeType<ElectricFurnaceRecipe> ELECTRIC_SMELTING = registerType("electric_smelting");
     public static final RecipeType<AssemblyRecipe> ASSEMBLY = registerType("assembly");
+    public static final RecipeType<org.alex_melan.spacereloaded.machine.recipe.MachiningRecipe.Pressing> PRESSING =
+            registerType("pressing");
+    public static final RecipeType<org.alex_melan.spacereloaded.machine.recipe.MachiningRecipe.Lathe> MACHINING =
+            registerType("machining");
 
     public static final RecipeSerializer<CrusherRecipe> CRUSHING_SERIALIZER =
             registerSerializer("crushing", new RecipeSerializer<>(CrusherRecipe.MAP_CODEC, CrusherRecipe.STREAM_CODEC));
@@ -24,6 +28,15 @@ public final class ModRecipes {
                     new RecipeSerializer<>(ElectricFurnaceRecipe.MAP_CODEC, ElectricFurnaceRecipe.STREAM_CODEC));
     public static final RecipeSerializer<AssemblyRecipe> ASSEMBLY_SERIALIZER =
             registerSerializer("assembly", new RecipeSerializer<>(AssemblyRecipe.MAP_CODEC, AssemblyRecipe.STREAM_CODEC));
+
+    public static final RecipeSerializer<org.alex_melan.spacereloaded.machine.recipe.MachiningRecipe.Pressing>
+            PRESSING_SERIALIZER = registerSerializer("pressing", new RecipeSerializer<>(
+                    org.alex_melan.spacereloaded.machine.recipe.MachiningRecipe.Pressing.MAP_CODEC,
+                    org.alex_melan.spacereloaded.machine.recipe.MachiningRecipe.Pressing.STREAM_CODEC));
+    public static final RecipeSerializer<org.alex_melan.spacereloaded.machine.recipe.MachiningRecipe.Lathe>
+            MACHINING_SERIALIZER = registerSerializer("machining", new RecipeSerializer<>(
+                    org.alex_melan.spacereloaded.machine.recipe.MachiningRecipe.Lathe.MAP_CODEC,
+                    org.alex_melan.spacereloaded.machine.recipe.MachiningRecipe.Lathe.STREAM_CODEC));
 
     private static <T extends Recipe<?>> RecipeType<T> registerType(String name) {
         Identifier id = Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name);

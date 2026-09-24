@@ -1,0 +1,6 @@
+{
+	"parent": "minecraft:item/handheld",
+	"textures": {
+		"layer0": "spacereloaded:item/engineer_hammer"
+	}
+}

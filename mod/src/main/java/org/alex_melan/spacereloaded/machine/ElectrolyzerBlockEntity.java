@@ -23,7 +23,51 @@ import org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity;
  * буфер (перекачивается в соседние баки) + кислород (заряжает баллоны).
  * Слоты: [0] — лёд, [1] — баллон, [2] — служебный выход (не используется).
  */
-public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity {
+public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity
+        implements org.alex_melan.spacereloaded.industry.IndustryStructures.StructureOwner {
+
+    /** Электролизный стек (005, FR-322): ячейки за задней гранью, формирует молот. */
+    private final org.alex_melan.spacereloaded.multiblock.FormedStructure structure =
+            new org.alex_melan.spacereloaded.multiblock.FormedStructure();
+    private boolean claimed;
+
+    @Override
+    public void markStructureDirty() {
+        structure.markDirty();
+    }
+
+    public org.alex_melan.spacereloaded.multiblock.FormedStructure structure() {
+        return structure;
+    }
+
+    @Override
+    public void preRemoveSideEffects(net.minecraft.core.BlockPos pos, BlockState state) {
+        if (level instanceof ServerLevel serverLevel) {
+            structure.dismantle(serverLevel, pos, state.getValue(ProcessingMachineBlock.FACING), state.getBlock());
+        }
+        super.preRemoveSideEffects(pos, state);
+    }
+
+    private net.minecraft.core.Direction face() {
+        return getBlockState().getValue(ProcessingMachineBlock.FACING);
+    }
+
+    /** Удар молотом (005). */
+    public boolean hammer(ServerLevel level, net.minecraft.server.level.ServerPlayer player) {
+        boolean ok = structure.hammer(level, getBlockPos(), face(), player);
+        if (ok && structure.repeats() >= 7) {
+            org.alex_melan.spacereloaded.industry.IndustryAdvancements.award(player,
+                    org.alex_melan.spacereloaded.industry.IndustryAdvancements.STACK);
+        }
+        setChanged();
+        return ok;
+    }
+
+    /** Сколько единиц льда перерабатывает цикл (N ячеек + сам электролизёр). */
+    private int unitsPerCycle(ItemStack ice) {
+        return org.alex_melan.spacereloaded.core.industry.ElectrolysisStack.unitsPerCycle(structure.repeats(),
+                ice.getCount());
+    }
 
     public static final double FUEL_BUFFER_CAPACITY = 500.0;
 
@@ -64,14 +108,23 @@ public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity {
 
     @Override
     public void serverTick(ServerLevel level) {
+        if (!claimed) {
+            claimed = true;
+            structure.reclaim(level, getBlockPos(), face());
+        }
+        if (structure.revalidate(level, getBlockPos(), face())) {
+            setChanged();
+        }
         if (level.getGameTime() % 20 == 0) {
             EnergyUtil.ensureAdjacentCableNetworks(level, getBlockPos());
             pushFuelToTanks(level);
         }
-        long energyPerTick = SpaceReloaded.config().machineEnergyPerTick;
         ItemStack ice = items.get(0);
+        int units = Math.max(1, unitsPerCycle(ice));
+        // Фарадей: N ячеек последовательно — N-кратный выход при N-кратной энергии (энергия/кг постоянна)
+        long energyPerTick = SpaceReloaded.config().machineEnergyPerTick * units;
         boolean canWork = ice.is(ModTags.ELECTROLYZER_INPUT)
-                && fuelBuffer + SpaceReloaded.config().electrolyzerFuelPerOp <= FUEL_BUFFER_CAPACITY
+                && fuelBuffer + SpaceReloaded.config().electrolyzerFuelPerOp * units <= FUEL_BUFFER_CAPACITY * units
                 && energy.amount >= energyPerTick;
 
         if (canWork) {
@@ -79,14 +132,29 @@ public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity {
             progress++;
             if (progress >= processingTicks()) {
                 progress = 0;
-                ice.shrink(1);
-                fuelBuffer += SpaceReloaded.config().electrolyzerFuelPerOp;
-                chargeCanister();
+                ice.shrink(units);
+                fuelBuffer += SpaceReloaded.config().electrolyzerFuelPerOp * units;
+                for (int i = 0; i < units; i++) {
+                    chargeCanister();
+                }
+                if (structure.formed()) {
+                    workParticles(level);
+                }
             }
             setChanged();
         } else if (progress > 0) {
             progress = Math.max(0, progress - 2);
             setChanged();
+        }
+    }
+
+    /** Пузыри над ячейками работающего стека. */
+    private void workParticles(ServerLevel level) {
+        net.minecraft.core.Direction back = face().getOpposite();
+        for (int i = 1; i <= structure.repeats(); i++) {
+            net.minecraft.core.BlockPos cell = getBlockPos().relative(back, i);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.BUBBLE_POP, cell.getX() + 0.5,
+                    cell.getY() + 1.05, cell.getZ() + 0.5, 4, 0.25, 0.05, 0.25, 0.01);
         }
     }
 
@@ -147,11 +215,14 @@ public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity {
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.putDouble("fuel_buffer", fuelBuffer);
+        structure.save(output);
     }
 
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         fuelBuffer = input.getDoubleOr("fuel_buffer", 0);
+        structure.load(input);
+        claimed = false;
     }
 }

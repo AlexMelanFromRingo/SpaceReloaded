@@ -12,7 +12,7 @@ real**. Rockets are entities assembled from blocks you placed yourself.
 Delta-v comes from the Tsiolkovsky equation, thrust-to-weight is computed from
 actual part masses, and a lopsided rocket tips over on ascent.
 
-It takes the best of four classics and rebuilds it on real physics: colonies
+It takes the best of four classic mods and Kerbal Space Program and rebuilds it on real physics: colonies
 and stations from **Galacticraft**, free-form rockets and satellites from
 **Advanced Rocketry**, visible machines and deep crafting chains from
 **Create**, industrial multiblocks from **Immersive Engineering**.
@@ -111,6 +111,24 @@ and stations from **Galacticraft**, free-form rockets and satellites from
 - **Lava tubes and crash sites.** The Moon hides long lava tubes under skylight
   pits with a steady +17 °C inside, and wrecked probes of earlier missions with
   salvage in their containers.
+- **Mechanical engineering.** Shafts, gears, angle gearboxes and friction
+  clutches carry rotation with real torque and angular speed: P = tau x omega,
+  a gear pair trades speed for torque and loses 2 % in the mesh, a conflicting
+  gear loop jams, and a wooden shaft behind a big reduction shears off (24.5 vs
+  706 kN·m for steel). A motor-generator bridges the energy grid both ways, a
+  steel flywheel stores ½Iω² and bursts above 6700 rpm. The mechanical press
+  and the lathe run off shafts; every press stroke visibly drops the speed
+  unless a flywheel smooths it.
+- **Precision engine parts.** Turbopump, injector plate and regenerative
+  nozzle go through several press and lathe operations; each adds an error
+  that grows when the spindle speed drifts, and errors add as root-sum-square.
+  The resulting quality honestly changes combustion, nozzle and pump
+  efficiency: a perfect engine gains 1.6 % Isp and 5.9 % thrust.
+- **Engineer's hammer and multiblocks.** Hit an electrolyzer with the hammer
+  and the cells behind it form an electrolysis stack (Faraday: N cells process
+  N times more ice at the same energy per kg); trays stacked on a refinery form
+  a distillation column (Fenske: 12 trays give 150 kg kerolox per shale instead
+  of 100). The engineer's manual draws every multiblock layer by layer.
 - **Orbital kinetic bombardment.** A cannon that only works in orbit fires
   tungsten rods along an honest entry trajectory. Crater size comes from
   E = ½mv² with cube-root scaling; obsidian-class blocks and water survive.
@@ -130,7 +148,7 @@ and stations from **Galacticraft**, free-form rockets and satellites from
 - **Screens, not chat spam.** The scan report, the cannon terminal and a flight
   map drawn from the transition graph are proper panels. Jade is supported as a
   soft dependency: look at a machine to read energy, fuel and rod count.
-- **A guided progression.** Twenty-nine advancements walk you from the first
+- **A guided progression.** Thirty-three advancements walk you from the first
   steel ingot to closing the interplanetary loop.
 
 ## No teleport magic

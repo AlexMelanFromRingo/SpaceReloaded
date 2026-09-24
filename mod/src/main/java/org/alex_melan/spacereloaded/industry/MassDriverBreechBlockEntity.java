@@ -213,14 +213,20 @@ public class MassDriverBreechBlockEntity extends BaseContainerBlockEntity
 
     // ---------------- решение ----------------
 
-    /** Масса капсулы с грузом: сухая + предметы × игровые кг на предмет. */
+    /**
+     * Масса капсулы с грузом: сухая + груз по таблице масс предметов (датапак
+     * {@code spacereloaded:item_mass}); {@code podKgPerItem} — масштаб таблицы (1.0 — как есть).
+     */
     public double podMassKg() {
         SpaceReloadedConfig config = SpaceReloaded.config();
-        int count = 0;
-        for (int slot = 1; slot < SLOTS; slot++) {
-            count += items.get(slot).getCount();
+        double cargo = 0;
+        if (level != null) {
+            for (int slot = 1; slot < SLOTS; slot++) {
+                cargo += org.alex_melan.spacereloaded.registry.ItemMasses.massOfStack(level.registryAccess(),
+                        items.get(slot));
+            }
         }
-        return config.podDryMassKg + count * config.podKgPerItem;
+        return config.podDryMassKg + cargo * config.podKgPerItem;
     }
 
     /** Полное решение выстрела с первой причиной неготовности (порядок FR-207). */

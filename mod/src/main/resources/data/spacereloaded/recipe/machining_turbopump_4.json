@@ -1,0 +1,10 @@
+{
+	"type": "spacereloaded:machining",
+	"ingredient": "spacereloaded:incomplete_turbopump",
+	"step": 3,
+	"result": {
+		"id": "spacereloaded:turbopump"
+	},
+	"energy_j": 60000,
+	"balance": true
+}

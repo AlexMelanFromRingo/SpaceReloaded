@@ -1,0 +1,106 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"particle": "spacereloaded:block/distillation_column",
+		"s": "spacereloaded:block/distillation_column",
+		"t": "spacereloaded:block/distillation_tray"
+	},
+	"elements": [
+		{
+			"from": [
+				2,
+				0,
+				2
+			],
+			"to": [
+				14,
+				16,
+				14
+			],
+			"faces": {
+				"north": {
+					"texture": "#s"
+				},
+				"south": {
+					"texture": "#s"
+				},
+				"east": {
+					"texture": "#s"
+				},
+				"west": {
+					"texture": "#s"
+				},
+				"up": {
+					"texture": "#t"
+				},
+				"down": {
+					"texture": "#t"
+				}
+			}
+		},
+		{
+			"from": [
+				1,
+				0,
+				1
+			],
+			"to": [
+				15,
+				2,
+				15
+			],
+			"faces": {
+				"north": {
+					"texture": "#s"
+				},
+				"south": {
+					"texture": "#s"
+				},
+				"east": {
+					"texture": "#s"
+				},
+				"west": {
+					"texture": "#s"
+				},
+				"up": {
+					"texture": "#t"
+				},
+				"down": {
+					"texture": "#t"
+				}
+			}
+		},
+		{
+			"from": [
+				1,
+				14,
+				1
+			],
+			"to": [
+				15,
+				16,
+				15
+			],
+			"faces": {
+				"north": {
+					"texture": "#s"
+				},
+				"south": {
+					"texture": "#s"
+				},
+				"east": {
+					"texture": "#s"
+				},
+				"west": {
+					"texture": "#s"
+				},
+				"up": {
+					"texture": "#t"
+				},
+				"down": {
+					"texture": "#t"
+				}
+			}
+		}
+	]
+}

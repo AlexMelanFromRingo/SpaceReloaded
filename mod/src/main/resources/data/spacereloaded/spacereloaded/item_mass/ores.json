@@ -1,0 +1,15 @@
+{
+	"items": [
+		"spacereloaded:titanium_ore",
+		"spacereloaded:deepslate_titanium_ore",
+		"spacereloaded:deepslate_tungsten_ore",
+		"spacereloaded:moon_titanium_ore",
+		"spacereloaded:mars_tungsten_ore",
+		"spacereloaded:oil_shale",
+		"#minecraft:iron_ores",
+		"#minecraft:copper_ores",
+		"#minecraft:coal_ores",
+		"#minecraft:gold_ores"
+	],
+	"kg": 35.0
+}

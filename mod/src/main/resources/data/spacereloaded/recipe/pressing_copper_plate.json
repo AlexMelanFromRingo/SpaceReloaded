@@ -1,0 +1,7 @@
+{
+	"type": "spacereloaded:pressing",
+	"ingredient": "minecraft:copper_ingot",
+	"result": {
+		"id": "spacereloaded:copper_plate"
+	}
+}

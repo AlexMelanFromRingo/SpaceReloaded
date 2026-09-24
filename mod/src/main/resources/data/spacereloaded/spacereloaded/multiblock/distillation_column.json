@@ -1,0 +1,10 @@
+{
+	"key": "spacereloaded:refinery",
+	"repeat": {
+		"cells": [ { "offset": [0, 1, 0], "block": "spacereloaded:distillation_tray" } ],
+		"step": [0, 1, 0],
+		"min": 4,
+		"max": 16,
+		"display": 12
+	}
+}

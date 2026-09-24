@@ -1,0 +1,213 @@
+{
+	"key": "spacereloaded:regolith_reactor",
+	"cells": [
+		{
+			"offset": [
+				-1,
+				-1,
+				0
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				-1,
+				-1,
+				1
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				-1,
+				-1,
+				2
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				-1,
+				0,
+				0
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				-1,
+				0,
+				1
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				-1,
+				0,
+				2
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				-1,
+				1,
+				0
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				-1,
+				1,
+				1
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				-1,
+				1,
+				2
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				0,
+				-1,
+				0
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				0,
+				-1,
+				1
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				0,
+				-1,
+				2
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				0,
+				0,
+				1
+			],
+			"block": "minecraft:air"
+		},
+		{
+			"offset": [
+				0,
+				0,
+				2
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				0,
+				1,
+				0
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				0,
+				1,
+				1
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				0,
+				1,
+				2
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				1,
+				-1,
+				0
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				1,
+				-1,
+				1
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				1,
+				-1,
+				2
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				1,
+				0,
+				0
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				1,
+				0,
+				1
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				1,
+				0,
+				2
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				1,
+				1,
+				0
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				1,
+				1,
+				1
+			],
+			"block": "spacereloaded:refractory_lining"
+		},
+		{
+			"offset": [
+				1,
+				1,
+				2
+			],
+			"block": "spacereloaded:refractory_lining"
+		}
+	]
+}

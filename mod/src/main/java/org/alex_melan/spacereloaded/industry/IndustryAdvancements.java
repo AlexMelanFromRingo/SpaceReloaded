@@ -20,6 +20,10 @@ public final class IndustryAdvancements {
     public static final String MASS_CATCH = "mass_catch";
     public static final String LUNAR_AIR = "lunar_air";
     public static final String UNDERGROUND = "underground";
+    public static final String GEAR_RATIO = "gear_ratio";
+    public static final String FLYWHEEL = "flywheel_energy";
+    public static final String STACK = "electrolysis_stack";
+    public static final String TOLERANCE = "tolerance";
 
     private IndustryAdvancements() {
     }

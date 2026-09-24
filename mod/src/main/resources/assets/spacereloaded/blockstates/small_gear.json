@@ -1,0 +1,16 @@
+{
+	"variants": {
+		"axis=x": {
+			"model": "spacereloaded:block/small_gear",
+			"x": 90,
+			"y": 90
+		},
+		"axis=y": {
+			"model": "spacereloaded:block/small_gear"
+		},
+		"axis=z": {
+			"model": "spacereloaded:block/small_gear",
+			"x": 90
+		}
+	}
+}

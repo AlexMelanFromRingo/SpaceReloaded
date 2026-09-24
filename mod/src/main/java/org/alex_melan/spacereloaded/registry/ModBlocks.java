@@ -155,7 +155,7 @@ public final class ModBlocks {
     public static final Block FUEL_TANK = register("fuel_tank", FuelTankBlock::new,
             BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
-    public static final Block ROCKET_ENGINE = register("rocket_engine", Block::new,
+    public static final Block ROCKET_ENGINE = register("rocket_engine", org.alex_melan.spacereloaded.rocket.EngineBlock::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
                     .noOcclusion());
@@ -273,7 +273,7 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops());
 
     /** Метанокислородный двигатель: середина по тяге и Isp, топливо ISRU-Марса. */
-    public static final Block METHALOX_ENGINE = register("methalox_engine", Block::new,
+    public static final Block METHALOX_ENGINE = register("methalox_engine", org.alex_melan.spacereloaded.rocket.EngineBlock::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops().noOcclusion());
 
@@ -291,7 +291,7 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops());
 
     /** Гидролоксовый двигатель: ниже тяга, выше Isp — для орбиты и Луны. */
-    public static final Block HYDROLOX_ENGINE = register("hydrolox_engine", Block::new,
+    public static final Block HYDROLOX_ENGINE = register("hydrolox_engine", org.alex_melan.spacereloaded.rocket.EngineBlock::new,
             BlockBehaviour.Properties.of().strength(3.5f, 10.0f).sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
                     .noOcclusion());
@@ -406,7 +406,7 @@ public final class ModBlocks {
                     .lightLevel(state -> state.getValue(
                             org.alex_melan.spacereloaded.industry.RegolithReactorBlock.LIT) ? 13 : 0));
     /** Огнеупорная футеровка оболочки реактора. */
-    public static final Block REFRACTORY_LINING = register("refractory_lining", Block::new,
+    public static final Block REFRACTORY_LINING = register("refractory_lining", org.alex_melan.spacereloaded.multiblock.FormableBlock::new,
             BlockBehaviour.Properties.of().strength(4.0f, 30.0f).sound(SoundType.DEEPSLATE_BRICKS)
                     .requiresCorrectToolForDrops());
     /**
@@ -420,6 +420,83 @@ public final class ModBlocks {
     public static final Block LUNAR_BRICKS = register("lunar_bricks", Block::new,
             BlockBehaviour.Properties.of().strength(2.0f, 6.0f).sound(SoundType.STONE)
                     .requiresCorrectToolForDrops());
+
+    // --- Инженерия (005): трансмиссия и станки ---
+    public static final Block WOODEN_SHAFT = register("wooden_shaft",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticAxisBlock(props, org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.SHAFT, 0.2,
+                    org.alex_melan.spacereloaded.kinetics.KineticBlock.Material.WOOD, true, 0.125, org.alex_melan.spacereloaded.kinetics.KineticBlockEntity::new,
+                    () -> ModBlockEntities.KINETIC),
+            BlockBehaviour.Properties.of().strength(1.5f, 3.0f).sound(SoundType.WOOD).noOcclusion());
+    public static final Block STEEL_SHAFT = register("steel_shaft",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticAxisBlock(props, org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.SHAFT, 3.0,
+                    org.alex_melan.spacereloaded.kinetics.KineticBlock.Material.STEEL, true, 0.125, org.alex_melan.spacereloaded.kinetics.KineticBlockEntity::new,
+                    () -> ModBlockEntities.KINETIC),
+            BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL).noOcclusion()
+                    .requiresCorrectToolForDrops());
+    public static final Block SMALL_GEAR = register("small_gear",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticAxisBlock(props, org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.SMALL_GEAR, 10.0,
+                    org.alex_melan.spacereloaded.kinetics.KineticBlock.Material.NONE, true, 0.5, org.alex_melan.spacereloaded.kinetics.KineticBlockEntity::new,
+                    () -> ModBlockEntities.KINETIC),
+            BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL).noOcclusion()
+                    .requiresCorrectToolForDrops());
+    public static final Block LARGE_GEAR = register("large_gear",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticAxisBlock(props, org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.LARGE_GEAR, 40.0,
+                    org.alex_melan.spacereloaded.kinetics.KineticBlock.Material.NONE, true, 0.5, org.alex_melan.spacereloaded.kinetics.KineticBlockEntity::new,
+                    () -> ModBlockEntities.KINETIC),
+            BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL).noOcclusion()
+                    .requiresCorrectToolForDrops());
+    public static final Block GEARBOX = register("gearbox", org.alex_melan.spacereloaded.kinetics.GearboxBlock::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block CLUTCH = register("clutch", org.alex_melan.spacereloaded.kinetics.ClutchBlock::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 8.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block MOTOR = register("motor",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticAxisBlock(props, org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.MOTOR, 5.0,
+                    org.alex_melan.spacereloaded.kinetics.KineticBlock.Material.STEEL, false, 0.5, org.alex_melan.spacereloaded.kinetics.MotorBlockEntity::new,
+                    () -> ModBlockEntities.MOTOR),
+            BlockBehaviour.Properties.of().strength(4.0f, 10.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block FLYWHEEL = register("flywheel",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticAxisBlock(props, org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.FLYWHEEL, 385.0,
+                    org.alex_melan.spacereloaded.kinetics.KineticBlock.Material.STEEL, true, 0.5, org.alex_melan.spacereloaded.kinetics.FlywheelBlockEntity::new,
+                    () -> ModBlockEntities.FLYWHEEL),
+            BlockBehaviour.Properties.of().strength(5.0f, 12.0f).sound(SoundType.NETHERITE_BLOCK).noOcclusion()
+                    .requiresCorrectToolForDrops());
+    public static final Block MECHANICAL_PRESS = register("mechanical_press",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticMachineBlock(props, org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.PRESS, 20.0,
+                    org.alex_melan.spacereloaded.kinetics.PressBlockEntity::new, () -> ModBlockEntities.PRESS),
+            BlockBehaviour.Properties.of().strength(4.0f, 10.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block LATHE = register("lathe",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticMachineBlock(props, org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.LATHE, 5.0,
+                    org.alex_melan.spacereloaded.kinetics.LatheBlockEntity::new, () -> ModBlockEntities.LATHE),
+            BlockBehaviour.Properties.of().strength(4.0f, 10.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    /** Ступица ветроколеса (005, FR-340) и парус. */
+    public static final Block WIND_HUB = register("wind_hub",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticAxisBlock(props, org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.WIND_HUB, 20.0,
+                    org.alex_melan.spacereloaded.kinetics.KineticBlock.Material.STEEL, false, 0.5, org.alex_melan.spacereloaded.kinetics.WindHubBlockEntity::new,
+                    () -> ModBlockEntities.WIND_HUB),
+            BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block SAIL = register("sail", Block::new,
+            BlockBehaviour.Properties.of().strength(0.8f, 1.0f).sound(SoundType.WOOL).noOcclusion());
+    /** Электролизная ячейка стека (005, FR-322). */
+    public static final Block ELECTROLYSIS_CELL = register("electrolysis_cell", org.alex_melan.spacereloaded.multiblock.FormableBlock::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    /** Ректификационная тарелка колонны (005, FR-323). */
+    public static final Block DISTILLATION_TRAY = register("distillation_tray",
+            props -> new org.alex_melan.spacereloaded.multiblock.FormableBlock(props, net.minecraft.world.phys.shapes.Shapes.box(0.125, 0, 0.125, 0.875, 1, 0.875)),
+            BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .noOcclusion());
+    /** Модели вращающихся частей — только для BER (без предметов). */
+    public static final Block ROTOR_STEEL_SHAFT = registerNoItem("rotor_steel_shaft", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROTOR_WOODEN_SHAFT = registerNoItem("rotor_wooden_shaft", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROTOR_SMALL_GEAR = registerNoItem("rotor_small_gear", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROTOR_LARGE_GEAR = registerNoItem("rotor_large_gear", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROTOR_FLYWHEEL = registerNoItem("rotor_flywheel", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROTOR_PRESS_RAM = registerNoItem("rotor_press_ram", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
 
     private static <T extends Block> T registerNoItem(String name,
                                                       Function<BlockBehaviour.Properties, T> factory,

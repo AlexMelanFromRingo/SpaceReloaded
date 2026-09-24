@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:pressing",
+	"ingredient": "spacereloaded:incomplete_injector",
+	"step": 3,
+	"result": {
+		"id": "spacereloaded:injector_plate"
+	}
+}

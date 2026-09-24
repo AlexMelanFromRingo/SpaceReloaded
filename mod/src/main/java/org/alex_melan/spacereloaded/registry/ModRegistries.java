@@ -218,6 +218,9 @@ public final class ModRegistries {
         DynamicRegistries.registerSynced(PART_PROPERTIES, RocketPartEntry.CODEC);
         DynamicRegistries.registerSynced(FUELS, FuelEntry.CODEC);
         DynamicRegistries.registerSynced(PLANETS, PlanetProfile.CODEC);
+        DynamicRegistries.register(ItemMasses.ITEM_MASS, ItemMasses.Entry.CODEC);
+        DynamicRegistries.registerSynced(org.alex_melan.spacereloaded.multiblock.MultiblockTemplates.MULTIBLOCKS,
+                org.alex_melan.spacereloaded.multiblock.MultiblockTemplates.TemplateEntry.CODEC);
     }
 
     private ModRegistries() {

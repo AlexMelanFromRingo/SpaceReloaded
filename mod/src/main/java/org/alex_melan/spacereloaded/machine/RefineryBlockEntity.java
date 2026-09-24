@@ -22,7 +22,48 @@ import org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity;
  * топливо во внутренний буфер → соседние баки. Выход выше электролизёра —
  * нефть энергетически выгоднее льда.
  */
-public class RefineryBlockEntity extends ProcessingMachineBlockEntity {
+public class RefineryBlockEntity extends ProcessingMachineBlockEntity
+        implements org.alex_melan.spacereloaded.industry.IndustryStructures.StructureOwner {
+
+    /** Ректификационная колонна (005, FR-323): тарелки столбом над кубом, формирует молот. */
+    private final org.alex_melan.spacereloaded.multiblock.FormedStructure structure =
+            new org.alex_melan.spacereloaded.multiblock.FormedStructure();
+    private boolean claimed;
+
+    @Override
+    public void markStructureDirty() {
+        structure.markDirty();
+    }
+
+    public org.alex_melan.spacereloaded.multiblock.FormedStructure structure() {
+        return structure;
+    }
+
+    @Override
+    public void preRemoveSideEffects(net.minecraft.core.BlockPos pos, BlockState state) {
+        if (level instanceof ServerLevel serverLevel) {
+            structure.dismantle(serverLevel, pos, state.getValue(ProcessingMachineBlock.FACING), state.getBlock());
+        }
+        super.preRemoveSideEffects(pos, state);
+    }
+
+    private net.minecraft.core.Direction face() {
+        return getBlockState().getValue(ProcessingMachineBlock.FACING);
+    }
+
+    public boolean hammer(ServerLevel level, net.minecraft.server.level.ServerPlayer player) {
+        boolean ok = structure.hammer(level, getBlockPos(), face(), player);
+        setChanged();
+        return ok;
+    }
+
+    /** Выход керолокса на единицу сланца: Y(K) по числу тарелок сформированной колонны. */
+    public double fuelPerOperation() {
+        double base = SpaceReloaded.config().refineryFuelPerOp;
+        return structure.formed()
+                ? org.alex_melan.spacereloaded.core.industry.ColumnYield.yield(structure.repeats(), base)
+                : base;
+    }
 
     public static final double FUEL_BUFFER_CAPACITY = 500.0;
 
@@ -63,6 +104,13 @@ public class RefineryBlockEntity extends ProcessingMachineBlockEntity {
 
     @Override
     public void serverTick(ServerLevel level) {
+        if (!claimed) {
+            claimed = true;
+            structure.reclaim(level, getBlockPos(), face());
+        }
+        if (structure.revalidate(level, getBlockPos(), face())) {
+            setChanged();
+        }
         if (level.getGameTime() % 20 == 0) {
             EnergyUtil.ensureAdjacentCableNetworks(level, getBlockPos());
             pushFuelToTanks(level);
@@ -70,7 +118,7 @@ public class RefineryBlockEntity extends ProcessingMachineBlockEntity {
         long energyPerTick = SpaceReloaded.config().machineEnergyPerTick;
         ItemStack input = items.get(0);
         boolean canWork = input.is(ModTags.REFINERY_INPUT)
-                && fuelBuffer + SpaceReloaded.config().refineryFuelPerOp <= FUEL_BUFFER_CAPACITY
+                && fuelBuffer + fuelPerOperation() <= FUEL_BUFFER_CAPACITY
                 && energy.amount >= energyPerTick;
 
         if (canWork) {
@@ -79,7 +127,12 @@ public class RefineryBlockEntity extends ProcessingMachineBlockEntity {
             if (progress >= processingTicks()) {
                 progress = 0;
                 input.shrink(1);
-                fuelBuffer += SpaceReloaded.config().refineryFuelPerOp;
+                fuelBuffer += fuelPerOperation();
+                if (structure.formed()) {
+                    net.minecraft.core.BlockPos top = getBlockPos().above(structure.repeats() + 1);
+                    level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD, top.getX() + 0.5,
+                            top.getY() + 0.1, top.getZ() + 0.5, 6, 0.2, 0.1, 0.2, 0.01);
+                }
                 // Побочный продукт перегонки — сера (в композиты и порох)
                 ItemStack byproduct = items.get(1);
                 if (byproduct.isEmpty()) {
@@ -143,11 +196,14 @@ public class RefineryBlockEntity extends ProcessingMachineBlockEntity {
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.putDouble("fuel_buffer", fuelBuffer);
+        structure.save(output);
     }
 
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         fuelBuffer = input.getDoubleOr("fuel_buffer", 0);
+        structure.load(input);
+        claimed = false;
     }
 }

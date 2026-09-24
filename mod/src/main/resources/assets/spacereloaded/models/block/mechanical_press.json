@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/cube_bottom_top",
+	"textures": {
+		"top": "spacereloaded:block/mechanical_press_top",
+		"bottom": "spacereloaded:block/mechanical_press_top",
+		"side": "spacereloaded:block/mechanical_press_side"
+	}
+}

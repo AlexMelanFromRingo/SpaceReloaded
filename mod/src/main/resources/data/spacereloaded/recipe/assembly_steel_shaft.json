@@ -1,0 +1,11 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:steel_shaft",
+		"count": 4
+	}
+}

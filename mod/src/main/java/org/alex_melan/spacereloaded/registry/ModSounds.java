@@ -19,6 +19,9 @@ public final class ModSounds {
     public static final SoundEvent CATCHER_CATCH = register("mass_catcher.catch");
     public static final SoundEvent REGOLITH_REACTOR_HUM = register("regolith_reactor.hum");
     public static final SoundEvent ORBITAL_CANNON_FIRE = register("orbital_cannon.fire");
+    public static final SoundEvent PRESS_STAMP = register("mechanical_press.stamp");
+    public static final SoundEvent LATHE_CUT = register("lathe.cut");
+    public static final SoundEvent MOTOR_HUM = register("motor.hum");
 
     private static SoundEvent register(String name) {
         Identifier id = Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name);

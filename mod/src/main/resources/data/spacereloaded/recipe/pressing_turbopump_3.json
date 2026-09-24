@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:pressing",
+	"ingredient": "spacereloaded:incomplete_turbopump",
+	"step": 2,
+	"result": {
+		"id": "spacereloaded:incomplete_turbopump"
+	}
+}

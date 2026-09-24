@@ -105,7 +105,8 @@ public class SpaceReloaded implements ModInitializer {
 			}
 			return InteractionResult.PASS;
 		});
-		// TODO T024: взрывы — Fabric-события взрыва в 26.2 нет, потребуется mixin
+		// T024 (закрыт в 005): взрыв ломает блоки через setBlock → sendBlockUpdated, который ловит
+		// ServerLevelMixin — зоны пересчитываются без отдельного события (стенд: testExplosionSealing)
 
 		ServerTickEvents.END_LEVEL_TICK.register(level -> {
 			ZoneManager.processDeferred(level);
@@ -116,6 +117,7 @@ public class SpaceReloaded implements ModInitializer {
 			org.alex_melan.spacereloaded.impact.MeteorManager.tick(level);
 			org.alex_melan.spacereloaded.network.MarsClimate.tick(level);
 			org.alex_melan.spacereloaded.industry.IndustryAdvancements.tick(level);
+			org.alex_melan.spacereloaded.kinetics.KineticNetworks.tick(level);
 		});
 		ServerTickEvents.END_SERVER_TICK.register(
 				org.alex_melan.spacereloaded.industry.PodTransitState::tick);
@@ -123,6 +125,7 @@ public class SpaceReloaded implements ModInitializer {
 			ZoneManager.shutdown();
 			CableNetworkManager.clearAll();
 			org.alex_melan.spacereloaded.industry.IndustryStructures.clearAll();
+			org.alex_melan.spacereloaded.kinetics.KineticNetworks.clearAll();
 			org.alex_melan.spacereloaded.rocket.FuelingHose.clearAll();
 			org.alex_melan.spacereloaded.sealing.VacuumHazard.clearAll();
 		});

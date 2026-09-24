@@ -1,0 +1,16 @@
+{
+	"variants": {
+		"axis=x": {
+			"model": "spacereloaded:block/lathe",
+			"x": 90,
+			"y": 90
+		},
+		"axis=y": {
+			"model": "spacereloaded:block/lathe"
+		},
+		"axis=z": {
+			"model": "spacereloaded:block/lathe",
+			"x": 90
+		}
+	}
+}

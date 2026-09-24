@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:small_gear",
+		"spacereloaded:small_gear",
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:gearbox",
+		"count": 1
+	}
+}

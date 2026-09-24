@@ -1,0 +1,52 @@
+{
+	"variants": {
+		"axis=x,powered=false,tripped=false": {
+			"model": "spacereloaded:block/clutch",
+			"x": 90,
+			"y": 90
+		},
+		"axis=x,powered=false,tripped=true": {
+			"model": "spacereloaded:block/clutch_open",
+			"x": 90,
+			"y": 90
+		},
+		"axis=x,powered=true,tripped=false": {
+			"model": "spacereloaded:block/clutch_open",
+			"x": 90,
+			"y": 90
+		},
+		"axis=x,powered=true,tripped=true": {
+			"model": "spacereloaded:block/clutch_open",
+			"x": 90,
+			"y": 90
+		},
+		"axis=y,powered=false,tripped=false": {
+			"model": "spacereloaded:block/clutch"
+		},
+		"axis=y,powered=false,tripped=true": {
+			"model": "spacereloaded:block/clutch_open"
+		},
+		"axis=y,powered=true,tripped=false": {
+			"model": "spacereloaded:block/clutch_open"
+		},
+		"axis=y,powered=true,tripped=true": {
+			"model": "spacereloaded:block/clutch_open"
+		},
+		"axis=z,powered=false,tripped=false": {
+			"model": "spacereloaded:block/clutch",
+			"x": 90
+		},
+		"axis=z,powered=false,tripped=true": {
+			"model": "spacereloaded:block/clutch_open",
+			"x": 90
+		},
+		"axis=z,powered=true,tripped=false": {
+			"model": "spacereloaded:block/clutch_open",
+			"x": 90
+		},
+		"axis=z,powered=true,tripped=true": {
+			"model": "spacereloaded:block/clutch_open",
+			"x": 90
+		}
+	}
+}

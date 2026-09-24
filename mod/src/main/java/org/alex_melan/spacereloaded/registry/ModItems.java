@@ -117,6 +117,39 @@ public final class ModItems {
     /** Шлак реголитового реактора (004): спекается в спечённый реголит. */
     public static final Item SLAG = simple("slag");
 
+    // --- Инженерия (005) ---
+    public static final Item STEEL_PLATE = simple("steel_plate");
+    public static final Item COPPER_PLATE = simple("copper_plate");
+    public static final Item TITANIUM_ALLOY_PLATE = simple("titanium_alloy_plate");
+    /** Полуфабрикаты деталей двигателя (шаг и Σδ² — компоненты). */
+    public static final Item INCOMPLETE_TURBOPUMP = register("incomplete_turbopump",
+            props -> new org.alex_melan.spacereloaded.machine.PartItem(props.stacksTo(1)));
+    public static final Item INCOMPLETE_INJECTOR = register("incomplete_injector",
+            props -> new org.alex_melan.spacereloaded.machine.PartItem(props.stacksTo(1)));
+    public static final Item INCOMPLETE_NOZZLE = register("incomplete_nozzle",
+            props -> new org.alex_melan.spacereloaded.machine.PartItem(props.stacksTo(1)));
+    /** Детали двигателя (качество — компонент). */
+    public static final Item TURBOPUMP = register("turbopump",
+            props -> new org.alex_melan.spacereloaded.machine.PartItem(props.stacksTo(1)));
+    public static final Item INJECTOR_PLATE = register("injector_plate",
+            props -> new org.alex_melan.spacereloaded.machine.PartItem(props.stacksTo(1)));
+    public static final Item REGEN_NOZZLE = register("regen_nozzle",
+            props -> new org.alex_melan.spacereloaded.machine.PartItem(props.stacksTo(1)));
+
+    /** Инженерный молот и руководство инженера (005). */
+    public static final Item ENGINEER_HAMMER = register("engineer_hammer",
+            props -> new org.alex_melan.spacereloaded.multiblock.EngineerHammerItem(props.stacksTo(1)));
+    public static final Item ENGINEER_MANUAL = register("engineer_manual",
+            props -> new org.alex_melan.spacereloaded.multiblock.EngineerManualItem(props.stacksTo(1)));
+
+    public static boolean isEnginePart(Item item) {
+        return item == TURBOPUMP || item == INJECTOR_PLATE || item == REGEN_NOZZLE;
+    }
+
+    public static boolean isIntermediatePart(Item item) {
+        return item == INCOMPLETE_TURBOPUMP || item == INCOMPLETE_INJECTOR || item == INCOMPLETE_NOZZLE;
+    }
+
     private static Item simple(String name) {
         return register(name, Item::new);
     }

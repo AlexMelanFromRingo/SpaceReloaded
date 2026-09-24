@@ -114,7 +114,26 @@ public class AssemblyRecipe implements Recipe<AssemblyRecipeInput> {
 
     @Override
     public ItemStack assemble(AssemblyRecipeInput input) {
-        return result.create();
+        ItemStack out = result.create();
+        // 005 (FR-332): двигатель получает уровень качества по деталям (среднее q), кустарно — 5
+        if (out.getItem() instanceof net.minecraft.world.item.BlockItem blockItem
+                && blockItem.getBlock() instanceof org.alex_melan.spacereloaded.rocket.EngineBlock) {
+            double sum = 0;
+            int parts = 0;
+            for (int i = 0; i < input.size(); i++) {
+                Float q = input.getItem(i).get(org.alex_melan.spacereloaded.registry.ModDataComponents.PART_QUALITY);
+                if (q != null) {
+                    sum += q;
+                    parts++;
+                }
+            }
+            int level = parts == 0 ? org.alex_melan.spacereloaded.core.industry.EngineQuality.HANDMADE_LEVEL
+                    : org.alex_melan.spacereloaded.core.industry.EngineQuality.level(sum / parts);
+            out.set(net.minecraft.core.component.DataComponents.BLOCK_STATE,
+                    net.minecraft.world.item.component.BlockItemStateProperties.EMPTY
+                            .with(org.alex_melan.spacereloaded.rocket.EngineBlock.QUALITY, level));
+        }
+        return out;
     }
 
     @Override

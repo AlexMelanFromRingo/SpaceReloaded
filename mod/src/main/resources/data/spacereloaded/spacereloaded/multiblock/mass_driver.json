@@ -1,0 +1,33 @@
+{
+	"key": "spacereloaded:mass_driver_breech",
+	"cells": [
+		{
+			"offset": [
+				0,
+				0,
+				-1
+			],
+			"block": "#spacereloaded:mass_driver_coils"
+		}
+	],
+	"repeat": {
+		"cells": [
+			{
+				"offset": [
+					0,
+					0,
+					-2
+				],
+				"block": "#spacereloaded:mass_driver_coils"
+			}
+		],
+		"step": [
+			0,
+			0,
+			-1
+		],
+		"min": 0,
+		"max": 400,
+		"display": 10
+	}
+}

@@ -83,7 +83,8 @@ public final class IndustryStructures {
     /** Хук изменения блока (ServerLevelMixin): будит только владельцев клетки. */
     public static void onBlockChanged(ServerLevel level, BlockPos pos, BlockState oldState, BlockState newState) {
         // Смена свойств катушки (IN_RAIL/AXIS) — наш же визуал, не изменение структуры
-        if (oldState.getBlock() == newState.getBlock() && newState.getBlock() instanceof CoilBlock) {
+        if (oldState.getBlock() == newState.getBlock() && (newState.getBlock() instanceof CoilBlock
+                || newState.getBlock() instanceof org.alex_melan.spacereloaded.multiblock.FormableBlock)) {
             return;
         }
         Set<Long> owners;

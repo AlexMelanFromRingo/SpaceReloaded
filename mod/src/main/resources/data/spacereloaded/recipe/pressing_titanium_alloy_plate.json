@@ -1,0 +1,7 @@
+{
+	"type": "spacereloaded:pressing",
+	"ingredient": "spacereloaded:titanium_alloy_ingot",
+	"result": {
+		"id": "spacereloaded:titanium_alloy_plate"
+	}
+}

@@ -1,0 +1,9 @@
+{
+	"type": "spacereloaded:machining",
+	"ingredient": "spacereloaded:copper_plate",
+	"step": 0,
+	"result": {
+		"id": "spacereloaded:incomplete_injector"
+	},
+	"energy_j": 60000
+}

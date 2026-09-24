@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/cube_bottom_top",
+	"textures": {
+		"top": "spacereloaded:block/distillation_tray",
+		"bottom": "spacereloaded:block/distillation_tray",
+		"side": "spacereloaded:block/distillation_tray_side"
+	}
+}

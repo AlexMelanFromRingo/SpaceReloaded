@@ -145,6 +145,7 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
             progress = 0; // разборка во время работы: цикл сброшен, сырьё не списывалось
         }
         IndustryStructures.claim(level, getBlockPos(), claimed);
+        org.alex_melan.spacereloaded.multiblock.FormableBlock.apply(level, claimed, formed);
         setChanged();
     }
 
@@ -254,6 +255,18 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
                     bad == null ? "?" : bad.toShortString()));
         }
         return lines;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level instanceof ServerLevel serverLevel) {
+            BlockPos center = pos.relative(state.getValue(RegolithReactorBlock.FACING).getOpposite());
+            java.util.List<BlockPos> cube = new java.util.ArrayList<>(27);
+            BlockPos.betweenClosed(center.offset(-1, -1, -1), center.offset(1, 1, 1))
+                    .forEach(p -> cube.add(p.immutable()));
+            org.alex_melan.spacereloaded.multiblock.FormableBlock.apply(serverLevel, cube, false);
+        }
+        super.preRemoveSideEffects(pos, state);
     }
 
     @Override

@@ -1,0 +1,73 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"particle": "spacereloaded:block/press_ram",
+		"all": "spacereloaded:block/press_ram"
+	},
+	"elements": [
+		{
+			"from": [
+				4,
+				-6,
+				4
+			],
+			"to": [
+				12,
+				1,
+				12
+			],
+			"faces": {
+				"north": {
+					"texture": "#all"
+				},
+				"south": {
+					"texture": "#all"
+				},
+				"east": {
+					"texture": "#all"
+				},
+				"west": {
+					"texture": "#all"
+				},
+				"up": {
+					"texture": "#all"
+				},
+				"down": {
+					"texture": "#all"
+				}
+			}
+		},
+		{
+			"from": [
+				2,
+				-7,
+				2
+			],
+			"to": [
+				14,
+				-5,
+				14
+			],
+			"faces": {
+				"north": {
+					"texture": "#all"
+				},
+				"south": {
+					"texture": "#all"
+				},
+				"east": {
+					"texture": "#all"
+				},
+				"west": {
+					"texture": "#all"
+				},
+				"up": {
+					"texture": "#all"
+				},
+				"down": {
+					"texture": "#all"
+				}
+			}
+		}
+	]
+}

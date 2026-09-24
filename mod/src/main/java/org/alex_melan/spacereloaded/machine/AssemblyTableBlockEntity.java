@@ -19,7 +19,10 @@ import java.util.List;
 
 public class AssemblyTableBlockEntity extends ProcessingMachineBlockEntity {
 
-    public static final int INPUT_SLOTS = 5;
+    /** 9 входов (005): сложные узлы — двигатели из деталей, электроника — требуют больше 5 ингредиентов. */
+    public static final int INPUT_SLOTS = 9;
+    /** До 005 входов было 5 и выход лежал в слоте 5 — миграция старых сохранений. */
+    private static final int LEGACY_INPUT_SLOTS = 5;
 
     private final RecipeManager.CachedCheck<AssemblyRecipeInput, AssemblyRecipe> quickCheck =
             RecipeManager.createCheck(ModRecipes.ASSEMBLY);
@@ -30,6 +33,23 @@ public class AssemblyTableBlockEntity extends ProcessingMachineBlockEntity {
 
     private AssemblyRecipeInput currentInput() {
         return new AssemblyRecipeInput(List.copyOf(items.subList(0, INPUT_SLOTS)));
+    }
+
+    @Override
+    public void serverTick(ServerLevel level) {
+        super.serverTick(level);
+        // 005: «Допуск» — двигатель уровня ≥ 9 из точных деталей
+        if (level.getGameTime() % 20 == 0) {
+            ItemStack out = items.get(INPUT_SLOTS);
+            var props = out.get(net.minecraft.core.component.DataComponents.BLOCK_STATE);
+            if (props != null) {
+                Integer quality = props.get(org.alex_melan.spacereloaded.rocket.EngineBlock.QUALITY);
+                if (quality != null && quality >= 9) {
+                    org.alex_melan.spacereloaded.industry.IndustryAdvancements.awardNearby(level, getBlockPos(), 16,
+                            org.alex_melan.spacereloaded.industry.IndustryAdvancements.TOLERANCE);
+                }
+            }
+        }
     }
 
     @Override
@@ -69,5 +89,24 @@ public class AssemblyTableBlockEntity extends ProcessingMachineBlockEntity {
     @Override
     protected AbstractContainerMenu createMenu(int containerId, Inventory playerInventory) {
         return new AssemblyTableMenu(containerId, playerInventory, this, dataAccess);
+    }
+
+    @Override
+    protected void saveAdditional(net.minecraft.world.level.storage.ValueOutput output) {
+        super.saveAdditional(output);
+        output.putInt("input_slots", INPUT_SLOTS);
+    }
+
+    @Override
+    protected void loadAdditional(net.minecraft.world.level.storage.ValueInput input) {
+        super.loadAdditional(input);
+        if (input.getIntOr("input_slots", LEGACY_INPUT_SLOTS) == LEGACY_INPUT_SLOTS) {
+            // Старый выход (слот 5) переезжает в новый выход, чтобы не стать входом
+            ItemStack legacyOutput = items.get(LEGACY_INPUT_SLOTS);
+            if (!legacyOutput.isEmpty() && items.get(INPUT_SLOTS).isEmpty()) {
+                items.set(INPUT_SLOTS, legacyOutput);
+                items.set(LEGACY_INPUT_SLOTS, ItemStack.EMPTY);
+            }
+        }
     }
 }

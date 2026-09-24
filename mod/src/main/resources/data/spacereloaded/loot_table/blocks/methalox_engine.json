@@ -6,7 +6,16 @@
 			"entries": [
 				{
 					"type": "minecraft:item",
-					"name": "spacereloaded:methalox_engine"
+					"name": "spacereloaded:methalox_engine",
+					"functions": [
+						{
+							"function": "minecraft:copy_state",
+							"block": "spacereloaded:methalox_engine",
+							"properties": [
+								"quality"
+							]
+						}
+					]
 				}
 			],
 			"conditions": [

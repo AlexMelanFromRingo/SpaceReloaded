@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:small_gear"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.gear_ratio.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.gear_ratio.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:assembly_table"
+}

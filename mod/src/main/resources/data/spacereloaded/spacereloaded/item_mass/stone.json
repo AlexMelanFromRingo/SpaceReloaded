@@ -1,0 +1,17 @@
+{
+	"items": [
+		"spacereloaded:moon_stone",
+		"spacereloaded:asteroid_stone",
+		"minecraft:stone",
+		"minecraft:cobblestone",
+		"minecraft:deepslate",
+		"minecraft:cobbled_deepslate",
+		"minecraft:basalt",
+		"minecraft:red_sandstone",
+		"minecraft:sandstone",
+		"spacereloaded:lunar_bricks",
+		"spacereloaded:sintered_regolith",
+		"spacereloaded:refractory_lining"
+	],
+	"kg": 26.0
+}

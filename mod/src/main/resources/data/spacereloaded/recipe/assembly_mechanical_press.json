@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_ingot",
+		"spacereloaded:steel_shaft",
+		"minecraft:piston",
+		"minecraft:iron_block"
+	],
+	"result": {
+		"id": "spacereloaded:mechanical_press",
+		"count": 1
+	}
+}

@@ -1,0 +1,16 @@
+{
+	"variants": {
+		"axis=x": {
+			"model": "spacereloaded:block/flywheel",
+			"x": 90,
+			"y": 90
+		},
+		"axis=y": {
+			"model": "spacereloaded:block/flywheel"
+		},
+		"axis=z": {
+			"model": "spacereloaded:block/flywheel",
+			"x": 90
+		}
+	}
+}

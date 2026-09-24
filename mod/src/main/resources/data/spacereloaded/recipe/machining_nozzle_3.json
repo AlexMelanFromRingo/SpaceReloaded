@@ -1,0 +1,9 @@
+{
+	"type": "spacereloaded:machining",
+	"ingredient": "spacereloaded:incomplete_nozzle",
+	"step": 2,
+	"result": {
+		"id": "spacereloaded:regen_nozzle"
+	},
+	"energy_j": 90000
+}

@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:flywheel"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.flywheel_energy.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.flywheel_energy.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:gear_ratio"
+}

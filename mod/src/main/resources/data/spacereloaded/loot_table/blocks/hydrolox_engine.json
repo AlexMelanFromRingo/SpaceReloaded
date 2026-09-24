@@ -3,8 +3,26 @@
 	"pools": [
 		{
 			"rolls": 1,
-			"entries": [ { "type": "minecraft:item", "name": "spacereloaded:hydrolox_engine" } ],
-			"conditions": [ { "condition": "minecraft:survives_explosion" } ]
+			"entries": [
+				{
+					"type": "minecraft:item",
+					"name": "spacereloaded:hydrolox_engine",
+					"functions": [
+						{
+							"function": "minecraft:copy_state",
+							"block": "spacereloaded:hydrolox_engine",
+							"properties": [
+								"quality"
+							]
+						}
+					]
+				}
+			],
+			"conditions": [
+				{
+					"condition": "minecraft:survives_explosion"
+				}
+			]
 		}
 	]
 }

@@ -120,6 +120,28 @@ public final class ModCreativeTab {
                         output.accept(ModItems.SLAG);
                         output.accept(ModBlocks.SINTERED_REGOLITH);
                         output.accept(ModBlocks.LUNAR_BRICKS);
+                        output.accept(ModBlocks.WOODEN_SHAFT);
+                        output.accept(ModBlocks.STEEL_SHAFT);
+                        output.accept(ModBlocks.SMALL_GEAR);
+                        output.accept(ModBlocks.LARGE_GEAR);
+                        output.accept(ModBlocks.GEARBOX);
+                        output.accept(ModBlocks.CLUTCH);
+                        output.accept(ModBlocks.MOTOR);
+                        output.accept(ModBlocks.FLYWHEEL);
+                        output.accept(ModBlocks.MECHANICAL_PRESS);
+                        output.accept(ModBlocks.LATHE);
+                        output.accept(ModBlocks.WIND_HUB);
+                        output.accept(ModBlocks.SAIL);
+                        output.accept(ModBlocks.ELECTROLYSIS_CELL);
+                        output.accept(ModBlocks.DISTILLATION_TRAY);
+                        output.accept(ModItems.ENGINEER_HAMMER);
+                        output.accept(ModItems.ENGINEER_MANUAL);
+                        output.accept(ModItems.STEEL_PLATE);
+                        output.accept(ModItems.COPPER_PLATE);
+                        output.accept(ModItems.TITANIUM_ALLOY_PLATE);
+                        output.accept(ModItems.TURBOPUMP);
+                        output.accept(ModItems.INJECTOR_PLATE);
+                        output.accept(ModItems.REGEN_NOZZLE);
                     })
                     .build());
 

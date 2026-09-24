@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"minecraft:copper_ingot",
+		"spacereloaded:hermetic_glass"
+	],
+	"result": {
+		"id": "spacereloaded:electrolysis_cell"
+	}
+}

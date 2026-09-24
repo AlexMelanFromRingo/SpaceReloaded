@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/electrolysis_cell"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/electrolysis_cell_formed"
+		}
+	}
+}

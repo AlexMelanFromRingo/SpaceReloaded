@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:electrolysis_cell"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.electrolysis_stack.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.electrolysis_stack.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:isru"
+}

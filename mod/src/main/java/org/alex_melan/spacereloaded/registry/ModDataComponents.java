@@ -36,11 +36,29 @@ public final class ModDataComponents {
     /** Полётная программа, привязанная к ловушке масс (004, FR-209): цель катапульты. */
     public static final DataComponentType<GlobalPos> PROGRAM_CATCHER = register("program_catcher");
 
+    /** Полуфабрикат детали (005): номер пройденного шага цепочки операций. */
+    public static final DataComponentType<Integer> MACHINING_STEP = registerInt("machining_step");
+
+    /** Полуфабрикат детали (005): накопленная Σδ² погрешностей операций, мкм². */
+    public static final DataComponentType<Float> MACHINING_DELTA_SQ = registerFloat("machining_delta_sq");
+
+    /** Готовая деталь двигателя (005): качество q ∈ [0, 1]. */
+    public static final DataComponentType<Float> PART_QUALITY = registerFloat("part_quality");
+
     /** Частота (канал) ключа связи — прошивается в ЦУПе. */
     public static final DataComponentType<Integer> KEY_FREQUENCY = registerInt("key_frequency");
 
     /** Частота, записанная в полётную программу при отметке защищённого маяка. */
     public static final DataComponentType<Integer> PROGRAM_FREQUENCY = registerInt("program_frequency");
+
+    private static DataComponentType<Float> registerFloat(String name) {
+        return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,
+                Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name),
+                new DataComponentType.Builder<Float>()
+                        .persistent(com.mojang.serialization.Codec.FLOAT)
+                        .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.FLOAT)
+                        .build());
+    }
 
     private static DataComponentType<Integer> registerInt(String name) {
         return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,

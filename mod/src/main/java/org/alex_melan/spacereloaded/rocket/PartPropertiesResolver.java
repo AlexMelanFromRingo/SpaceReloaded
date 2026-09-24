@@ -21,7 +21,7 @@ import java.util.Optional;
  */
 public final class PartPropertiesResolver {
 
-    private final Map<Block, Optional<PartProperties>> cache = new HashMap<>();
+    private final Map<BlockState, Optional<PartProperties>> cache = new HashMap<>();
     private final Map<Identifier, ModRegistries.RocketPartEntry> byBlockId = new HashMap<>();
 
     public PartPropertiesResolver(ServerLevel level) {
@@ -34,7 +34,8 @@ public final class PartPropertiesResolver {
 
     /** Свойства детали для BlockState либо empty — блок не является деталью ракеты. */
     public Optional<PartProperties> resolve(BlockState state) {
-        return cache.computeIfAbsent(state.getBlock(), block -> {
+        return cache.computeIfAbsent(state, s -> {
+            Block block = s.getBlock();
             Identifier id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block);
             ModRegistries.RocketPartEntry entry = byBlockId.get(id);
             if (entry == null) {
@@ -47,8 +48,16 @@ public final class PartPropertiesResolver {
                 return Optional.empty();
             }
             String fuel = entry.fuel().map(Identifier::toString).orElse(PartProperties.NO_FUEL);
+            double thrust = entry.thrustN();
+            double isp = entry.ispSec();
+            // 005 (FR-333): качество изготовления двигателя — множители КПД к табличным ЛТХ
+            if (s.hasProperty(EngineBlock.QUALITY)) {
+                double q = org.alex_melan.spacereloaded.core.industry.EngineQuality.fromLevel(s.getValue(EngineBlock.QUALITY));
+                thrust *= org.alex_melan.spacereloaded.core.industry.EngineQuality.thrustMultiplier(q);
+                isp *= org.alex_melan.spacereloaded.core.industry.EngineQuality.ispMultiplier(q);
+            }
             return Optional.of(new PartProperties(entry.massKg(), role,
-                    entry.thrustN(), entry.ispSec(), fuel,
+                    thrust, isp, fuel,
                     entry.propellantCapacityKg(), entry.gyroTorqueNm()));
         });
     }

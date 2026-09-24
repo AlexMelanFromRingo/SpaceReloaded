@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:pressing",
+	"ingredient": "spacereloaded:incomplete_nozzle",
+	"step": 1,
+	"result": {
+		"id": "spacereloaded:incomplete_nozzle"
+	}
+}

@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_shaft",
+		"spacereloaded:steel_shaft",
+		"spacereloaded:steel_ingot",
+		"minecraft:redstone",
+		"spacereloaded:carbon_fiber"
+	],
+	"result": {
+		"id": "spacereloaded:clutch",
+		"count": 1
+	}
+}

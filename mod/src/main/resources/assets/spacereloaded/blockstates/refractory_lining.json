@@ -1,7 +1,10 @@
 {
 	"variants": {
-		"": {
+		"formed=false": {
 			"model": "spacereloaded:block/refractory_lining"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/refractory_lining_formed"
 		}
 	}
 }

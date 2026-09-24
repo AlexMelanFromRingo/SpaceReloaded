@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:turbopump",
+		"spacereloaded:injector_plate",
+		"spacereloaded:regen_nozzle",
+		"spacereloaded:tungsten_ingot",
+		"spacereloaded:steel_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:rocket_engine"
+	}
+}

@@ -67,6 +67,14 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.REGOLITH_REACTOR,
 				org.alex_melan.spacereloaded.client.render.RegolithReactorRenderer::new);
+		// 005: вращение механики
+		for (var type : java.util.List.of(org.alex_melan.spacereloaded.registry.ModBlockEntities.KINETIC,
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.MOTOR,
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.FLYWHEEL,
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.PRESS,
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.LATHE)) {
+			registerKinetic(type);
+		}
 		EntityRendererRegistry.register(ModEntities.KINETIC_PROJECTILE,
 				org.alex_melan.spacereloaded.client.render.KineticProjectileRenderer::new);
 		EntityRendererRegistry.register(ModEntities.METEOR,
@@ -97,6 +105,10 @@ public class SpaceReloadedClient implements ClientModInitializer {
 				(payload, context) -> context.client().setScreenAndShow(
 						new org.alex_melan.spacereloaded.client.gui.PlanetMapScreen(payload)));
 
+		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
+				org.alex_melan.spacereloaded.multiblock.OpenManualPayload.TYPE,
+				(payload, context) -> context.client().setScreenAndShow(
+						new org.alex_melan.spacereloaded.client.gui.EngineerManualScreen()));
 		registerPlanetMapKey();
 		registerStageKey();
 		net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register(
@@ -148,5 +160,11 @@ public class SpaceReloadedClient implements ClientModInitializer {
 				}
 			}
 		});
+	}
+
+	private static <T extends org.alex_melan.spacereloaded.kinetics.KineticBlockEntity> void registerKinetic(
+			net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(type,
+				context -> new org.alex_melan.spacereloaded.client.render.KineticRenderer<T>(context));
 	}
 }

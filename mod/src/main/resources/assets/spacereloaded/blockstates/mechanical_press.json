@@ -1,0 +1,13 @@
+{
+	"variants": {
+		"axis=x": {
+			"model": "spacereloaded:block/mechanical_press"
+		},
+		"axis=y": {
+			"model": "spacereloaded:block/mechanical_press"
+		},
+		"axis=z": {
+			"model": "spacereloaded:block/mechanical_press"
+		}
+	}
+}

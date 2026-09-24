@@ -19,6 +19,7 @@
 		"spacereloaded:rectenna",
 		"spacereloaded:capacitor",
 		"spacereloaded:regolith_reactor",
-		"spacereloaded:refractory_lining"
+		"spacereloaded:refractory_lining",
+		"spacereloaded:motor"
 	]
 }

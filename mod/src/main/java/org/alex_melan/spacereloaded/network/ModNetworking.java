@@ -33,6 +33,9 @@ public final class ModNetworking {
                 ScanReportPayload.TYPE, ScanReportPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(
                 PlanetMapPayload.TYPE, PlanetMapPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(
+                org.alex_melan.spacereloaded.multiblock.OpenManualPayload.TYPE,
+                org.alex_melan.spacereloaded.multiblock.OpenManualPayload.CODEC);
 
         PayloadTypeRegistry.serverboundPlay().register(
                 CannonActionPayload.TYPE, CannonActionPayload.CODEC);

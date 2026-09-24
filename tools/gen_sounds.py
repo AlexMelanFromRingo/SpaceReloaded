@@ -41,6 +41,15 @@ SOUNDS = {
     "orbital_cannon/fire": ["synth", "2.5", "brownnoise", "synth", "2.5", "sine", "mix", "900-40",
                             "fade", "p", "0", "2.5", "2.3", "overdrive", "18", "gain", "-12", "reverb", "80",
                             "norm", "-2"],
+    # Пресс: глухой удар (коричневый шум) + металлический звон штампа
+    "mechanical_press/stamp": ["synth", "0.6", "brownnoise", "synth", "0.6", "sine", "mix", "310",
+                               "fade", "p", "0", "0.6", "0.55", "gain", "-10", "reverb", "30", "norm", "-4"],
+    # Токарный станок: визг резца — узкополосный шум + тон 2.4 кГц с тремоло
+    "lathe/cut": ["synth", "1.5", "pinknoise", "bandpass", "2400", "300", "synth", "1.5", "sine", "mix", "2400",
+                  "tremolo", "11", "30", "fade", "t", "0.1", "1.5", "0.3", "gain", "-18"],
+    # Мотор: гул 50 Гц (сеть) + 100 Гц магнитострикция, зацикливаемый 2 с
+    "motor/hum": ["synth", "2.0", "sine", "50", "synth", "2.0", "sine", "mix", "100", "lowpass", "300",
+                  "fade", "t", "0.2", "2.0", "0.2", "gain", "-14"],
 }
 
 
