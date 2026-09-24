@@ -1,0 +1,7 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"particle": "spacereloaded:block/eaf_shell"
+	},
+	"elements": []
+}

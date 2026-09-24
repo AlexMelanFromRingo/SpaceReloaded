@@ -208,6 +208,10 @@ public final class ModBlockEntities {
             register("asu_compressor", new BlockEntityType<>(org.alex_melan.spacereloaded.cryo.AsuCompressorBlockEntity::new,
                     Set.of(ModBlocks.ASU_COMPRESSOR)));
 
+    public static final BlockEntityType<org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity> EAF =
+            register("eaf", new BlockEntityType<>(org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity::new,
+                    Set.of(ModBlocks.EAF_CONTROLLER)));
+
     // --- Жизнь на станции (007) ---
     public static final BlockEntityType<org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity> GAS_TANK =
             register("gas_tank", new BlockEntityType<>(org.alex_melan.spacereloaded.lifesupport.GasTankBlockEntity::new,
@@ -273,6 +277,7 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ECLSS_CONTROLLER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), REACTOR);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CASCADE);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), EAF);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), AIRLOCK_PUMP);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CO2_SCRUBBER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), GROW_LAMP);

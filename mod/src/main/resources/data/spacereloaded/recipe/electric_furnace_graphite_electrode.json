@@ -1,0 +1,16 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "electric_furnace",
+	"inputs": [
+		{
+			"item": "spacereloaded:electrode_blank"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:graphite_electrode"
+		}
+	],
+	"energy": 1240,
+	"ticks": 400
+}

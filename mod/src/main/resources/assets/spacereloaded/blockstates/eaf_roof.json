@@ -1,0 +1,10 @@
+{
+	"variants": {
+		"formed=false": {
+			"model": "spacereloaded:block/eaf_roof"
+		},
+		"formed=true": {
+			"model": "spacereloaded:block/eaf_hidden"
+		}
+	}
+}

@@ -25,6 +25,8 @@ ITEMS = {
     "fluorine": ("Fluorine Cylinder", "Баллон фтора", "Балон фтору"),
     "uranium_hexafluoride": ("Uranium Hexafluoride (UF₆)", "Гексафторид урана (UF₆)", "Гексафторид урану (UF₆)"),
     "depleted_uranium_hexafluoride": ("Depleted UF₆ (tails)", "Обеднённый UF₆ (отвал)", "Збіднений UF₆ (відвал)"),
+    "electrode_blank": ("Electrode Blank", "Заготовка электрода", "Заготовка електрода"),
+    "graphite_electrode": ("Graphite Electrode", "Графитовый электрод", "Графітовий електрод"),
     "argon_canister": ("Argon Cylinder (10 kg)", "Баллон аргона (10 кг)", "Балон аргону (10 кг)"),
     "fuel_basket": ("Fuel Basket (U-Zr)", "Топливная корзина (U-Zr)", "Паливний кошик (U-Zr)"),
 }
@@ -48,6 +50,9 @@ BLOCKS = {
     "asu_tray": ("Rectification Tray", "Ректификационная тарелка ВРУ", "Ректифікаційна тарілка ПРУ"),
     "asu_heat_exchanger": ("Plate-Fin Heat Exchanger", "Пластинчато-ребристый теплообменник", "Пластинчасто-ребристий теплообмінник"),
     "asu_compressor": ("Centrifugal Air Compressor", "Центробежный компрессор воздуха", "Відцентровий компресор повітря"),
+    "eaf_controller": ("Arc Furnace Transformer", "Трансформатор дуговой печи", "Трансформатор дугової печі"),
+    "eaf_shell": ("Arc Furnace Shell", "Корпус дуговой печи", "Корпус дугової печі"),
+    "eaf_roof": ("Arc Furnace Roof", "Свод дуговой печи", "Склепіння дугової печі"),
     "beryl_ore": ("Beryl Ore", "Бериллиевая руда", "Берилієва руда"),
     "borax_ore": ("Borax Deposit", "Залежь буры", "Поклад бури"),
     "uraninite_ore": ("Pitchblende Ore", "Урановая руда (смолка)", "Уранова руда (смолка)"),
@@ -225,6 +230,49 @@ OTHER = {
         "Унизу випарник, над ним тарілки, збоку теплообмінник із турбодетандером і компресор на валу. Чистота — "
         "за рівнянням Фенске: 11 тарілок відділяють азот до 99.99 %, але аргон лишається в кисні (≈ 94.5 %), доки "
         "20 тарілок не дозволять його бічний відбір (O₂ ≈ 99.8 %)."),
+    "screen.spacereloaded.eaf": ("Electric Arc Furnace", "Дуговая сталеплавильная печь", "Дугова сталеплавильна піч"),
+    "status.spacereloaded.eaf.not_formed": ("Furnace not assembled — strike the transformer with the engineer's hammer",
+                                            "Печь не собрана — ударьте трансформатор инженерным молотом",
+                                            "Піч не зібрано — вдарте трансформатор інженерним молотом"),
+    "status.spacereloaded.eaf.phase.open": ("Roof open — load iron/scrap and calcite, add electrodes",
+                                            "Свод открыт — загрузите железо/лом и кальцит, вставьте электроды",
+                                            "Склепіння відкрите — завантажте залізо/брухт і кальцит, вставте електроди"),
+    "status.spacereloaded.eaf.phase.closing": ("Closing the roof", "Свод закрывается", "Склепіння закривається"),
+    "status.spacereloaded.eaf.phase.melt": ("Melting: the arc is on", "Плавка: горит дуга", "Плавлення: горить дуга"),
+    "status.spacereloaded.eaf.phase.refine": ("Refining", "Доводка", "Доведення"),
+    "status.spacereloaded.eaf.phase.tap": ("Tapping", "Слив", "Злив"),
+    "status.spacereloaded.eaf.phase.opening": ("Opening the roof", "Свод открывается", "Склепіння відкривається"),
+    "status.spacereloaded.eaf.charge": ("Charge %s kg metal + %s kg lime (up to %s kg) · slag loss %s%%",
+                                        "Шихта %s кг металла + %s кг извести (до %s кг) · потери в шлак %s %%",
+                                        "Шихта %s кг металу + %s кг вапна (до %s кг) · втрати в шлак %s %%"),
+    "status.spacereloaded.eaf.energy": ("Energy %s of %s kWh · %s MW · %s min left",
+                                        "Энергия %s из %s кВт·ч · %s МВт · осталось %s мин",
+                                        "Енергія %s з %s кВт·год · %s МВт · лишилося %s хв"),
+    "status.spacereloaded.eaf.o2_on": ("Oxygen blowing: %s kg O₂ from the cylinder", "Продувка кислородом: %s кг O₂ из баллона",
+                                       "Продування киснем: %s кг O₂ з балона"),
+    "status.spacereloaded.eaf.o2_off": ("No oxygen blowing (would take %s kg O₂)", "Без продувки (нужно бы %s кг O₂)",
+                                        "Без продування (потрібно б %s кг O₂)"),
+    "status.spacereloaded.eaf.electrodes": ("Electrodes: %s of %s kg graphite", "Электроды: %s из %s кг графита",
+                                            "Електроди: %s з %s кг графіту"),
+    "status.spacereloaded.eaf.last": ("Last tap: %s kg steel from charge", "Последний слив: %s кг стали из шихты",
+                                      "Останній злив: %s кг сталі з шихти"),
+    "gauge.spacereloaded.melt": ("Melt", "Расплав", "Розплав"),
+    "gauge.spacereloaded.charge": ("Charge", "Шихта", "Шихта"),
+    "action.spacereloaded.eaf.melt": ("Melt", "Плавить", "Плавити"),
+    "action.spacereloaded.eaf.oxygen": ("O₂ blow", "Продувка O₂", "Продування O₂"),
+    "message.spacereloaded.eaf.closed": ("The roof is closed — load after tapping", "Свод закрыт — загрузка после слива",
+                                         "Склепіння закрите — завантаження після зливу"),
+    "manual.spacereloaded.arc_furnace.title": ("Electric Arc Furnace", "Дуговая печь", "Дугова піч"),
+    "manual.spacereloaded.arc_furnace.text": (
+        "A transformer in front of a 3×3×2 refractory bath with a roof and three graphite electrodes. Load iron and "
+        "calcite with the roof open, then melt: 0.475 kWh per kg at 5 MW; oxygen blowing burns carbon and saves power. "
+        "The furnace tilts to tap steel through the spout.",
+        "Трансформатор перед ванной 3×3×2 из огнеупора, свод с тремя графитовыми электродами. Загрузите железо и кальцит "
+        "при открытом своде и плавьте: 0.475 кВт·ч на кг при 5 МВт; продувка кислородом выжигает углерод и экономит ток. "
+        "Печь наклоняется и сливает сталь через носок.",
+        "Трансформатор перед ванною 3×3×2 з вогнетриву, склепіння з трьома графітовими електродами. Завантажте залізо й "
+        "кальцит при відкритому склепінні й плавте: 0.475 кВт·год на кг при 5 МВт; продування киснем випалює вуглець і "
+        "економить струм. Піч нахиляється й зливає сталь через носок."),
     "manual.spacereloaded.eclss_rack.title": ("Life Support Rack", "Стойка жизнеобеспечения", "Стійка життєзабезпечення"),
     "manual.spacereloaded.eclss_rack.text": (
         "A 5×4 rack in the wall of a sealed zone with four module sockets. Electrolysis turns water into O₂; "

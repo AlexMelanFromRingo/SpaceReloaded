@@ -1,0 +1,11 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:refractory_lining"
+	],
+	"result": {
+		"id": "spacereloaded:eaf_shell",
+		"count": 2
+	}
+}

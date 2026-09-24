@@ -106,6 +106,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testReactor", () -> testReactor(context, sp));
             scenarios.put("testCascade", () -> testCascade(context, sp));
             scenarios.put("testAirColumn", () -> testAirColumn(context, sp));
+            scenarios.put("testArcFurnace", () -> testArcFurnace(context, sp));
             scenarios.put("testReadmeShots", () -> testReadmeShots(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
@@ -3442,6 +3443,94 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                 mc.gui.hud.toggle();
             }
         });
+    }
+
+    // ---------- 008. Дуговая печь (US5) ----------
+
+    /** Плавка 200 кг с продувкой O₂: время по энергии при 5 МВт, кислород по стехиометрии, сталь у носка. */
+    private void testArcFurnace(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1560;
+        int z0 = BZ;
+        moveTo(context, sp, x0 - 6, z0);
+        BlockPos key = new BlockPos(x0, BY, z0);
+        sp.getServer().runCommand(fill(x0 - 4, BY - 1, z0 - 2, x0 + 4, BY - 1, z0 + 5, "minecraft:smooth_stone"));
+        sp.getServer().runCommand(set(x0, BY, z0, "spacereloaded:eaf_controller[facing=north]"));
+        sp.getServer().runCommand(set(x0, BY, z0 - 1, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(fill(x0 - 1, BY, z0 + 1, x0 + 1, BY + 1, z0 + 3, "spacereloaded:eaf_shell"));
+        sp.getServer().runCommand(set(x0, BY + 1, z0 + 2, "minecraft:air"));
+        sp.getServer().runCommand(set(x0, BY + 2, z0 + 2, "spacereloaded:eaf_roof"));
+        BlockPos o2 = new BlockPos(x0 + 2, BY, z0 + 2);
+        sp.getServer().runCommand(set(o2.getX(), o2.getY(), o2.getZ(), "spacereloaded:gas_tank"));
+        context.waitTicks(5);
+        double expectedS = org.alex_melan.spacereloaded.core.metallurgy.ArcFurnace.seconds(200,
+                org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity.RATING_W, true);
+        boolean formed = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var player = server.getPlayerList().getPlayers().get(0);
+            tank(server, o2).insert(org.alex_melan.spacereloaded.lifesupport.GasKind.OXYGEN, 50);
+            var f = (org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity) level.getBlockEntity(key);
+            boolean ok = f.hammer(level, player);
+            f.testCharge(200, 10, 120);
+            f.action(level, player, "oxygen", 0);
+            f.action(level, player, "melt", 0);
+            return ok;
+        });
+        assertThat(formed, "Печь должна собраться молотом");
+        long meltStart = -1, meltEnd = -1;
+        boolean shot = false;
+        for (int waited = 0; waited < 20 * 200; waited += 10) {
+            context.waitTicks(10);
+            long[] ph = sp.getServer().computeOnServer(server -> {
+                var f = (org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity) server.overworld().getBlockEntity(key);
+                return new long[] {f.phase().ordinal(), server.overworld().getGameTime()};
+            });
+            if (ph[0] == org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity.Phase.MELT.ordinal() && meltStart < 0) {
+                meltStart = ph[1];
+            }
+            if (ph[0] == org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity.Phase.MELT.ordinal() && !shot
+                    && ph[1] - meltStart > 200) {
+                readmeCamera(context, sp, x0 - 3.5, BY + 2.2, z0 - 1.5, -60f, 25f);
+                readmeShot(context, "arc-furnace");
+                shot = true;
+            }
+            if (ph[0] == org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity.Phase.REFINE.ordinal() && meltEnd < 0) {
+                meltEnd = ph[1];
+            }
+            if (ph[0] == org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity.Phase.TAP.ordinal() && shot
+                    && ph[1] - meltEnd > 130) {
+                readmeCamera(context, sp, x0 - 3.5, BY + 2.2, z0 - 1.5, -60f, 25f);
+                readmeShot(context, "arc-furnace-tap");
+                break;
+            }
+        }
+        context.runOnClient(mc -> {
+            if (mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
+        });
+        context.waitTicks(80);
+        double meltS = (meltEnd - meltStart) / 20.0;
+        double[] r = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var f = (org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity) level.getBlockEntity(key);
+            int steel = 0;
+            for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                    new net.minecraft.world.phys.AABB(key).inflate(6))) {
+                if (e.getItem().is(ModItems.STEEL_INGOT)) {
+                    steel += e.getItem().getCount();
+                }
+            }
+            double ingot = org.alex_melan.spacereloaded.registry.ItemMasses.massOf(server.registryAccess(),
+                    new ItemStack(ModItems.STEEL_INGOT));
+            return new double[] {steel, steel * ingot, 50 - tank(server, o2).mass(), 120 - f.electrodeKg()};
+        });
+        String report = String.format(java.util.Locale.ROOT,
+                "плавка %.1f с (ожидалось %.1f), сталь %.0f слитков = %.0f кг из 200, O₂ %.2f кг (ожидалось %.2f), электроды %.3f кг",
+                meltS, expectedS, r[0], r[1], r[2], org.alex_melan.spacereloaded.core.metallurgy.ArcFurnace.oxygenKg(200), r[3]);
+        assertThat(Math.abs(meltS - expectedS) < 0.06 * expectedS && r[1] > 170 && r[1] <= 190
+                        && Math.abs(r[2] - org.alex_melan.spacereloaded.core.metallurgy.ArcFurnace.oxygenKg(200)) < 0.5
+                        && Math.abs(r[3] - 0.36) < 0.05, "Дуговая печь: " + report);
+        log("дуговая печь: " + report + " ✓");
     }
 
     // ---------- Кадры README и сайта (запуск: SR_ONLY=testReadmeShots) ----------

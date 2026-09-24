@@ -126,6 +126,9 @@
 		"spacereloaded:asu_sump",
 		"spacereloaded:asu_tray",
 		"spacereloaded:asu_heat_exchanger",
-		"spacereloaded:asu_compressor"
+		"spacereloaded:asu_compressor",
+		"spacereloaded:eaf_controller",
+		"spacereloaded:eaf_shell",
+		"spacereloaded:eaf_roof"
 	]
 }

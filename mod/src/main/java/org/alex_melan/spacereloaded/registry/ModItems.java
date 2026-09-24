@@ -262,6 +262,9 @@ public final class ModItems {
     /** Топливная корзина Kilopower: сплав U-Zr, компоненты — U-235, обогащение, выгорание. */
     /** Баллон аргона 50 л, 10 кг Ar (колонна при ≥ 20 тарелках). */
     public static final Item ARGON_CANISTER = register("argon_canister", props -> new Item(props.stacksTo(16)));
+    public static final Item ELECTRODE_BLANK = simple("electrode_blank");
+    /** Графитовый электрод ДСП: 40 кг графита, расход 1.8 кг на тонну стали. */
+    public static final Item GRAPHITE_ELECTRODE = register("graphite_electrode", props -> new Item(props.stacksTo(3)));
     public static final Item FUEL_BASKET = register("fuel_basket", props -> new Item(props.stacksTo(1)));
     public static final Item ZEOLITE_BED = register("zeolite_bed", props -> new Item(props.stacksTo(1)));
 

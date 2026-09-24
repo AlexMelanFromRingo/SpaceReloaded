@@ -86,6 +86,9 @@ public class SpaceReloadedClient implements ClientModInitializer {
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.ASU,
 				org.alex_melan.spacereloaded.client.render.AirColumnRenderer::new);
 		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
+				org.alex_melan.spacereloaded.registry.ModBlockEntities.EAF,
+				org.alex_melan.spacereloaded.client.render.ArcFurnaceRenderer::new);
+		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
 				org.alex_melan.spacereloaded.registry.ModBlockEntities.REGOLITH_REACTOR,
 				org.alex_melan.spacereloaded.client.render.RegolithReactorRenderer::new);
 		net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(

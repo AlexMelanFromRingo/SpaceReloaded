@@ -379,6 +379,111 @@ def asu_models():
     g.item_def("argon_canister", f"{NS}:item/argon_canister")
 
 
+# --- US5: дуговая сталеплавильная печь ----------------------------------------------------------------
+EAF_BLOCKS = ["eaf_controller", "eaf_shell", "eaf_roof"]
+EAF_PARTS = ["eaf_vessel", "eaf_roof_part", "eaf_electrode"]
+ELECTRODE_R = 7
+
+
+def eaf_template():
+    """Трансформатор (ключ) перед ванной 3×3×2 из огнеупорного корпуса; центр второго ряда — полость ванны;
+    над центром — свод с электродами."""
+    cells = []
+    for y in (0, 1):
+        for x in (-1, 0, 1):
+            for z in (1, 2, 3):
+                if y == 1 and (x, z) == (0, 2):
+                    cells.append({"offset": [x, y, z], "block": "minecraft:air"})
+                else:
+                    cells.append({"offset": [x, y, z], "block": sr("eaf_shell")})
+    cells.append({"offset": [0, 2, 2], "block": sr("eaf_roof")})
+    write(os.path.join(MB, "arc_furnace.json"), {"key": sr("eaf_controller"), "cells": cells})
+
+
+def eaf_recipes():
+    assembly("eaf_controller", ["steel_plate", "steel_plate", "copper_plate", "copper_plate", "copper_wire",
+                                "copper_wire", "relay_logic"], "eaf_controller")
+    assembly("eaf_shell", ["steel_plate", "refractory_lining"], "eaf_shell", 2)
+    assembly("eaf_roof", ["steel_plate", "steel_plate", "refractory_lining", "copper_plate"], "eaf_roof")
+    # графитовые электроды: кокс и пек → заготовка → графитация 3000 °C (≈ 4 кВт·ч/кг)
+    assembly("electrode_blank", ["coal_dust", "coal_dust", "coal_dust", "coal_dust", "coal_dust", "coal_dust"],
+             "electrode_blank")
+    chemical("graphite_electrode", "electric_furnace", [("electrode_blank", 1)], [("graphite_electrode", 1)],
+             kwh=40.0, ticks=400)
+
+
+def raster(shape, lo, hi, cell):
+    """Прямоугольники (x1, z1, x2, z2) покрытия плоской фигуры shape(x, z) на сетке."""
+    n = round((hi - lo) / cell)
+    grid = [[shape(lo + (i + 0.5) * cell, lo + (j + 0.5) * cell) for i in range(n)] for j in range(n)]
+    used = [[False] * n for _ in range(n)]
+    out = []
+    for j in range(n):
+        i = 0
+        while i < n:
+            if not grid[j][i] or used[j][i]:
+                i += 1
+                continue
+            i2 = i
+            while i2 + 1 < n and grid[j][i2 + 1] and not used[j][i2 + 1]:
+                i2 += 1
+            j2 = j
+            while j2 + 1 < n and all(grid[j2 + 1][k] and not used[j2 + 1][k] for k in range(i, i2 + 1)):
+                j2 += 1
+            for jj in range(j, j2 + 1):
+                for k in range(i, i2 + 1):
+                    used[jj][k] = True
+            out.append((lo + i * cell, lo + j * cell, lo + (i2 + 1) * cell, lo + (j2 + 1) * cell))
+            i = i2 + 1
+    return out
+
+
+def eaf_models():
+    import math
+    for formed in (False, True):
+        for active in (False, True):
+            name = "eaf_controller" + ("_formed" if formed else "") + ("_on" if active else "")
+            front = "eaf_controller_front" + ("_on" if formed and active else "")
+            mk.plain(name, "minecraft:block/orientable", {"front": f"{NS}:block/{front}", "side": f"{NS}:block/eaf_transformer",
+                                                         "top": f"{NS}:block/eaf_transformer"})
+    mk.blockstate("eaf_controller", mk.facing_variants(
+        lambda formed, active: f"{NS}:block/eaf_controller" + ("_formed" if formed else "") + ("_on" if active else "")))
+    mk.item("eaf_controller", f"{NS}:block/eaf_controller")
+    # собранный корпус и свод — невидимы: всю печь рисует BER (она наклоняется и открывается)
+    mk.model("eaf_hidden", {"particle": f"{NS}:block/eaf_shell"}, [])
+    for b in ("eaf_shell", "eaf_roof"):
+        mk.plain(b, "minecraft:block/cube_all", {"all": f"{NS}:block/{b}"})
+        mk.blockstate(b, {"formed=false": {"model": f"{NS}:block/{b}"}, "formed=true": {"model": f"{NS}:block/eaf_hidden"}})
+        mk.item(b, f"{NS}:block/{b}")
+    c = 8.0
+    # ванна: круглый кожух R 22 px с огнеупорной футеровкой, под — диск, носок слива спереди (−z)
+    vessel = []
+    for x1, z1, x2, z2 in raster(lambda x, z: math.hypot(x - c, z - c) < 22, -16, 32, 2):
+        vessel.append(mk.box([x1, 0, z1], [x2, 3, z2], "#shell", skip=("up",)))
+    for x1, z1, x2, z2 in raster(lambda x, z: 17 <= math.hypot(x - c, z - c) < 22, -16, 32, 2):
+        vessel.append(mk.box([x1, 3, z1], [x2, 30, z2], "#shell", skip=("down",), over={"up": "#lining"}))
+    for x1, z1, x2, z2 in raster(lambda x, z: math.hypot(x - c, z - c) < 17, -16, 32, 2):
+        vessel.append(mk.box([x1, 3, z1], [x2, 4, z2], "#lining", skip=("down",)))  # под ванны (огнеупор)
+    vessel.append(mk.box([25, 22, 5], [32, 25, 11], "#shell"))  # сливной носок (модель: +x; грани на нечётных — мимо граней кольца)
+    mk.model("eaf_vessel", {"shell": f"{NS}:block/eaf_vessel", "lining": f"{NS}:block/refractory_lining"}, vessel)
+    # свод: диск R 23 с тремя отверстиями под электроды (120°)
+    holes = [(c + ELECTRODE_R * math.cos(a), c + ELECTRODE_R * math.sin(a)) for a in (math.pi / 2, math.pi / 2 + 2.094, math.pi / 2 + 4.189)]
+    roof_shape = lambda x, z: math.hypot(x - c, z - c) < 23 and all(math.hypot(x - hx, z - hz) >= 3.2 for hx, hz in holes)
+    roof = [mk.box([x1, 0, z1], [x2, 4, z2], "#roof") for x1, z1, x2, z2 in raster(roof_shape, -16, 32, 1)]
+    mk.model("eaf_roof_part", {"roof": f"{NS}:block/eaf_roof"}, roof)
+    # электрод: графитовый столб Ø 5 px, наверху медный держатель
+    elec = [mk.box([x1, 0, z1], [x2, 28, z2], "#g", skip=("up",)) for x1, z1, x2, z2 in raster(
+        lambda x, z: math.hypot(x - c, z - c) < 2.5, 4, 12, 0.5)]
+    elec += [mk.box([5, 28, 5], [11, 31, 11], "#clamp")]
+    mk.model("eaf_electrode", {"g": f"{NS}:block/graphite", "clamp": f"{NS}:block/copper_plate_block"}, elec)
+    for part in EAF_PARTS:
+        mk.blockstate(part, {"": {"model": f"{NS}:block/{part}"}})
+    for i in ("electrode_blank", "graphite_electrode"):
+        write(os.path.join(g.ASSETS, "models", "item", i + ".json"),
+              {"parent": "minecraft:item/generated", "textures": {"layer0": f"{NS}:item/{i}"}})
+        g.item_def(i, f"{NS}:item/{i}")
+
+
 def reactor_models():
     faces_all = mk.FACES
     # привод: несформирован — корпус с пультом; сформирован — открытый каркас (виден ход стержня)
@@ -473,10 +578,12 @@ MASSES = {
     "gas_centrifuge": (60.0, ["gas_centrifuge"]),
     "asu": (120.0, ["asu_sump", "asu_heat_exchanger", "asu_compressor"]),
     "asu_tray": (40.0, ["asu_tray"]),
-    "argon_canister": (60.0, ["argon_canister"]),           # баллон 50 л + 10 кг аргона                 # корзина: ~30 кг сплава U-Zr + оболочка
+    "argon_canister": (60.0, ["argon_canister"]),           # баллон 50 л + 10 кг аргона
+    "eaf": (200.0, ["eaf_controller", "eaf_shell", "eaf_roof"]),
+    "electrode": (40.0, ["electrode_blank", "graphite_electrode"]),   # Ø 200 мм × 0.8 м графита                 # корзина: ~30 кг сплава U-Zr + оболочка
 }
 
-BLOCKS = ECLSS_BLOCKS + REACTOR_BLOCKS + CASCADE_BLOCKS + ASU_BLOCKS + ["asu_compressor"]
+BLOCKS = ECLSS_BLOCKS + REACTOR_BLOCKS + CASCADE_BLOCKS + ASU_BLOCKS + ["asu_compressor"] + EAF_BLOCKS
 
 
 def data():
@@ -484,6 +591,10 @@ def data():
     reactor_template()
     cascade_template()
     asu_template()
+    eaf_template()
+    write(os.path.join(DATA, "tags", "item", "eaf_charge.json"), {"replace": False, "values": [
+        sr("iron_dust"), sr("meteoric_iron"), "minecraft:iron_ingot", "minecraft:raw_iron", "minecraft:iron_nugget",
+        "minecraft:iron_block", "minecraft:raw_iron_block"]})
     material_data()
     write(os.path.join(DATA, "tags", "block", "reactor_power_slot.json"),
           {"replace": False, "values": [sr("stirling_convertor"), sr("reactor_power_cap")]})
@@ -513,12 +624,14 @@ def main():
     material_recipes()
     cascade_recipes()
     asu_recipes()
+    eaf_recipes()
     data()
     eclss_models()
     reactor_models()
     material_models()
     cascade_models()
     asu_models()
+    eaf_models()
 
 
 if __name__ == "__main__":

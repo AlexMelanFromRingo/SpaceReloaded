@@ -1,0 +1,8 @@
+{
+	"parent": "minecraft:block/orientable",
+	"textures": {
+		"front": "spacereloaded:block/eaf_controller_front",
+		"side": "spacereloaded:block/eaf_transformer",
+		"top": "spacereloaded:block/eaf_transformer"
+	}
+}

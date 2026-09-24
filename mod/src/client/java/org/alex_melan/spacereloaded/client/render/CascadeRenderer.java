@@ -40,6 +40,12 @@ public class CascadeRenderer implements BlockEntityRenderer<CascadeBlockEntity, 
                                    ModelFeatureRenderer.CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(be, state, partialTick, cameraPos, breakProgress);
         state.formed = be.formed();
+        // свет — в воздушной клетке перед лицом контроллера: внутри непрозрачного блока он нулевой
+        if (be.getLevel() != null) {
+            state.lightCoords = net.minecraft.util.LightCoordsUtil.getLightCoords(be.getLevel(),
+                    be.getBlockPos().relative(be.getBlockState().getValue(ControllerBlock.FACING)));
+        }
+
         if (!(be.clientAnim instanceof SmoothDrive.Spinner)) {
             be.clientAnim = new SmoothDrive.Spinner();
         }

@@ -49,6 +49,12 @@ public class EclssRenderer implements BlockEntityRenderer<EclssControllerBlockEn
                                    Vec3 cameraPos, ModelFeatureRenderer.CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(be, state, partialTick, cameraPos, breakProgress);
         state.facing = be.getBlockState().getValue(ControllerBlock.FACING);
+        // свет — в воздушной клетке перед лицом контроллера: внутри непрозрачного блока он нулевой
+        if (be.getLevel() != null) {
+            state.lightCoords = net.minecraft.util.LightCoordsUtil.getLightCoords(be.getLevel(),
+                    be.getBlockPos().relative(be.getBlockState().getValue(ControllerBlock.FACING)));
+        }
+
         state.formed = be.formed();
         state.time = be.getLevel() == null ? 0 : be.getLevel().getGameTime() + partialTick;
         if (!(be.clientAnim instanceof Anim)) {

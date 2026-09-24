@@ -297,11 +297,45 @@ def asu():
     item_icon("argon_canister", cyl)
 
 
+def eaf():
+    tr = noise_fill((0x4C, 0x5C, 0x4C), 10, 45)  # трансформатор: зелёный бак с рёбрами
+    for x in range(0, 16, 3):
+        for y in range(16):
+            put(tr, x, y, (0x3A, 0x48, 0x3A))
+    save(tr, "block/eaf_transformer.png")
+    for on in (False, True):
+        img = tr.copy()
+        for x in range(3, 13):
+            for y in range(3, 9):
+                put(img, x, y, (0x10, 0x16, 0x1A))
+        for i in range(4):
+            put(img, 4 + i * 2, 6, (0xE0, 0x88, 0x30) if on else (0x44, 0x44, 0x44))
+        for x in range(4, 12):
+            put(img, x, 12, (0xDD, 0x4B, 0x4B) if on else (0x60, 0x40, 0x40))
+        save(img, "block/eaf_controller_front" + ("_on" if on else "") + ".png")
+    shell = noise_fill((0x54, 0x58, 0x5E), 14, 47)
+    for y in range(0, 16, 5):
+        for x in range(16):
+            put(shell, x, y, (0x3C, 0x40, 0x46))
+    save(shell, "block/eaf_vessel.png")
+    save(noise_fill((0x6A, 0x5C, 0x52), 16, 49), "block/eaf_shell.png")
+    roof = noise_fill((0x7C, 0x7A, 0x74), 12, 51)
+    for x in range(16):
+        put(roof, x, 7, (0x5C, 0x5A, 0x54))
+    save(roof, "block/eaf_roof.png")
+    save(noise_fill((0x2C, 0x2C, 0x30), 8, 53), "block/graphite.png")
+    save(noise_fill((0xC8, 0x78, 0x40), 12, 55), "block/copper_plate_block.png")
+    item_icon("electrode_blank", lambda img: [put(img, x, y, (0x3A, 0x3A, 0x3E)) for x in range(6, 10) for y in range(1, 15)])
+    item_icon("graphite_electrode", lambda img: [put(img, x, y, (0x22, 0x22, 0x26) if (y % 5) else (0x44, 0x44, 0x4A))
+                                                 for x in range(6, 10) for y in range(1, 15)])
+
+
 def main():
     eclss()
     reactor()
     cascade()
     asu()
+    eaf()
 
 
 if __name__ == "__main__":

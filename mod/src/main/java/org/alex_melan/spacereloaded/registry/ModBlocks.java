@@ -651,6 +651,22 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block ASU_COLUMN_CAP = registerNoItem("asu_column_cap", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    // --- 008: дуговая сталеплавильная печь ---
+    public static final Block EAF_CONTROLLER = register("eaf_controller",
+            props -> new org.alex_melan.spacereloaded.multiblock.ControllerBlock<>(props,
+                    org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity::new, () -> ModBlockEntities.EAF,
+                    org.alex_melan.spacereloaded.metallurgy.ArcFurnaceBlockEntity::serverTick),
+            industrial().lightLevel(s -> s.getValue(org.alex_melan.spacereloaded.multiblock.ControllerBlock.ACTIVE) ? 7 : 0));
+    public static final Block EAF_SHELL = register("eaf_shell",
+            org.alex_melan.spacereloaded.multiblock.FormableBlock::new, industrial().noOcclusion());
+    public static final Block EAF_ROOF = register("eaf_roof",
+            org.alex_melan.spacereloaded.multiblock.FormableBlock::new, industrial().noOcclusion());
+    public static final Block EAF_VESSEL = registerNoItem("eaf_vessel", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block EAF_ROOF_PART = registerNoItem("eaf_roof_part", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block EAF_ELECTRODE = registerNoItem("eaf_electrode", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block BERYL_ORE = register("beryl_ore", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 3.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
     public static final Block BORAX_ORE = register("borax_ore", Block::new,
