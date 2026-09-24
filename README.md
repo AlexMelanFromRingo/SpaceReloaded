@@ -148,7 +148,7 @@ and stations from **Galacticraft**, free-form rockets and satellites from
 - **Screens, not chat spam.** The scan report, the cannon terminal and a flight
   map drawn from the transition graph are proper panels. Jade is supported as a
   soft dependency: look at a machine to read energy, fuel and rod count.
-- **A guided progression.** Thirty-three advancements walk you from the first
+- **A guided progression.** Thirty-seven advancements walk you from the first
   steel ingot to closing the interplanetary loop.
 
 - **Electronics from sand.** Relays and core rope memory (like Apollo) → metallurgical
@@ -161,6 +161,21 @@ and stations from **Galacticraft**, free-form rockets and satellites from
   Hall–Héroult and direct oxide electrolysis, lithium from spodumene, Mond nickel,
   2219 and Al-Li alloys (tanks 5 % and 19 % lighter), superalloy turbine wheels
   (thrust ×1.3), monocrystalline solar panels (×1.4).
+- **Life on the station.** A sealed zone holds masses of O₂, N₂ and CO₂, filled from
+  real gas tanks, never from electricity. The crew breathes to NASA BVAD rates, and CO₂
+  kills before oxygen runs out: LiOH cartridges or a regenerable zeolite bed feeding
+  the Sabatier reactor. An airlock pump pumps the chamber down exponentially and gives
+  the gas back. Hydroponic trays exchange O₂ and CO₂ with the zone.
+- **Spin gravity.** Earth orbit is 0.02 g, and long stays decondition the crew. A ring
+  built from blocks around a spin hub gives ω²r by height, with Coriolis and a rotating
+  sky. Spin it up with rim thrusters (fuel follows from angular momentum) or a
+  counter-rotation motor. An unbalanced ring shears its bearing.
+- **A rover from parts.** Chassis, four hub-motor wheels and a Ni–Fe battery,
+  assembled on the spot. Bekker terramechanics: on loose sand the wheels sink and
+  compaction eats the motor power; on rock it rolls freely. A charger refills it at C/5.
+- **Orbital imaging.** An imaging satellite with a 10 cm telescope sees to the Rayleigh
+  limit: 1.34 m from 200 km over Earth, 0.67 m over the Moon. The image, a locked map,
+  arrives when the swath passes over, and shows no ore underground.
 
 ## No teleport magic
 

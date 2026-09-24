@@ -116,6 +116,8 @@ OTHER = {
     "message.spacereloaded.imaging.blank": ("Blank image — order one at mission control with an empty map",
                                             "Пустой снимок — закажите его в ЦУПе пустой картой",
                                             "Порожній знімок — замовте його в ЦУПі порожньою картою"),
+    "hud.spacereloaded.cabin": ("Cabin %s kPa · O₂ %s · CO₂ %s kPa", "Кабина %s кПа · O₂ %s · CO₂ %s кПа",
+                                "Кабіна %s кПа · O₂ %s · CO₂ %s кПа"),
     "entity.spacereloaded.rover": ("Rover", "Ровер", "Ровер"),
     "message.spacereloaded.tray.empty": ("empty", "пусто", "порожньо"),
     "tooltip.spacereloaded.reserve.co2_scrubber": ("%s%% · cartridge left: %s g CO₂", "%s%% · картриджа хватит на %s г CO₂",

@@ -165,6 +165,8 @@ public final class LifeSupportState extends SavedData {
             LifeSupportState::new, CODEC, DataFixTypes.LEVEL);
 
     private static final Map<ResourceKey<Level>, Map<Long, Object[]>> CONTRIBUTIONS = new HashMap<>();
+    /** Игроки, которым показан HUD газа (для сброса при выходе из зоны). */
+    private static final java.util.Set<java.util.UUID> HUD_SHOWN = new java.util.HashSet<>();
 
     private final Map<Long, Gas> zones;
     /**
@@ -350,6 +352,7 @@ public final class LifeSupportState extends SavedData {
         }
         double now = days(level);
         Map<Long, Object[]> contributions = CONTRIBUTIONS.getOrDefault(level.dimension(), Map.of());
+        java.util.Set<java.util.UUID> reported = new java.util.HashSet<>();
         long tick = level.getGameTime();
         contributions.values().removeIf(c -> tick - (long) c[1] > 40);
         for (Map.Entry<Long, Gas> entry : Set.copyOf(state.zones.entrySet())) {
@@ -362,6 +365,15 @@ public final class LifeSupportState extends SavedData {
             }
             double[] s = sources(level, zone, contributions);
             Gas gas = entry.getValue();
+            // HUD газа: игрокам в зоне — текущие p, pO₂, pCO₂
+            Gas current = gas.at(now);
+            for (ServerPlayer player : level.players()) {
+                if (zone.volume().contains(player.blockPosition().asLong()) && reported.add(player.getUUID())) {
+                    net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,
+                            new org.alex_melan.spacereloaded.network.CabinGasPayload((float) current.pressure(),
+                                    (float) current.pO2(), (float) current.pCo2()));
+                }
+            }
             // «Зелёный воздух»: экипаж в зоне, а растения покрывают весь его кислород
             if (s[0] <= 0 && s[4] > 0 && s[5] > 0) {
                 for (ServerPlayer player : level.players()) {
@@ -377,6 +389,13 @@ public final class LifeSupportState extends SavedData {
                 state.setDirty();
             }
         }
+        for (ServerPlayer player : level.players()) {
+            if (!reported.contains(player.getUUID()) && HUD_SHOWN.remove(player.getUUID())) {
+                net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,
+                        new org.alex_melan.spacereloaded.network.CabinGasPayload(-1, 0, 0));
+            }
+        }
+        HUD_SHOWN.addAll(reported);
     }
 
     /** {расход O₂ (кг/сут), приток CO₂ (кг/сут), удаление CO₂ (м³/сут), O₂ на ∫c}. */

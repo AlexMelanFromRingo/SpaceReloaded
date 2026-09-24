@@ -99,6 +99,9 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
 				org.alex_melan.spacereloaded.network.SpinSkyPayload.TYPE,
 				(payload, context) -> SpinSky.set(payload.axis(), payload.omega()));
+		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
+				org.alex_melan.spacereloaded.network.CabinGasPayload.TYPE,
+				(payload, context) -> org.alex_melan.spacereloaded.client.gui.CabinGasHud.update(payload));
 
 		// Терминал орудия: первый пакет открывает экран, следующие его обновляют
 		net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
@@ -133,6 +136,8 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		HudElementRegistry.addLast(RocketHud.ID, new RocketHud());
 		HudElementRegistry.addLast(org.alex_melan.spacereloaded.client.gui.OxygenHud.ID,
 				new org.alex_melan.spacereloaded.client.gui.OxygenHud());
+		HudElementRegistry.addLast(org.alex_melan.spacereloaded.client.gui.CabinGasHud.ID,
+				new org.alex_melan.spacereloaded.client.gui.CabinGasHud());
 	}
 
 	/**

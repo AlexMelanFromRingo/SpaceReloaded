@@ -39,6 +39,7 @@ import java.util.Locale;
  * тяга ограничена мощностью (F = η·P/v) и сцеплением; поворот — боковое ускорение не больше
  * μ·g (μ = tg φ), иначе занос; ступень в блок — средний уклон атан(1/2.3 м колёсной базы) не
  * больше предельного склона при 60 % пробуксовки. Расход — F·v/η + 50 Вт электроники.
+ * Sneak+ПКМ — отчёт и грузовой отсек (9 слотов, масса груза входит в физику).
  */
 public class RoverEntity extends Entity {
 
@@ -59,6 +60,13 @@ public class RoverEntity extends Entity {
     private double charge;
     private double odometer;
     private boolean stepAllowed = true;
+    /** Грузовой отсек (как ящики LRV за сиденьями): 9 слотов, масса груза — по таблице масс. */
+    private final net.minecraft.world.SimpleContainer cargo = new net.minecraft.world.SimpleContainer(9) {
+        @Override
+        public boolean stillValid(Player player) {
+            return isAlive() && player.distanceToSqr(RoverEntity.this) < 64;
+        }
+    };
     /** Только для стенда: «газ» без пилота. */
     private boolean testForward;
 
@@ -67,6 +75,10 @@ public class RoverEntity extends Entity {
         entityData.set(BATTERY, true);
         charge = chargeE;
         testForward = forward;
+    }
+
+    public net.minecraft.world.Container cargo() {
+        return cargo;
     }
 
     public void testForward(boolean forward) {
@@ -162,6 +174,9 @@ public class RoverEntity extends Entity {
         if (hasBattery()) {
             m += ItemMasses.massOf(access, new ItemStack(ModItems.NIFE_BATTERY));
         }
+        for (ItemStack s : cargo.getItems()) {
+            m += ItemMasses.massOfStack(access, s);
+        }
         return m + getPassengers().size() * CREW_KG;
     }
 
@@ -188,6 +203,9 @@ public class RoverEntity extends Entity {
                     String.format(Locale.ROOT, "%.0f", mass()),
                     String.format(Locale.ROOT, "%.1f", speed * 3.6),
                     String.format(Locale.ROOT, "%.2f", odometer / 1000)));
+            sp.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inventory, p) ->
+                    new net.minecraft.world.inventory.ChestMenu(net.minecraft.world.inventory.MenuType.GENERIC_9x1, id,
+                            inventory, cargo, 1), getDisplayName()));
             return InteractionResult.SUCCESS_SERVER;
         }
         if (wheels() == 4 && hasBattery() && player.startRiding(this)) {
@@ -209,6 +227,9 @@ public class RoverEntity extends Entity {
                 ItemStack battery = new ItemStack(ModItems.NIFE_BATTERY);
                 battery.set(ModDataComponents.ROVER_CHARGE, (float) charge);
                 spawnAtLocation(level, battery);
+            }
+            for (ItemStack s : cargo.removeAllItems()) {
+                spawnAtLocation(level, s);
             }
             discard();
             return true;
@@ -291,6 +312,7 @@ public class RoverEntity extends Entity {
         output.putBoolean("battery", hasBattery());
         output.putDouble("charge", charge);
         output.putDouble("odometer", odometer);
+        net.minecraft.world.ContainerHelper.saveAllItems(output, cargo.getItems());
     }
 
     @Override
@@ -299,5 +321,6 @@ public class RoverEntity extends Entity {
         entityData.set(BATTERY, input.getBooleanOr("battery", false));
         charge = input.getDoubleOr("charge", 0);
         odometer = input.getDoubleOr("odometer", 0);
+        net.minecraft.world.ContainerHelper.loadAllItems(input, cargo.getItems());
     }
 }

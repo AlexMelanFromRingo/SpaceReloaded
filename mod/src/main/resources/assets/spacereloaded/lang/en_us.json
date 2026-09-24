@@ -704,5 +704,6 @@
 	"message.spacereloaded.imaging.ordered": "Image ordered: scale %s (%s m/px), swath %s km, %s satellite(s) — ready in %s min",
 	"message.spacereloaded.imaging.waiting": "The satellite has not passed over yet — %s min left",
 	"message.spacereloaded.imaging.developed": "Orbital image received: scale %s, %s m per pixel",
-	"message.spacereloaded.imaging.blank": "Blank image — order one at mission control with an empty map"
+	"message.spacereloaded.imaging.blank": "Blank image — order one at mission control with an empty map",
+	"hud.spacereloaded.cabin": "Cabin %s kPa · O₂ %s · CO₂ %s kPa"
 }

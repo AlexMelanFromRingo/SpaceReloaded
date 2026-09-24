@@ -704,5 +704,6 @@
 	"message.spacereloaded.imaging.ordered": "Снимок заказан: масштаб %s (%s м/пикс), полоса %s км, спутников %s — готов через %s мин",
 	"message.spacereloaded.imaging.waiting": "Спутник ещё не пролетал над точкой — осталось %s мин",
 	"message.spacereloaded.imaging.developed": "Снимок с орбиты получен: масштаб %s, %s м на пиксель",
-	"message.spacereloaded.imaging.blank": "Пустой снимок — закажите его в ЦУПе пустой картой"
+	"message.spacereloaded.imaging.blank": "Пустой снимок — закажите его в ЦУПе пустой картой",
+	"hud.spacereloaded.cabin": "Кабина %s кПа · O₂ %s · CO₂ %s кПа"
 }

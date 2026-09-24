@@ -2698,6 +2698,13 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         double rate = (co2[1] - co2[0]) / (400 / 24000.0);
         assertThat(Math.abs(rate - 1.01) < 0.06, "Выдох CO₂ 1.01 кг/сут, получено " + rate);
         log(String.format(java.util.Locale.ROOT, "дыхание: CO₂ %.3f кг/игровые сутки ✓", rate));
+        // HUD газа у клиента: давление зоны, в которой стоит игрок
+        float hudP = context.computeOnClient(client -> {
+            var g = org.alex_melan.spacereloaded.client.gui.CabinGasHud.current();
+            return g == null ? -1f : g.pressure();
+        });
+        assertThat(hudP > 100 && hudP < 103, "HUD кабины показывает давление зоны: " + hudP);
+        log(String.format(java.util.Locale.ROOT, "HUD кабины: %.1f кПа ✓", hudP));
 
         // картридж LiOH в стене комнаты
         BlockPos scrubber = new BlockPos(x0 + 2, BY + 2, z0);
@@ -3012,6 +3019,17 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                 .getEntitiesOfClass(org.alex_melan.spacereloaded.vehicle.RoverEntity.class, hard).get(0).speed());
         assertThat(stopped < r[1] - 0.015 * g * 4.5 && stopped > r[1] - 0.015 * g * 5.5, "Накат: сопротивление качению тормозит ровер, v = " + stopped);
         log(String.format(java.util.Locale.ROOT, "ровер: накат 5 с, v %.2f → %.2f м/с ✓", r[1], stopped));
+        // груз в отсеке входит в массу (сталь по таблице масс)
+        double[] cargo = sp.getServer().computeOnServer(server -> {
+            var rover = server.overworld().getEntitiesOfClass(org.alex_melan.spacereloaded.vehicle.RoverEntity.class, hard).get(0);
+            double before = rover.mass();
+            var steel = new ItemStack(ModItems.STEEL_INGOT, 64);
+            rover.cargo().setItem(0, steel.copy());
+            return new double[] {rover.mass() - before,
+                    org.alex_melan.spacereloaded.registry.ItemMasses.massOfStack(server.registryAccess(), steel)};
+        });
+        assertThat(cargo[1] > 0 && Math.abs(cargo[0] - cargo[1]) < 1e-6, "Груз отсека в массе ровера: +" + cargo[0] + " кг из " + cargo[1]);
+        log(String.format(java.util.Locale.ROOT, "ровер: 64 стальных слитка в отсеке → +%.1f кг к массе ✓", cargo[0]));
     }
 
     /**
@@ -3161,7 +3179,26 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         for (int i = 0; i < wave2.length; i++) {
             sp.getServer().runCommand(set(x0 + i * 2, BY, z + 6, "spacereloaded:" + wave2[i]));
         }
+        // 005–007: шестерни (цельные 3D-модели), газовый баллон, оранжерея, кольцо, ровер, спутник-камера
+        sp.getServer().runCommand(fill(x0 - 1, BY - 1, z + 8, x0 + 16, BY - 1, z + 11, "minecraft:smooth_stone"));
+        String[] wave3 = {"large_gear[axis=z]", "small_gear[axis=z]", "imaging_satellite", "gas_tank", "hydroponic_tray",
+                "spin_hub[axis=z]", "rover_charger"};
+        for (int i = 0; i < wave3.length; i++) {
+            sp.getServer().runCommand(set(x0 + i * 2, BY, z + 10, "spacereloaded:" + wave3[i]));
+        }
+        sp.getServer().runCommand(set(x0 + 8, BY + 2, z + 10, "spacereloaded:grow_lamp"));
+        sp.getServer().runCommand(String.format("summon spacereloaded:rover %d.5 %d %d.5 {Rotation:[90f,0f]}", x0 + 15, BY, z + 10));
         context.waitTicks(3);
+        sp.getServer().runOnServer(server -> {
+            var level = server.overworld();
+            level.getEntitiesOfClass(org.alex_melan.spacereloaded.vehicle.RoverEntity.class,
+                    new net.minecraft.world.phys.AABB(x0 + 12, BY - 1, z + 8, x0 + 18, BY + 3, z + 12))
+                    .forEach(r -> r.testSetup(4, 100, false));
+            if (level.getBlockEntity(new BlockPos(x0 + 8, BY, z + 10))
+                    instanceof org.alex_melan.spacereloaded.lifesupport.HydroponicTrayBlockEntity tray) {
+                tray.plant(new ItemStack(net.minecraft.world.item.Items.WHEAT_SEEDS));
+            }
+        });
         sp.getServer().runOnServer(server -> {
             var level = server.overworld();
             if (level.getBlockEntity(new BlockPos(x0 + 2, BY, z))
@@ -3202,6 +3239,10 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         snapshot(context, "showcase_back", 5);
         prepareCamera(context, sp, x0 + 6, BY + 3.5, z + 12.5, 180f, 25f);
         snapshot(context, "showcase_models", 5);
+        prepareCamera(context, sp, x0 + 7, BY + 3.5, z + 16.5, 180f, 25f);
+        snapshot(context, "showcase_station", 5);
+        prepareCamera(context, sp, x0 + 1.5, BY - 1.1, z + 12.6, 180f, 4f);
+        snapshot(context, "showcase_gears", 5);
         sp.getServer().runCommand("gamemode survival @a");
         log("облик: " + states + " ✓");
     }

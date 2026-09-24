@@ -53,6 +53,9 @@ public class SpaceReloaded implements ModInitializer {
 		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.clientboundPlay().register(
 				org.alex_melan.spacereloaded.network.SpinSkyPayload.TYPE,
 				org.alex_melan.spacereloaded.network.SpinSkyPayload.CODEC);
+		net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.clientboundPlay().register(
+				org.alex_melan.spacereloaded.network.CabinGasPayload.TYPE,
+				org.alex_melan.spacereloaded.network.CabinGasPayload.CODEC);
 		org.alex_melan.spacereloaded.network.ModNetworking.init();
 		org.alex_melan.spacereloaded.registry.ModSounds.init();
 		ModBlocks.init();

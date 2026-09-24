@@ -352,7 +352,7 @@ my_spacereloaded_addon/
   `machine` выбирает исполнителя: `chemical_reactor` (3 входа, 3 выхода), `electric_furnace`
   (1 вход, основной и побочный выход), `electrolyzer` (1 вход, 2 выхода, параллельно по ячейкам
   стека), `sabatier_reactor` (2 входа, 3 выхода), `deposition_reactor` (3 входа, 2 выхода),
-  `regolith_reactor` (1 вход, 3 выхода, `oxygen` — единиц баллона на реакцию).
+  `regolith_reactor` (1 вход, 3 выхода, `oxygen` — кг O₂ на реакцию, уходит в соседний газовый баллон).
   ```json
   { "type": "spacereloaded:chemical", "machine": "deposition_reactor",
     "inputs": [ { "item": "spacereloaded:trichlorosilane" },
@@ -369,6 +369,31 @@ my_spacereloaded_addon/
 - **Модуль HEPA** — блок `spacereloaded:fan_filter_unit`, граничащий с объёмом зоны.
 - Колесо турбонасоса из суперсплава — компонент `turbine_superalloy` (переносится станками);
   двигатель — свойство состояния `superalloy` (тяга ×1.3).
+
+### Жизнь на станции (007)
+
+- **Культуры гидропоники** — `data/<ns>/spacereloaded/crops/<id>.json` (нормы NASA BVAD):
+  ```json
+  { "seed": "minecraft:beetroot_seeds", "harvest": "minecraft:beetroot", "byproduct": "spacereloaded:straw",
+    "dli": 17, "cycle_days": 28, "edible_g_m2_day": 6.6, "harvest_index": 0.9,
+    "o2_g_m2_day": 7.8, "co2_g_m2_day": 10.7, "water_kg_m2_day": 2.1, "fresh_factor": 20 }
+  ```
+  `dli` — дневная доза света (моль/м²), от неё мощность фитолампы; `cycle_days` — реальные сутки
+  (в игре ÷10); урожай = интеграл съедобной биомассы (г сухого) × `fresh_factor` / масса предмета.
+  O₂ и CO₂ лоток сообщает газу зоны. Пример выше — салатные культуры BVAD на свёкле.
+- **Грунты** — `data/<ns>/spacereloaded/soils/<id>.json`, параметры Беккера для ровера:
+  ```json
+  { "dimension": "spacereloaded:moon", "n": 1.0, "kc": 0.14, "kphi": 0.82, "c": 0.017,
+    "phi_deg": 35, "k_cm": 1.78, "surface": "spacereloaded:moon_regolith" }
+  ```
+  Единицы: kc — Н/смⁿ⁺¹, kphi — Н/смⁿ⁺², c — Н/см², k_cm — модуль сдвига Джаноси, см.
+  Грунт действует только под блоками тега `spacereloaded:loose_soil`; остальное — твёрдая
+  поверхность (сопротивление 0.015·m·g). `surface` — цвет несгенерированной местности на
+  орбитальном снимке.
+- **Газ** — только из баллонов `spacereloaded:gas_tank` (компоненты `gas_kind`, `gas_kg`); контроллер,
+  электролизёр, реголитовый реактор и газоразделитель работают с соседними баллонами.
+- **Спутник-камера** снимает над телом с `body_radius` и `parking_altitude` в профиле планеты;
+  орбитальная платформа снимает ближайшее по Δv тело из `transition_targets`.
 
 ## Рецепты станков
 
