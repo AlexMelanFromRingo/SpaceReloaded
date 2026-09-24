@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:al_li_fuel_tank"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.light_tank.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.light_tank.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:rocketry"
+}

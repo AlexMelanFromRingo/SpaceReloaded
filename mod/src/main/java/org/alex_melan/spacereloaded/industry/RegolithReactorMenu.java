@@ -33,7 +33,9 @@ public class RegolithReactorMenu extends AbstractContainerMenu {
         addSlot(new Slot(container, RegolithReactorBlockEntity.SLOT_INPUT, 44, 26) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return stack.is(ModTags.REGOLITH_REACTOR_INPUT);
+                return stack.is(ModTags.REGOLITH_REACTOR_INPUT) || stack.is(ModTags.MOLTEN_SALT_FEED)
+                        || stack.is(ModItems.CRYOLITE) || stack.is(net.minecraft.world.item.Items.COAL)
+                        || stack.is(net.minecraft.world.item.Items.CHARCOAL) || stack.is(ModItems.COAL_DUST);
             }
         });
         addSlot(new Slot(container, RegolithReactorBlockEntity.SLOT_CANISTER, 44, 48) {

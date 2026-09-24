@@ -1,0 +1,30 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "deposition_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:trichlorosilane"
+		},
+		{
+			"item": "#spacereloaded:electrolyzer_input"
+		},
+		{
+			"item": "spacereloaded:sapphire_wafer",
+			"count": 16
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:sos_wafer",
+			"count": 16
+		},
+		{
+			"id": "spacereloaded:hydrogen_chloride",
+			"count": 3,
+			"yield": 0.95
+		}
+	],
+	"energy": 2000,
+	"ticks": 400,
+	"keep_purity": true
+}

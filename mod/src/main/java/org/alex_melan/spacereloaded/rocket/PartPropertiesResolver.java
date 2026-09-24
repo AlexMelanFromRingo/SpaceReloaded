@@ -56,6 +56,11 @@ public final class PartPropertiesResolver {
                 thrust *= org.alex_melan.spacereloaded.core.industry.EngineQuality.thrustMultiplier(q);
                 isp *= org.alex_melan.spacereloaded.core.industry.EngineQuality.ispMultiplier(q);
             }
+            // 006 (FR-442): температура на входе в турбину → давление в камере → тяга
+            if (s.hasProperty(EngineBlock.SUPERALLOY) && s.getValue(EngineBlock.SUPERALLOY)) {
+                thrust *= org.alex_melan.spacereloaded.core.materials.TurbineLimit.thrustMultiplier(
+                        org.alex_melan.spacereloaded.core.materials.TurbineLimit.SUPERALLOY_INLET_K);
+            }
             return Optional.of(new PartProperties(entry.massKg(), role,
                     thrust, isp, fuel,
                     entry.propellantCapacityKg(), entry.gyroTorqueNm()));

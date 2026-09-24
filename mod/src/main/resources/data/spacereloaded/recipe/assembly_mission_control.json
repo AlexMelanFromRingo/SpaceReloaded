@@ -3,8 +3,8 @@
 	"ingredients": [
 		"spacereloaded:steel_ingot",
 		"spacereloaded:steel_ingot",
-		"minecraft:copper_ingot",
-		"minecraft:redstone",
+		"spacereloaded:flight_computer",
+		"spacereloaded:circuit_board",
 		"spacereloaded:hermetic_glass"
 	],
 	"result": {

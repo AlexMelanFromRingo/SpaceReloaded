@@ -25,6 +25,8 @@ public final class ModTags {
 
     /** Сырьё реголитового реактора (004): реголит и лунный камень. */
     public static final TagKey<Item> REGOLITH_REACTOR_INPUT = item("regolith_reactor_input");
+    /** Сырьё электролиза расплавов (006): глинозём, анортозит, хлорид лития. */
+    public static final TagKey<Item> MOLTEN_SALT_FEED = item("molten_salt_feed");
 
     /** Части скафандра EVA: полный сет (грудь+ноги+ботинки) защищает от среды. */
     public static final TagKey<Item> SPACE_SUIT = item("space_suit");

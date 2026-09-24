@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "minecraft:glass",
+	"result": {
+		"id": "spacereloaded:glass_fiber",
+		"count": 4
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"items": [
+		"spacereloaded:silicon_wafer",
+		"spacereloaded:multicrystalline_wafer",
+		"spacereloaded:sos_wafer",
+		"spacereloaded:solar_cell",
+		"spacereloaded:mono_solar_cell"
+	],
+	"kg": 0.00126
+}

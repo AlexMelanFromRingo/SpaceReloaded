@@ -1,0 +1,12 @@
+{
+	"type": "minecraft:crafting_transmute",
+	"category": "misc",
+	"input": "spacereloaded:flight_program",
+	"material": "spacereloaded:flight_computer",
+	"result": {
+		"id": "spacereloaded:flight_program",
+		"components": {
+			"spacereloaded:guidance_tier": 2
+		}
+	}
+}

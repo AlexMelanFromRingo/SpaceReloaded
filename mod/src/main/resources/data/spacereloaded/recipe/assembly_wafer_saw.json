@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_shaft",
+		"minecraft:diamond",
+		"spacereloaded:relay_logic"
+	],
+	"result": {
+		"id": "spacereloaded:wafer_saw"
+	}
+}

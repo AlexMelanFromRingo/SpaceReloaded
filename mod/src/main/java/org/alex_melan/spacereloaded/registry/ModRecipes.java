@@ -38,6 +38,13 @@ public final class ModRecipes {
                     org.alex_melan.spacereloaded.machine.recipe.MachiningRecipe.Lathe.MAP_CODEC,
                     org.alex_melan.spacereloaded.machine.recipe.MachiningRecipe.Lathe.STREAM_CODEC));
 
+    public static final RecipeType<org.alex_melan.spacereloaded.machine.recipe.ChemicalRecipe> CHEMICAL =
+            registerType("chemical");
+    public static final RecipeSerializer<org.alex_melan.spacereloaded.machine.recipe.ChemicalRecipe>
+            CHEMICAL_SERIALIZER = registerSerializer("chemical", new RecipeSerializer<>(
+                    org.alex_melan.spacereloaded.machine.recipe.ChemicalRecipe.MAP_CODEC,
+                    org.alex_melan.spacereloaded.machine.recipe.ChemicalRecipe.STREAM_CODEC));
+
     private static <T extends Recipe<?>> RecipeType<T> registerType(String name) {
         Identifier id = Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, name);
         return Registry.register(BuiltInRegistries.RECIPE_TYPE, id, new RecipeType<T>() {

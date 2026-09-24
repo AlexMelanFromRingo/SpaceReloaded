@@ -1,0 +1,25 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:hydrofluoric_acid",
+			"count": 3
+		},
+		{
+			"item": "spacereloaded:alumina"
+		},
+		{
+			"item": "spacereloaded:caustic_soda",
+			"count": 3
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:cryolite",
+			"count": 2
+		}
+	],
+	"energy": 200,
+	"ticks": 160
+}

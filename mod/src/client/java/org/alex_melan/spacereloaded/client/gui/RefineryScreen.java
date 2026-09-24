@@ -13,7 +13,7 @@ import org.alex_melan.spacereloaded.machine.RefineryMenu;
 public class RefineryScreen extends AbstractContainerScreen<RefineryMenu> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(
-            SpaceReloaded.MOD_ID, "textures/gui/refinery.png");
+            SpaceReloaded.MOD_ID, "textures/gui/refinery_silane.png");
 
     public RefineryScreen(RefineryMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);

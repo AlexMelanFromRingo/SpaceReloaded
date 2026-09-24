@@ -1,0 +1,18 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:die_microprocessor",
+		"spacereloaded:die_microprocessor",
+		"spacereloaded:die_microprocessor",
+		"spacereloaded:die_microprocessor",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:ceramic_package",
+		"minecraft:gold_nugget"
+	],
+	"result": {
+		"id": "spacereloaded:microprocessor",
+		"count": 4
+	}
+}

@@ -1,0 +1,18 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:die_radhard",
+		"spacereloaded:die_radhard",
+		"spacereloaded:die_radhard",
+		"spacereloaded:die_radhard",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:ceramic_package",
+		"minecraft:gold_nugget"
+	],
+	"result": {
+		"id": "spacereloaded:radhard_processor",
+		"count": 4
+	}
+}

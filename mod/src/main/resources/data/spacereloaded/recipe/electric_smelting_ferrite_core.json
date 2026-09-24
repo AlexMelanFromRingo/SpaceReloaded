@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:iron_dust",
+	"result": {
+		"id": "spacereloaded:ferrite_core",
+		"count": 16
+	}
+}

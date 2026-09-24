@@ -1,0 +1,19 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "electric_furnace",
+	"inputs": [
+		{
+			"item": "spacereloaded:phosphate_blend"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:phosphorus"
+		},
+		{
+			"id": "spacereloaded:slag"
+		}
+	],
+	"energy": 868,
+	"ticks": 300
+}

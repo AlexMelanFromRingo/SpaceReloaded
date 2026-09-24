@@ -142,12 +142,90 @@ public final class ModItems {
     public static final Item ENGINEER_MANUAL = register("engineer_manual",
             props -> new org.alex_melan.spacereloaded.multiblock.EngineerManualItem(props.stacksTo(1)));
 
+    // --- Материалы и электроника (006) ---
+    public static final Item COPPER_WIRE = simple("copper_wire");
+    public static final Item RELAY = simple("relay");
+    public static final Item RELAY_LOGIC = simple("relay_logic");
+    public static final Item FERRITE_CORE = simple("ferrite_core");
+    public static final Item CORE_ROPE_MEMORY = simple("core_rope_memory");
+    public static final Item SILICON_BLEND = register("silicon_blend", org.alex_melan.spacereloaded.electronics.MaterialItem::new);
+    public static final Item METALLURGICAL_SILICON = register("metallurgical_silicon", org.alex_melan.spacereloaded.electronics.MaterialItem::new);
+    public static final Item SILICON_DUST = register("silicon_dust", org.alex_melan.spacereloaded.electronics.MaterialItem::new);
+    public static final Item CARBON_MONOXIDE = simple("carbon_monoxide");
+    public static final Item BRINE = simple("brine");
+    public static final Item HYDROGEN_CHLORIDE = simple("hydrogen_chloride");
+    public static final Item CAUSTIC_SODA = simple("caustic_soda");
+    public static final Item TRICHLOROSILANE = register("trichlorosilane", org.alex_melan.spacereloaded.electronics.MaterialItem::new);
+    public static final Item POLYSILICON = register("polysilicon", org.alex_melan.spacereloaded.electronics.MaterialItem::new);
+    public static final Item SILICON_BOULE = register("silicon_boule", org.alex_melan.spacereloaded.electronics.MaterialItem::new);
+    /** Мультикремниевая пластина: после диффузии фосфора — солнечный элемент. */
+    public static final Item MULTICRYSTALLINE_WAFER = register("multicrystalline_wafer", props -> new org.alex_melan.spacereloaded.electronics.MaterialItem(props.stacksTo(16)));
+    public static final Item MULTICRYSTALLINE_SILICON = register("multicrystalline_silicon", org.alex_melan.spacereloaded.electronics.MaterialItem::new);
+    public static final Item SILICON_WAFER = register("silicon_wafer", props -> new org.alex_melan.spacereloaded.electronics.MaterialItem(props.stacksTo(16)));
+    public static final Item SOLAR_CELL = simple("solar_cell");
+    public static final Item MONO_SOLAR_CELL = simple("mono_solar_cell");
+    public static final Item ROCK_SALT = simple("rock_salt");
+    public static final Item PHOTORESIST = simple("photoresist");
+    public static final Item CERAMIC_PACKAGE = simple("ceramic_package");
+    public static final Item DIE_LOGIC = simple("die_logic");
+    public static final Item DIE_MICROPROCESSOR = simple("die_microprocessor");
+    public static final Item DIE_RADHARD = simple("die_radhard");
+    public static final Item LOGIC_CHIP = simple("logic_chip");
+    public static final Item MICROPROCESSOR = simple("microprocessor");
+    public static final Item RADHARD_PROCESSOR = simple("radhard_processor");
+    public static final Item HYDROFLUORIC_ACID = simple("hydrofluoric_acid");
+    public static final Item GLASS_FIBER = simple("glass_fiber");
+    public static final Item EPOXY_RESIN = simple("epoxy_resin");
+    public static final Item FR4_LAMINATE = simple("fr4_laminate");
+    public static final Item COPPER_CLAD_LAMINATE = simple("copper_clad_laminate");
+    public static final Item INCOMPLETE_CIRCUIT_BOARD = register("incomplete_circuit_board", props -> new org.alex_melan.spacereloaded.machine.PartItem(props.stacksTo(16)));
+    public static final Item CIRCUIT_BOARD = register("circuit_board", props -> new org.alex_melan.spacereloaded.machine.PartItem(props.stacksTo(16)));
+    public static final Item FLIGHT_COMPUTER = register("flight_computer", props -> new Item(props.stacksTo(16)));
+    public static final Item FLUORITE = simple("fluorite");
+    public static final Item CRYOLITE = simple("cryolite");
+    public static final Item ALUMINA = simple("alumina");
+    public static final Item ALUMINIUM_INGOT = simple("aluminium_ingot");
+    public static final Item ALUMINIUM_COPPER_INGOT = simple("aluminium_copper_ingot");
+    public static final Item SPODUMENE = simple("spodumene");
+    public static final Item LITHIUM_CHLORIDE = simple("lithium_chloride");
+    public static final Item LITHIUM_INGOT = simple("lithium_ingot");
+    public static final Item ALUMINIUM_LITHIUM_INGOT = simple("aluminium_lithium_ingot");
+    public static final Item NICKEL_INGOT = simple("nickel_ingot");
+    public static final Item NICKEL_SUPERALLOY_INGOT = simple("nickel_superalloy_ingot");
+    public static final Item SAPPHIRE = simple("sapphire");
+    /** Шихты сплавов (сборочный стол → электропечь, как сталь): алюмомедная, алюминий-литиевая, жаропрочная, фосфатная. */
+    public static final Item AL_CU_BLEND = simple("al_cu_blend");
+    public static final Item AL_LI_BLEND = simple("al_li_blend");
+    public static final Item SUPERALLOY_BLEND = simple("superalloy_blend");
+    public static final Item PHOSPHATE_BLEND = simple("phosphate_blend");
+    /** Кварцевый тигель Чохральского: растворяется в расплаве и трескается при остывании — один на загрузку. */
+    public static final Item QUARTZ_CRUCIBLE = simple("quartz_crucible");
+    /** Белый фосфор (процесс Вёлера) — донорная лигатура n-типа. */
+    public static final Item PHOSPHORUS = simple("phosphorus");
+    /** Серная кислота (контактный процесс: S → SO₂ → SO₃ → H₂SO₄). */
+    public static final Item SULFURIC_ACID = simple("sulfuric_acid");
+    /** Гипс CaSO₄ — побочный продукт HF из флюорита. */
+    public static final Item GYPSUM = simple("gypsum");
+    /** β-сподумен: после обжига 1050 °C решётка раскрывается и литий выщелачивается кислотой. */
+    public static final Item BETA_SPODUMENE = simple("beta_spodumene");
+    /** Сапфировая подложка Ø50 мм (T3, кремний-на-сапфире). */
+    public static final Item SAPPHIRE_WAFER = register("sapphire_wafer", props -> new org.alex_melan.spacereloaded.electronics.MaterialItem(props.stacksTo(16)));
+    /** Кремний-на-сапфире: эпитаксиальный слой кремния на сапфире — радиационно стойкая подложка. */
+    public static final Item SOS_WAFER = register("sos_wafer", props -> new org.alex_melan.spacereloaded.electronics.MaterialItem(props.stacksTo(16)));
+    /** Фотошаблон: контактная печать изнашивает его — 50 экспозиций. */
+    public static final Item PHOTOMASK_LOGIC = register("photomask_logic", props -> new Item(props.durability(50)));
+    /** Фотошаблон: контактная печать изнашивает его — 50 экспозиций. */
+    public static final Item PHOTOMASK_MICROPROCESSOR = register("photomask_microprocessor", props -> new Item(props.durability(50)));
+    /** Фотошаблон: контактная печать изнашивает его — 50 экспозиций. */
+    public static final Item PHOTOMASK_RADHARD = register("photomask_radhard", props -> new Item(props.durability(50)));
+
     public static boolean isEnginePart(Item item) {
-        return item == TURBOPUMP || item == INJECTOR_PLATE || item == REGEN_NOZZLE;
+        return item == TURBOPUMP || item == INJECTOR_PLATE || item == REGEN_NOZZLE || item == CIRCUIT_BOARD;
     }
 
     public static boolean isIntermediatePart(Item item) {
-        return item == INCOMPLETE_TURBOPUMP || item == INCOMPLETE_INJECTOR || item == INCOMPLETE_NOZZLE;
+        return item == INCOMPLETE_TURBOPUMP || item == INCOMPLETE_INJECTOR || item == INCOMPLETE_NOZZLE
+                || item == INCOMPLETE_CIRCUIT_BOARD;
     }
 
     private static Item simple(String name) {

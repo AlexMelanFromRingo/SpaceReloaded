@@ -151,6 +151,17 @@ and stations from **Galacticraft**, free-form rockets and satellites from
 - **A guided progression.** Thirty-three advancements walk you from the first
   steel ingot to closing the interplanetary loop.
 
+- **Electronics from sand.** Relays and core rope memory (like Apollo) → metallurgical
+  silicon in the furnace → chlor-alkali electrolysis and trichlorosilane → column
+  distillation (purity by Fenske) → Siemens reactor → Czochralski single crystal
+  (crucible, dopant, Scheil segregation) → wafer saw → oxidation, lithography and
+  etching in a cleanroom whose air is modelled honestly, with die yield e^(−D·A) →
+  a flight computer and closed-loop guidance.
+- **Materials with real properties.** Sulfuric and hydrofluoric acid, alumina,
+  Hall–Héroult and direct oxide electrolysis, lithium from spodumene, Mond nickel,
+  2219 and Al-Li alloys (tanks 5 % and 19 % lighter), superalloy turbine wheels
+  (thrust ×1.3), monocrystalline solar panels (×1.4).
+
 ## No teleport magic
 
 Rockets never turn into inventory items. Returning home means refueling via

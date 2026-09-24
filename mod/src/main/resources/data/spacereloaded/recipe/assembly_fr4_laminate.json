@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:glass_fiber",
+		"spacereloaded:glass_fiber",
+		"spacereloaded:glass_fiber",
+		"spacereloaded:glass_fiber",
+		"spacereloaded:epoxy_resin"
+	],
+	"result": {
+		"id": "spacereloaded:fr4_laminate"
+	}
+}

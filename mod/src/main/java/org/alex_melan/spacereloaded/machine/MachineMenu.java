@@ -72,7 +72,7 @@ public abstract class MachineMenu extends AbstractContainerMenu {
         }
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
-        int machineSlots = inputSlots + 1;
+        int machineSlots = container.getContainerSize();
 
         if (index < machineSlots) {
             // Из машины — в инвентарь игрока

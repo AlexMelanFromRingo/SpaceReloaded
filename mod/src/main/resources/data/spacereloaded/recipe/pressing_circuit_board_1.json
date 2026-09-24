@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:pressing",
+	"ingredient": "spacereloaded:copper_clad_laminate",
+	"step": 0,
+	"result": {
+		"id": "spacereloaded:incomplete_circuit_board"
+	}
+}

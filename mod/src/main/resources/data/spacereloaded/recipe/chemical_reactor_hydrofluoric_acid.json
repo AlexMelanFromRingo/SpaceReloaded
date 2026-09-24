@@ -1,0 +1,23 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:fluorite"
+		},
+		{
+			"item": "spacereloaded:sulfuric_acid"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:hydrofluoric_acid",
+			"count": 2
+		},
+		{
+			"id": "spacereloaded:gypsum"
+		}
+	],
+	"energy": 300,
+	"ticks": 160
+}

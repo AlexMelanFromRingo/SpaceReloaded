@@ -15,10 +15,17 @@ import org.alex_melan.spacereloaded.core.industry.EngineQuality;
 public class EngineBlock extends Block {
 
     public static final IntegerProperty QUALITY = IntegerProperty.create("quality", 0, 10);
+    /**
+     * Колесо турбонасоса из жаропрочного никелевого сплава (006, D68): горячее на входе в турбину
+     * → выше давление в камере → тяга ×1.3 (TurbineLimit).
+     */
+    public static final net.minecraft.world.level.block.state.properties.BooleanProperty SUPERALLOY =
+            net.minecraft.world.level.block.state.properties.BooleanProperty.create("superalloy");
 
     public EngineBlock(Properties properties) {
         super(properties);
-        registerDefaultState(getStateDefinition().any().setValue(QUALITY, EngineQuality.DEFAULT_LEVEL));
+        registerDefaultState(getStateDefinition().any().setValue(QUALITY, EngineQuality.DEFAULT_LEVEL)
+                .setValue(SUPERALLOY, false));
     }
 
     /** Хитбокс по модели: монтажная плита, горловина, раструб сопла. */
@@ -35,6 +42,6 @@ public class EngineBlock extends Block {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(QUALITY);
+        builder.add(QUALITY, SUPERALLOY);
     }
 }

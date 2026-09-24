@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:aluminium_lithium_ingot",
+		"spacereloaded:aluminium_lithium_ingot",
+		"spacereloaded:steel_ingot",
+		"spacereloaded:carbon_fiber"
+	],
+	"result": {
+		"id": "spacereloaded:al_li_fuel_tank"
+	}
+}

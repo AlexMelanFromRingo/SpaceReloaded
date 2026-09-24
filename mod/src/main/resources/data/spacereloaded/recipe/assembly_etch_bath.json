@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:epoxy_resin",
+		"spacereloaded:epoxy_resin",
+		"spacereloaded:relay_logic"
+	],
+	"result": {
+		"id": "spacereloaded:etch_bath"
+	}
+}

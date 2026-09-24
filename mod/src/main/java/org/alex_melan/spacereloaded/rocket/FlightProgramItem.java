@@ -128,4 +128,14 @@ public class FlightProgramItem extends Item {
                         : Component.translatable("planet.spacereloaded." + planetKey(destination)),
                 pad == null ? "—" : pad.pos().toShortString() + " @ " + pad.dimension().identifier());
     }
+
+    /** Тир наведения в подсказке (006). */
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay display,
+                                java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        int tier = stack.getOrDefault(ModDataComponents.GUIDANCE_TIER, 1);
+        tooltip.accept(Component.translatable("tooltip.spacereloaded.guidance_tier." + Math.min(2, Math.max(1, tier)))
+                .withStyle(net.minecraft.ChatFormatting.GRAY));
+    }
 }

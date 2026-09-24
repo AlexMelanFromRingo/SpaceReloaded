@@ -20,6 +20,13 @@
 		"spacereloaded:capacitor",
 		"spacereloaded:regolith_reactor",
 		"spacereloaded:refractory_lining",
-		"spacereloaded:motor"
+		"spacereloaded:motor",
+		"spacereloaded:chemical_reactor",
+		"spacereloaded:deposition_reactor",
+		"spacereloaded:diffusion_furnace",
+		"spacereloaded:lithography_station",
+		"spacereloaded:etch_bath",
+		"spacereloaded:crystal_puller",
+		"spacereloaded:mono_solar_panel"
 	]
 }

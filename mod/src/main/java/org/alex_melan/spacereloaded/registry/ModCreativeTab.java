@@ -142,6 +142,36 @@ public final class ModCreativeTab {
                         output.accept(ModItems.TURBOPUMP);
                         output.accept(ModItems.INJECTOR_PLATE);
                         output.accept(ModItems.REGEN_NOZZLE);
+                        // 006: материалы и электроника
+                        for (var block : new net.minecraft.world.level.block.Block[] {
+                                ModBlocks.HALITE_ORE, ModBlocks.FLUORITE_ORE, ModBlocks.SPODUMENE_ORE, ModBlocks.ANORTHOSITE,
+                                ModBlocks.CHEMICAL_REACTOR, ModBlocks.DEPOSITION_REACTOR, ModBlocks.CRYSTAL_PULLER,
+                                ModBlocks.WAFER_SAW, ModBlocks.FAN_FILTER_UNIT, ModBlocks.DIFFUSION_FURNACE,
+                                ModBlocks.LITHOGRAPHY_STATION, ModBlocks.ETCH_BATH, ModBlocks.MONO_SOLAR_PANEL,
+                                ModBlocks.ALUMINIUM_FUEL_TANK, ModBlocks.AL_LI_FUEL_TANK}) {
+                            output.accept(block);
+                        }
+                        for (var item : new net.minecraft.world.item.Item[] {
+                                ModItems.COPPER_WIRE, ModItems.RELAY, ModItems.RELAY_LOGIC, ModItems.FERRITE_CORE,
+                                ModItems.CORE_ROPE_MEMORY, ModItems.ROCK_SALT, ModItems.BRINE, ModItems.HYDROGEN_CHLORIDE,
+                                ModItems.CAUSTIC_SODA, ModItems.SULFURIC_ACID, ModItems.FLUORITE, ModItems.HYDROFLUORIC_ACID,
+                                ModItems.GYPSUM, ModItems.SILICON_BLEND, ModItems.METALLURGICAL_SILICON, ModItems.CARBON_MONOXIDE,
+                                ModItems.TRICHLOROSILANE, ModItems.POLYSILICON, ModItems.SILICON_DUST, ModItems.PHOSPHATE_BLEND,
+                                ModItems.PHOSPHORUS, ModItems.QUARTZ_CRUCIBLE, ModItems.SILICON_BOULE,
+                                ModItems.MULTICRYSTALLINE_SILICON, ModItems.SILICON_WAFER, ModItems.MULTICRYSTALLINE_WAFER,
+                                ModItems.SOLAR_CELL, ModItems.MONO_SOLAR_CELL, ModItems.SAPPHIRE, ModItems.SAPPHIRE_WAFER,
+                                ModItems.SOS_WAFER, ModItems.PHOTORESIST, ModItems.PHOTOMASK_LOGIC,
+                                ModItems.PHOTOMASK_MICROPROCESSOR, ModItems.PHOTOMASK_RADHARD, ModItems.DIE_LOGIC,
+                                ModItems.DIE_MICROPROCESSOR, ModItems.DIE_RADHARD, ModItems.CERAMIC_PACKAGE, ModItems.LOGIC_CHIP,
+                                ModItems.MICROPROCESSOR, ModItems.RADHARD_PROCESSOR, ModItems.GLASS_FIBER, ModItems.EPOXY_RESIN,
+                                ModItems.FR4_LAMINATE, ModItems.COPPER_CLAD_LAMINATE, ModItems.INCOMPLETE_CIRCUIT_BOARD,
+                                ModItems.CIRCUIT_BOARD, ModItems.FLIGHT_COMPUTER, ModItems.ALUMINA, ModItems.CRYOLITE,
+                                ModItems.ALUMINIUM_INGOT, ModItems.AL_CU_BLEND, ModItems.ALUMINIUM_COPPER_INGOT,
+                                ModItems.SPODUMENE, ModItems.BETA_SPODUMENE, ModItems.LITHIUM_CHLORIDE, ModItems.LITHIUM_INGOT,
+                                ModItems.AL_LI_BLEND, ModItems.ALUMINIUM_LITHIUM_INGOT, ModItems.NICKEL_INGOT,
+                                ModItems.SUPERALLOY_BLEND, ModItems.NICKEL_SUPERALLOY_INGOT}) {
+                            output.accept(item);
+                        }
                     })
                     .build());
 

@@ -117,6 +117,8 @@ public class RocketEntity extends Entity {
     @org.jetbrains.annotations.Nullable
     private net.minecraft.core.GlobalPos programPad;
     private int programFrequency;
+    /** Тир наведения загруженной программы (006): 1 — прошивная память, 2 — бортовой компьютер. */
+    private int guidanceTier = 1;
     /** Груз (агрегат всех отсеков; раскладывается по ним при разборе). */
     private final java.util.List<net.minecraft.world.item.ItemStack> cargoItems =
             new java.util.ArrayList<>();
@@ -1231,8 +1233,28 @@ public class RocketEntity extends Entity {
             return Component.translatable("message.spacereloaded.program.unreachable",
                     String.valueOf(destination));
         }
+        guidanceTier = program.getOrDefault(org.alex_melan.spacereloaded.registry.ModDataComponents.GUIDANCE_TIER, 1);
         return Component.translatable("message.spacereloaded.program.installed",
                 FlightProgramItem.describe(program));
+    }
+
+    /** 006: достижение «Легче воздуха… почти» — старт с баком из алюминиевого сплава. */
+    private void awardLightTank(ServerLevel level) {
+        if (rocketData == null) {
+            return;
+        }
+        for (RocketData.Entry entry : rocketData.blocks()) {
+            if (entry.state().is(org.alex_melan.spacereloaded.registry.ModBlocks.ALUMINIUM_FUEL_TANK)
+                    || entry.state().is(org.alex_melan.spacereloaded.registry.ModBlocks.AL_LI_FUEL_TANK)) {
+                org.alex_melan.spacereloaded.industry.IndustryAdvancements.awardNearby(level, blockPosition(), 32,
+                        org.alex_melan.spacereloaded.industry.IndustryAdvancements.LIGHT_TANK);
+                return;
+            }
+        }
+    }
+
+    public int guidanceTier() {
+        return guidanceTier;
     }
 
     /**
@@ -1349,6 +1371,7 @@ public class RocketEntity extends Entity {
         relaunchAtTick = 0;
         entityData.set(DATA_LAUNCHED, true);
         flight = FlightState.atRest(corePos(), stagePropellantKg(activeStage));
+        awardLightTank(level);
         level.playSound(null, blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.NEUTRAL, 3.0f, 0.5f);
         return new LaunchResult(true, LaunchResult.Kind.OK, Component.translatable("message.spacereloaded.rocket.autopilot_started",
                 Component.translatable("planet.spacereloaded." + targetId.getPath())));
@@ -1418,6 +1441,7 @@ public class RocketEntity extends Entity {
         fuelOutWarned = false;
         entityData.set(DATA_LAUNCHED, true);
         flight = FlightState.atRest(corePos(), stagePropellantKg(activeStage));
+        awardLightTank(level);
         level.playSound(null, blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.NEUTRAL, 3.0f, 0.5f);
         return true;
     }
@@ -1681,6 +1705,7 @@ public class RocketEntity extends Entity {
             output.putLong("program_pad_pos", programPad.pos().asLong());
         }
         output.putInt("program_frequency", programFrequency);
+        output.putInt("guidance_tier", guidanceTier);
         output.putBoolean("route_continues", routeContinues);
         output.putLong("relaunch_at", relaunchAtTick);
         output.putInt("destination", destinationIndex);
@@ -1737,6 +1762,7 @@ public class RocketEntity extends Entity {
                     BlockPos.of(input.getLongOr("program_pad_pos", 0L)));
         }
         this.programFrequency = input.getIntOr("program_frequency", 0);
+        this.guidanceTier = input.getIntOr("guidance_tier", 1);
         this.routeContinues = input.getBooleanOr("route_continues", false);
         this.relaunchAtTick = input.getLongOr("relaunch_at", 0L);
         this.destinationIndex = input.getIntOr("destination", 0);

@@ -51,6 +51,9 @@ public class SolarPanelBlockEntity extends MachineBlockEntity {
         if (org.alex_melan.spacereloaded.network.MarsClimate.stormActive(level)) {
             efficiency *= SpaceReloaded.config().dustStormSolarMultiplier; // буря глушит панели
         }
+        if (getBlockState().is(org.alex_melan.spacereloaded.registry.ModBlocks.MONO_SOLAR_PANEL)) {
+            efficiency *= 1.4; // монокристалл 21 % против мультикремния 15 %
+        }
         return (long) (base * efficiency);
     }
 }

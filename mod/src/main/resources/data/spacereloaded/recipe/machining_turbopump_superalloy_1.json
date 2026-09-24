@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:machining",
+	"ingredient": "spacereloaded:nickel_superalloy_ingot",
+	"step": 0,
+	"result": {
+		"id": "spacereloaded:incomplete_turbopump",
+		"components": {
+			"spacereloaded:turbine_superalloy": 1
+		}
+	},
+	"energy_j": 240000
+}

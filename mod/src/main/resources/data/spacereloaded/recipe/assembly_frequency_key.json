@@ -2,7 +2,7 @@
 	"type": "spacereloaded:assembly",
 	"ingredients": [
 		"minecraft:gold_ingot",
-		"minecraft:redstone",
+		"spacereloaded:logic_chip",
 		"spacereloaded:steel_ingot"
 	],
 	"result": {

@@ -2,7 +2,7 @@
 	"type": "spacereloaded:assembly",
 	"ingredients": [
 		"spacereloaded:steel_ingot",
-		"minecraft:redstone",
+		"spacereloaded:relay_logic",
 		"spacereloaded:hermetic_glass",
 		"minecraft:copper_ingot"
 	],

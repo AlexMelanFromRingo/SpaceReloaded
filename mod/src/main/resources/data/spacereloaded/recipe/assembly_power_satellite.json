@@ -2,10 +2,11 @@
 	"type": "spacereloaded:assembly",
 	"ingredients": [
 		"spacereloaded:steel_ingot",
-		"spacereloaded:solar_panel",
-		"spacereloaded:solar_panel",
-		"spacereloaded:solar_panel",
-		"spacereloaded:titanium_alloy_ingot"
+		"spacereloaded:mono_solar_panel",
+		"spacereloaded:mono_solar_panel",
+		"spacereloaded:mono_solar_panel",
+		"spacereloaded:titanium_alloy_ingot",
+		"spacereloaded:radhard_processor"
 	],
 	"result": {
 		"id": "spacereloaded:power_satellite",

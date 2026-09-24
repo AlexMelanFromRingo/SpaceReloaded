@@ -38,7 +38,7 @@ import java.util.Optional;
 public abstract class KineticMachineBlockEntity<R extends MachiningRecipe> extends KineticBlockEntity
         implements WorldlyContainer {
 
-    protected NonNullList<ItemStack> items = NonNullList.withSize(2, ItemStack.EMPTY);
+    protected NonNullList<ItemStack> items = NonNullList.withSize(slotCount(), ItemStack.EMPTY);
     protected double deviationSum;
     protected int deviationSamples;
     private final RecipeManager.CachedCheck<SingleRecipeInput, R> check;
@@ -47,6 +47,11 @@ public abstract class KineticMachineBlockEntity<R extends MachiningRecipe> exten
                                         RecipeType<R> recipeType) {
         super(type, pos, state);
         this.check = RecipeManager.createCheck(recipeType);
+    }
+
+    /** Число слотов: 0 — вход, 1 — выход; наследники добавляют свои (тигель, пыль пропила). */
+    protected int slotCount() {
+        return 2;
     }
 
     protected abstract double nominalOmega();
@@ -104,6 +109,11 @@ public abstract class KineticMachineBlockEntity<R extends MachiningRecipe> exten
             result.set(ModDataComponents.MACHINING_STEP, recipe.data().step() + 1);
             result.set(ModDataComponents.MACHINING_DELTA_SQ, (float) sumSq);
         }
+        // 006 (D68): материал колеса турбины идёт с заготовкой через всю цепочку станков
+        Integer superalloy = input.get(ModDataComponents.TURBINE_SUPERALLOY);
+        if (superalloy != null && !result.isEmpty() && !result.is(ModItems.IRON_DUST)) {
+            result.set(ModDataComponents.TURBINE_SUPERALLOY, superalloy);
+        }
         input.shrink(1);
         ItemStack out = items.get(1);
         if (out.isEmpty()) {
@@ -160,7 +170,7 @@ public abstract class KineticMachineBlockEntity<R extends MachiningRecipe> exten
 
     @Override
     public int getContainerSize() {
-        return 2;
+        return slotCount();
     }
 
     @Override
@@ -242,7 +252,7 @@ public abstract class KineticMachineBlockEntity<R extends MachiningRecipe> exten
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
-        items = NonNullList.withSize(2, ItemStack.EMPTY);
+        items = NonNullList.withSize(slotCount(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
         deviationSum = input.getDoubleOr("dev_sum", 0);
         deviationSamples = input.getIntOr("dev_n", 0);

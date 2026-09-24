@@ -26,7 +26,7 @@ public final class ModMenus {
 
     public static final MenuType<SingleInputMachineMenu> ELECTRIC_FURNACE = register("electric_furnace",
             new MenuType<>((containerId, inventory) ->
-                    SingleInputMachineMenu.client(ModMenus.ELECTRIC_FURNACE, containerId, inventory),
+                    SingleInputMachineMenu.client(ModMenus.ELECTRIC_FURNACE, containerId, inventory, 3),
                     FeatureFlags.VANILLA_SET));
 
     public static final MenuType<AssemblyTableMenu> ASSEMBLY_TABLE = register("assembly_table",
@@ -47,6 +47,29 @@ public final class ModMenus {
     public static final MenuType<org.alex_melan.spacereloaded.industry.RegolithReactorMenu> REGOLITH_REACTOR =
             register("regolith_reactor", new MenuType<>(
                     org.alex_melan.spacereloaded.industry.RegolithReactorMenu::new, FeatureFlags.VANILLA_SET));
+
+    // --- 006: процессные машины (одно меню по раскладке) ---
+    public static final MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu> CHEMICAL_REACTOR =
+            process("chemical_reactor", org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout.CHEMICAL_REACTOR);
+    public static final MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu> SABATIER_REACTOR =
+            process("sabatier_reactor", org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout.SABATIER_REACTOR);
+    public static final MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu> DEPOSITION_REACTOR =
+            process("deposition_reactor", org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout.DEPOSITION_REACTOR);
+    public static final MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu> DIFFUSION_FURNACE =
+            process("diffusion_furnace", org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout.DIFFUSION_FURNACE);
+    public static final MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu> LITHOGRAPHY_STATION =
+            process("lithography_station", org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout.LITHOGRAPHY_STATION);
+    public static final MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu> ETCH_BATH =
+            process("etch_bath", org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout.ETCH_BATH);
+
+    private static MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu> process(
+            String name, org.alex_melan.spacereloaded.electronics.ProcessMenu.Layout layout) {
+        MenuType<org.alex_melan.spacereloaded.electronics.ProcessMenu>[] self = new MenuType[1];
+        self[0] = register(name, new MenuType<>((id, inventory) ->
+                org.alex_melan.spacereloaded.electronics.ProcessMenu.client(self[0], layout, id, inventory),
+                FeatureFlags.VANILLA_SET));
+        return self[0];
+    }
 
     private static <T extends net.minecraft.world.inventory.AbstractContainerMenu> MenuType<T> register(
             String name, MenuType<T> type) {

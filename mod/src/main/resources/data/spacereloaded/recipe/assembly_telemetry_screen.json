@@ -3,7 +3,7 @@
 	"ingredients": [
 		"spacereloaded:steel_ingot",
 		"spacereloaded:hermetic_glass",
-		"minecraft:redstone",
+		"spacereloaded:relay_logic",
 		"minecraft:copper_ingot"
 	],
 	"result": {

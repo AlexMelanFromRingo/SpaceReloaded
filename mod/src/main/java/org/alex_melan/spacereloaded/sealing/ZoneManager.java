@@ -171,6 +171,12 @@ public final class ZoneManager {
 
     // ---------- Проверка принадлежности (для урона вакуума, D10) ----------
 
+    /** Герметичная зона, внутри которой точка (или null) — для чистой комнаты 006. */
+    public static SealedZone zoneContaining(ServerLevel level, BlockPos pos) {
+        SealedZone zone = levelZones(level).posIndex.get(pos.asLong());
+        return zone != null && zone.volume().contains(pos.asLong()) ? zone : null;
+    }
+
     public static boolean isInsideSealedZone(ServerLevel level, BlockPos pos) {
         SealedZone zone = levelZones(level).posIndex.get(pos.asLong());
         return zone != null && zone.isSealed() && zone.volume().contains(pos.asLong());
@@ -260,6 +266,7 @@ public final class ZoneManager {
             zone.update(computation.result().status(), computation.result().volume(),
                     computation.footprint(), leaks);
             addToIndex(lz, zone);
+            org.alex_melan.spacereloaded.electronics.CleanroomTracker.onZoneUpdated(level, zone);
 
             BlockEntity blockEntity = level.getBlockEntity(controllerPos);
             if (blockEntity instanceof AtmosphereControllerBlockEntity controller) {

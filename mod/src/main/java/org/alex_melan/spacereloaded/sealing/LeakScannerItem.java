@@ -59,7 +59,20 @@ public class LeakScannerItem extends Item {
         return InteractionResult.SUCCESS_SERVER;
     }
 
+    /**
+     * Счётчик частиц (006, D64): концентрация частиц ≥ 0.5 мкм в точке игрока, класс ISO 14644-1
+     * и куда воздух стремится (стационар и постоянная времени) — пробоотборник сканера.
+     */
+    private void particleCount(ServerLevel level, ServerPlayer player) {
+        double c = org.alex_melan.spacereloaded.electronics.CleanroomTracker.concentration(level, player.blockPosition());
+        int iso = org.alex_melan.spacereloaded.core.electronics.CleanroomAir.isoClass(c);
+        player.sendSystemMessage(Component.translatable("message.spacereloaded.scanner.particles",
+                String.format(java.util.Locale.ROOT, "%.3g", c), iso)
+                .withStyle(iso <= 5 ? ChatFormatting.AQUA : ChatFormatting.GRAY));
+    }
+
     private void report(ServerLevel level, ServerPlayer player, SealedZone zone) {
+        particleCount(level, player);
         if (zone == null) {
             player.sendSystemMessage(Component.translatable(
                     "message.spacereloaded.scanner.none").withStyle(ChatFormatting.GRAY));

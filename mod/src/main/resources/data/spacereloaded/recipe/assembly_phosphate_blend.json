@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"minecraft:bone_meal",
+		"minecraft:bone_meal",
+		"minecraft:bone_meal",
+		"minecraft:sand",
+		"spacereloaded:coal_dust"
+	],
+	"result": {
+		"id": "spacereloaded:phosphate_blend"
+	}
+}

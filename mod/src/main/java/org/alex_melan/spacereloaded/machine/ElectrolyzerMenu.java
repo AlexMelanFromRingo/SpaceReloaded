@@ -32,12 +32,24 @@ public class ElectrolyzerMenu extends AbstractContainerMenu {
                 return stack.is(ModItems.OXYGEN_CANISTER);
             }
         });
+        addSlot(new Slot(container, 2, 116, 26) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return false; // HCl хлор-щелочного режима
+            }
+        });
+        addSlot(new Slot(container, 3, 116, 48) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return false; // щёлочь
+            }
+        });
         addStandardInventorySlots(playerInventory, 8, 84);
         addDataSlots(data);
     }
 
     public ElectrolyzerMenu(int containerId, Inventory playerInventory) {
-        this(containerId, playerInventory, new SimpleContainer(3), new SimpleContainerData(6));
+        this(containerId, playerInventory, new SimpleContainer(4), new SimpleContainerData(6));
     }
 
     public int progress() {
@@ -72,8 +84,8 @@ public class ElectrolyzerMenu extends AbstractContainerMenu {
         }
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
-        if (index < 2) {
-            if (!moveItemStackTo(stack, 2, slots.size(), true)) {
+        if (index < 4) {
+            if (!moveItemStackTo(stack, 4, slots.size(), true)) {
                 return ItemStack.EMPTY;
             }
         } else {

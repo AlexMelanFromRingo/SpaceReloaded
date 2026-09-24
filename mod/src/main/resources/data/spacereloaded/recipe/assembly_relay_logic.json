@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:relay",
+		"spacereloaded:relay",
+		"spacereloaded:relay",
+		"spacereloaded:relay",
+		"spacereloaded:copper_wire",
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:relay_logic"
+	}
+}

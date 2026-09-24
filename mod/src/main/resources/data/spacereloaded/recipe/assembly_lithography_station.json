@@ -1,0 +1,15 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:hermetic_glass",
+		"minecraft:glowstone_dust",
+		"spacereloaded:relay_logic",
+		"spacereloaded:relay_logic",
+		"minecraft:iron_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:lithography_station"
+	}
+}

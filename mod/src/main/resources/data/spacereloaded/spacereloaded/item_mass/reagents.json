@@ -1,0 +1,14 @@
+{
+	"items": [
+		"spacereloaded:brine",
+		"spacereloaded:hydrogen_chloride",
+		"spacereloaded:caustic_soda",
+		"spacereloaded:sulfuric_acid",
+		"spacereloaded:hydrofluoric_acid",
+		"spacereloaded:trichlorosilane",
+		"spacereloaded:carbon_monoxide",
+		"spacereloaded:photoresist",
+		"spacereloaded:epoxy_resin"
+	],
+	"kg": 1.2
+}

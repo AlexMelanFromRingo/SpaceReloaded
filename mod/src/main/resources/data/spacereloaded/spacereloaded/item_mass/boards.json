@@ -1,0 +1,12 @@
+{
+	"items": [
+		"spacereloaded:glass_fiber",
+		"spacereloaded:fr4_laminate",
+		"spacereloaded:copper_clad_laminate",
+		"spacereloaded:incomplete_circuit_board",
+		"spacereloaded:circuit_board",
+		"spacereloaded:relay_logic",
+		"spacereloaded:core_rope_memory"
+	],
+	"kg": 0.3
+}

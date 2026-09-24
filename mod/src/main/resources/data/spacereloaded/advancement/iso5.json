@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:fan_filter_unit"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.iso5.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.iso5.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:sealed"
+}

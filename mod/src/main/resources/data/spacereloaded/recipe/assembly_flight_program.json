@@ -1,13 +1,11 @@
 {
 	"type": "spacereloaded:assembly",
 	"ingredients": [
+		"spacereloaded:core_rope_memory",
 		"minecraft:paper",
-		"minecraft:paper",
-		"minecraft:redstone",
 		"spacereloaded:steel_ingot"
 	],
 	"result": {
-		"id": "spacereloaded:flight_program",
-		"count": 1
+		"id": "spacereloaded:flight_program"
 	}
 }

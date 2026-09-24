@@ -1,0 +1,17 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:circuit_board",
+		"spacereloaded:microprocessor",
+		"spacereloaded:logic_chip",
+		"spacereloaded:logic_chip",
+		"spacereloaded:logic_chip",
+		"spacereloaded:logic_chip",
+		"spacereloaded:core_rope_memory",
+		"spacereloaded:copper_wire",
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:flight_computer"
+	}
+}

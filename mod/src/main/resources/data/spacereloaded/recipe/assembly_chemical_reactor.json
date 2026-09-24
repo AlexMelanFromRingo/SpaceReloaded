@@ -1,0 +1,14 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:hermetic_glass",
+		"spacereloaded:copper_wire",
+		"spacereloaded:relay_logic",
+		"minecraft:cauldron"
+	],
+	"result": {
+		"id": "spacereloaded:chemical_reactor"
+	}
+}

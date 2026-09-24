@@ -46,12 +46,27 @@ public final class MachineActivity {
         int hold = source.isWorking() ? HOLD_TICKS : Math.max(0, source.activeHold() - 1);
         source.setActiveHold(hold);
         boolean active = hold > 0;
+        if (state.getValue(ACTIVE) != active || (active && level.getGameTime() % 20 == 0)) {
+            // чистая комната (006): пуск/останов меняет генерацию частиц; раз в секунду —
+            // перерегистрация после перезапуска мира
+            org.alex_melan.spacereloaded.electronics.CleanroomTracker.machine(level, pos,
+                    active ? particleRate(state) : 0);
+        }
         if (state.getValue(ACTIVE) != active) {
             level.setBlock(pos, state.setValue(ACTIVE, active), Block.UPDATE_CLIENTS);
         }
         if (active && level.getGameTime() % 10 == Math.floorMod(pos.asLong(), 10)) {
             effects(level, pos, state);
         }
+    }
+
+    /** Генерация частиц работающей машиной, 1/мин: дробилка пылит, остальные почти нет. */
+    public static double particleRate(BlockState state) {
+        String id = BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
+        return switch (id) {
+            case "crusher", "coal_generator" -> org.alex_melan.spacereloaded.electronics.CleanroomTracker.DUSTY_MACHINE;
+            default -> org.alex_melan.spacereloaded.electronics.CleanroomTracker.MACHINE;
+        };
     }
 
     private static void particles(ServerLevel level, ParticleOptions type, double x, double y, double z, int count,

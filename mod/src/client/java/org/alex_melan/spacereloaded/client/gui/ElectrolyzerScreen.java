@@ -13,7 +13,7 @@ import org.alex_melan.spacereloaded.machine.ElectrolyzerMenu;
 public class ElectrolyzerScreen extends AbstractContainerScreen<ElectrolyzerMenu> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(
-            SpaceReloaded.MOD_ID, "textures/gui/electrolyzer.png");
+            SpaceReloaded.MOD_ID, "textures/gui/electrolyzer_chlor.png");
 
     private static final int ARROW_X = 76;
     private static final int ARROW_Y = 35;

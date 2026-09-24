@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:logic_chip"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.thinking_sand.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.thinking_sand.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:assembly_table"
+}

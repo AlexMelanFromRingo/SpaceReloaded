@@ -1,0 +1,17 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:glass_fiber",
+		"spacereloaded:glass_fiber",
+		"spacereloaded:glass_fiber",
+		"spacereloaded:glass_fiber",
+		"spacereloaded:copper_wire",
+		"spacereloaded:copper_wire",
+		"minecraft:iron_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:fan_filter_unit"
+	}
+}

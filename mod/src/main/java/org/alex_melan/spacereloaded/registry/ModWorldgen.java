@@ -18,6 +18,10 @@ public final class ModWorldgen {
     public static final ResourceKey<PlacedFeature> ORE_TITANIUM = placed("ore_titanium");
     public static final ResourceKey<PlacedFeature> ORE_TUNGSTEN = placed("ore_tungsten");
     public static final ResourceKey<PlacedFeature> OIL_SHALE = placed("oil_shale");
+    /** 006: эвапориты (галит), гидротермальный флюорит, пегматитовый сподумен. */
+    public static final ResourceKey<PlacedFeature> ORE_HALITE = placed("ore_halite");
+    public static final ResourceKey<PlacedFeature> ORE_FLUORITE = placed("ore_fluorite");
+    public static final ResourceKey<PlacedFeature> ORE_SPODUMENE = placed("ore_spodumene");
 
     /** Ударный кратер безатмосферного тела: рельеф, а не разрушение. */
     public static final net.minecraft.world.level.levelgen.feature.Feature<
@@ -59,6 +63,9 @@ public final class ModWorldgen {
                 GenerationStep.Decoration.UNDERGROUND_ORES, ORE_TUNGSTEN);
         BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(),
                 GenerationStep.Decoration.UNDERGROUND_ORES, OIL_SHALE);
+        for (ResourceKey<PlacedFeature> ore : java.util.List.of(ORE_HALITE, ORE_FLUORITE, ORE_SPODUMENE)) {
+            BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(), GenerationStep.Decoration.UNDERGROUND_ORES, ore);
+        }
     }
 
     private ModWorldgen() {

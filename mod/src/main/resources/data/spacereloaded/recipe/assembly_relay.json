@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:copper_wire",
+		"spacereloaded:copper_wire",
+		"minecraft:iron_ingot",
+		"minecraft:redstone"
+	],
+	"result": {
+		"id": "spacereloaded:relay",
+		"count": 2
+	}
+}

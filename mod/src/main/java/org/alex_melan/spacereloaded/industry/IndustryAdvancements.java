@@ -24,6 +24,10 @@ public final class IndustryAdvancements {
     public static final String FLYWHEEL = "flywheel_energy";
     public static final String STACK = "electrolysis_stack";
     public static final String TOLERANCE = "tolerance";
+    public static final String THINKING_SAND = "thinking_sand";
+    public static final String ISO5 = "iso5";
+    public static final String NINE_NINES = "nine_nines";
+    public static final String LIGHT_TANK = "light_tank";
 
     private IndustryAdvancements() {
     }

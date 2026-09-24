@@ -1,0 +1,15 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"minecraft:quartz_block",
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:copper_plate",
+		"spacereloaded:copper_plate",
+		"spacereloaded:relay_logic",
+		"spacereloaded:hermetic_glass"
+	],
+	"result": {
+		"id": "spacereloaded:deposition_reactor"
+	}
+}

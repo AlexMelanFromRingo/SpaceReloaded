@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:al_li_blend",
+	"result": {
+		"id": "spacereloaded:aluminium_lithium_ingot",
+		"count": 7
+	}
+}

@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:polysilicon"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.nine_nines.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.nine_nines.description"
+		},
+		"frame": "challenge"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:assembly_table"
+}

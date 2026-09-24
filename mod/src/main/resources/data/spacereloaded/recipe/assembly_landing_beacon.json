@@ -3,7 +3,7 @@
 	"ingredients": [
 		"spacereloaded:steel_ingot",
 		"spacereloaded:steel_ingot",
-		"minecraft:redstone",
+		"spacereloaded:relay_logic",
 		"minecraft:glowstone_dust"
 	],
 	"result": {

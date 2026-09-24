@@ -21,6 +21,11 @@ import org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity;
  * Перегонный куб (земная ветка топлива): нефтеносный сланец + энергия →
  * топливо во внутренний буфер → соседние баки. Выход выше электролизёра —
  * нефть энергетически выгоднее льда.
+ *
+ * <p>Ректификация трихлорсилана (006, FR-413, D61): примеси BCl₃ (12.6 °C) и PCl₃ (76 °C) кипят
+ * далеко от SiHCl₃ (31.8 °C); по Фенске каждая теоретическая тарелка делит примесь на α ≈ 2.5 —
+ * чистота растёт на 0.4·K «девятки» за проход ({@link org.alex_melan.spacereloaded.core.electronics.Purity}).
+ * Куб без колонны — одна ступень равновесия. Слоты: 0 — сланец или ТХС, 1 — сера, 2 — очищенный ТХС.
  */
 public class RefineryBlockEntity extends ProcessingMachineBlockEntity
         implements org.alex_melan.spacereloaded.industry.IndustryStructures.StructureOwner {
@@ -99,7 +104,50 @@ public class RefineryBlockEntity extends ProcessingMachineBlockEntity
     };
 
     public RefineryBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.REFINERY, pos, state, 1);
+        super(ModBlockEntities.REFINERY, pos, state, 1, 2, false);
+    }
+
+    /** Теоретических ступеней: тарелки сформированной колонны или одна ступень куба. */
+    public int stages() {
+        return structure.formed() ? structure.repeats() : 1;
+    }
+
+    /** Проход ТХС через колонну: один предмет за цикл, чистота по Фенске. */
+    private boolean distillSilane(ServerLevel level) {
+        ItemStack input = items.get(0);
+        if (!input.is(org.alex_melan.spacereloaded.registry.ModItems.TRICHLOROSILANE)) {
+            return false;
+        }
+        long energyPerTick = SpaceReloaded.config().machineEnergyPerTick;
+        ItemStack product = input.copyWithCount(1);
+        product.set(org.alex_melan.spacereloaded.registry.ModDataComponents.PURITY,
+                (float) org.alex_melan.spacereloaded.core.electronics.Purity.afterColumn(
+                        ChemicalProcess.purityOf(input), stages()));
+        if (!ChemicalProcess.fits(items, new int[] {2}, java.util.List.of(product)) || energy.amount < energyPerTick) {
+            if (progress > 0) {
+                progress = Math.max(0, progress - 2);
+                setChanged();
+            }
+            return true;
+        }
+        energy.amount -= energyPerTick;
+        if (++progress >= processingTicks()) {
+            progress = 0;
+            input.shrink(1);
+            ChemicalProcess.distribute(items, new int[] {2}, product);
+            if (product.getOrDefault(org.alex_melan.spacereloaded.registry.ModDataComponents.PURITY, 0f)
+                    >= org.alex_melan.spacereloaded.core.electronics.Purity.ELECTRONIC_GRADE) {
+                org.alex_melan.spacereloaded.industry.IndustryAdvancements.awardNearby(level, getBlockPos(), 16,
+                        org.alex_melan.spacereloaded.industry.IndustryAdvancements.NINE_NINES);
+            }
+            if (structure.formed()) {
+                net.minecraft.core.BlockPos top = getBlockPos().above(structure.repeats() + 1);
+                level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD, top.getX() + 0.5,
+                        top.getY() + 0.1, top.getZ() + 0.5, 6, 0.2, 0.1, 0.2, 0.01);
+            }
+        }
+        setChanged();
+        return true;
     }
 
     @Override
@@ -115,9 +163,15 @@ public class RefineryBlockEntity extends ProcessingMachineBlockEntity
             EnergyUtil.ensureAdjacentCableNetworks(level, getBlockPos());
             pushFuelToTanks(level);
         }
+        if (distillSilane(level)) {
+            return;
+        }
         long energyPerTick = SpaceReloaded.config().machineEnergyPerTick;
         ItemStack input = items.get(0);
+        ItemStack sulfur = items.get(1);
         boolean canWork = input.is(ModTags.REFINERY_INPUT)
+                && (sulfur.isEmpty() || (sulfur.is(net.minecraft.world.item.Items.SULFUR)
+                        && sulfur.getCount() < sulfur.getMaxStackSize())) // сера не теряется — куб ждёт
                 && fuelBuffer + fuelPerOperation() <= FUEL_BUFFER_CAPACITY
                 && energy.amount >= energyPerTick;
 

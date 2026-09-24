@@ -1,0 +1,9 @@
+{
+	"type": "spacereloaded:pressing",
+	"ingredient": "spacereloaded:copper_plate",
+	"step": 0,
+	"result": {
+		"id": "spacereloaded:copper_wire",
+		"count": 8
+	}
+}

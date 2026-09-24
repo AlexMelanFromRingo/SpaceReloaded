@@ -1,0 +1,17 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "electric_furnace",
+	"inputs": [
+		{
+			"item": "spacereloaded:metallurgical_silicon"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:multicrystalline_silicon"
+		}
+	],
+	"energy": 642,
+	"ticks": 400,
+	"purity": 5.0
+}

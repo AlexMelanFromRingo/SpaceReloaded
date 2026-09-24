@@ -1,0 +1,17 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:aluminium_ingot",
+		"minecraft:copper_nugget",
+		"spacereloaded:lithium_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:al_li_blend"
+	}
+}

@@ -1,0 +1,7 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:silicon_dust",
+	"result": {
+		"id": "spacereloaded:metallurgical_silicon"
+	}
+}

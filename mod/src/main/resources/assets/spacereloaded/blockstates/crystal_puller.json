@@ -1,0 +1,16 @@
+{
+	"variants": {
+		"axis=x": {
+			"model": "spacereloaded:block/crystal_puller",
+			"x": 90,
+			"y": 90
+		},
+		"axis=y": {
+			"model": "spacereloaded:block/crystal_puller"
+		},
+		"axis=z": {
+			"model": "spacereloaded:block/crystal_puller",
+			"x": 90
+		}
+	}
+}

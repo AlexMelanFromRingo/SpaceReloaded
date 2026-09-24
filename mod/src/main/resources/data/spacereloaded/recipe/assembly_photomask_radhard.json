@@ -1,0 +1,11 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:hermetic_glass",
+		"spacereloaded:iron_dust",
+		"spacereloaded:microprocessor"
+	],
+	"result": {
+		"id": "spacereloaded:photomask_radhard"
+	}
+}

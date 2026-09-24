@@ -76,6 +76,21 @@
 		"spacereloaded:lathe",
 		"spacereloaded:electrolysis_cell",
 		"spacereloaded:distillation_tray",
-		"spacereloaded:wind_hub"
+		"spacereloaded:wind_hub",
+		"spacereloaded:chemical_reactor",
+		"spacereloaded:deposition_reactor",
+		"spacereloaded:crystal_puller",
+		"spacereloaded:wafer_saw",
+		"spacereloaded:fan_filter_unit",
+		"spacereloaded:diffusion_furnace",
+		"spacereloaded:lithography_station",
+		"spacereloaded:etch_bath",
+		"spacereloaded:mono_solar_panel",
+		"spacereloaded:aluminium_fuel_tank",
+		"spacereloaded:al_li_fuel_tank",
+		"spacereloaded:anorthosite",
+		"spacereloaded:halite_ore",
+		"spacereloaded:fluorite_ore",
+		"spacereloaded:spodumene_ore"
 	]
 }

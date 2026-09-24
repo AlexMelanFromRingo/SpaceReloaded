@@ -38,6 +38,14 @@ import java.util.List;
  * центр боковой грани оболочки 3×3×3 из огнеупорной футеровки (FACING наружу), центр куба —
  * воздух. Слоты: 0 — сырьё, 1 — баллон, 2 — железная пыль, 3 — титановая пыль, 4 — шлак.
  * Кислород — в баллон (уменьшение износа = зарядка, как у электролизёра), остаток — в буфер.
+ *
+ * <p>Электролиз других расплавов (006, процессные рецепты {@code machine = regolith_reactor}):
+ * глинозём — два честных пути: прямой электролиз оксидного расплава на инертном аноде (MOE,
+ * ≈ 20 кВт·ч/кг, выделяется O₂ — лунный путь) или Холл–Эру: глинозём растворён в криолитовой
+ * ванне, анод угольный и сгорает (2Al₂O₃ + 3C → 4Al + 3CO₂, 0.45 кг C на кг Al, ≈ 14 кВт·ч/кг —
+ * энергия ×0.7, кислорода нет). Криолит и уголь, положенные во вход, уходят в ванну и анод;
+ * потери фторидов ~2 % массы алюминия — одной порции криолита хватает на 50 кг. анортозит лунных нагорий (Al + Si + O₂ + шлак CaO),
+ * хлорид лития (2LiCl → 2Li + Cl₂; хлор уходит в скруббер). Продукты — в слоты 2–4.
  */
 public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
         implements WorldlyContainer, IndustryStructures.StructureOwner {
@@ -54,6 +62,40 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
 
     private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
     private final SimpleEnergyStorage energy = new SimpleEnergyStorage(ENERGY_CAPACITY, ENERGY_MAX_INSERT, 0);
+    private final org.alex_melan.spacereloaded.machine.ChemicalProcess melt =
+            new org.alex_melan.spacereloaded.machine.ChemicalProcess(
+                    org.alex_melan.spacereloaded.machine.recipe.ChemicalRecipe.REGOLITH_REACTOR);
+    private static final int[] MELT_OUT = {SLOT_IRON, SLOT_TITANIUM, SLOT_SLAG};
+    /** Криолитовая ванна (кг алюминия, на который её хватит) и угольный анод (кг углерода). */
+    private double bathCapacity;
+    private double anodeCarbon;
+    public static final double ALUMINIUM_PER_CRYOLITE = 50;
+    public static final double CARBON_PER_ALUMINIUM = 0.45;
+    public static final double HALL_HEROULT_ENERGY = 0.7;
+
+    private static boolean anodeCarbon(ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.COAL) || stack.is(net.minecraft.world.item.Items.CHARCOAL)
+                || stack.is(ModItems.COAL_DUST);
+    }
+
+    /** Криолит и уголь во входе — в ванну и анод. */
+    private void absorbBathAndAnode() {
+        ItemStack input = items.get(SLOT_INPUT);
+        if (input.is(ModItems.CRYOLITE)) {
+            bathCapacity += ALUMINIUM_PER_CRYOLITE * input.getCount();
+            items.set(SLOT_INPUT, ItemStack.EMPTY);
+            setChanged();
+        } else if (anodeCarbon(input)) {
+            anodeCarbon += input.getCount();
+            items.set(SLOT_INPUT, ItemStack.EMPTY);
+            setChanged();
+        }
+    }
+
+    /** Режим Холла–Эру: ванна есть и анода хватит на порцию. */
+    private boolean hallHeroult() {
+        return bathCapacity >= 1 && anodeCarbon >= CARBON_PER_ALUMINIUM && items.get(SLOT_INPUT).is(ModItems.ALUMINA);
+    }
     private int progress;
     private int oxygenBuffer;
     private boolean formed;
@@ -65,7 +107,7 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
         public int get(int index) {
             return switch (index) {
                 case 0 -> progress;
-                case 1 -> SpaceReloaded.config().reactorCycleTicks;
+                case 1 -> melt.working() ? melt.maxProgress() : SpaceReloaded.config().reactorCycleTicks;
                 case 2 -> (int) energy.amount;
                 case 3 -> (int) energy.capacity;
                 case 4 -> oxygenBuffer;
@@ -105,6 +147,16 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
 
     public int oxygenBuffer() {
         return oxygenBuffer;
+    }
+
+    /** Криолитовая ванна, кг алюминия (006). */
+    public double bathCapacity() {
+        return bathCapacity;
+    }
+
+    /** Угольный анод, кг (006). */
+    public double anodeCarbon() {
+        return anodeCarbon;
     }
 
     /** Центр куба — за контроллером (FACING смотрит наружу). */
@@ -182,6 +234,32 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
     private boolean work(ServerLevel level) {
         SpaceReloadedConfig config = SpaceReloaded.config();
         ItemStack input = items.get(SLOT_INPUT);
+        absorbBathAndAnode();
+        input = items.get(SLOT_INPUT);
+        if (formed && !input.is(ModTags.REGOLITH_REACTOR_INPUT)
+                && (melt.working() || melt.find(level, input).isPresent())) {
+            boolean hh = hallHeroult();
+            melt.setEnergyFactor(hh ? HALL_HEROULT_ENERGY : 1.0);
+            var done = melt.tick(level, items, new int[] {SLOT_INPUT}, MELT_OUT, energy, 1,
+                    oxygen -> hh || oxygenBuffer + oxygen <= config.reactorOxygenBuffer + canisterRoom());
+            progress = melt.progress();
+            if (done != null && hh) {
+                double aluminium = 0;
+                for (var product : done.recipe().outputs()) {
+                    if (product.result().item().value() == ModItems.ALUMINIUM_INGOT) {
+                        aluminium += product.expected() * done.batches();
+                    }
+                }
+                anodeCarbon = Math.max(0, anodeCarbon - aluminium * CARBON_PER_ALUMINIUM);
+                bathCapacity = Math.max(0, bathCapacity - aluminium);
+            } else if (done != null) {
+                oxygenBuffer += done.recipe().oxygen() * done.batches();
+                drainBufferToCanister();
+                oxygenBuffer = Math.min(oxygenBuffer, config.reactorOxygenBuffer);
+            }
+            setChanged();
+            return melt.working() || done != null;
+        }
         long perTick = (config.reactorEnergyPerCycle + config.reactorCycleTicks - 1) / config.reactorCycleTicks;
         boolean canWork = formed && input.is(ModTags.REGOLITH_REACTOR_INPUT)
                 && energy.amount >= perTick
@@ -249,6 +327,9 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
         List<Component> lines = new ArrayList<>();
         if (formed) {
             lines.add(Component.translatable("message.spacereloaded.regolith_reactor.formed"));
+            lines.add(Component.translatable("message.spacereloaded.regolith_reactor.bath",
+                    String.format(java.util.Locale.ROOT, "%.0f", bathCapacity),
+                    String.format(java.util.Locale.ROOT, "%.1f", anodeCarbon)));
         } else {
             BlockPos bad = badCell();
             lines.add(Component.translatable("message.spacereloaded.regolith_reactor.not_formed",
@@ -307,7 +388,8 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
         return switch (slot) {
-            case SLOT_INPUT -> stack.is(ModTags.REGOLITH_REACTOR_INPUT);
+            case SLOT_INPUT -> stack.is(ModTags.REGOLITH_REACTOR_INPUT) || stack.is(ModTags.MOLTEN_SALT_FEED)
+                    || stack.is(ModItems.CRYOLITE) || anodeCarbon(stack);
             case SLOT_CANISTER -> stack.is(ModItems.OXYGEN_CANISTER);
             default -> false;
         };
@@ -362,6 +444,9 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
         output.putInt("progress", progress);
         output.putInt("oxygen", oxygenBuffer);
         output.putLong("energy", energy.amount);
+        melt.save(output.child("melt"));
+        output.putDouble("bath", bathCapacity);
+        output.putDouble("anode", anodeCarbon);
     }
 
     @Override
@@ -372,6 +457,9 @@ public class RegolithReactorBlockEntity extends BaseContainerBlockEntity
         progress = input.getIntOr("progress", 0);
         oxygenBuffer = input.getIntOr("oxygen", 0);
         energy.amount = Math.min(energy.capacity, input.getLongOr("energy", 0));
+        melt.load(input.childOrEmpty("melt"));
+        bathCapacity = input.getDoubleOr("bath", 0);
+        anodeCarbon = input.getDoubleOr("anode", 0);
         dirty = true;
     }
 }

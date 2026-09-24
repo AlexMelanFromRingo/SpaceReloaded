@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:superalloy_blend",
+	"result": {
+		"id": "spacereloaded:nickel_superalloy_ingot",
+		"count": 8
+	}
+}

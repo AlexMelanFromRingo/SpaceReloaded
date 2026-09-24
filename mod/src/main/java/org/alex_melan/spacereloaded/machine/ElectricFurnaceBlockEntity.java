@@ -12,6 +12,8 @@ import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.block.state.BlockState;
 import org.alex_melan.spacereloaded.SpaceReloaded;
+import net.minecraft.world.inventory.ContainerData;
+import org.alex_melan.spacereloaded.machine.recipe.ChemicalRecipe;
 import org.alex_melan.spacereloaded.machine.recipe.ElectricFurnaceRecipe;
 import org.alex_melan.spacereloaded.registry.ModBlockEntities;
 import org.alex_melan.spacereloaded.registry.ModMenus;
@@ -25,8 +27,65 @@ public class ElectricFurnaceBlockEntity extends ProcessingMachineBlockEntity {
     private final RecipeManager.CachedCheck<SingleRecipeInput, SmeltingRecipe> vanillaCheck =
             RecipeManager.createCheck(RecipeType.SMELTING);
 
+    /** Процессы с побочным продуктом (карботермия → CO, обжиг сподумена, Вёлер → CO, …). */
+    private final ChemicalProcess process = new ChemicalProcess(ChemicalRecipe.ELECTRIC_FURNACE);
+
     public ElectricFurnaceBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.ELECTRIC_FURNACE, pos, state, 1);
+        super(ModBlockEntities.ELECTRIC_FURNACE, pos, state, 1, 2, false);
+    }
+
+    @Override
+    public void serverTick(ServerLevel level) {
+        if (process.working() || process.find(level, items.get(0)).isPresent()) {
+            if (level.getGameTime() % 20 == 0) {
+                org.alex_melan.spacereloaded.energy.EnergyUtil.ensureAdjacentCableNetworks(level, getBlockPos());
+            }
+            process.tick(level, items, new int[] {0}, outputSlotIndices(), energy, 1, oxygen -> oxygen == 0);
+            progress = process.progress();
+            setChanged();
+            return;
+        }
+        super.serverTick(level);
+    }
+
+    @Override
+    public ContainerData dataAccess() {
+        return furnaceData;
+    }
+
+    private final ContainerData furnaceData = new ContainerData() {
+        @Override
+        public int get(int index) {
+            boolean chem = process.working();
+            return switch (index) {
+                case 0 -> chem ? process.progress() : progress;
+                case 1 -> chem ? process.maxProgress() : processingTicks();
+                case 2 -> (int) Math.min(Integer.MAX_VALUE, energy.amount);
+                case 3 -> (int) Math.min(Integer.MAX_VALUE, energy.capacity);
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int index, int value) {
+        }
+
+        @Override
+        public int getCount() {
+            return 4;
+        }
+    };
+
+    @Override
+    protected void saveAdditional(net.minecraft.world.level.storage.ValueOutput output) {
+        super.saveAdditional(output);
+        process.save(output.child("process"));
+    }
+
+    @Override
+    protected void loadAdditional(net.minecraft.world.level.storage.ValueInput input) {
+        super.loadAdditional(input);
+        process.load(input.childOrEmpty("process"));
     }
 
     @Override
@@ -60,6 +119,6 @@ public class ElectricFurnaceBlockEntity extends ProcessingMachineBlockEntity {
 
     @Override
     protected AbstractContainerMenu createMenu(int containerId, Inventory playerInventory) {
-        return new SingleInputMachineMenu(ModMenus.ELECTRIC_FURNACE, containerId, playerInventory, this, dataAccess);
+        return new SingleInputMachineMenu(ModMenus.ELECTRIC_FURNACE, containerId, playerInventory, this, furnaceData);
     }
 }

@@ -1,0 +1,29 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "minecraft:clay_ball",
+			"count": 4
+		},
+		{
+			"item": "spacereloaded:hydrogen_chloride",
+			"count": 2
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:alumina"
+		},
+		{
+			"id": "minecraft:sand"
+		},
+		{
+			"id": "spacereloaded:hydrogen_chloride",
+			"count": 2,
+			"yield": 0.9
+		}
+	],
+	"energy": 600,
+	"ticks": 200
+}

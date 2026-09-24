@@ -346,6 +346,30 @@ my_spacereloaded_addon/
 поверхности и цвета неба. Профиль в реестре `planets` связывает физику
 (гравитация, атмосфера) с этим измерением.
 
+### Материалы и электроника (006)
+
+- **Процессные рецепты** `spacereloaded:chemical` — один тип для всего химического парка; поле
+  `machine` выбирает исполнителя: `chemical_reactor` (3 входа, 3 выхода), `electric_furnace`
+  (1 вход, основной и побочный выход), `electrolyzer` (1 вход, 2 выхода, параллельно по ячейкам
+  стека), `sabatier_reactor` (2 входа, 3 выхода), `deposition_reactor` (3 входа, 2 выхода),
+  `regolith_reactor` (1 вход, 3 выхода, `oxygen` — единиц баллона на реакцию).
+  ```json
+  { "type": "spacereloaded:chemical", "machine": "deposition_reactor",
+    "inputs": [ { "item": "spacereloaded:trichlorosilane" },
+                { "item": "#spacereloaded:electrolyzer_input" } ],
+    "outputs": [ { "id": "spacereloaded:polysilicon" },
+                 { "id": "spacereloaded:hydrogen_chloride", "count": 3, "yield": 0.95 } ],
+    "energy": 5620, "ticks": 600, "keep_purity": true }
+  ```
+  `yield` — доля от `count` (дробь копится в машине), `purity` задаёт чистоту продукта №1,
+  `keep_purity` переносит её с реагента №1. Реагенты можно класть в любые слоты, лишние
+  занятые слоты рецепт не пускают. Выдача атомарная: машина ждёт места под все продукты.
+- **Чистота** — компонент `spacereloaded:purity` (float, «девятки»); партии в выходе
+  смешиваются по массе примесей. Пластина фаба — `wafer_step`, `wafer_kind`, `wafer_defects`.
+- **Модуль HEPA** — блок `spacereloaded:fan_filter_unit`, граничащий с объёмом зоны.
+- Колесо турбонасоса из суперсплава — компонент `turbine_superalloy` (переносится станками);
+  двигатель — свойство состояния `superalloy` (тяга ×1.3).
+
 ## Рецепты станков
 
 Три типа рецептов мода. Все лежат в `data/<неймспейс>/recipe/`.

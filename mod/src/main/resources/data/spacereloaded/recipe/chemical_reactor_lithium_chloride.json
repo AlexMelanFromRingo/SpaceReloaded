@@ -1,0 +1,23 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:beta_spodumene"
+		},
+		{
+			"item": "spacereloaded:hydrogen_chloride",
+			"count": 2
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:lithium_chloride"
+		},
+		{
+			"id": "minecraft:sand"
+		}
+	],
+	"energy": 300,
+	"ticks": 200
+}

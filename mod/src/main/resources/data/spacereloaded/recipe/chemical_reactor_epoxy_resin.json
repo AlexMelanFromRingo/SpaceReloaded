@@ -1,0 +1,23 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:coal_dust"
+		},
+		{
+			"item": "spacereloaded:hydrogen_chloride"
+		},
+		{
+			"item": "spacereloaded:caustic_soda"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:epoxy_resin",
+			"count": 2
+		}
+	],
+	"energy": 200,
+	"ticks": 200
+}

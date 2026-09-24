@@ -1,0 +1,17 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:nickel_ingot",
+		"spacereloaded:nickel_ingot",
+		"spacereloaded:nickel_ingot",
+		"spacereloaded:nickel_ingot",
+		"spacereloaded:nickel_ingot",
+		"spacereloaded:nickel_ingot",
+		"spacereloaded:nickel_ingot",
+		"spacereloaded:aluminium_ingot",
+		"spacereloaded:titanium_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:superalloy_blend"
+	}
+}

@@ -31,12 +31,18 @@ public class RefineryMenu extends AbstractContainerMenu {
                 return false; // сера — только наружу
             }
         });
+        addSlot(new Slot(container, 2, 116, 57) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return false; // очищенный трихлорсилан
+            }
+        });
         addStandardInventorySlots(playerInventory, 8, 84);
         addDataSlots(data);
     }
 
     public RefineryMenu(int containerId, Inventory playerInventory) {
-        this(containerId, playerInventory, new SimpleContainer(2), new SimpleContainerData(6));
+        this(containerId, playerInventory, new SimpleContainer(3), new SimpleContainerData(6));
     }
 
     public int progress() {
@@ -71,8 +77,8 @@ public class RefineryMenu extends AbstractContainerMenu {
         }
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
-        if (index <= 1) {
-            if (!moveItemStackTo(stack, 2, slots.size(), true)) {
+        if (index <= 2) {
+            if (!moveItemStackTo(stack, 3, slots.size(), true)) {
                 return ItemStack.EMPTY;
             }
         } else if (!moveItemStackTo(stack, 0, 1, false)) {

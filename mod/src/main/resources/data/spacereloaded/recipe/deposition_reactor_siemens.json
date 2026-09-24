@@ -1,0 +1,25 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "deposition_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:trichlorosilane"
+		},
+		{
+			"item": "#spacereloaded:electrolyzer_input"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:polysilicon"
+		},
+		{
+			"id": "spacereloaded:hydrogen_chloride",
+			"count": 3,
+			"yield": 0.95
+		}
+	],
+	"energy": 5620,
+	"ticks": 600,
+	"keep_purity": true
+}

@@ -1,0 +1,8 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:al_cu_blend",
+	"result": {
+		"id": "spacereloaded:aluminium_copper_ingot",
+		"count": 6
+	}
+}

@@ -1,0 +1,20 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "regolith_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:alumina",
+			"count": 2
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:aluminium_ingot",
+			"count": 2,
+			"yield": 0.775
+		}
+	],
+	"energy": 2883,
+	"ticks": 300,
+	"oxygen": 250
+}

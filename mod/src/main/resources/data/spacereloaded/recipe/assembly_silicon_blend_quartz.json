@@ -1,0 +1,17 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"minecraft:quartz",
+		"minecraft:quartz",
+		"minecraft:quartz",
+		"minecraft:quartz",
+		"spacereloaded:coal_dust",
+		"spacereloaded:coal_dust"
+	],
+	"result": {
+		"id": "spacereloaded:silicon_blend",
+		"components": {
+			"spacereloaded:purity": 2.5
+		}
+	}
+}

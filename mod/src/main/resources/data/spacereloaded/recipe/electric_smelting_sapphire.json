@@ -1,0 +1,7 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "spacereloaded:alumina",
+	"result": {
+		"id": "spacereloaded:sapphire"
+	}
+}

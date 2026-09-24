@@ -1,0 +1,17 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:ferrite_core",
+		"spacereloaded:ferrite_core",
+		"spacereloaded:ferrite_core",
+		"spacereloaded:ferrite_core",
+		"spacereloaded:ferrite_core",
+		"spacereloaded:ferrite_core",
+		"spacereloaded:ferrite_core",
+		"spacereloaded:ferrite_core",
+		"spacereloaded:copper_wire"
+	],
+	"result": {
+		"id": "spacereloaded:core_rope_memory"
+	}
+}

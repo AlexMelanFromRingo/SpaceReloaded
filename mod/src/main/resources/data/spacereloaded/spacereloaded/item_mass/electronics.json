@@ -1,0 +1,17 @@
+{
+	"items": [
+		"spacereloaded:die_logic",
+		"spacereloaded:die_microprocessor",
+		"spacereloaded:die_radhard",
+		"spacereloaded:logic_chip",
+		"spacereloaded:microprocessor",
+		"spacereloaded:radhard_processor",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:relay",
+		"spacereloaded:ferrite_core",
+		"spacereloaded:photomask_logic",
+		"spacereloaded:photomask_microprocessor",
+		"spacereloaded:photomask_radhard"
+	],
+	"kg": 0.05
+}

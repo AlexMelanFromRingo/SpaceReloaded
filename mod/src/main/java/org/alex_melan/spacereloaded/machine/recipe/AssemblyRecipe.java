@@ -120,7 +120,10 @@ public class AssemblyRecipe implements Recipe<AssemblyRecipeInput> {
                 && blockItem.getBlock() instanceof org.alex_melan.spacereloaded.rocket.EngineBlock) {
             double sum = 0;
             int parts = 0;
+            boolean superalloy = false;
             for (int i = 0; i < input.size(); i++) {
+                superalloy |= input.getItem(i).getOrDefault(
+                        org.alex_melan.spacereloaded.registry.ModDataComponents.TURBINE_SUPERALLOY, 0) > 0;
                 Float q = input.getItem(i).get(org.alex_melan.spacereloaded.registry.ModDataComponents.PART_QUALITY);
                 if (q != null) {
                     sum += q;
@@ -131,7 +134,8 @@ public class AssemblyRecipe implements Recipe<AssemblyRecipeInput> {
                     : org.alex_melan.spacereloaded.core.industry.EngineQuality.level(sum / parts);
             out.set(net.minecraft.core.component.DataComponents.BLOCK_STATE,
                     net.minecraft.world.item.component.BlockItemStateProperties.EMPTY
-                            .with(org.alex_melan.spacereloaded.rocket.EngineBlock.QUALITY, level));
+                            .with(org.alex_melan.spacereloaded.rocket.EngineBlock.QUALITY, level)
+                            .with(org.alex_melan.spacereloaded.rocket.EngineBlock.SUPERALLOY, superalloy));
         }
         return out;
     }

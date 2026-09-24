@@ -21,7 +21,12 @@ import org.alex_melan.spacereloaded.rocket.FuelTankBlockEntity;
 /**
  * Электролизёр (US6 ISRU): лёд + энергия → топливо (гидролокс) во внутренний
  * буфер (перекачивается в соседние баки) + кислород (заряжает баллоны).
- * Слоты: [0] — лёд, [1] — баллон, [2] — служебный выход (не используется).
+ * Слоты: [0] — лёд или рассол, [1] — баллон, [2–3] — продукты хлор-щелочного режима.
+ *
+ * <p>Хлор-щелочной режим (006): рассол в ячейках — 2NaCl + 2H₂O → Cl₂ + H₂ + 2NaOH, хлор и
+ * водород сжигаются в HCl на выходе (печь синтеза хлороводорода). Ячейки стека работают
+ * параллельно (Фарадей: N ячеек — N-кратный выход при N-кратной энергии), рецепты — процессные
+ * ({@code machine = electrolyzer}).
  */
 public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity
         implements org.alex_melan.spacereloaded.industry.IndustryStructures.StructureOwner {
@@ -78,7 +83,7 @@ public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity
         public int get(int index) {
             return switch (index) {
                 case 0 -> progress;
-                case 1 -> processingTicks();
+                case 1 -> chlorAlkali.working() ? chlorAlkali.maxProgress() : processingTicks();
                 case 2 -> (int) Math.min(Integer.MAX_VALUE, energy.amount);
                 case 3 -> (int) Math.min(Integer.MAX_VALUE, energy.capacity);
                 case 4 -> (int) fuelBuffer;
@@ -103,7 +108,14 @@ public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity
     };
 
     public ElectrolyzerBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.ELECTROLYZER, pos, state, 2);
+        super(ModBlockEntities.ELECTROLYZER, pos, state, 2, 2, false);
+    }
+
+    private final ChemicalProcess chlorAlkali = new ChemicalProcess(org.alex_melan.spacereloaded.machine.recipe.ChemicalRecipe.ELECTROLYZER);
+
+    /** Хлор-щелочной режим: в ячейках рассол (процессный рецепт электролизёра). */
+    private boolean processMode(ServerLevel level) {
+        return chlorAlkali.working() || chlorAlkali.find(level, items.get(0)).isPresent();
     }
 
     @Override
@@ -118,6 +130,19 @@ public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity
         if (level.getGameTime() % 20 == 0) {
             EnergyUtil.ensureAdjacentCableNetworks(level, getBlockPos());
             pushFuelToTanks(level);
+        }
+        if (processMode(level)) {
+            int before = chlorAlkali.progress();
+            ChemicalProcess.Finished done = chlorAlkali.tick(level, items, new int[] {0}, outputSlotIndices(), energy,
+                    structure.repeats() + 1, oxygen -> oxygen == 0);
+            progress = chlorAlkali.progress();
+            if (done != null && structure.formed()) {
+                workParticles(level);
+            }
+            if (progress != before) {
+                setChanged();
+            }
+            return;
         }
         ItemStack ice = items.get(0);
         int units = Math.max(1, unitsPerCycle(ice));
@@ -216,6 +241,7 @@ public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity
         super.saveAdditional(output);
         output.putDouble("fuel_buffer", fuelBuffer);
         structure.save(output);
+        chlorAlkali.save(output.child("chlor_alkali"));
     }
 
     @Override
@@ -223,6 +249,7 @@ public class ElectrolyzerBlockEntity extends ProcessingMachineBlockEntity
         super.loadAdditional(input);
         fuelBuffer = input.getDoubleOr("fuel_buffer", 0);
         structure.load(input);
+        chlorAlkali.load(input.childOrEmpty("chlor_alkali"));
         claimed = false;
     }
 }

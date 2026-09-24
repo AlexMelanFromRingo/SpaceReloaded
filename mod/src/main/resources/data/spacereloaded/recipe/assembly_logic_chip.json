@@ -1,0 +1,18 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:die_logic",
+		"spacereloaded:die_logic",
+		"spacereloaded:die_logic",
+		"spacereloaded:die_logic",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:ceramic_package",
+		"minecraft:gold_nugget"
+	],
+	"result": {
+		"id": "spacereloaded:logic_chip",
+		"count": 4
+	}
+}

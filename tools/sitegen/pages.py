@@ -190,7 +190,14 @@ KINDS = {
     "pressing": ("Пресс", "spacereloaded:mechanical_press"),
     "machining": ("Токарный станок", "spacereloaded:lathe"),
     "chain": ("Цепочка операций", None),
+    "chemical": ("Химический реактор", "spacereloaded:chemical_reactor"),
+    "electrolysis": ("Электролизный стек", "spacereloaded:electrolyzer"),
+    "catalytic": ("Реактор Сабатье", "spacereloaded:sabatier_reactor"),
+    "deposition": ("Реактор Сименса", "spacereloaded:deposition_reactor"),
+    "melt": ("Электролиз расплава", "spacereloaded:regolith_reactor"),
 }
+MACHINE_KIND = {"chemical_reactor": "chemical", "electric_furnace": "smelting", "electrolyzer": "electrolysis",
+                "sabatier_reactor": "catalytic", "deposition_reactor": "deposition", "regolith_reactor": "melt"}
 TYPE_KIND = {"minecraft:crafting_shaped": "craft", "minecraft:crafting_shapeless": "craft",
              "spacereloaded:assembly": "assembly", "spacereloaded:crushing": "crushing",
              "spacereloaded:electric_smelting": "smelting", "spacereloaded:pressing": "pressing",
@@ -217,6 +224,19 @@ def load_recipes():
     for f in sorted((res.RES / f"data/{res.MOD}/recipe").glob("*.json")):
         r = json.loads(f.read_text())
         t = r["type"]
+        if t == "spacereloaded:chemical":
+            outs = r["outputs"]
+            rec = {"file": f.stem, "kind": MACHINE_KIND.get(r.get("machine", "chemical_reactor"), "chemical"),
+                   "result": outs[0]["id"], "count": outs[0].get("count", 1), "raw": r,
+                   "inputs": [(_ing_id(i), i.get("count", 1)) for i in r["inputs"]],
+                   "extra": [(o["id"], o.get("count", 1), o.get("yield", 1.0)) for o in outs[1:]],
+                   "yield": outs[0].get("yield", 1.0)}
+            out.append(rec)
+            continue
+        if t == "minecraft:crafting_transmute":
+            out.append({"file": f.stem, "kind": "craft", "result": r["result"]["id"], "count": 1, "raw": r,
+                        "inputs": [(_ing_id(r["input"]), 1), (_ing_id(r["material"]), 1)]})
+            continue
         kind = TYPE_KIND.get(t)
         if kind is None:
             unknown.append(f.name); continue
@@ -284,6 +304,9 @@ def recipe_card(rec):
             left = f'<span class="grid3" role="img" aria-label="Схема верстака">{cells}</span>'
         else:
             left = '<span class="ins">' + "".join(slot(i, ctx, n) for i, n in rec["inputs"]) + "</span>"
+        extra = "".join(slot(i, ctx, n) for i, n, _y in rec.get("extra", []))
+        if extra:
+            result = f'<span class="ins">{result}{extra}</span>'
         io = f'<div class="io">{left}{arrow}{result}</div>'
         parts = []
         for i, n in rec["inputs"]:
@@ -293,6 +316,23 @@ def recipe_card(rec):
         ings = " · ".join(parts)
     desc = C.DESC.get(_short(rec["result"]), "")
     note = C.RECIPE_NOTE.get(rec["file"], "")
+    raw = rec.get("raw", {})
+    if raw.get("type") == "spacereloaded:chemical":
+        facts = [f'{raw.get("energy", 1600)} E', f'{raw.get("ticks", 200) / 20:g} с']
+        if raw.get("oxygen"):
+            facts.append(f'O₂ {raw["oxygen"]}')
+        if raw.get("purity", -1) >= 0:
+            facts.append(f'чистота {raw["purity"]:g}N')
+        if raw.get("keep_purity"):
+            facts.append("чистота наследуется")
+        for i, n, y in [(rec["result"], rec["count"], rec.get("yield", 1.0))] + rec.get("extra", []):
+            if y != 1.0:
+                nm, _ = item_info(i, ctx)
+                facts.append(f"{escape(nm)}: выход {y * 100:g} %")
+        byp = [item_info(i, ctx)[0] for i, _n, _y in rec.get("extra", [])]
+        if byp:
+            names.extend(byp)
+        note = (note + " " if note else "") + " · ".join(facts)
     search = " ".join(names + [_short(rec["result"])]).lower()
     kind_badge = f'<span class="kind">{mini(machine, ctx) if machine else ""}{kind_label}</span>'
     cnt = f' <span class="qty">× {rec["count"]}</span>' if rec["count"] > 1 else ""

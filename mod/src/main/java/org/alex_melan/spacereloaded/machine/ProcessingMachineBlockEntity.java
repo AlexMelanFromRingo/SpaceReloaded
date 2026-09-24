@@ -25,7 +25,8 @@ import team.reborn.energy.api.base.SimpleEnergyStorage;
  * ванильные хопперы и Fabric-трубы работают без доп. кода), энергобуфер
  * TR Energy, прогресс с сохранением, ContainerData для GUI.
  *
- * <p>Слоты: [0..inputSlots-1] — входы, [inputSlots] — выход.
+ * <p>Слоты: [0..inputSlots-1] — входы, [inputSlots..] — выходы (основной — первый; побочные
+ * продукты процессных рецептов 006 — следующие).
  */
 public abstract class ProcessingMachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer,
         MachineActivity.Source {
@@ -49,6 +50,7 @@ public abstract class ProcessingMachineBlockEntity extends BaseContainerBlockEnt
 
 
     protected final int inputSlots;
+    protected final int outputSlots;
     protected NonNullList<ItemStack> items;
     protected final SimpleEnergyStorage energy;
     protected int progress;
@@ -80,14 +82,20 @@ public abstract class ProcessingMachineBlockEntity extends BaseContainerBlockEnt
 
     protected ProcessingMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
                                            int inputSlots) {
-        this(type, pos, state, inputSlots, false);
+        this(type, pos, state, inputSlots, 1, false);
     }
 
     protected ProcessingMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
                                            int inputSlots, boolean generator) {
+        this(type, pos, state, inputSlots, 1, generator);
+    }
+
+    protected ProcessingMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                                           int inputSlots, int outputSlots, boolean generator) {
         super(type, pos, state);
         this.inputSlots = inputSlots;
-        this.items = NonNullList.withSize(inputSlots + 1, ItemStack.EMPTY);
+        this.outputSlots = outputSlots;
+        this.items = NonNullList.withSize(inputSlots + outputSlots, ItemStack.EMPTY);
         long capacity = SpaceReloaded.config().generatorBufferCapacity;
         // Потребитель: приём извне без отдачи; генератор — наоборот
         this.energy = generator
@@ -114,6 +122,15 @@ public abstract class ProcessingMachineBlockEntity extends BaseContainerBlockEnt
 
     private int outputSlot() {
         return inputSlots;
+    }
+
+    /** Все выходные слоты (для процессных рецептов с побочными продуктами). */
+    protected int[] outputSlotIndices() {
+        int[] out = new int[outputSlots];
+        for (int i = 0; i < outputSlots; i++) {
+            out[i] = inputSlots + i;
+        }
+        return out;
     }
 
     public void serverTick(ServerLevel level) {
@@ -188,7 +205,7 @@ public abstract class ProcessingMachineBlockEntity extends BaseContainerBlockEnt
     @Override
     public int[] getSlotsForFace(Direction face) {
         if (face == Direction.DOWN) {
-            return new int[]{outputSlot()};
+            return outputSlotIndices();
         }
         int[] inputs = new int[inputSlots];
         for (int i = 0; i < inputSlots; i++) {
@@ -204,7 +221,7 @@ public abstract class ProcessingMachineBlockEntity extends BaseContainerBlockEnt
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction face) {
-        return slot == outputSlot();
+        return slot >= inputSlots;
     }
 
     @Override
@@ -225,7 +242,7 @@ public abstract class ProcessingMachineBlockEntity extends BaseContainerBlockEnt
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
-        items = NonNullList.withSize(inputSlots + 1, ItemStack.EMPTY);
+        items = NonNullList.withSize(inputSlots + outputSlots, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
         progress = input.getIntOr("progress", 0);
         energy.amount = Math.min(energy.capacity, input.getLongOr("energy", 0));

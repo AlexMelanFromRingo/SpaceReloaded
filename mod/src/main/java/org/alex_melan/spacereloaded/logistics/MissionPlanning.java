@@ -83,8 +83,11 @@ public final class MissionPlanning {
         double[] fuel = rocket.stagePropellantSnapshot();
         int active = rocket.activeStage();
         double initial = MissionPlanner.remaining(layout, fuel, active);
-        MissionPlanner.MissionReport report = MissionPlanner.plan(layout, fuel, active, legs,
-                config.cargoLineDeltaVMarginPercent / 100.0);
+        // Тир наведения (006): T1 — жёсткая программа тангажа (разомкнутая схема), T2 — бортовой
+        // компьютер пересчитывает траекторию в полёте, запас меньше
+        double marginPercent = rocket.guidanceTier() >= 2 ? config.guidedDeltaVMarginPercent
+                : config.cargoLineDeltaVMarginPercent;
+        MissionPlanner.MissionReport report = MissionPlanner.plan(layout, fuel, active, legs, marginPercent / 100.0);
         return new Plan(report, initial, finalTarget, legs.size());
     }
 

@@ -1,0 +1,16 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_plate",
+		"spacereloaded:steel_shaft",
+		"minecraft:quartz_block",
+		"spacereloaded:copper_wire",
+		"spacereloaded:copper_wire",
+		"spacereloaded:refractory_lining",
+		"spacereloaded:relay_logic"
+	],
+	"result": {
+		"id": "spacereloaded:crystal_puller"
+	}
+}

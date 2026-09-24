@@ -30,7 +30,7 @@ public final class ModBlockEntities {
 
     public static final BlockEntityType<SolarPanelBlockEntity> SOLAR_PANEL =
             register("solar_panel", new BlockEntityType<>(SolarPanelBlockEntity::new,
-                    Set.of(ModBlocks.SOLAR_PANEL)));
+                    Set.of(ModBlocks.SOLAR_PANEL, ModBlocks.MONO_SOLAR_PANEL)));
 
     public static final BlockEntityType<RtgBlockEntity> RTG =
             register("rtg", new BlockEntityType<>(RtgBlockEntity::new,
@@ -62,7 +62,7 @@ public final class ModBlockEntities {
 
     public static final BlockEntityType<FuelTankBlockEntity> FUEL_TANK =
             register("fuel_tank", new BlockEntityType<>(FuelTankBlockEntity::new,
-                    Set.of(ModBlocks.FUEL_TANK)));
+                    Set.of(ModBlocks.FUEL_TANK, ModBlocks.ALUMINIUM_FUEL_TANK, ModBlocks.AL_LI_FUEL_TANK)));
 
     public static final BlockEntityType<ElectrolyzerBlockEntity> ELECTROLYZER =
             register("electrolyzer", new BlockEntityType<>(ElectrolyzerBlockEntity::new,
@@ -166,6 +166,28 @@ public final class ModBlockEntities {
     public static final BlockEntityType<org.alex_melan.spacereloaded.kinetics.WindHubBlockEntity> WIND_HUB =
             register("wind_hub", new BlockEntityType<>(org.alex_melan.spacereloaded.kinetics.WindHubBlockEntity::new, Set.of(ModBlocks.WIND_HUB)));
 
+    // --- Материалы и электроника (006) ---
+    public static final BlockEntityType<org.alex_melan.spacereloaded.electronics.ChemicalReactorBlockEntity> CHEMICAL_REACTOR =
+            register("chemical_reactor", new BlockEntityType<>(org.alex_melan.spacereloaded.electronics.ChemicalReactorBlockEntity::new,
+                    Set.of(ModBlocks.CHEMICAL_REACTOR)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.electronics.CrystalPullerBlockEntity> CRYSTAL_PULLER =
+            register("crystal_puller", new BlockEntityType<>(org.alex_melan.spacereloaded.electronics.CrystalPullerBlockEntity::new,
+                    Set.of(ModBlocks.CRYSTAL_PULLER)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.electronics.WaferSawBlockEntity> WAFER_SAW =
+            register("wafer_saw", new BlockEntityType<>(org.alex_melan.spacereloaded.electronics.WaferSawBlockEntity::new, Set.of(ModBlocks.WAFER_SAW)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.electronics.DepositionReactorBlockEntity> DEPOSITION_REACTOR =
+            register("deposition_reactor", new BlockEntityType<>(org.alex_melan.spacereloaded.electronics.DepositionReactorBlockEntity::new,
+                    Set.of(ModBlocks.DEPOSITION_REACTOR)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.electronics.DiffusionFurnaceBlockEntity> DIFFUSION_FURNACE =
+            register("diffusion_furnace", new BlockEntityType<>(org.alex_melan.spacereloaded.electronics.DiffusionFurnaceBlockEntity::new,
+                    Set.of(ModBlocks.DIFFUSION_FURNACE)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.electronics.EtchBathBlockEntity> ETCH_BATH =
+            register("etch_bath", new BlockEntityType<>(org.alex_melan.spacereloaded.electronics.EtchBathBlockEntity::new,
+                    Set.of(ModBlocks.ETCH_BATH)));
+    public static final BlockEntityType<org.alex_melan.spacereloaded.electronics.LithographyStationBlockEntity> LITHOGRAPHY_STATION =
+            register("lithography_station", new BlockEntityType<>(org.alex_melan.spacereloaded.electronics.LithographyStationBlockEntity::new,
+                    Set.of(ModBlocks.LITHOGRAPHY_STATION)));
+
     public static void init() {
         // Публикация энергохранилищ в Fabric API lookup (решение D7: Team Reborn Energy)
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), SOLAR_PANEL);
@@ -185,6 +207,12 @@ public final class ModBlockEntities {
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), RECTENNA);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CAPACITOR);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), MOTOR);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CHEMICAL_REACTOR);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), LITHOGRAPHY_STATION);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), DEPOSITION_REACTOR);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), DIFFUSION_FURNACE);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), ETCH_BATH);
+        EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), CRYSTAL_PULLER);
         EnergyStorage.SIDED.registerForBlockEntity((be, direction) -> be.energyStorage(), REGOLITH_REACTOR);
         EnergyStorage.SIDED.registerForBlocks((level, pos, state, blockEntity, direction) ->
                 org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity.energyThroughLining(level, pos),

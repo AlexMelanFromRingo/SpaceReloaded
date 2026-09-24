@@ -1,0 +1,15 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"minecraft:quartz_block",
+		"spacereloaded:refractory_lining",
+		"spacereloaded:refractory_lining",
+		"spacereloaded:copper_wire",
+		"spacereloaded:copper_wire",
+		"spacereloaded:steel_plate",
+		"spacereloaded:relay_logic"
+	],
+	"result": {
+		"id": "spacereloaded:diffusion_furnace"
+	}
+}

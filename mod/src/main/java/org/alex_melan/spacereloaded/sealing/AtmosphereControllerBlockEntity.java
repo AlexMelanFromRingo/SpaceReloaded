@@ -87,6 +87,15 @@ public class AtmosphereControllerBlockEntity extends MachineBlockEntity {
     }
 
     @Override
+    public void preRemoveSideEffects(net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+        if (getLevel() instanceof ServerLevel serverLevel) {
+            // контроллер сломан (не выгрузка чанка) — воздух чистой комнаты забыт
+            org.alex_melan.spacereloaded.electronics.CleanroomTracker.onZoneRemoved(serverLevel, pos);
+        }
+        super.preRemoveSideEffects(pos, state);
+    }
+
+    @Override
     public void setRemoved() {
         if (getLevel() instanceof ServerLevel serverLevel) {
             ZoneManager.removeController(serverLevel, getBlockPos());

@@ -1,0 +1,19 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "regolith_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:lithium_chloride",
+			"count": 3
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:lithium_ingot",
+			"count": 2,
+			"yield": 0.96
+		}
+	],
+	"energy": 1226,
+	"ticks": 300
+}

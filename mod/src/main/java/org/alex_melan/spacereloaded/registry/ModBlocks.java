@@ -506,8 +506,69 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block ROTOR_SOLAR_ARRAY = registerNoItem("rotor_solar_array", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    public static final Block ROTOR_MONO_SOLAR_ARRAY = registerNoItem("rotor_mono_solar_array", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block ROTOR_PRESS_RAM = registerNoItem("rotor_press_ram", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+
+    // --- Материалы и электроника (006) ---
+    public static final Block CHEMICAL_REACTOR = process("chemical_reactor",
+            org.alex_melan.spacereloaded.electronics.ChemicalReactorBlockEntity::new, () -> ModBlockEntities.CHEMICAL_REACTOR, 9);
+    public static final Block DEPOSITION_REACTOR = process("deposition_reactor",
+            org.alex_melan.spacereloaded.electronics.DepositionReactorBlockEntity::new, () -> ModBlockEntities.DEPOSITION_REACTOR, 12);
+    public static final Block DIFFUSION_FURNACE = process("diffusion_furnace",
+            org.alex_melan.spacereloaded.electronics.DiffusionFurnaceBlockEntity::new, () -> ModBlockEntities.DIFFUSION_FURNACE, 11);
+    public static final Block ETCH_BATH = process("etch_bath",
+            org.alex_melan.spacereloaded.electronics.EtchBathBlockEntity::new, () -> ModBlockEntities.ETCH_BATH, 4);
+    public static final Block CRYSTAL_PULLER = register("crystal_puller",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticMachineBlock(props, org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.LATHE, 30.0,
+                    org.alex_melan.spacereloaded.electronics.CrystalPullerBlockEntity::new, () -> ModBlockEntities.CRYSTAL_PULLER),
+            BlockBehaviour.Properties.of().strength(4.0f, 10.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block WAFER_SAW = register("wafer_saw",
+            props -> new org.alex_melan.spacereloaded.kinetics.KineticMachineBlock(props, org.alex_melan.spacereloaded.kinetics.KineticBlock.Kind.LATHE, 5.0,
+                    org.alex_melan.spacereloaded.electronics.WaferSawBlockEntity::new, () -> ModBlockEntities.WAFER_SAW),
+            BlockBehaviour.Properties.of().strength(4.0f, 10.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    /** Фильтровентиляционный модуль (HEPA): учитывается чистой комнатой, в стене которой стоит. */
+    public static final Block FAN_FILTER_UNIT = register("fan_filter_unit", Block::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 8.0f).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                    .lightLevel(state -> 6));
+    public static final Block LITHOGRAPHY_STATION = process("lithography_station",
+            org.alex_melan.spacereloaded.electronics.LithographyStationBlockEntity::new, () -> ModBlockEntities.LITHOGRAPHY_STATION, 7);
+    public static final Block HALITE_ORE = register("halite_ore", Block::new,
+            BlockBehaviour.Properties.of().strength(2.5f, 3.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
+    public static final Block FLUORITE_ORE = register("fluorite_ore", Block::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 3.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
+    public static final Block SPODUMENE_ORE = register("spodumene_ore", Block::new,
+            BlockBehaviour.Properties.of().strength(3.5f, 3.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
+    /** Анортозит лунных нагорий (CaAl₂Si₂O₈) — сырьё алюминия и кремния в реголитовом реакторе. */
+    public static final Block ANORTHOSITE = register("anorthosite", Block::new,
+            BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
+    /** Баки из алюмомедного и алюминий-литиевого сплавов (масса по материалу — part_properties). */
+    public static final Block ALUMINIUM_FUEL_TANK = register("aluminium_fuel_tank",
+            org.alex_melan.spacereloaded.rocket.FuelTankBlock::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final Block AL_LI_FUEL_TANK = register("al_li_fuel_tank",
+            org.alex_melan.spacereloaded.rocket.FuelTankBlock::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 10.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    /** Монокристаллическая солнечная панель: КПД 21 % против 15 % мультикремния → ×1.4. */
+    public static final Block MONO_SOLAR_PANEL = register("mono_solar_panel",
+            props -> new MachineBlock<>(props, SolarPanelBlockEntity::new,
+                    () -> ModBlockEntities.SOLAR_PANEL, SolarPanelBlockEntity::serverTick),
+            BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.METAL).noOcclusion()
+                    .requiresCorrectToolForDrops());
+
+    /** Процессная машина 006 (меню, lit, свет в работе). */
+    private static Block process(String name,
+                                 java.util.function.BiFunction<net.minecraft.core.BlockPos, net.minecraft.world.level.block.state.BlockState,
+                                         ? extends org.alex_melan.spacereloaded.electronics.ProcessMachineBlockEntity> factory,
+                                 java.util.function.Supplier<net.minecraft.world.level.block.entity.BlockEntityType<
+                                         ? extends org.alex_melan.spacereloaded.electronics.ProcessMachineBlockEntity>> type,
+                                 int light) {
+        return register(name, props -> new org.alex_melan.spacereloaded.electronics.ProcessBlock(props, factory, type),
+                BlockBehaviour.Properties.of().strength(3.5f, 9.0f).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                        .noOcclusion()
+                        .lightLevel(state -> state.getValue(org.alex_melan.spacereloaded.machine.MachineActivity.ACTIVE) ? light : 0));
+    }
 
     private static <T extends Block> T registerNoItem(String name,
                                                       Function<BlockBehaviour.Properties, T> factory,

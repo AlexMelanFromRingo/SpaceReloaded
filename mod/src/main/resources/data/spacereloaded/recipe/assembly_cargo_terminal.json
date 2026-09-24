@@ -3,7 +3,7 @@
 	"ingredients": [
 		"spacereloaded:steel_ingot",
 		"spacereloaded:steel_ingot",
-		"minecraft:copper_ingot",
+		"spacereloaded:flight_computer",
 		"spacereloaded:flight_program"
 	],
 	"result": {

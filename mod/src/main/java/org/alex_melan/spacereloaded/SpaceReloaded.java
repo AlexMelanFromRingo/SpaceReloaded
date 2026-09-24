@@ -118,6 +118,7 @@ public class SpaceReloaded implements ModInitializer {
 			org.alex_melan.spacereloaded.network.MarsClimate.tick(level);
 			org.alex_melan.spacereloaded.industry.IndustryAdvancements.tick(level);
 			org.alex_melan.spacereloaded.kinetics.KineticNetworks.tick(level);
+			org.alex_melan.spacereloaded.electronics.CleanroomTracker.tick(level);
 		});
 		ServerTickEvents.END_SERVER_TICK.register(
 				org.alex_melan.spacereloaded.industry.PodTransitState::tick);
@@ -128,6 +129,7 @@ public class SpaceReloaded implements ModInitializer {
 			org.alex_melan.spacereloaded.kinetics.KineticNetworks.clearAll();
 			org.alex_melan.spacereloaded.rocket.FuelingHose.clearAll();
 			org.alex_melan.spacereloaded.sealing.VacuumHazard.clearAll();
+			org.alex_melan.spacereloaded.electronics.CleanroomTracker.clearTransient();
 		});
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->

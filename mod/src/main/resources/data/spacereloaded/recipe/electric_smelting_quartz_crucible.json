@@ -1,0 +1,7 @@
+{
+	"type": "spacereloaded:electric_smelting",
+	"ingredient": "minecraft:quartz_block",
+	"result": {
+		"id": "spacereloaded:quartz_crucible"
+	}
+}

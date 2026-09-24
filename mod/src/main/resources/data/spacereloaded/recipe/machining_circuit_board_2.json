@@ -1,0 +1,9 @@
+{
+	"type": "spacereloaded:machining",
+	"ingredient": "spacereloaded:incomplete_circuit_board",
+	"step": 1,
+	"result": {
+		"id": "spacereloaded:circuit_board"
+	},
+	"energy_j": 40000
+}

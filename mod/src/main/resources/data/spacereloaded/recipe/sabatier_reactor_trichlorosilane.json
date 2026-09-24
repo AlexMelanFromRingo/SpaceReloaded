@@ -1,0 +1,21 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "sabatier_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:metallurgical_silicon"
+		},
+		{
+			"item": "spacereloaded:hydrogen_chloride",
+			"count": 3
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:trichlorosilane"
+		}
+	],
+	"energy": 300,
+	"ticks": 160,
+	"keep_purity": true
+}

@@ -1,0 +1,26 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "regolith_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:anorthosite"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:aluminium_ingot",
+			"count": 2,
+			"yield": 0.88
+		},
+		{
+			"id": "spacereloaded:metallurgical_silicon",
+			"count": 2
+		},
+		{
+			"id": "spacereloaded:slag"
+		}
+	],
+	"energy": 5502,
+	"ticks": 400,
+	"oxygen": 660
+}

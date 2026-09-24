@@ -23,6 +23,9 @@ public class SpaceReloadedClient implements ClientModInitializer {
 			SpaceReloaded.MOD_ID, "textures/gui/machine_single.png");
 	private static final Identifier ASSEMBLY_GUI = Identifier.fromNamespaceAndPath(
 			SpaceReloaded.MOD_ID, "textures/gui/machine_assembly.png");
+	/** Электропечь 006: второй выход — побочный продукт (CO карботермии, шлак Вёлера). */
+	private static final Identifier FURNACE_GUI = Identifier.fromNamespaceAndPath(
+			SpaceReloaded.MOD_ID, "textures/gui/machine_furnace.png");
 
 	@Override
 	public void onInitializeClient() {
@@ -31,7 +34,7 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		MenuScreens.<MachineMenu, MachineScreen>register(ModMenus.CRUSHER, (menu, inventory, title) ->
 				new MachineScreen(menu, inventory, title, SINGLE_GUI, 72, 35));
 		MenuScreens.<MachineMenu, MachineScreen>register(ModMenus.ELECTRIC_FURNACE, (menu, inventory, title) ->
-				new MachineScreen(menu, inventory, title, SINGLE_GUI, 72, 35));
+				new MachineScreen(menu, inventory, title, FURNACE_GUI, 72, 35));
 		MenuScreens.<MachineMenu, MachineScreen>register(ModMenus.ASSEMBLY_TABLE, (menu, inventory, title) ->
 				new MachineScreen(menu, inventory, title, ASSEMBLY_GUI, 105, 35));
 		MenuScreens.register(ModMenus.COAL_GENERATOR, GeneratorScreen::new);
@@ -40,6 +43,11 @@ public class SpaceReloadedClient implements ClientModInitializer {
 		MenuScreens.register(ModMenus.REFINERY, RefineryScreen::new);
 		MenuScreens.register(ModMenus.REGOLITH_REACTOR,
 				org.alex_melan.spacereloaded.client.gui.RegolithReactorScreen::new);
+		// 006: процессные машины — одно окно по раскладке меню
+		for (var type : java.util.List.of(ModMenus.CHEMICAL_REACTOR, ModMenus.SABATIER_REACTOR, ModMenus.DEPOSITION_REACTOR,
+				ModMenus.DIFFUSION_FURNACE, ModMenus.LITHOGRAPHY_STATION, ModMenus.ETCH_BATH)) {
+			MenuScreens.register(type, org.alex_melan.spacereloaded.client.gui.ProcessScreen::new);
+		}
 
 		// Топливо-жидкости: текстуры уже окрашены, тинт нейтральный
 		for (var propellant : org.alex_melan.spacereloaded.fluid.ModFluids.all()) {

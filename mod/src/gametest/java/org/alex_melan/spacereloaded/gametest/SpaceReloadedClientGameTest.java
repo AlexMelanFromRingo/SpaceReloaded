@@ -88,6 +88,10 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             testStackColumn(context, sp);
             testEngineQuality(context, sp);
             testExplosionSealing(context, sp);
+            testChemistryChain(context, sp);
+            testCrystalAndSaw(context, sp);
+            testCleanroomFab(context, sp);
+            testSuperalloyEngine(context, sp);
             testVisualShowcase(context, sp);
         }
     }
@@ -1047,7 +1051,9 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                     ResourceKey.create(Registries.DIMENSION,
                             Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")),
                     new BlockPos(60, 101, 60)));
-            return rockets.get(0).installProgram(server.overworld(), program).getString();
+            program.set(ModDataComponents.GUIDANCE_TIER, 2);
+            String message = rockets.get(0).installProgram(server.overworld(), program).getString();
+            return rockets.get(0).guidanceTier() == 2 ? message : "тир наведения не перенесён";
         });
         assertThat(!installed.contains("unreachable") && !installed.contains("недостижима")
                         && !installed.contains("не собралась"),
@@ -2241,6 +2247,348 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         }
         assertThat(engine.startsWith("10 1.016"), "Двигатель из деталей q=1: уровень 10, Isp ×1.016; получено " + engine);
         log("качество двигателя: уровень и множитель Isp " + engine + " ✓");
+    }
+
+    // ---------- 37. Химия кремния и металлов (006, US2/US5) ----------
+
+    private static ItemStack lot(net.minecraft.world.item.Item item, int count, float purity) {
+        ItemStack stack = new ItemStack(item, count);
+        stack.set(ModDataComponents.PURITY, purity);
+        return stack;
+    }
+
+    private static float purityIn(ItemStack stack) {
+        Float p = stack.get(ModDataComponents.PURITY);
+        return p == null ? -1f : p;
+    }
+
+    /**
+     * Все машины цепочки параллельно: карботермия в печи (MG-Si 2N + 2 CO), трихлорсилан в
+     * Сабатье, ректификация на колонне 16 тарелок (2 → 8.4N; вторая партия 11N смешивается с
+     * первой по массе примесей), осаждение Сименса (чистота наследуется, HCl 2 из 2.85),
+     * хлор-щелочной электролиз, HF из флюорита, Холл–Эру в криолите (без O₂, анод сгорает).
+     */
+    private void testChemistryChain(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1040;
+        int z = BZ;
+        moveTo(context, sp, x0 + 10, z + 10);
+        BlockPos furnace = new BlockPos(x0, BY, z);
+        BlockPos sabatier = new BlockPos(x0 + 3, BY, z);
+        BlockPos refinery = new BlockPos(x0 + 6, BY, z);
+        BlockPos deposition = new BlockPos(x0 + 9, BY, z);
+        BlockPos electrolyzer = new BlockPos(x0 + 12, BY, z);
+        BlockPos reactor = new BlockPos(x0 + 15, BY, z);
+        for (BlockPos p : List.of(furnace, sabatier, deposition, electrolyzer, reactor)) {
+            sp.getServer().runCommand(set(p.getX(), BY - 1, z, "spacereloaded:creative_power"));
+        }
+        sp.getServer().runCommand(set(furnace.getX(), BY, z, "spacereloaded:electric_furnace"));
+        sp.getServer().runCommand(set(sabatier.getX(), BY, z, "spacereloaded:sabatier_reactor"));
+        sp.getServer().runCommand(set(refinery.getX(), BY, z, "spacereloaded:refinery[facing=west]"));
+        sp.getServer().runCommand(set(refinery.getX() - 1, BY, z, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(fill(refinery.getX(), BY + 1, z, refinery.getX(), BY + 16, z,
+                "spacereloaded:distillation_tray"));
+        sp.getServer().runCommand(set(deposition.getX(), BY, z, "spacereloaded:deposition_reactor"));
+        sp.getServer().runCommand(set(electrolyzer.getX(), BY, z, "spacereloaded:electrolyzer"));
+        sp.getServer().runCommand(set(reactor.getX(), BY, z, "spacereloaded:chemical_reactor"));
+        context.waitTicks(3);
+        String trays = sp.getServer().computeOnServer(server -> {
+            ServerLevel level = server.overworld();
+            var column = (org.alex_melan.spacereloaded.machine.RefineryBlockEntity) level.getBlockEntity(refinery);
+            column.hammer(level, server.getPlayerList().getPlayers().get(0));
+            ((net.minecraft.world.Container) level.getBlockEntity(furnace)).setItem(0, new ItemStack(ModItems.SILICON_BLEND));
+            var sab = (net.minecraft.world.Container) level.getBlockEntity(sabatier);
+            sab.setItem(0, lot(ModItems.METALLURGICAL_SILICON, 1, 2.0f));
+            sab.setItem(1, new ItemStack(ModItems.HYDROGEN_CHLORIDE, 3));
+            column.setItem(0, lot(ModItems.TRICHLOROSILANE, 1, 2.0f));
+            var dep = (net.minecraft.world.Container) level.getBlockEntity(deposition);
+            dep.setItem(0, lot(ModItems.TRICHLOROSILANE, 1, 9.0f));
+            dep.setItem(1, new ItemStack(net.minecraft.world.item.Items.ICE));
+            ((net.minecraft.world.Container) level.getBlockEntity(electrolyzer)).setItem(0, new ItemStack(ModItems.BRINE));
+            var chem = (net.minecraft.world.Container) level.getBlockEntity(reactor);
+            chem.setItem(0, new ItemStack(ModItems.FLUORITE));
+            chem.setItem(1, new ItemStack(ModItems.SULFURIC_ACID));
+            return column.structure().formed() + "/" + column.stages();
+        });
+        assertThat(trays.equals("true/16"), "Колонна 16 тарелок сформирована: " + trays);
+        context.waitTicks(260);
+        String first = sp.getServer().computeOnServer(server -> {
+            ServerLevel level = server.overworld();
+            var f = (net.minecraft.world.Container) level.getBlockEntity(furnace);
+            var sab = (net.minecraft.world.Container) level.getBlockEntity(sabatier);
+            var column = (net.minecraft.world.Container) level.getBlockEntity(refinery);
+            var el = (net.minecraft.world.Container) level.getBlockEntity(electrolyzer);
+            var chem = (net.minecraft.world.Container) level.getBlockEntity(reactor);
+            return "mg=" + f.getItem(1).getCount() + "@" + purityIn(f.getItem(1)) + " co=" + f.getItem(2).getCount()
+                    + " tcs=" + sab.getItem(2).getCount() + "@" + purityIn(sab.getItem(2))
+                    + " col=" + String.format(java.util.Locale.ROOT, "%.2f", purityIn(column.getItem(2)))
+                    + " hcl=" + el.getItem(2).getCount() + " naoh=" + el.getItem(3).getCount()
+                    + " hf=" + chem.getItem(3).getCount() + " gyp=" + chem.getItem(4).getCount();
+        });
+        assertThat(first.equals("mg=1@2.0 co=2 tcs=1@2.0 col=8.40 hcl=1 naoh=1 hf=2 gyp=1"),
+                "Печь, Сабатье, колонна, электролизёр, реактор: " + first);
+        log("химия 006: " + first + " ✓");
+        // вторая партия колонны: 8.4N → 11N, смешение в выходе по массе примесей
+        sp.getServer().runOnServer(server -> ((net.minecraft.world.Container) server.overworld()
+                .getBlockEntity(refinery)).setItem(0, lot(ModItems.TRICHLOROSILANE, 1, 8.4f)));
+        context.waitTicks(360);
+        String second = sp.getServer().computeOnServer(server -> {
+            ServerLevel level = server.overworld();
+            ItemStack col = ((net.minecraft.world.Container) level.getBlockEntity(refinery)).getItem(2);
+            var dep = (net.minecraft.world.Container) level.getBlockEntity(deposition);
+            return col.getCount() + "@" + String.format(java.util.Locale.ROOT, "%.3f", purityIn(col))
+                    + " poly=" + dep.getItem(3).getCount() + "@" + purityIn(dep.getItem(3))
+                    + " hcl=" + dep.getItem(4).getCount();
+        });
+        String blend = String.format(java.util.Locale.ROOT, "%.3f",
+                org.alex_melan.spacereloaded.core.electronics.Purity.blend(8.4f, 1, 11.0, 1));
+        assertThat(second.equals("2@" + blend + " poly=1@9.0 hcl=2"),
+                "Смешение партий колонны и реактор Сименса (ожидалось 2@" + blend + " poly=1@9.0 hcl=2): " + second);
+        log("колонна: партии 8.4N и 11N → " + second + " ✓");
+
+        // Холл–Эру: криолитовая ванна и угольный анод — алюминий без кислорода, энергия ×0.7
+        int rx = x0 + 22;
+        int rz = z + 10;
+        sp.getServer().runCommand(fill(rx - 1, BY, rz, rx + 1, BY + 2, rz + 2, "spacereloaded:refractory_lining"));
+        sp.getServer().runCommand(set(rx, BY + 1, rz + 1, "minecraft:air"));
+        sp.getServer().runCommand(set(rx, BY + 1, rz, "spacereloaded:regolith_reactor[facing=north]"));
+        sp.getServer().runCommand(set(rx + 2, BY + 1, rz + 1, "spacereloaded:creative_power"));
+        context.waitTicks(3);
+        BlockPos controller = new BlockPos(rx, BY + 1, rz);
+        sp.getServer().runOnServer(server -> ((net.minecraft.world.Container) server.overworld()
+                .getBlockEntity(controller)).setItem(0, new ItemStack(ModItems.CRYOLITE)));
+        context.waitTicks(2);
+        sp.getServer().runOnServer(server -> ((net.minecraft.world.Container) server.overworld()
+                .getBlockEntity(controller)).setItem(0, new ItemStack(net.minecraft.world.item.Items.COAL, 2)));
+        context.waitTicks(2);
+        sp.getServer().runOnServer(server -> ((net.minecraft.world.Container) server.overworld()
+                .getBlockEntity(controller)).setItem(0, new ItemStack(ModItems.ALUMINA, 2)));
+        context.waitTicks(320);
+        String hall = sp.getServer().computeOnServer(server -> {
+            var r = (org.alex_melan.spacereloaded.industry.RegolithReactorBlockEntity) server.overworld()
+                    .getBlockEntity(controller);
+            return "al=" + r.getItem(2).getCount() + " o2=" + r.oxygenBuffer() + " anode="
+                    + String.format(java.util.Locale.ROOT, "%.2f", r.anodeCarbon()) + " bath="
+                    + String.format(java.util.Locale.ROOT, "%.2f", r.bathCapacity());
+        });
+        assertThat(hall.equals("al=1 o2=0 anode=1.30 bath=48.45"),
+                "Холл–Эру: 2 глинозёма → 1.55 Al (1 слиток + дробь), без O₂; получено " + hall);
+        log("Холл–Эру: " + hall + " ✓");
+    }
+
+    // ---------- 38. Чохральский и пила (006, US2) ----------
+
+    /**
+     * Мотор 1500 об/мин через пять пар 2:1 → 47 об/мин на шпинделе установки Чохральского.
+     * 3 куска поликремния 9N (7.8 кг) с фосфором: годная доля Шайля 46 % → 5 слитков по 0.69 кг,
+     * бор уходит в хвост (слиток 9.07N, хвост 8.95N, 1 кусок + 1.73 кг в тигле-накопителе).
+     * Пила от мотора напрямую ставит слиток на оправку и режет по пластине: 287 пластин на слиток.
+     */
+    private void testCrystalAndSaw(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1080;
+        int z = BZ;
+        moveTo(context, sp, x0 + 3, z + 3);
+        sp.getServer().runCommand(set(x0 - 1, BY, z, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(x0, BY, z, "spacereloaded:motor[axis=x]"));
+        for (int k = 1; k <= 5; k++) {
+            sp.getServer().runCommand(set(x0 + k, BY + k - 1, z + k - 1, "spacereloaded:small_gear[axis=x]"));
+            sp.getServer().runCommand(set(x0 + k, BY + k, z + k, "spacereloaded:large_gear[axis=x]"));
+        }
+        BlockPos puller = new BlockPos(x0 + 6, BY + 5, z + 5);
+        sp.getServer().runCommand(set(puller.getX(), puller.getY(), puller.getZ(), "spacereloaded:crystal_puller[axis=x]"));
+        sp.getServer().runCommand(set(puller.getX(), puller.getY() + 1, puller.getZ(), "spacereloaded:creative_power"));
+        context.waitTicks(100);
+        double rpm = org.alex_melan.spacereloaded.kinetics.KineticBlockEntity.toRpm(Math.abs(omegaAt(sp, puller)));
+        assertThat(rpm > 40 && rpm < 55, "Пять пар 2:1 дают ~47 об/мин на шпинделе, получено " + rpm);
+        sp.getServer().runOnServer(server -> {
+            var be = (net.minecraft.world.Container) server.overworld().getBlockEntity(puller);
+            be.setItem(0, lot(ModItems.POLYSILICON, 3, 9.0f));
+            be.setItem(2, new ItemStack(ModItems.QUARTZ_CRUCIBLE));
+            be.setItem(3, new ItemStack(ModItems.PHOSPHORUS));
+        });
+        context.waitTicks(640);
+        String pulled = sp.getServer().computeOnServer(server -> {
+            var be = (net.minecraft.world.Container) server.overworld().getBlockEntity(puller);
+            ItemStack boules = be.getItem(1);
+            ItemStack tail = be.getItem(4);
+            return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(boules.getItem()).getPath()
+                    + "×" + boules.getCount() + "@" + String.format(java.util.Locale.ROOT, "%.2f", purityIn(boules))
+                    + " tail×" + tail.getCount() + "@" + String.format(java.util.Locale.ROOT, "%.2f", purityIn(tail))
+                    + " crucible=" + be.getItem(2).getCount() + " charge=" + be.getItem(0).getCount();
+        });
+        assertThat(pulled.equals("silicon_boule×5@9.07 tail×1@8.95 crucible=0 charge=0"),
+                "Чохральский: 5 монокристаллов, бор в хвосте, тигель израсходован; получено " + pulled);
+        log("Чохральский: " + pulled + " ✓");
+
+        int sx = x0 + 14;
+        sp.getServer().runCommand(set(sx - 1, BY, z, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(sx, BY, z, "spacereloaded:motor[axis=x]"));
+        sp.getServer().runCommand(set(sx + 1, BY, z, "spacereloaded:wafer_saw[axis=x]"));
+        BlockPos saw = new BlockPos(sx + 1, BY, z);
+        context.waitTicks(60);
+        sp.getServer().runOnServer(server -> ((net.minecraft.world.Container) server.overworld().getBlockEntity(saw))
+                .setItem(0, lot(ModItems.SILICON_BOULE, 1, 9.07f)));
+        context.waitTicks(70);
+        String cut = sp.getServer().computeOnServer(server -> {
+            var be = (org.alex_melan.spacereloaded.electronics.WaferSawBlockEntity) server.overworld().getBlockEntity(saw);
+            ItemStack wafers = be.getItem(1);
+            return "wafers=" + wafers.getCount() + "@" + String.format(java.util.Locale.ROOT, "%.2f", purityIn(wafers))
+                    + " left=" + be.wafersLeft() + " input=" + be.getItem(0).getCount();
+        });
+        assertThat(cut.equals("wafers=1@9.07 left=286 input=0"),
+                "Пила: слиток на оправке, первая пластина, осталось 286; получено " + cut);
+        log("прецизионная пила: " + cut + " ✓");
+    }
+
+    // ---------- 39. Чистая комната и маршрут фаба (006, US3) ----------
+
+    /**
+     * Комната 5×3×5 с четырьмя модулями HEPA в потолке: концентрация спадает по e^(−t/τ),
+     * τ = V/(Q·η); пластина проходит окисление → экспонирование → травление HF внутри
+     * (дефекты — от точной средней концентрации) и снаружи (воздух Земли — сотни дефектов/см²).
+     */
+    private void testCleanroomFab(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1120;
+        int z = BZ;
+        moveTo(context, sp, x0 - 4, z + 3);
+        sp.getServer().runCommand(fill(x0, BY, z, x0 + 6, BY + 4, z + 6, "spacereloaded:hull_plating"));
+        sp.getServer().runCommand(fill(x0 + 1, BY + 1, z + 1, x0 + 5, BY + 3, z + 5, "minecraft:air"));
+        for (int[] c : new int[][] {{2, 2}, {4, 2}, {2, 4}, {4, 4}}) {
+            sp.getServer().runCommand(set(x0 + c[0], BY + 4, z + c[1], "spacereloaded:fan_filter_unit"));
+        }
+        BlockPos furnace = new BlockPos(x0 + 1, BY + 1, z + 1);
+        BlockPos litho = new BlockPos(x0 + 2, BY + 1, z + 1);
+        BlockPos etch = new BlockPos(x0 + 3, BY + 1, z + 1);
+        sp.getServer().runCommand(set(furnace.getX(), BY + 1, z + 1, "spacereloaded:diffusion_furnace"));
+        sp.getServer().runCommand(set(litho.getX(), BY + 1, z + 1, "spacereloaded:lithography_station"));
+        sp.getServer().runCommand(set(etch.getX(), BY + 1, z + 1, "spacereloaded:etch_bath"));
+        sp.getServer().runCommand(fill(x0 + 1, BY + 2, z + 1, x0 + 3, BY + 2, z + 1, "spacereloaded:creative_power"));
+        BlockPos controllerPos = new BlockPos(x0 + 5, BY + 1, z + 5);
+        sp.getServer().runCommand(set(x0 + 5, BY + 1, z + 5, "spacereloaded:atmosphere_controller"));
+        sp.getServer().runCommand(set(x0 + 4, BY + 1, z + 5, "spacereloaded:creative_power")); // сбоку: над контроллером начинается заливка зоны
+        String sealed = "";
+        for (int waited = 0; waited < 200 && !sealed.startsWith("SEALED"); waited += 10) {
+            context.waitTicks(10);
+            sealed = sp.getServer().computeOnServer(server -> {
+                SealedZone zone = ZoneManager.zoneAt(server.overworld(), controllerPos);
+                return zone == null ? "none" : zone.status() + " V=" + zone.volume().size();
+            });
+        }
+        assertThat(sealed.equals("SEALED V=67"), "Чистая комната герметична, объём 67 м³: " + sealed);
+        BlockPos probe = new BlockPos(x0 + 3, BY + 2, z + 3);
+        double c1 = sp.getServer().computeOnServer(server ->
+                org.alex_melan.spacereloaded.electronics.CleanroomTracker.concentration(server.overworld(), probe));
+        context.waitTicks(200);
+        double c2 = sp.getServer().computeOnServer(server ->
+                org.alex_melan.spacereloaded.electronics.CleanroomTracker.concentration(server.overworld(), probe));
+        double tau = 67 / (4 * org.alex_melan.spacereloaded.electronics.CleanroomTracker.FFU_FLOW
+                * org.alex_melan.spacereloaded.core.electronics.CleanroomAir.HEPA);
+        double expected = Math.exp(-200 / 1200.0 / tau);
+        assertThat(c1 > 0 && Math.abs(c2 / c1 - expected) < 0.01,
+                String.format(java.util.Locale.ROOT, "Спад частиц e^(−t/τ): %.4f против %.4f (C %.0f → %.0f)",
+                        c2 / c1, expected, c1, c2));
+        log(String.format(java.util.Locale.ROOT, "чистая комната: τ = %.2f мин, C %.0f → %.0f /м³ (ISO %d) ✓", tau, c1, c2,
+                org.alex_melan.spacereloaded.core.electronics.CleanroomAir.isoClass(c2)));
+
+        // маршрут: окисление → экспонирование логики → травление HF
+        sp.getServer().runOnServer(server -> {
+            ServerLevel level = server.overworld();
+            var f = (net.minecraft.world.Container) level.getBlockEntity(furnace);
+            f.setItem(0, lot(ModItems.SILICON_WAFER, 1, 9.0f));
+            f.setItem(1, new ItemStack(ModItems.OXYGEN_CANISTER));
+            var l = (net.minecraft.world.Container) level.getBlockEntity(litho);
+            l.setItem(1, new ItemStack(ModItems.PHOTOMASK_LOGIC));
+            l.setItem(2, new ItemStack(ModItems.PHOTORESIST));
+            ((net.minecraft.world.Container) level.getBlockEntity(etch)).setItem(1, new ItemStack(ModItems.HYDROFLUORIC_ACID));
+        });
+        context.waitTicks(210);
+        sp.getServer().runOnServer(server -> {
+            ServerLevel level = server.overworld();
+            var f = (net.minecraft.world.Container) level.getBlockEntity(furnace);
+            ((net.minecraft.world.Container) level.getBlockEntity(litho)).setItem(0, f.removeItemNoUpdate(4));
+        });
+        context.waitTicks(110);
+        sp.getServer().runOnServer(server -> {
+            ServerLevel level = server.overworld();
+            var l = (net.minecraft.world.Container) level.getBlockEntity(litho);
+            ((net.minecraft.world.Container) level.getBlockEntity(etch)).setItem(0, l.removeItemNoUpdate(3));
+        });
+        context.waitTicks(110);
+        String route = sp.getServer().computeOnServer(server -> {
+            ItemStack w = ((net.minecraft.world.Container) server.overworld().getBlockEntity(etch)).getItem(2);
+            return "step=" + w.getOrDefault(ModDataComponents.WAFER_STEP, -1) + " kind="
+                    + w.getOrDefault(ModDataComponents.WAFER_KIND, -1) + " next="
+                    + org.alex_melan.spacereloaded.electronics.WaferKind.next(w) + " D="
+                    + String.format(java.util.Locale.ROOT, "%.4f", w.getOrDefault(ModDataComponents.WAFER_DEFECTS, -1f));
+        });
+        double defects = Double.parseDouble(route.substring(route.indexOf("D=") + 2));
+        assertThat(route.startsWith("step=3 kind=0 next=OXIDIZE") && defects > 0.0100 && defects < 0.0243,
+                "Уровень 1 маршрута в чистой комнате (дефекты между собственными 0.01 и 0.024 при C₀): " + route);
+        log("маршрут фаба в комнате: " + route + " ✓");
+
+        // та же операция на открытом воздухе Земли
+        int ox = x0 - 3;
+        sp.getServer().runCommand(set(ox, BY, z, "spacereloaded:diffusion_furnace"));
+        sp.getServer().runCommand(set(ox, BY + 1, z, "spacereloaded:creative_power"));
+        BlockPos open = new BlockPos(ox, BY, z);
+        context.waitTicks(2);
+        sp.getServer().runOnServer(server -> {
+            var f = (net.minecraft.world.Container) server.overworld().getBlockEntity(open);
+            f.setItem(0, lot(ModItems.SILICON_WAFER, 1, 9.0f));
+            f.setItem(1, new ItemStack(ModItems.OXYGEN_CANISTER));
+        });
+        context.waitTicks(210);
+        float dirty = sp.getServer().computeOnServer(server -> ((net.minecraft.world.Container) server.overworld()
+                .getBlockEntity(open)).getItem(4).getOrDefault(ModDataComponents.WAFER_DEFECTS, -1f));
+        assertThat(dirty > 100, "Окисление на воздухе Земли (ISO 9): сотни дефектов/см², получено " + dirty);
+        log(String.format(java.util.Locale.ROOT, "окисление на открытом воздухе: D = %.0f /см² — ноль годных ✓", dirty));
+    }
+
+    // ---------- 40. Суперсплав и программа T2 (006, US4/US5) ----------
+
+    private void testSuperalloyEngine(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int tx = BX + 1160;
+        int z = BZ;
+        moveTo(context, sp, tx - 3, z);
+        sp.getServer().runCommand(set(tx, BY, z, "spacereloaded:assembly_table"));
+        sp.getServer().runCommand(set(tx + 1, BY, z, "spacereloaded:creative_power"));
+        BlockPos table = new BlockPos(tx, BY, z);
+        sp.getServer().runOnServer(server -> {
+            var be = (org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity) server.overworld().getBlockEntity(table);
+            ItemStack[] parts = {new ItemStack(ModItems.TURBOPUMP), new ItemStack(ModItems.INJECTOR_PLATE),
+                    new ItemStack(ModItems.REGEN_NOZZLE)};
+            for (ItemStack p : parts) {
+                p.set(ModDataComponents.PART_QUALITY, 1.0f);
+            }
+            parts[0].set(ModDataComponents.TURBINE_SUPERALLOY, 1);
+            for (int i = 0; i < 3; i++) {
+                be.setItem(i, parts[i]);
+            }
+            be.setItem(3, new ItemStack(ModItems.TUNGSTEN_INGOT));
+            be.setItem(4, new ItemStack(ModItems.STEEL_INGOT));
+        });
+        String engine = "";
+        for (int waited = 0; waited < 400 && engine.isEmpty(); waited += 10) {
+            context.waitTicks(10);
+            engine = sp.getServer().computeOnServer(server -> {
+                ItemStack out = ((org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity)
+                        server.overworld().getBlockEntity(table)).getItem(
+                        org.alex_melan.spacereloaded.machine.AssemblyTableBlockEntity.INPUT_SLOTS);
+                var props = out.get(net.minecraft.core.component.DataComponents.BLOCK_STATE);
+                if (out.isEmpty() || props == null) {
+                    return "";
+                }
+                Boolean superalloy = props.get(org.alex_melan.spacereloaded.rocket.EngineBlock.SUPERALLOY);
+                var resolver = new org.alex_melan.spacereloaded.rocket.PartPropertiesResolver(server.overworld());
+                var base = ModBlocks.ROCKET_ENGINE.defaultBlockState()
+                        .setValue(org.alex_melan.spacereloaded.rocket.EngineBlock.QUALITY, 10);
+                var hot = resolver.resolve(base.setValue(org.alex_melan.spacereloaded.rocket.EngineBlock.SUPERALLOY, true))
+                        .orElseThrow();
+                var cold = resolver.resolve(base).orElseThrow();
+                return superalloy + " " + String.format(java.util.Locale.ROOT, "%.3f", hot.thrustN() / cold.thrustN());
+            });
+        }
+        assertThat(engine.equals("true 1.300"), "Колесо из суперсплава: SUPERALLOY и тяга ×1.3; получено " + engine);
+        log("суперсплавный турбонасос: " + engine + " ✓");
     }
 
     // ---------- 36. Взрыв и герметичность (T024) ----------

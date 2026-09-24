@@ -1,0 +1,11 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"minecraft:sand",
+		"spacereloaded:coal_dust",
+		"spacereloaded:coal_dust"
+	],
+	"result": {
+		"id": "spacereloaded:silicon_blend"
+	}
+}

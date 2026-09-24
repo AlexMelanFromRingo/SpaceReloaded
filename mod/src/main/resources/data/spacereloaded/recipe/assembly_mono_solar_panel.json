@@ -1,0 +1,16 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:mono_solar_cell",
+		"spacereloaded:mono_solar_cell",
+		"spacereloaded:mono_solar_cell",
+		"spacereloaded:mono_solar_cell",
+		"spacereloaded:hermetic_glass",
+		"spacereloaded:steel_ingot",
+		"spacereloaded:copper_wire",
+		"spacereloaded:copper_wire"
+	],
+	"result": {
+		"id": "spacereloaded:mono_solar_panel"
+	}
+}

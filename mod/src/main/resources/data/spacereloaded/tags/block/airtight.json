@@ -18,6 +18,15 @@
 		"spacereloaded:docking_port",
 		"spacereloaded:sintered_regolith",
 		"spacereloaded:lunar_bricks",
-		"spacereloaded:refractory_lining"
+		"spacereloaded:refractory_lining",
+		"spacereloaded:fan_filter_unit",
+		"spacereloaded:chemical_reactor",
+		"spacereloaded:deposition_reactor",
+		"spacereloaded:diffusion_furnace",
+		"spacereloaded:lithography_station",
+		"spacereloaded:etch_bath",
+		"spacereloaded:mono_solar_panel",
+		"spacereloaded:aluminium_fuel_tank",
+		"spacereloaded:al_li_fuel_tank"
 	]
 }

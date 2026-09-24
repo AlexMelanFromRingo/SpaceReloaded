@@ -82,7 +82,11 @@ public class ChemMachineBlock<T extends ChemMachineBlockEntity> extends Block im
         }
         if (level.getBlockEntity(pos) instanceof ChemMachineBlockEntity machine
                 && player instanceof ServerPlayer serverPlayer && level instanceof ServerLevel serverLevel) {
-            serverPlayer.sendSystemMessage(machine.status(serverLevel));
+            if (machine instanceof net.minecraft.world.MenuProvider menu && !player.isSecondaryUseActive()) {
+                serverPlayer.openMenu(menu); // 006: у реактора Сабатье есть окно (режим газ-твёрдое)
+            } else {
+                serverPlayer.sendSystemMessage(machine.status(serverLevel));
+            }
         }
         return InteractionResult.SUCCESS_SERVER;
     }

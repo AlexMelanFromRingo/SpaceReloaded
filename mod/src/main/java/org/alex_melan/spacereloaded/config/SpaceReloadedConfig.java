@@ -219,6 +219,11 @@ public final class SpaceReloadedConfig {
     public int cargoLineDwellTicks = 200;
     /** Запас планировщика к Δv перелёта и посадки, % (навигационные ошибки, неидеальные импульсы). */
     public double cargoLineDeltaVMarginPercent = 5.0;
+    /**
+     * Запас с замкнутым наведением (006, программа T2 с бортовым компьютером — как PEG у Шаттла:
+     * траектория пересчитывается в полёте, ошибки гасятся по ходу), %.
+     */
+    public double guidedDeltaVMarginPercent = 2.0;
     /** Задержка пересадки автопилота на промежуточной платформе, тики (время «перепрограммирования»). */
     public int autopilotRelaunchDelayTicks = 100;
     /**
@@ -473,6 +478,9 @@ public final class SpaceReloadedConfig {
         }
         if (cargoLineDeltaVMarginPercent < 0 || cargoLineDeltaVMarginPercent > 100) {
             throw new IllegalArgumentException("cargoLineDeltaVMarginPercent должен быть в [0, 100]");
+        }
+        if (guidedDeltaVMarginPercent < 0 || guidedDeltaVMarginPercent > cargoLineDeltaVMarginPercent) {
+            throw new IllegalArgumentException("guidedDeltaVMarginPercent должен быть в [0, cargoLineDeltaVMarginPercent]");
         }
         if (transferDeltaVScale < 0 || transferDeltaVScale > 10) {
             throw new IllegalArgumentException("transferDeltaVScale должен быть в [0, 10]");

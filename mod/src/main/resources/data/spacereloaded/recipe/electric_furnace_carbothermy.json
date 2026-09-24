@@ -1,0 +1,21 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "electric_furnace",
+	"inputs": [
+		{
+			"item": "spacereloaded:silicon_blend"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:metallurgical_silicon"
+		},
+		{
+			"id": "spacereloaded:carbon_monoxide",
+			"count": 2
+		}
+	],
+	"energy": 963,
+	"ticks": 240,
+	"keep_purity": true
+}

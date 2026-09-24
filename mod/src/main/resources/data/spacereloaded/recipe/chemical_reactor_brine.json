@@ -1,0 +1,20 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "chemical_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:rock_salt"
+		},
+		{
+			"item": "#spacereloaded:electrolyzer_input"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:brine",
+			"count": 2
+		}
+	],
+	"energy": 50,
+	"ticks": 60
+}

@@ -45,6 +45,19 @@ public final class ModDataComponents {
     /** Готовая деталь двигателя (005): качество q ∈ [0, 1]. */
     public static final DataComponentType<Float> PART_QUALITY = registerFloat("part_quality");
 
+    /** Чистота кремния, «девятки» N9 (006). */
+    public static final DataComponentType<Float> PURITY = registerFloat("purity");
+    /** Пластина: пройдено операций маршрута (3 на уровень шаблона), дефекты (1/см²), тип шаблона. */
+    public static final DataComponentType<Integer> WAFER_STEP = registerInt("wafer_step");
+    public static final DataComponentType<Float> WAFER_DEFECTS = registerFloat("wafer_defects");
+    public static final DataComponentType<Integer> WAFER_KIND = registerInt("wafer_kind");
+    /** Остаток длины слитка после пилы, мм (слиток, снятый с оправки недорезанным). */
+    public static final DataComponentType<Float> INGOT_LENGTH = registerFloat("ingot_length");
+    /** Тир наведения полётной программы: 1 — прошивная память, 2 — бортовой компьютер (006). */
+    public static final DataComponentType<Integer> GUIDANCE_TIER = registerInt("guidance_tier");
+    /** Турбонасос с колесом из жаропрочного никелевого сплава (006): 1. */
+    public static final DataComponentType<Integer> TURBINE_SUPERALLOY = registerInt("turbine_superalloy");
+
     /** Частота (канал) ключа связи — прошивается в ЦУПе. */
     public static final DataComponentType<Integer> KEY_FREQUENCY = registerInt("key_frequency");
 

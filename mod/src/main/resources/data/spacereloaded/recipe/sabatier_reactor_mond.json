@@ -1,0 +1,28 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "sabatier_reactor",
+	"inputs": [
+		{
+			"item": "spacereloaded:meteoric_iron"
+		},
+		{
+			"item": "spacereloaded:carbon_monoxide"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:iron_dust",
+			"yield": 0.92
+		},
+		{
+			"id": "spacereloaded:nickel_ingot",
+			"yield": 0.08
+		},
+		{
+			"id": "spacereloaded:carbon_monoxide",
+			"yield": 0.95
+		}
+	],
+	"energy": 200,
+	"ticks": 200
+}

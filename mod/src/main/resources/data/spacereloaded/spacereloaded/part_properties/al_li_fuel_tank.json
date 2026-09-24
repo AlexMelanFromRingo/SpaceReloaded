@@ -1,0 +1,7 @@
+{
+	"block": "spacereloaded:al_li_fuel_tank",
+	"mass_kg": 242.0,
+	"role": "tank",
+	"fuel": "spacereloaded:kerolox",
+	"propellant_capacity_kg": 2000.0
+}

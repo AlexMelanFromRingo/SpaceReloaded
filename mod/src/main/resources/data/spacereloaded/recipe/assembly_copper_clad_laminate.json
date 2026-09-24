@@ -1,0 +1,10 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:fr4_laminate",
+		"spacereloaded:copper_plate"
+	],
+	"result": {
+		"id": "spacereloaded:copper_clad_laminate"
+	}
+}

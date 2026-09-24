@@ -1,0 +1,19 @@
+{
+	"type": "spacereloaded:chemical",
+	"machine": "electrolyzer",
+	"inputs": [
+		{
+			"item": "spacereloaded:brine"
+		}
+	],
+	"outputs": [
+		{
+			"id": "spacereloaded:hydrogen_chloride"
+		},
+		{
+			"id": "spacereloaded:caustic_soda"
+		}
+	],
+	"energy": 400,
+	"ticks": 100
+}

@@ -52,7 +52,10 @@ public class SolarPanelRenderer implements BlockEntityRenderer<SolarPanelBlockEn
         // 0 — восход (солнце на востоке, +X), 6000 — зенит, 12000 — закат (запад)
         float sun = (float) ((day - 6000.0) / 6000.0 * 90.0);
         state.tilt = day < 12500 ? -Math.max(-MAX_TILT, Math.min(MAX_TILT, sun)) : 0f;
-        blocks.update(state.array, ModBlocks.ROTOR_SOLAR_ARRAY.defaultBlockState(), state.context);
+        // 006: монокристаллические элементы — чёрные псевдоквадраты вместо синих мультикремниевых
+        var array = be.getBlockState().is(ModBlocks.MONO_SOLAR_PANEL) ? ModBlocks.ROTOR_MONO_SOLAR_ARRAY
+                : ModBlocks.ROTOR_SOLAR_ARRAY;
+        blocks.update(state.array, array.defaultBlockState(), state.context);
     }
 
     @Override
