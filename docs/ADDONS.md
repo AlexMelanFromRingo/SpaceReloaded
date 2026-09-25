@@ -395,6 +395,33 @@ my_spacereloaded_addon/
 - **Спутник-камера** снимает над телом с `body_radius` и `parking_altitude` в профиле планеты;
   орбитальная платформа снимает ближайшее по Δv тело из `transition_targets`.
 
+### Тяжёлая индустрия (008)
+
+- **Шаблоны** `eclss_rack`, `fission_reactor`, `centrifuge_cascade`, `air_separation_column`,
+  `arc_furnace`, `deep_space_antenna` лежат в `data/spacereloaded/spacereloaded/multiblock/` в
+  формате 005. Датапак может заменить шаблон (например, раму стойки из своих блоков). Роли клеток,
+  которые читает код, держатся на тегах, поэтому их проще расширять тегом:
+  - `spacereloaded:eclss_socket` — что можно поставить в гнездо стойки (модули и глухая панель);
+  - `spacereloaded:reactor_power_slot` — Стирлинг или заглушка в гнезде реактора;
+  - `spacereloaded:eaf_charge` — предметы шихты дуговой печи. Масса предмета берётся из таблицы
+    масс, поэтому свой лом стоит добавить и туда:
+  ```json
+  { "replace": false, "values": ["othermod:steel_scrap"] }
+  ```
+- **Руды** `ore_beryl`, `ore_borax`, `ore_uraninite` — обычные `configured_feature` и
+  `placed_feature`. Их можно отключить или переопределить датапаком.
+- **Параметры** в `config/spacereloaded.json`:
+
+  | Ключ | По умолчанию | Смысл |
+  |---|---|---|
+  | `reactorRodSpeedPerS` | 0.01 | ход стержня, доля полного хода за секунду модели |
+  | `reactorRodWorthDollars` | 5 | интегральный вес стержня, $ |
+  | `reactorAlphaCentsPerK` | 0.1 | температурный коэффициент реактивности, ¢/K (со знаком минус) |
+  | `centrifugeSwuPerDay` | 20 | работа разделения одной центрифуги, ЕРР/сут |
+  | `eafElectrodeKgPerTonne` | 1.8 | расход графитовых электродов на тонну шихты |
+  | `dsnDriveDegPerS` | 5 | скорость привода тарелки (только анимация) |
+  | `dsnTelemetryBps` | 1000 | скорость линии, с которой антенна заменяет спутник-ретранслятор |
+
 ## Рецепты станков
 
 Три типа рецептов мода. Все лежат в `data/<неймспейс>/recipe/`.

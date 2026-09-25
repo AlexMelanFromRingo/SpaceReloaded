@@ -12,6 +12,9 @@ MB_DIR = res.RES / f"data/{res.MOD}/{res.MOD}/multiblock"
 OUT_DIR = res.DOCS / "img/mb"
 
 
+
+UNFORMED_ON_SITE = {"centrifuge_cascade"}
+
 class Cell:
     def __init__(self, pos, block, role):
         self.pos, self.block, self.role = tuple(pos), block, role  # role: key | fixed | repeat
@@ -88,7 +91,10 @@ class Multiblock:
         bs = res.read_json(ns, f"blockstates/{name}.json")
         if not bs or "variants" not in bs:
             return None
-        want = {"formed": "true", "in_rail": "true", "facing": "north", "lit": "false", "axis": self.line_axis(),
+        # собранный вид каскада — полые кожухи под роторы клиентского рендера; на сайте роторов нет,
+        # поэтому центрифуги показаны цельными, как их ставит игрок
+        formed = "false" if self.id in UNFORMED_ON_SITE else "true"
+        want = {"formed": formed, "in_rail": "true", "facing": "north", "lit": "false", "axis": self.line_axis(),
                 "powered": "false", "open": "false"}
         best, score = None, -1
         for key, v in bs["variants"].items():

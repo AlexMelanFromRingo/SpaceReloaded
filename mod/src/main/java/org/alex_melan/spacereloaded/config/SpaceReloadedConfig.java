@@ -381,6 +381,18 @@ public final class SpaceReloadedConfig {
     public double windSpeedEarth = 8;
     public double windSpeedMars = 8;
     public double windSpeedMarsStorm = 25;
+    /** Реактор (008): ход стержня, доля полного хода за секунду модели; вес стержня, $;
+     *  температурный коэффициент реактивности, ¢/K (отрицательная обратная связь). */
+    public double reactorRodSpeedPerS = 0.01;
+    public double reactorRodWorthDollars = 5;
+    public double reactorAlphaCentsPerK = 0.1;
+    /** Каскад: работа разделения одной центрифуги, ЕРР в реальные сутки. */
+    public double centrifugeSwuPerDay = 20;
+    /** Дуговая печь: расход графитовых электродов, кг на тонну шихты. */
+    public double eafElectrodeKgPerTonne = 1.8;
+    /** Антенна дальней связи: скорость привода, °/с; порог телеметрии для связи без ретранслятора, бит/с. */
+    public double dsnDriveDegPerS = 5;
+    public double dsnTelemetryBps = 1000;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -570,6 +582,10 @@ public final class SpaceReloadedConfig {
         }
         if (windSpeedEarth < 0 || windSpeedMars < 0 || windSpeedMarsStorm < 0) {
             throw new IllegalArgumentException("скорость ветра >= 0");
+        }
+        if (reactorRodSpeedPerS <= 0 || reactorRodWorthDollars <= 0 || reactorAlphaCentsPerK < 0
+                || centrifugeSwuPerDay <= 0 || eafElectrodeKgPerTonne < 0 || dsnDriveDegPerS <= 0 || dsnTelemetryBps <= 0) {
+            throw new IllegalArgumentException("параметры 008: скорости и веса > 0, расходы >= 0");
         }
     }
 }

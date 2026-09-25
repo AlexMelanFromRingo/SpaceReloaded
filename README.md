@@ -30,6 +30,14 @@ and stations from **Galacticraft**, free-form rockets and satellites from
   <img src="docs/img/orbital-image.png" width="43%" alt="Orbital image of a base, developed into a locked map">
   <img src="docs/img/creative-tab.png" width="45%" alt="SpaceReloaded creative tab">
 </p>
+<p align="center">
+  <img src="docs/img/arc-furnace-tap.png" width="49%" alt="Arc furnace tapping: the vessel tilts and steel pours from the spout">
+  <img src="docs/img/dsn.png" width="49%" alt="Deep space antenna: a paraboloid dish tracking its target">
+</p>
+<p align="center">
+  <img src="docs/img/eclss.png" width="49%" alt="ECLSS rack: Sabatier, pump, electrolysis and CDRA modules">
+  <img src="docs/img/reactor.png" width="49%" alt="Kilopower reactor: control rod drive, heat pipe glowing, Stirling convertors">
+</p>
 
 <p align="center">
   <b><a href="https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html">Recipe book</a></b>: every recipe rendered as cards, from crushing to the assembly table.
@@ -155,7 +163,7 @@ and stations from **Galacticraft**, free-form rockets and satellites from
 - **Screens, not chat spam.** The scan report, the cannon terminal and a flight
   map drawn from the transition graph are proper panels. Jade is supported as a
   soft dependency: look at a machine to read energy, fuel and rod count.
-- **A guided progression.** Thirty-seven advancements walk you from the first
+- **A guided progression.** Forty-five advancements walk you from the first
   steel ingot to closing the interplanetary loop.
 
 - **Electronics from sand.** Relays and core rope memory (like Apollo) → metallurgical
@@ -183,6 +191,16 @@ and stations from **Galacticraft**, free-form rockets and satellites from
 - **Orbital imaging.** An imaging satellite with a 10 cm telescope sees to the Rayleigh
   limit: 1.34 m from 200 km over Earth, 0.67 m over the Moon. The image, a locked map,
   arrives when the swath passes over, and shows no ore underground.
+- **Heavy industry.** Six multiblocks with smooth animations of real mechanisms. An
+  ISS-style life support rack: electrolysis, CO₂ removal and a Sabatier reactor that
+  recovers half of the oxygen because hydrogen runs short, like on the station, and
+  93.5 % water recovery. A Kilopower fission reactor with point kinetics, a B₄C control
+  rod, a temperature regulator and SCRAM. Prompt criticality melts the core, and the
+  heat pipe glows in blackbody colour. Gas centrifuges enrich uranium stage by stage
+  (29 give 93.5 %). A cryogenic air separation column follows Fenske: argon only
+  appears with 20 trays. An electric arc furnace swings its roof, lowers its
+  electrodes, strikes the arc and tilts to tap. A deep space antenna built from dish
+  panels carries a real link budget: 34 m hear Mars at about 5 Mbit/s.
 
 ## No teleport magic
 

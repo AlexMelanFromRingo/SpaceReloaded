@@ -32,6 +32,11 @@ public final class IndustryAdvancements {
     public static final String GREEN_AIR = "green_air";
     public static final String FIRST_TRACK = "first_track";
     public static final String VIEW_FROM_ABOVE = "view_from_above";
+    public static final String CLOSED_LOOP = "closed_loop";
+    public static final String CRITICALITY = "criticality";
+    public static final String ARGON = "argon";
+    public static final String FIRST_MELT = "first_melt";
+    public static final String VOICE_FROM_MARS = "voice_from_mars";
 
     private IndustryAdvancements() {
     }

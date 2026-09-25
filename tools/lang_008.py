@@ -307,6 +307,21 @@ OTHER = {
         "підсилення (πD/λ)². Тарілка супроводжує ціль небом. 34 м чують Марс на ~5 Мбіт/с, 3 м — на ~38 кбіт/с; "
         "лінія від 1 кбіт/с керує безпілотниками без супутника-ретранслятора."),
     "planet.spacereloaded.overworld": ("Earth", "Земля", "Земля"),
+    "advancements.spacereloaded.closed_loop.title": ("Closed Loop", "Замкнутый цикл", "Замкнений цикл"),
+    "advancements.spacereloaded.closed_loop.description": ("Let the Sabatier module turn your breath back into water",
+        "Пусть Сабатье превращает ваше дыхание обратно в воду", "Нехай Сабатьє перетворює ваше дихання назад на воду"),
+    "advancements.spacereloaded.criticality.title": ("Criticality", "Критичность", "Критичність"),
+    "advancements.spacereloaded.criticality.description": ("Get more than 500 We from a fission reactor",
+        "Получите больше 500 Вт(э) от реактора деления", "Отримайте понад 500 Вт(е) від реактора поділу"),
+    "advancements.spacereloaded.argon.title": ("Argon", "Аргон", "Аргон"),
+    "advancements.spacereloaded.argon.description": ("Draw argon from a column of 20 trays",
+        "Отберите аргон колонной из 20 тарелок", "Відберіть аргон колоною з 20 тарілок"),
+    "advancements.spacereloaded.first_melt.title": ("First Melt", "Первая плавка", "Перша плавка"),
+    "advancements.spacereloaded.first_melt.description": ("Tap steel from an electric arc furnace",
+        "Слейте сталь из дуговой печи", "Злийте сталь з дугової печі"),
+    "advancements.spacereloaded.voice_from_mars.title": ("Voice from Mars", "Голос с Марса", "Голос з Марса"),
+    "advancements.spacereloaded.voice_from_mars.description": ("Hear Mars at 1 kbit/s or faster with your own dish",
+        "Услышьте Марс на 1 кбит/с и быстрее своей тарелкой", "Почуйте Марс на 1 кбіт/с і швидше своєю тарілкою"),
     "manual.spacereloaded.eclss_rack.title": ("Life Support Rack", "Стойка жизнеобеспечения", "Стійка життєзабезпечення"),
     "manual.spacereloaded.eclss_rack.text": (
         "A 5×4 rack in the wall of a sealed zone with four module sockets. Electrolysis turns water into O₂; "

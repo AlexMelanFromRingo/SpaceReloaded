@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:sabatier_module"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.closed_loop.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.closed_loop.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:green_air"
+}

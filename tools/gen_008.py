@@ -670,7 +670,28 @@ def data():
         write(os.path.join(DATA, NS, "item_mass", name + ".json"), {"items": [sr(i) for i in items], "kg": kg})
 
 
+ADVANCEMENTS = {  # id: (иконка, родитель, рамка)
+    "closed_loop": ("sabatier_module", "green_air", "goal"),
+    "criticality": ("control_rod_drive", "power", "challenge"),
+    "argon": ("asu_tray", "steel", "task"),
+    "first_melt": ("eaf_controller", "steel", "goal"),
+    "voice_from_mars": ("dish_panel", "mars", "challenge"),
+}
+
+
+def advancements():
+    for a, (icon, parent, frame) in ADVANCEMENTS.items():
+        write(os.path.join(DATA, "advancement", a + ".json"), {
+            "criteria": {"done": {"trigger": "minecraft:impossible"}},
+            "display": {"icon": {"id": sr(icon)},
+                        "title": {"translate": f"advancements.{NS}.{a}.title"},
+                        "description": {"translate": f"advancements.{NS}.{a}.description"},
+                        "frame": frame},
+            "requirements": [["done"]], "sends_telemetry_event": False, "parent": sr(parent)})
+
+
 def main():
+    advancements()
     eclss_recipes()
     reactor_recipes()
     material_recipes()

@@ -57,13 +57,15 @@ public final class PointKinetics {
     }
 
     /**
-     * Шаг dt при постоянной ρ < 1 $ с источником нейтронов: подкритичный реактор стремится к
-     * размножению источника S/(−ρ) и не опускается ниже его.
+     * Шаг dt при постоянной ρ < 1 $ с источником нейтронов — точное решение dP/dt = r·P + q,
+     * q = λS/β: подкритичный реактор стремится к размножению источника S(1 − ρ)/(−ρβ), около
+     * критики (ρ → 0) — сколь угодно медленно, без скачка; надкритичный растёт по периоду.
      */
     public static double evolve(double power, double rhoDollars, double dt) {
-        double next = power * Math.exp(rate(rhoDollars) * dt);
-        double floor = rhoDollars < 0 ? SOURCE_W / (-rhoDollars * BETA) : SOURCE_W;
-        return Math.max(next, floor);
+        double r = rate(rhoDollars);
+        double q = LAMBDA * SOURCE_W / BETA;
+        double next = Math.abs(r * dt) < 1e-9 ? power + q * dt : (power + q / r) * Math.exp(r * dt) - q / r;
+        return Math.max(SOURCE_W, next);
     }
 
     /** Доля остаточного тепловыделения через t с после останова после работы T с (Вэй–Вигнер). */

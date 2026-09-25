@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:eaf_controller"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.first_melt.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.first_melt.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:steel"
+}

@@ -197,6 +197,9 @@ public class AirColumnBlockEntity extends BlockEntity
         o2KgS = o2 - o2Left;
         n2KgS = n2 - n2Left;
         argonKgS = argon;
+        if (argon > 0) {
+            org.alex_melan.spacereloaded.industry.IndustryAdvancements.awardNearby(level, getBlockPos(), 32, org.alex_melan.spacereloaded.industry.IndustryAdvancements.ARGON);
+        }
         argonKg = Math.min(argonKg + argon, 64 * ARGON_KG_PER_CANISTER);
         ventedKgS = feed - o2KgS - n2KgS - argon;
     }

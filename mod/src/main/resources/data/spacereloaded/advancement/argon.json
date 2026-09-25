@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:asu_tray"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.argon.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.argon.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:steel"
+}

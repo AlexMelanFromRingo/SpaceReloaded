@@ -24,6 +24,6 @@ public final class Logistics {
         // 008: наземная антенна дальней связи командует аппаратом напрямую, если линия ≥ порога телеметрии
         var network = SpaceNetworkState.get(server);
         return network.hasCoverage(fromDimension)
-                || network.groundLinkRate(target.dimension()) >= org.alex_melan.spacereloaded.comms.DsnBlockEntity.TELEMETRY_BPS;
+                || network.groundLinkRate(target.dimension()) >= org.alex_melan.spacereloaded.comms.DsnBlockEntity.telemetryBps();
     }
 }

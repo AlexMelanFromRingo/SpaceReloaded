@@ -871,5 +871,15 @@
 	"message.spacereloaded.imaging.remote": "Снимок тела %s по дальней связи %s — передача %s мин",
 	"manual.spacereloaded.deep_space_antenna.title": "Антенна дальней связи",
 	"manual.spacereloaded.deep_space_antenna.text": "Приёмник с опорой; тарелку соберите из панелей отражателя в плоскости над опорой — её диаметр задаёт усиление (πD/λ)². Тарелка сопровождает цель по небу. 34 м слышат Марс на ~5 Мбит/с, 3 м — на ~38 кбит/с; линия от 1 кбит/с командует беспилотниками без спутника-ретранслятора.",
-	"planet.spacereloaded.overworld": "Земля"
+	"planet.spacereloaded.overworld": "Земля",
+	"advancements.spacereloaded.closed_loop.title": "Замкнутый цикл",
+	"advancements.spacereloaded.closed_loop.description": "Пусть Сабатье превращает ваше дыхание обратно в воду",
+	"advancements.spacereloaded.criticality.title": "Критичность",
+	"advancements.spacereloaded.criticality.description": "Получите больше 500 Вт(э) от реактора деления",
+	"advancements.spacereloaded.argon.title": "Аргон",
+	"advancements.spacereloaded.argon.description": "Отберите аргон колонной из 20 тарелок",
+	"advancements.spacereloaded.first_melt.title": "Первая плавка",
+	"advancements.spacereloaded.first_melt.description": "Слейте сталь из дуговой печи",
+	"advancements.spacereloaded.voice_from_mars.title": "Голос с Марса",
+	"advancements.spacereloaded.voice_from_mars.description": "Услышьте Марс на 1 кбит/с и быстрее своей тарелкой"
 }

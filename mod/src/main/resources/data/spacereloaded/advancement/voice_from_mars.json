@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:dish_panel"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.voice_from_mars.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.voice_from_mars.description"
+		},
+		"frame": "challenge"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:mars"
+}

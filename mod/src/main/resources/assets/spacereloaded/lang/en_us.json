@@ -871,5 +871,15 @@
 	"message.spacereloaded.imaging.remote": "Image of %s via the deep space link %s — downlink %s min",
 	"manual.spacereloaded.deep_space_antenna.title": "Deep Space Antenna",
 	"manual.spacereloaded.deep_space_antenna.text": "A receiver with a mount; build the dish from reflector panels in the plane above the mount — its diameter sets the gain (πD/λ)². The dish tracks the target across the sky. A 34 m dish hears Mars at ~5 Mbit/s, a 3 m one at ~38 kbit/s; a link of 1 kbit/s commands unmanned craft without a relay satellite.",
-	"planet.spacereloaded.overworld": "Earth"
+	"planet.spacereloaded.overworld": "Earth",
+	"advancements.spacereloaded.closed_loop.title": "Closed Loop",
+	"advancements.spacereloaded.closed_loop.description": "Let the Sabatier module turn your breath back into water",
+	"advancements.spacereloaded.criticality.title": "Criticality",
+	"advancements.spacereloaded.criticality.description": "Get more than 500 We from a fission reactor",
+	"advancements.spacereloaded.argon.title": "Argon",
+	"advancements.spacereloaded.argon.description": "Draw argon from a column of 20 trays",
+	"advancements.spacereloaded.first_melt.title": "First Melt",
+	"advancements.spacereloaded.first_melt.description": "Tap steel from an electric arc furnace",
+	"advancements.spacereloaded.voice_from_mars.title": "Voice from Mars",
+	"advancements.spacereloaded.voice_from_mars.description": "Hear Mars at 1 kbit/s or faster with your own dish"
 }

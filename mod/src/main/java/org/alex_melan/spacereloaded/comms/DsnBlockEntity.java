@@ -48,7 +48,7 @@ import java.util.Set;
  */
 public class DsnBlockEntity extends BlockEntity implements HammerTarget, StatusProvider, IndustryStructures.StructureOwner {
 
-    public static final double TELEMETRY_BPS = 1000;
+    public static double telemetryBps() { return org.alex_melan.spacereloaded.SpaceReloaded.config().dsnTelemetryBps; }
     public static final int MAX_PANELS = 1000;
     public static final double MOON_DISTANCE_M = 3.844e8;
     private static final double YEAR_TICKS = 365.25 / 130 * 24000;
@@ -152,6 +152,9 @@ public class DsnBlockEntity extends BlockEntity implements HammerTarget, StatusP
         rangeM = own == null ? 0 : distance(level.getGameTime(), own, body);
         rateBps = up && own != null ? LinkBudget.rate(body.txW(), body.txDishM(), diameterM(), rangeM) : 0;
         SpaceNetworkState.get(level.getServer()).setGroundLink(GlobalPos.of(level.dimension(), getBlockPos()), body.id(), rateBps);
+        if (rateBps >= telemetryBps() && body.id().getPath().equals("mars")) {
+            org.alex_melan.spacereloaded.industry.IndustryAdvancements.awardNearby(level, getBlockPos(), 32, org.alex_melan.spacereloaded.industry.IndustryAdvancements.VOICE_FROM_MARS);
+        }
         boolean active = rateBps > 0;
         if (getBlockState().getValue(ControllerBlock.ACTIVE) != active) {
             level.setBlock(getBlockPos(), getBlockState().setValue(ControllerBlock.ACTIVE, active), Block.UPDATE_CLIENTS);
@@ -285,6 +288,9 @@ public class DsnBlockEntity extends BlockEntity implements HammerTarget, StatusP
             do {
                 target = Math.floorMod(target + 1, BODIES.size());
             } while (targetBody().id().equals(level.dimension().identifier()));
+            // привод тарелки трогается к новой цели
+            level.playSound(null, getBlockPos().above(), net.minecraft.sounds.SoundEvents.MINECART_RIDING,
+                    net.minecraft.sounds.SoundSource.BLOCKS, 0.4f, 0.5f);
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
             setChanged();
         }
@@ -310,7 +316,7 @@ public class DsnBlockEntity extends BlockEntity implements HammerTarget, StatusP
                         Math.toDegrees(Math.min(angle % (2 * Math.PI), Math.PI - angle % (2 * Math.PI)))))
                 : Component.translatable("status.spacereloaded.dsn.below"));
         lines.add(Component.translatable("status.spacereloaded.dsn.rate", formatRate(rateBps),
-                Component.translatable(rateBps >= TELEMETRY_BPS ? "status.spacereloaded.dsn.link_ok" : "status.spacereloaded.dsn.link_no")));
+                Component.translatable(rateBps >= telemetryBps() ? "status.spacereloaded.dsn.link_ok" : "status.spacereloaded.dsn.link_no")));
         List<MachineStatusPayload.Gauge> gauges = List.of(new MachineStatusPayload.Gauge(
                 Component.translatable("gauge.spacereloaded.link"),
                 (float) Math.max(0, Math.min(1, Math.log10(Math.max(1, rateBps)) / 9)), 0x57C4C4));
@@ -337,6 +343,10 @@ public class DsnBlockEntity extends BlockEntity implements HammerTarget, StatusP
             if (BODIES.get(i).id().equals(id)) {
                 target = i;
             }
+        }
+        setChanged();
+        if (level != null) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
     }
 

@@ -39,7 +39,11 @@ public final class ArcFurnace {
     }
 
     public static double electrodeKg(double massKg) {
-        return massKg / 1000 * ELECTRODE_KG_PER_T;
+        return electrodeKg(massKg, ELECTRODE_KG_PER_T);
+    }
+
+    public static double electrodeKg(double massKg, double kgPerTonne) {
+        return massKg / 1000 * kgPerTonne;
     }
 
     public static double steelKg(double massKg) {

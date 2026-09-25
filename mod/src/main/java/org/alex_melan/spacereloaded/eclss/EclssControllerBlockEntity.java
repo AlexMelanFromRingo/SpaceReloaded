@@ -200,6 +200,13 @@ public class EclssControllerBlockEntity extends MachineBlockEntity
                         Math.max(0, o2 * EclssBalance.WATER_PER_O2 - reduced * EclssBalance.WATER_PER_CO2 - metabolic) / DT_DAYS,
                         reduced * EclssBalance.CH4_PER_CO2 / DT_DAYS, kwh * 3600);
                 contribution = new LifeSupportState.Contribution(rate, 0, k, 0);
+                if (reduced > 0 && people > 0) {
+                    for (ServerPlayer p : level.players()) {
+                        if (zone.volume().contains(p.blockPosition().asLong())) {
+                            org.alex_melan.spacereloaded.industry.IndustryAdvancements.award(p, org.alex_melan.spacereloaded.industry.IndustryAdvancements.CLOSED_LOOP);
+                        }
+                    }
+                }
                 for (int i = 0; i < 4; i++) {
                     int kind = (nextSockets >> (4 * i)) & 15;
                     boolean on = switch (kind) {
@@ -217,6 +224,11 @@ public class EclssControllerBlockEntity extends MachineBlockEntity
         }
         LifeSupportState.contribute(level, getBlockPos(), contribution);
         boolean active = nextRunning != 0;
+        if (active && level.getGameTime() % 70 == 0) {
+            // пузыри газа у электродов OGS и насос WRS
+            level.playSound(null, getBlockPos(), net.minecraft.sounds.SoundEvents.BUBBLE_COLUMN_UPWARDS_AMBIENT,
+                    net.minecraft.sounds.SoundSource.BLOCKS, 0.35f, 1.2f);
+        }
         if (getBlockState().getValue(ControllerBlock.ACTIVE) != active) {
             level.setBlock(getBlockPos(), getBlockState().setValue(ControllerBlock.ACTIVE, active), Block.UPDATE_CLIENTS);
         }

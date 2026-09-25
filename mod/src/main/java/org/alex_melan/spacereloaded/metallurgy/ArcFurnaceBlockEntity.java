@@ -201,7 +201,7 @@ public class ArcFurnaceBlockEntity extends MachineBlockEntity
         meltedJ += got;
         powerW += (got / 0.05 - powerW) * 0.1;   // сглаженная мощность для экрана
         double dFrac = meltFraction() - before;
-        electrodeKg = Math.max(0, electrodeKg - ArcFurnace.electrodeKg(chargeKg) * dFrac);
+        electrodeKg = Math.max(0, electrodeKg - ArcFurnace.electrodeKg(chargeKg, org.alex_melan.spacereloaded.SpaceReloaded.config().eafElectrodeKgPerTonne) * dFrac);
         if (oxygenBlow) {
             double need = ArcFurnace.oxygenKg(chargeKg) * dFrac;
             double pulled = 0;
@@ -256,6 +256,7 @@ public class ArcFurnaceBlockEntity extends MachineBlockEntity
         level.sendParticles(ParticleTypes.LAVA, out.getX() + 0.5, out.getY() + 1.2, out.getZ() + 0.5, 30, 0.3, 0.3, 0.3, 0.05);
         level.playSound(null, out, SoundEvents.LAVA_EXTINGUISH, SoundSource.BLOCKS, 1.0f, 0.8f);
         lastTap = String.format(Locale.ROOT, "%.0f/%.0f", steel, chargeKg);
+        org.alex_melan.spacereloaded.industry.IndustryAdvancements.awardNearby(level, getBlockPos(), 32, org.alex_melan.spacereloaded.industry.IndustryAdvancements.FIRST_MELT);
         chargeKg = 0;
         limeKg = 0;
         meltedJ = 0;

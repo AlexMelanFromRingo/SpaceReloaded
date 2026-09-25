@@ -48,7 +48,7 @@ public class CascadeBlockEntity extends MachineBlockEntity
         IndustryStructures.StructureOwner {
 
     public static final double KG_PER_ITEM = 10;
-    public static final double SWU_PER_DAY = 20;
+    public static double swuPerDay() { return org.alex_melan.spacereloaded.SpaceReloaded.config().centrifugeSwuPerDay; }
     public static final double KWH_PER_SWU = 50;
     public static final double BASKET_U235_KG = 28;
     /** Цирконий в сплаве U-Zr — 10 % массы урана; предмет циркония — 7.2 кг. */
@@ -154,7 +154,7 @@ public class CascadeBlockEntity extends MachineBlockEntity
         if (n > 0 && feedKg > 0.5) {
             double xf = feedEnrichment();
             double xp = productEnrichment();
-            double dSwu = n * SWU_PER_DAY / 1200.0;
+            double dSwu = n * swuPerDay() / 1200.0;
             energyDebt += EnergyScale.fromJoules(dSwu * KWH_PER_SWU * 3.6e6);
             long cost = (long) Math.floor(energyDebt);
             if (energy.amount >= cost) {
@@ -298,8 +298,8 @@ public class CascadeBlockEntity extends MachineBlockEntity
         double perKg = n > 0 ? Enrichment.swu(1, xf, xp, Enrichment.TAILS) : 0;
         double feedPer = n > 0 ? 1 / Enrichment.productPerFeed(xf, xp, Enrichment.TAILS) : 0;
         lines.add(Component.translatable("status.spacereloaded.cascade.balance", f1(feedPer), f1(perKg)));
-        double perDay = n > 0 ? n * SWU_PER_DAY / perKg : 0;
-        lines.add(Component.translatable("status.spacereloaded.cascade.rate", f2(perDay), f1(n * SWU_PER_DAY)));
+        double perDay = n > 0 ? n * swuPerDay() / perKg : 0;
+        lines.add(Component.translatable("status.spacereloaded.cascade.rate", f2(perDay), f1(n * swuPerDay())));
         lines.add(Component.translatable("status.spacereloaded.cascade.stock", f1(feedKg), f1(productKg),
                 pct(productStockEnrichment()), f1(tailsKg)));
         List<MachineStatusPayload.Gauge> gauges = List.of(

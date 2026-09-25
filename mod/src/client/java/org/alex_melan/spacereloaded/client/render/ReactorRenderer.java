@@ -62,7 +62,7 @@ public class ReactorRenderer implements BlockEntityRenderer<ReactorBlockEntity, 
         Anim anim = (Anim) be.clientAnim;
         // сервер ведёт стержень со скоростью привода; клиент сглаживает шаги синхронизации
         double speed = be.scrammed() ? ReactorBlockEntity.SCRAM_SPEED * ReactorBlockEntity.TIME_SCALE * 1.2
-                : ReactorBlockEntity.ROD_SPEED * ReactorBlockEntity.TIME_SCALE * 1.5;
+                : ReactorBlockEntity.rodSpeed() * ReactorBlockEntity.TIME_SCALE * 1.5;
         state.rod = (float) anim.rod.update(be.rodPosition(), speed, 8);
         state.temperature = (float) anim.temperature.update(be.temperature(), 400, 2);
         double nominal = Math.max(1, be.stirlings() * 250.0);

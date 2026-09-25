@@ -3383,7 +3383,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         });
         assertThat(basket.startsWith("28.0 0.93"), "Корзина: " + basket);
         log("каскад: корзина U-Zr — " + basket.split(" ")[0] + " кг U-235 ✓");
-        readmeCamera(context, sp, x0 + 2.5, BY + 1.2, z0 + 3.5, 120f, 25f);
+        readmeCamera(context, sp, x0 - 3.5, BY + 2.6, z0 - 2.5, -32f, 22f);
         readmeShot(context, "cascade");
         context.runOnClient(mc -> {
             if (mc.gui.hud.isHidden()) {
@@ -3437,7 +3437,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                         && Math.abs(org.alex_melan.spacereloaded.cryo.AirColumnBlockEntity.oxygenPurity(11) - 0.945) < 0.005,
                 "Колонна: " + report);
         log("воздухоразделительная колонна: " + report + " ✓");
-        readmeCamera(context, sp, x0 + 3.5, BY + 2, z0 - 4.5, 35f, -15f);
+        readmeCamera(context, sp, x0 + 10.5, BY + 5, z0 - 14, 36f, -14f);
         readmeShot(context, "air-column");
         context.runOnClient(mc -> {
             if (mc.gui.hud.isHidden()) {
@@ -3550,7 +3550,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         int panels = 0;
         for (int dx = -5; dx <= 5; dx++) {
             for (int dz = -5; dz <= 5; dz++) {
-                if (dx * dx + dz * dz <= 25) {
+                if (dx * dx + dz * dz <= 29) {
                     sp.getServer().runCommand(set(x0 + dx, BY + 2, z0 + dz, "spacereloaded:dish_panel"));
                     panels++;
                 }
@@ -3617,7 +3617,13 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         });
         assertThat(remote.startsWith("spacereloaded:mars "), "Снимок Марса с Земли через антенну: " + remote);
         log("антенна: снимок Марса заказан с Земли по дальней связи, готов через " + remote.split(" ")[1] + " тиков ✓");
-        readmeCamera(context, sp, x0 - 9.5, BY + 1, z0 - 5.5, -60f, 8f);
+        // кадр днём: Луна в фазе 3 (элонгация 45°) стоит высоко утром — тарелка смотрит в светлое небо
+        sp.getServer().runCommand("time set " + (3 * 24000 + 2000));
+        sp.getServer().runCommand("weather clear");
+        sp.getServer().runOnServer(server -> ((org.alex_melan.spacereloaded.comms.DsnBlockEntity) server.overworld()
+                .getBlockEntity(key)).testTarget(Identifier.fromNamespaceAndPath("spacereloaded", "moon")));
+        context.waitTicks(60);
+        readmeCamera(context, sp, x0 + 12.5, BY + 5, z0 - 10.5, 50f, 12f);
         readmeShot(context, "dsn");
         context.runOnClient(mc2 -> {
             if (mc2.gui.hud.isHidden()) {
@@ -3863,6 +3869,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
 
     private void readmeCamera(ClientGameTestContext context, TestSingleplayerContext sp, double x, double y, double z,
                               float yaw, float pitch) {
+        context.getInput().resizeWindow(1600, 900);
         prepareCamera(context, sp, x, y, z, yaw, pitch);
         context.waitTicks(20);
         sp.getClientLevel().waitForChunksRender();

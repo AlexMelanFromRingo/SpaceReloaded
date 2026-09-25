@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:control_rod_drive"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.criticality.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.criticality.description"
+		},
+		"frame": "challenge"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:power"
+}

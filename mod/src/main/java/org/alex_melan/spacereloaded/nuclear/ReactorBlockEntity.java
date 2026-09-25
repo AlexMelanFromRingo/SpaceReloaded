@@ -52,11 +52,11 @@ public class ReactorBlockEntity extends MachineBlockEntity
         implements HammerTarget, StatusProvider, ControllerBlock.ItemAcceptor, IndustryStructures.StructureOwner {
 
     public static final double TIME_SCALE = 10;
-    public static final double ROD_WORTH = 5;
-    public static final double ALPHA_PER_K = 0.001;
     public static final double T_REF = 300;
     /** Скорость привода, доля хода в секунду физического времени (полный ход — 100 с). */
-    public static final double ROD_SPEED = 0.01;
+    public static double rodSpeed() { return org.alex_melan.spacereloaded.SpaceReloaded.config().reactorRodSpeedPerS; }
+    public static double rodWorth() { return org.alex_melan.spacereloaded.SpaceReloaded.config().reactorRodWorthDollars; }
+    public static double alphaPerK() { return org.alex_melan.spacereloaded.SpaceReloaded.config().reactorAlphaCentsPerK / 100; }
     /** Падение стержня при SCRAM: полный ход за 1 с физического времени. */
     public static final double SCRAM_SPEED = 1.0;
     public static final double GRID_E_PER_TICK_PER_W = 4.0 / 110;
@@ -154,8 +154,8 @@ public class ReactorBlockEntity extends MachineBlockEntity
         if (u235 < 0 || damage >= 2) {
             return -9;
         }
-        return PointKinetics.fuelExcess(u235) - ROD_WORTH + PointKinetics.rodWorth(rodPos, ROD_WORTH)
-                - ALPHA_PER_K * (temperature - T_REF);
+        return PointKinetics.fuelExcess(u235) - rodWorth() + PointKinetics.rodWorth(rodPos, rodWorth())
+                - alphaPerK() * (temperature - T_REF);
     }
 
     public static void serverTick(ReactorBlockEntity be, ServerLevel level) {
@@ -189,10 +189,15 @@ public class ReactorBlockEntity extends MachineBlockEntity
             rodPos = Math.max(0, rodPos - SCRAM_SPEED * dt);
         } else {
             if (auto) {
-                double dTdt = (power + decayW - heatOutW) / ReactorThermal.HEAT_CAPACITY_J_PER_K;
-                rodTarget = Math.max(0, Math.min(1, rodPos + ReactorRegulator.command(reactivity(), temperature, dTdt, setpoint) * ROD_SPEED * dt));
+                double dTdt = (power + decayW - heatOutW - PASSIVE_W_PER_K * (temperature - envK))
+                        / ReactorThermal.HEAT_CAPACITY_J_PER_K;
+                // следящий привод: сдвиг на Δρ по местному наклону S-кривой, не быстрее привода
+                double lo = Math.max(0, rodPos - 1e-3), hi = Math.min(1, rodPos + 1e-3);
+                double slope = (PointKinetics.rodWorth(hi, rodWorth()) - PointKinetics.rodWorth(lo, rodWorth())) / (hi - lo);
+                rodTarget = Math.max(0, Math.min(1, rodPos
+                        + ReactorRegulator.rodDelta(reactivity(), temperature, dTdt, setpoint, slope, rodSpeed() * dt)));
             }
-            double step = ROD_SPEED * dt;
+            double step = rodSpeed() * dt;
             rodPos += Math.max(-step, Math.min(step, rodTarget - rodPos));
         }
         // кинетика
@@ -249,6 +254,9 @@ public class ReactorBlockEntity extends MachineBlockEntity
         boolean active = power + decayW > 100;
         if (getBlockState().getValue(ControllerBlock.ACTIVE) != active) {
             level.setBlock(getBlockPos(), getBlockState().setValue(ControllerBlock.ACTIVE, active), Block.UPDATE_CLIENTS);
+        }
+        if (electricW > 500 && now % 100 == 0) {
+            org.alex_melan.spacereloaded.industry.IndustryAdvancements.awardNearby(level, getBlockPos(), 32, org.alex_melan.spacereloaded.industry.IndustryAdvancements.CRITICALITY);
         }
         if (electricW > 10 && now % 60 == 0) {
             level.playSound(null, getBlockPos().above(2), SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 0.4f,

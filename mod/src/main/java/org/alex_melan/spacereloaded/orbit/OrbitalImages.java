@@ -130,7 +130,7 @@ public final class OrbitalImages {
                 var key = ResourceKey.create(Registries.DIMENSION, body.id());
                 double rate = network.groundLinkRate(body.id());
                 ServerLevel other = level.getServer().getLevel(key);
-                if (other != null && !key.equals(level.dimension()) && rate >= org.alex_melan.spacereloaded.comms.DsnBlockEntity.TELEMETRY_BPS
+                if (other != null && !key.equals(level.dimension()) && rate >= org.alex_melan.spacereloaded.comms.DsnBlockEntity.telemetryBps()
                         && network.imagingSats(key) > 0 && rate > linkBps) {
                     imaged = other;
                     linkBps = rate;
