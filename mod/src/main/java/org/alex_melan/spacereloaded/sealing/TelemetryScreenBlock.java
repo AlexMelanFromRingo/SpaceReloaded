@@ -70,25 +70,10 @@ public class TelemetryScreenBlock extends Block implements EntityBlock {
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {
-            SealedZone zone = ZoneManager.nearestZone(serverLevel, pos, 16);
-            boolean vacuum = ZoneManager.isVacuumWorld(serverLevel);
-            if (zone == null) {
-                serverPlayer.sendSystemMessage(Component.translatable(
-                        "message.spacereloaded.telemetry.no_zone", vacuum
-                                ? Component.translatable("message.spacereloaded.telemetry.env_vacuum")
-                                : Component.translatable("message.spacereloaded.telemetry.env_air")));
-            } else {
-                serverPlayer.sendSystemMessage(Component.translatable(
-                        "message.spacereloaded.telemetry.report",
-                        Component.translatable("sealing.spacereloaded.status."
-                                + zone.status().name().toLowerCase(java.util.Locale.ROOT)),
-                        zone.volume().size(),
-                        vacuum ? Component.translatable("message.spacereloaded.telemetry.env_vacuum")
-                               : Component.translatable("message.spacereloaded.telemetry.env_air")));
-                org.alex_melan.spacereloaded.lifesupport.LifeSupportReport.lines(serverLevel, zone)
-                        .forEach(serverPlayer::sendSystemMessage);
-            }
+        // 010: экран вместо чата
+        if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer
+                && level.getBlockEntity(pos) instanceof TelemetryScreenBlockEntity screen) {
+            org.alex_melan.spacereloaded.network.ModNetworking.openStatus(serverPlayer, screen.status(serverLevel));
         }
         return InteractionResult.SUCCESS_SERVER;
     }

@@ -932,5 +932,12 @@
 	"advancements.spacereloaded.spectrum.title": "Spectrum",
 	"advancements.spacereloaded.spectrum.description": "Develop a mineral map with a mineral found",
 	"advancements.spacereloaded.below_ground.title": "Below Ground",
-	"advancements.spacereloaded.below_ground.description": "Print a radargram with an echo deeper than 5 m"
+	"advancements.spacereloaded.below_ground.description": "Print a radargram with an echo deeper than 5 m",
+	"action.spacereloaded.terminal.mode": "Auto / Hold",
+	"action.spacereloaded.mission_control.map": "Flight map",
+	"message.spacereloaded.mission_control.entry_dv": "%s %s fuel %s kg · h=%s m · Δv %s m/s · %s",
+	"message.spacereloaded.mission_control.satellites": "Relay coverage: %s · imaging satellites %s · hyperspectral %s",
+	"gauge.spacereloaded.kinetic.omega": "Speed / flywheel limit",
+	"gauge.spacereloaded.spin_hub.bearing": "Bearing load",
+	"modmenu.descriptionTranslation.spacereloaded": "A space program on real physics: rockets built from blocks with honest Δv, sealed bases that breathe, orbital stations with spin gravity, interplanetary transfers by celestial mechanics, heavy industry from sand to a Kilopower reactor, and kinetic orbital strikes."
 }

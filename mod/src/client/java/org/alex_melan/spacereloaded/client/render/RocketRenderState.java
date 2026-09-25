@@ -19,4 +19,9 @@ public class RocketRenderState extends EntityRenderState {
     public float halfX;
     public float halfZ;
     public float comY;
+    /** 010: факелы — позиции сопел (локальные x, y, z), цвет ядра и оболочки, раскрытие, время. */
+    public final List<float[]> plumes = new ArrayList<>();
+    public boolean thrusting;
+    public float spreadTan;
+    public float time;
 }

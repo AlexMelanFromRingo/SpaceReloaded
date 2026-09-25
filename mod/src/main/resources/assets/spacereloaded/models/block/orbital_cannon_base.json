@@ -1,0 +1,75 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"s": "spacereloaded:block/orbital_cannon_side",
+		"t": "spacereloaded:block/orbital_cannon_top",
+		"b": "spacereloaded:block/orbital_cannon_bottom",
+		"particle": "spacereloaded:block/orbital_cannon_side"
+	},
+	"elements": [
+		{
+			"from": [
+				0,
+				0,
+				0
+			],
+			"to": [
+				16,
+				10,
+				16
+			],
+			"faces": {
+				"north": {
+					"texture": "#s"
+				},
+				"south": {
+					"texture": "#s"
+				},
+				"east": {
+					"texture": "#s"
+				},
+				"west": {
+					"texture": "#s"
+				},
+				"up": {
+					"texture": "#t"
+				},
+				"down": {
+					"texture": "#b"
+				}
+			}
+		},
+		{
+			"from": [
+				3,
+				10,
+				3
+			],
+			"to": [
+				13,
+				14,
+				13
+			],
+			"faces": {
+				"north": {
+					"texture": "#s"
+				},
+				"south": {
+					"texture": "#s"
+				},
+				"east": {
+					"texture": "#s"
+				},
+				"west": {
+					"texture": "#s"
+				},
+				"up": {
+					"texture": "#t"
+				},
+				"down": {
+					"texture": "#s"
+				}
+			}
+		}
+	]
+}

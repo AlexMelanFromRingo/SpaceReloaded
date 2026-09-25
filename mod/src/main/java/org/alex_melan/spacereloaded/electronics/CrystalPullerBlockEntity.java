@@ -285,9 +285,9 @@ public class CrystalPullerBlockEntity extends KineticMachineBlockEntity<Machinin
     }
 
     @Override
-    protected void extraReport(ServerPlayer player) {
+    protected void extraReport(java.util.List<Component> lines) {
         double cv = samples > 1 && mean > 0 ? Math.sqrt(m2 / (samples - 1)) / mean : 0;
-        player.sendSystemMessage(Component.translatable("message.spacereloaded.crystal_puller.report",
+        lines.add(Component.translatable("message.spacereloaded.crystal_puller.report",
                 work * 100 / PULL_TICKS, String.format(Locale.ROOT, "%.1f", cv * 100), doses,
                 String.format(Locale.ROOT, "%.2f", tailMass), energy.amount));
     }

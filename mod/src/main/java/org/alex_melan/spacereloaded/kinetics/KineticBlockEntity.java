@@ -30,7 +30,7 @@ import java.util.Locale;
  * пределом (выше — стробоскоп; физика не меняется). Клиенту уходят (ω_вид, угол₀, t₀) только
  * при заметном изменении скорости — рендер чистая функция времени, без тиков на клиенте.
  */
-public class KineticBlockEntity extends BlockEntity {
+public class KineticBlockEntity extends BlockEntity implements org.alex_melan.spacereloaded.multiblock.StatusProvider {
 
     /** Точная скорость узла, рад/с (сервер). */
     protected double omega;
@@ -143,25 +143,38 @@ public class KineticBlockEntity extends BlockEntity {
         return omega * 60 / (2 * Math.PI);
     }
 
-    /** ПКМ пустой рукой по узлу: об/мин, момент, мощность, состояние сети. */
+    /** ПКМ пустой рукой по узлу: экран (010) — об/мин, момент, мощность, состояние сети. */
     public static InteractionResult report(Level level, BlockPos pos, Player player) {
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         if (level.getBlockEntity(pos) instanceof KineticBlockEntity node && player instanceof ServerPlayer sp) {
-            double power = Math.abs(node.transmittedTorque * node.omega);
-            sp.sendSystemMessage(Component.translatable("message.spacereloaded.kinetic.report",
-                    String.format(Locale.ROOT, "%.0f", toRpm(node.omega)),
-                    String.format(Locale.ROOT, "%.0f", node.transmittedTorque),
-                    String.format(Locale.ROOT, "%.1f", power / 1000.0),
-                    Component.translatable("message.spacereloaded.kinetic.state." + node.networkState)));
-            node.extraReport(sp);
+            org.alex_melan.spacereloaded.network.ModNetworking.openStatus(sp, node.status((ServerLevel) level));
         }
         return InteractionResult.SUCCESS_SERVER;
     }
 
+    @Override
+    public org.alex_melan.spacereloaded.network.MachineStatusPayload status(ServerLevel level) {
+        double power = Math.abs(transmittedTorque * omega);
+        java.util.List<Component> lines = new java.util.ArrayList<>();
+        lines.add(Component.translatable("message.spacereloaded.kinetic.report",
+                String.format(Locale.ROOT, "%.0f", toRpm(omega)),
+                String.format(Locale.ROOT, "%.0f", transmittedTorque),
+                String.format(Locale.ROOT, "%.1f", power / 1000.0),
+                Component.translatable("message.spacereloaded.kinetic.state." + networkState)));
+        extraReport(lines);
+        double maxOmega = SpaceReloaded.config().flywheelMaxOmega;
+        return new org.alex_melan.spacereloaded.network.MachineStatusPayload(getBlockPos(),
+                getBlockState().getBlock().getName(), lines,
+                java.util.List.of(new org.alex_melan.spacereloaded.network.MachineStatusPayload.Gauge(
+                        Component.translatable("gauge.spacereloaded.kinetic.omega"),
+                        (float) Math.min(1, Math.abs(omega) / maxOmega), 0x6FD5E8)),
+                java.util.List.of());
+    }
+
     /** Доп. строки отчёта у машин. */
-    protected void extraReport(ServerPlayer player) {
+    protected void extraReport(java.util.List<Component> lines) {
     }
 
     @Override

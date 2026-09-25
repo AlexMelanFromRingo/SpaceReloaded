@@ -1,3 +1,7 @@
 {
-	"variants": { "": { "model": "spacereloaded:block/orbital_cannon" } }
+	"variants": {
+		"": {
+			"model": "spacereloaded:block/orbital_cannon_base"
+		}
+	}
 }

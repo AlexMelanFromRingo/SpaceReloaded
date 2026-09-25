@@ -19,6 +19,10 @@ SHOTS = {
     "delta-v-map": None,
     "porkchop": None,
     "radargram": None,
+    # 010: анимации пушки и факела
+    "cannon-fire": (300, 50, 1300, 800),
+    "plume-sea-level": (400, 100, 1400, 850),
+    "plume-high": (400, 100, 1400, 850),
     "creative-tab": (505, 160, 1095, 730),
     # 008: кадры снимают стенды машин (SR_ONLY=testEclssRack,…,testDsnAntenna)
     "eclss": None,

@@ -42,6 +42,10 @@ and stations from **Galacticraft**, free-form rockets and satellites from
   <img src="docs/img/porkchop.png" width="49%" alt="Porkchop plot of transfers to Mars">
   <img src="docs/img/radargram.png" width="49%" alt="Radargram over a lava tube">
 </p>
+<p align="center">
+  <img src="docs/img/plume-sea-level.png" width="49%" alt="Rocket plume at sea level">
+  <img src="docs/img/plume-high.png" width="49%" alt="Same plume high up, open in thin air">
+</p>
 
 <p align="center">
   <b><a href="https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html">Recipe book</a></b>: every recipe rendered as cards, from crushing to the assembly table.
@@ -223,6 +227,12 @@ ISRU, docking with your carrier, or building a titanium return capsule that
 survives touchdown up to 25 m/s. Cross-dimension events (kinetic strikes,
 unmanned flights) hold auto-expiring chunk tickets, so flights finish even
 with nobody around and survive server restarts mid-air.
+
+## Download
+
+Release builds are on the [GitHub releases page](https://github.com/AlexMelanFromRingo/SpaceReloaded/releases)
+(Minecraft 26.2, Fabric Loader ≥ 0.19.3, Fabric API, Java 25). What changed is in
+[CHANGELOG.md](CHANGELOG.md).
 
 ## Documentation
 

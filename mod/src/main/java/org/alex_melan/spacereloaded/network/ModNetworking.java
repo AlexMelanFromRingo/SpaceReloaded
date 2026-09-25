@@ -64,14 +64,28 @@ public final class ModNetworking {
     private static void handleMachineAction(MachineActionPayload payload, ServerPlayer player) {
         if (!(player.level() instanceof ServerLevel level)
                 || player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(payload.pos())) > REACH_SQ
-                || !level.isLoaded(payload.pos())
-                || !(level.getBlockEntity(payload.pos()) instanceof org.alex_melan.spacereloaded.multiblock.StatusProvider machine)) {
+                || !level.isLoaded(payload.pos())) {
             return;
         }
-        if (!MachineActionPayload.REFRESH.equals(payload.action())) {
-            machine.action(level, player, payload.action(), payload.value());
+        boolean refresh = MachineActionPayload.REFRESH.equals(payload.action());
+        if (level.getBlockEntity(payload.pos()) instanceof org.alex_melan.spacereloaded.multiblock.StatusProvider machine) {
+            if (!refresh) {
+                machine.action(level, player, payload.action(), payload.value());
+            }
+            ServerPlayNetworking.send(player, machine.status(level));
+        } else if (level.getBlockState(payload.pos()).getBlock()
+                instanceof org.alex_melan.spacereloaded.multiblock.BlockStatusProvider block) {
+            // 010: экран блока без сущности (ЦУП)
+            if (!refresh) {
+                block.action(level, payload.pos(), player, payload.action(), payload.value());
+            }
+            ServerPlayNetworking.send(player, block.status(level, payload.pos(), player));
         }
-        ServerPlayNetworking.send(player, machine.status(level));
+    }
+
+    /** Открыть экран состояния (010): снимок уходит клиенту, дальше экран сам просит обновления. */
+    public static void openStatus(ServerPlayer player, MachineStatusPayload status) {
+        ServerPlayNetworking.send(player, status);
     }
 
     private static void handleCannonAction(CannonActionPayload payload, ServerPlayer player) {

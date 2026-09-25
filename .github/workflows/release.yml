@@ -1,0 +1,33 @@
+name: release
+
+# Тег v* собирает мод и создаёт ЧЕРНОВИК релиза GitHub с jar и разделом CHANGELOG.
+# Публикует черновик автор вручную (кнопка Publish release).
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build and run core physics tests
+        run: ./gradlew build :core:test
+      - name: Extract changelog section
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '$0 ~ "^## \\["v"\\]" {on=1; next} /^## \[/ {on=0} on' CHANGELOG.md > release-notes.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          body_path: release-notes.md
+          files: |
+            mod/build/libs/spacereloaded-*.jar

@@ -3,7 +3,7 @@
 	"id": "spacereloaded",
 	"version": "${version}",
 	"name": "SpaceReloaded",
-	"description": "Космическая программа: герметичные базы, ракеты из блоков с честной физикой, орбитальные станции и кинетические орбитальные удары.",
+	"description": "A space program on real physics: rockets built from blocks with honest Δv, sealed bases that breathe, orbital stations with spin gravity, interplanetary transfers by celestial mechanics, heavy industry from sand to a Kilopower reactor, and kinetic orbital strikes.",
 	"authors": [
 		"Alex Melan"
 	],

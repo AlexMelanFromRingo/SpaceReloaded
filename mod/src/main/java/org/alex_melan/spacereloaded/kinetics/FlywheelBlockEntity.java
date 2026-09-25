@@ -64,8 +64,8 @@ public class FlywheelBlockEntity extends KineticBlockEntity {
     }
 
     @Override
-    protected void extraReport(ServerPlayer player) {
-        player.sendSystemMessage(Component.translatable("message.spacereloaded.kinetic.flywheel",
+    protected void extraReport(java.util.List<Component> lines) {
+        lines.add(Component.translatable("message.spacereloaded.kinetic.flywheel",
                 String.format(Locale.ROOT, "%.0f", storedJoules() / SpaceReloaded.config().massDriverJoulesPerEnergy),
                 String.format(Locale.ROOT, "%.0f",
                         KineticBlockEntity.toRpm(SpaceReloaded.config().flywheelMaxOmega))));

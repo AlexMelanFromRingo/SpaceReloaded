@@ -62,11 +62,9 @@ public class CargoTerminalBlock extends Block implements EntityBlock {
                             + mode.name().toLowerCase(Locale.ROOT))));
             return InteractionResult.SUCCESS_SERVER;
         }
-        serverPlayer.sendSystemMessage(Component.translatable("message.spacereloaded.terminal.status.header",
-                pos.toShortString()));
-        for (Component line : terminal.statusLines()) {
-            serverPlayer.sendSystemMessage(line);
-        }
+        // 010: экран вместо чата
+        org.alex_melan.spacereloaded.network.ModNetworking.openStatus(serverPlayer,
+                terminal.status((ServerLevel) level));
         return InteractionResult.SUCCESS_SERVER;
     }
 }

@@ -40,15 +40,26 @@ public class MachineStatusScreen extends Screen {
     }
 
     public void update(MachineStatusPayload next) {
+        int before = height();
         boolean relayout = next.actions().size() != data.actions().size();
         data = next;
+        relayout |= height() != before;   // кнопки стоят под строками
         if (relayout) {
             rebuildWidgets();
         }
     }
 
+    /** Строки с переносом по ширине окна (010: отчёты ЦУПа, кинетики и ступицы длинные). */
+    private java.util.List<net.minecraft.util.FormattedCharSequence> wrapped() {
+        java.util.List<net.minecraft.util.FormattedCharSequence> out = new java.util.ArrayList<>();
+        for (Component line : data.lines()) {
+            out.addAll(font.split(line, W - 16));
+        }
+        return out;
+    }
+
     private int height() {
-        return 34 + data.lines().size() * 11 + data.gauges().size() * 16 + (data.actions().isEmpty() ? 0 : 28);
+        return 34 + wrapped().size() * 11 + data.gauges().size() * 16 + (data.actions().isEmpty() ? 0 : 28);
     }
 
     @Override
@@ -86,7 +97,7 @@ public class MachineStatusScreen extends Screen {
         gfx.fill(left, top, left + W, top + h, BG);
         gfx.text(font, data.title(), left + 8, top + 8, ACCENT, false);
         int y = top + 24;
-        for (Component line : data.lines()) {
+        for (var line : wrapped()) {
             gfx.text(font, line, left + 8, y, TEXT, false);
             y += 11;
         }

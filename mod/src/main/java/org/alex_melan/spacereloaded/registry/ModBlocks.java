@@ -677,6 +677,9 @@ public final class ModBlocks {
             org.alex_melan.spacereloaded.multiblock.FormableBlock::new, industrial().noOcclusion());
     public static final Block DISH_PANEL = register("dish_panel",
             org.alex_melan.spacereloaded.multiblock.FormableBlock::new, industrial().noOcclusion());
+    /** Ствол орбитальной пушки (010): отдельная модель для отката на рендере. */
+    public static final Block ORBITAL_CANNON_BARREL = registerNoItem("orbital_cannon_barrel", Block::new,
+            BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block DISH_TILE = registerNoItem("dish_tile", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block FEED_HORN = registerNoItem("feed_horn", Block::new,

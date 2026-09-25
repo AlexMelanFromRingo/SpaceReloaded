@@ -112,6 +112,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testDeltaVMap", () -> testDeltaVMap(context, sp));
             scenarios.put("testMineralMap", () -> testMineralMap(context, sp));
             scenarios.put("testGroundRadar", () -> testGroundRadar(context, sp));
+            scenarios.put("testAnimations010", () -> testAnimations010(context, sp));
             scenarios.put("testReadmeShots", () -> testReadmeShots(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
@@ -3912,6 +3913,96 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         readmeShot(context, "radargram");
         context.runOnClient(mc -> {
             mc.setScreenAndShow(null);
+            if (mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
+        });
+        context.getInput().resizeWindow(854, 480);
+    }
+
+    // ---------- 010. Анимации пушки и факела ракеты (US2) ----------
+
+    /**
+     * Пушка: после выстрела ствол откатывается и накатывается, заряд синхронизирован; ракета на
+     * стартовом столе с тягой — флаг тяги доходит до клиента. Кадры README: откат с вспышкой, факел
+     * у земли (узкий, ромбы Маха) и тот же факел высоко (раскрыт).
+     */
+    private void testAnimations010(ClientGameTestContext context, TestSingleplayerContext sp) {
+        context.runOnClient(mc -> {
+            if (mc.player != null && mc.player.isDeadOrDying()) {
+                mc.player.respawn();
+            }
+        });
+        context.waitTicks(10);
+        sp.getServer().runCommand("gamemode creative @a");
+        sp.getServer().runCommand("time set 13000");
+        int x0 = BX + 1820;
+        int z0 = BZ;
+        moveTo(context, sp, x0 - 6, z0);
+        BlockPos cannonPos = new BlockPos(x0, BY, z0);
+        sp.getServer().runCommand(set(x0, BY, z0, "spacereloaded:orbital_cannon"));
+        sp.getServer().runCommand(set(x0, BY - 1, z0, "spacereloaded:creative_power"));
+        context.waitTicks(60);
+        long fired = sp.getServer().computeOnServer(server -> {
+            var c = (org.alex_melan.spacereloaded.cannon.OrbitalCannonBlockEntity) server.overworld().getBlockEntity(cannonPos);
+            c.testFire(server.overworld());
+            return server.overworld().getGameTime();
+        });
+        context.waitTicks(1);
+        context.getInput().resizeWindow(1600, 900);
+        readmeCamera(context, sp, x0 - 1.6, BY + 2.2, z0 - 1.6, -45f, 28f);
+        long seen = context.computeOnClient(mc -> mc.level.getBlockEntity(cannonPos)
+                instanceof org.alex_melan.spacereloaded.cannon.OrbitalCannonBlockEntity c ? c.lastFireGameTime() : -1L);
+        assertThat(seen == fired, "Клиент должен знать момент выстрела: " + seen + " против " + fired);
+        // вспышка живёт ~0.1 с: сначала прячем интерфейс, потом стреляем и снимаем через тик
+        context.runOnClient(mc -> {
+            mc.gui.hud.getChat().clearMessages(false);
+            if (!mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
+        });
+        context.waitTicks(5);
+        sp.getServer().runOnServer(server -> ((org.alex_melan.spacereloaded.cannon.OrbitalCannonBlockEntity)
+                server.overworld().getBlockEntity(cannonPos)).testFire(server.overworld()));
+        context.waitTicks(1);
+        context.takeScreenshot(net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions
+                .of("readme_cannon-fire").disableCounterPrefix());
+        log("пушка: выстрел синхронизирован, откат и вспышка у дула ✓");
+
+        // ракета на столе с тягой
+        int rx = x0 + 10;
+        sp.getServer().runCommand(fill(rx - 1, BY, z0 - 1, rx + 1, BY, z0 + 1, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(fill(rx - 2, BY + 1, z0, rx - 2, BY + 5, z0, "spacereloaded:assembly_pylon"));
+        sp.getServer().runCommand(set(rx - 2, BY, z0, "spacereloaded:launch_pad"));
+        sp.getServer().runCommand(set(rx, BY + 1, z0, "spacereloaded:rocket_engine"));
+        sp.getServer().runCommand(set(rx, BY + 2, z0, "spacereloaded:fuel_tank"));
+        sp.getServer().runCommand(set(rx, BY + 3, z0, "spacereloaded:command_module"));
+        context.waitTick();
+        sp.getServer().runOnServer(server -> RocketInteractions.assembleFromPylon(server.overworld(),
+                new BlockPos(rx - 2, BY + 3, z0), server.getPlayerList().getPlayers().get(0)));
+        context.waitTicks(5);
+        AABB area = new AABB(rx - 4, BY - 2, z0 - 4, rx + 4, BY + 900, z0 + 4);
+        sp.getServer().runOnServer(server -> server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class), area,
+                r -> true).forEach(r -> {
+                    r.setPos(r.getX(), BY + 3, r.getZ());
+                    r.testThrust(true);
+                }));
+        context.waitTicks(10);
+        boolean thrust = context.computeOnClient(mc -> mc.level.getEntitiesOfClass(RocketEntity.class, area)
+                .stream().anyMatch(RocketEntity::clientThrusting));
+        assertThat(thrust, "Флаг тяги должен дойти до клиента");
+        readmeCamera(context, sp, rx - 5.5, BY + 1.5, z0 - 5.5, -45f, 8f);
+        readmeShot(context, "plume-sea-level");
+        // та же ракета высоко: давление среды падает, факел раскрывается
+        sp.getServer().runOnServer(server -> server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class), area,
+                r -> true).forEach(r -> r.setPos(r.getX(), BY + 600, r.getZ())));
+        context.waitTicks(10);
+        readmeCamera(context, sp, rx - 5.5, BY + 598.5, z0 - 5.5, -45f, 8f);
+        readmeShot(context, "plume-high");
+        log("ракета: флаг тяги на клиенте; факел у земли и раскрытый на высоте ✓");
+        sp.getServer().runOnServer(server -> server.overworld().getEntities(EntityTypeTest.forClass(RocketEntity.class), area,
+                r -> true).forEach(Entity::discard));
+        context.runOnClient(mc -> {
             if (mc.gui.hud.isHidden()) {
                 mc.gui.hud.toggle();
             }

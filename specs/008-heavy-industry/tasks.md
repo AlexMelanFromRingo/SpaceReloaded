@@ -65,8 +65,8 @@
 
 ## Phase 9: Polish
 
-- [ ] T833 5 достижений, GUIDE, ADDONS, README, ROADMAP, сайт (`content.MULTIBLOCKS`, 3D-модели); кадры README анимаций
-- [ ] T834 `tools/check_zfight.py`, полный прогон (build + стенд), коммит, слияние, push
+- [x] T833 5 достижений, GUIDE, ADDONS, README, ROADMAP, сайт (`content.MULTIBLOCKS`, 3D-модели); кадры README анимаций
+- [x] T834 `tools/check_zfight.py`, полный прогон (build + стенд), коммит, слияние, push
 
 ## Dependencies
 

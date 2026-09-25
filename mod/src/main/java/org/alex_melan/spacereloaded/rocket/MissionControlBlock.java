@@ -17,10 +17,10 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * ЦУП: ПКМ — телеметрия всех бортов в радиусе 64 блока (статус, топливо,
- * высота); Sneak+ПКМ — карта полёта; пустая карта в руке — заказ орбитального снимка (007). Данные из честной физики.
+ * ЦУП: ПКМ — экран телеметрии бортов в радиусе 64 блока (статус, топливо,
+ * высота, Δv), линий и спутников (010); Sneak+ПКМ — карта полёта; пустая карта в руке — заказ орбитального снимка (007). Данные из честной физики.
  */
-public class MissionControlBlock extends Block {
+public class MissionControlBlock extends Block implements org.alex_melan.spacereloaded.multiblock.BlockStatusProvider {
 
     private static final double RANGE = 64.0;
 
@@ -63,38 +63,67 @@ public class MissionControlBlock extends Block {
                     serverLevel.getServer(), serverPlayer);
             return InteractionResult.SUCCESS_SERVER;
         }
+        // 010: экран ЦУПа вместо чата
+        org.alex_melan.spacereloaded.network.ModNetworking.openStatus(serverPlayer, status(serverLevel, pos, serverPlayer));
+        return InteractionResult.SUCCESS_SERVER;
+    }
+
+    /**
+     * Экран ЦУПа (010, US1): линии грузовых терминалов, борта в радиусе 64 блоков (стоянка/полёт,
+     * топливо, высота, Δv), спутники над телом и лучшая линия дальней связи; кнопка — карта полётов.
+     */
+    @Override
+    public org.alex_melan.spacereloaded.network.MachineStatusPayload status(ServerLevel serverLevel, BlockPos pos,
+                                                                          ServerPlayer player) {
+        List<Component> lines = new java.util.ArrayList<>();
         List<RocketEntity> rockets = serverLevel.getEntities(
                 EntityTypeTest.forClass(RocketEntity.class),
-                new AABB(pos).inflate(RANGE), entity -> true);
+                new AABB(pos).inflate(RANGE), entity -> !entity.isDebris());
         List<org.alex_melan.spacereloaded.logistics.CargoTerminalBlockEntity> terminals = terminalsInRange(serverLevel, pos);
         if (rockets.isEmpty() && terminals.isEmpty()) {
-            serverPlayer.sendSystemMessage(
-                    Component.translatable("message.spacereloaded.mission_control.empty"));
-            return InteractionResult.SUCCESS_SERVER;
+            lines.add(Component.translatable("message.spacereloaded.mission_control.empty"));
         }
         // 003 (FR-117): грузовые терминалы в радиусе — состояние линий
         for (var terminal : terminals) {
-            serverPlayer.sendSystemMessage(Component.translatable(
+            lines.add(Component.translatable(
                     "message.spacereloaded.mission_control.terminal",
                     terminal.getBlockPos().toShortString(),
                     Component.translatable(terminal.stateKey()), terminal.detail(),
                     terminal.departures(), terminal.arrivals()));
         }
-        serverPlayer.sendSystemMessage(Component.translatable(
-                "message.spacereloaded.mission_control.header", rockets.size()));
+        if (!rockets.isEmpty()) {
+            lines.add(Component.translatable("message.spacereloaded.mission_control.header", rockets.size()));
+        }
         int index = 1;
         for (RocketEntity rocket : rockets) {
             String status = rocket.isParked() ? "▮" : "▲";
-            serverPlayer.sendSystemMessage(Component.translatable(
-                    "message.spacereloaded.mission_control.entry",
+            lines.add(Component.translatable(
+                    "message.spacereloaded.mission_control.entry_dv",
                     index++, status,
                     String.format(Locale.ROOT, "%.0f", rocket.propellantKg()),
                     String.format(Locale.ROOT, "%.0f", rocket.getY()),
+                    String.format(Locale.ROOT, "%.0f", rocket.clientDeltaV()),
                     rocket.isParked()
                             ? Component.translatable("message.spacereloaded.mission_control.parked")
                             : Component.translatable("message.spacereloaded.mission_control.flight")));
         }
-        return InteractionResult.SUCCESS_SERVER;
+        // спутники над этим телом и связь (003, 007, 008, 009)
+        var network = org.alex_melan.spacereloaded.network.SpaceNetworkState.get(serverLevel.getServer());
+        var body = org.alex_melan.spacereloaded.orbit.OrbitalImages.bodyUnder(serverLevel).orElse(serverLevel.dimension());
+        lines.add(Component.translatable("message.spacereloaded.mission_control.satellites",
+                network.hasCoverage(serverLevel.dimension()) ? Component.translatable("gui.yes") : Component.translatable("gui.no"),
+                network.imagingSats(body), network.spectralSats(body)));
+        return new org.alex_melan.spacereloaded.network.MachineStatusPayload(pos,
+                Component.translatable("block.spacereloaded.mission_control"), lines, List.of(),
+                List.of(new org.alex_melan.spacereloaded.network.MachineStatusPayload.Action("map",
+                        Component.translatable("action.spacereloaded.mission_control.map"), 0)));
+    }
+
+    @Override
+    public void action(ServerLevel level, BlockPos pos, ServerPlayer player, String action, double value) {
+        if ("map".equals(action)) {
+            org.alex_melan.spacereloaded.network.ModNetworking.sendPlanetMap(level.getServer(), player);
+        }
     }
 
     /** Терминалы в загруженных чанках радиуса (обход блок-сущностей чанков — по клику, не по тику). */

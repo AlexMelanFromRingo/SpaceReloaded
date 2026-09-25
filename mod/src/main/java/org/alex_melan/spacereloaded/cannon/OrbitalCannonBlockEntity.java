@@ -127,6 +127,8 @@ public class OrbitalCannonBlockEntity extends MachineBlockEntity {
         energy.amount -= config.cannonEnergyPerShot;
         lastFireGameTime = level.getGameTime();
         setChanged();
+        // 010: клиенту — момент выстрела (откат ствола, вспышка у дула)
+        level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
 
         BlockPos aim = target.pos();
         // Упреждающая загрузка чанков цели ДО спавна снаряда (FR-043):
@@ -229,6 +231,7 @@ public class OrbitalCannonBlockEntity extends MachineBlockEntity {
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.putInt("rods", rods);
+        output.putLong("last_fire", lastFireGameTime);
         if (target != null) {
             output.putString("target_dim", target.dimension().identifier().toString());
             output.putLong("target_pos", target.pos().asLong());
@@ -239,6 +242,7 @@ public class OrbitalCannonBlockEntity extends MachineBlockEntity {
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         rods = input.getIntOr("rods", 0);
+        lastFireGameTime = input.getLongOr("last_fire", -1_000_000L);
         String dim = input.getStringOr("target_dim", "");
         if (!dim.isEmpty()) {
             target = GlobalPos.of(
@@ -259,10 +263,47 @@ public class OrbitalCannonBlockEntity extends MachineBlockEntity {
         }
     }
 
-    /** Тикер: как у станков — присоединяемся к кабельной сети рядом. */
+    /** Тикер: как у станков — присоединяемся к кабельной сети рядом; заряд — клиенту (свечение). */
     public static void serverTick(OrbitalCannonBlockEntity cannon, ServerLevel level) {
         if (cannon.level != null && cannon.level.getGameTime() % 40 == 0) {
             cannon.ensureAdjacentCableNetworks(level);
+            float charge = cannon.chargeFraction();
+            if (Math.abs(charge - cannon.syncedCharge) > 0.02f) {
+                cannon.syncedCharge = charge;
+                level.sendBlockUpdated(cannon.getBlockPos(), cannon.getBlockState(), cannon.getBlockState(),
+                        net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            }
         }
+    }
+
+    // --------- 010: анимация (клиент) ---------
+
+    private float syncedCharge = -1;
+    /** Клиентское состояние анимации (рендер). */
+    public Object clientAnim;
+
+    public float chargeFraction() {
+        long cap = SpaceReloaded.config().cannonEnergyCapacity;
+        return cap <= 0 ? 0 : (float) Math.min(1.0, energyStorage().getAmount() / (double) cap);
+    }
+
+    /** Стенд (010): выстрел без цели — только анимация. */
+    public void testFire(ServerLevel level) {
+        lastFireGameTime = level.getGameTime();
+        level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+    }
+
+    public long lastFireGameTime() {
+        return lastFireGameTime;
+    }
+
+    @Override
+    public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
+        return saveCustomOnly(registries);
     }
 }

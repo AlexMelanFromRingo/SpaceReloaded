@@ -102,8 +102,8 @@ public class WindHubBlockEntity extends KineticBlockEntity {
     }
 
     @Override
-    protected void extraReport(ServerPlayer player) {
-        player.sendSystemMessage(Component.translatable("message.spacereloaded.kinetic.wind",
+    protected void extraReport(java.util.List<Component> lines) {
+        lines.add(Component.translatable("message.spacereloaded.kinetic.wind",
                 sails, String.format(Locale.ROOT, "%.1f", radius), String.format(Locale.ROOT, "%.1f", windSpeed),
                 String.format(Locale.ROOT, "%.3f", density),
                 String.format(Locale.ROOT, "%.1f", Math.abs(sourcePower) / 1000)));

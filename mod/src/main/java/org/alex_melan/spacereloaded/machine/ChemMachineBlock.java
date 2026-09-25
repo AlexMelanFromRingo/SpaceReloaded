@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 
 /** Химическая машина Марса (GUI нет): FACING, серверный тикер, статус по ПКМ. */
 public class ChemMachineBlock<T extends ChemMachineBlockEntity> extends Block implements EntityBlock,
+        org.alex_melan.spacereloaded.multiblock.BlockStatusProvider,
         org.alex_melan.spacereloaded.registry.CosmeticState {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -85,9 +86,22 @@ public class ChemMachineBlock<T extends ChemMachineBlockEntity> extends Block im
             if (machine instanceof net.minecraft.world.MenuProvider menu && !player.isSecondaryUseActive()) {
                 serverPlayer.openMenu(menu); // 006: у реактора Сабатье есть окно (режим газ-твёрдое)
             } else {
-                serverPlayer.sendSystemMessage(machine.status(serverLevel));
+                // 010: экран вместо чата
+                org.alex_melan.spacereloaded.network.ModNetworking.openStatus(serverPlayer, status(serverLevel, pos, serverPlayer));
             }
         }
         return InteractionResult.SUCCESS_SERVER;
+    }
+
+    /** Экран состояния машины (010): строка процесса — та же, что раньше уходила в чат. */
+    @Override
+    public org.alex_melan.spacereloaded.network.MachineStatusPayload status(ServerLevel level, BlockPos pos,
+                                                                          ServerPlayer player) {
+        java.util.List<net.minecraft.network.chat.Component> lines = new java.util.ArrayList<>();
+        if (level.getBlockEntity(pos) instanceof ChemMachineBlockEntity machine) {
+            lines.add(machine.status(level));
+        }
+        return new org.alex_melan.spacereloaded.network.MachineStatusPayload(pos, getName(), lines, java.util.List.of(),
+                java.util.List.of());
     }
 }

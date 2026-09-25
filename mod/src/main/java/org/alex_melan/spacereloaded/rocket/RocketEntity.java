@@ -80,6 +80,9 @@ public class RocketEntity extends Entity {
             SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> DATA_HEATING =
             SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
+    /** 010: двигатели работают (факел на рендере). */
+    private static final EntityDataAccessor<Boolean> DATA_THRUST =
+            SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final double DT = 0.05; // серверный тик
     /** Остаток топлива ступени, ниже которого она считается выгоревшей (кг). */
@@ -174,6 +177,7 @@ public class RocketEntity extends Entity {
         builder.define(DATA_HAS_GYRO, false);
         builder.define(DATA_HEATING, false);
         builder.define(DATA_TRANSFER_DV, 0.0f);
+        builder.define(DATA_THRUST, false);
     }
 
     /** Сервер: установить структуру после сборки (до addFreshEntity); топливо — по ёмкости ступеней. */
@@ -355,6 +359,15 @@ public class RocketEntity extends Entity {
     /** 003: цена следующего хопа для HUD, м/с. */
     public float clientTransferDeltaV() {
         return entityData.get(DATA_TRANSFER_DV);
+    }
+
+    /** Стенд (010): факел без полёта. */
+    public void testThrust(boolean on) {
+        entityData.set(DATA_THRUST, on);
+    }
+
+    public boolean clientThrusting() {
+        return entityData.get(DATA_THRUST);
     }
 
     public boolean clientHeating() {
@@ -1001,8 +1014,12 @@ public class RocketEntity extends Entity {
                         : "message.spacereloaded.rocket.fuel_out"));
             }
         }
-        // Эффекты: факел двигателя при тяге, плазменный след на скорости
-        if (jump && flight.propellantKg() > 0) {
+        // Эффекты: факел двигателя при тяге (010: геометрия факела — на клиенте), плазменный след на скорости
+        boolean thrusting = jump && flight.propellantKg() > 0;
+        if (entityData.get(DATA_THRUST) != thrusting) {
+            entityData.set(DATA_THRUST, thrusting);
+        }
+        if (thrusting) {
             serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.FLAME,
                     getX(), getY() - 0.2, getZ(), 6, halfX() * 0.4, 0.2, halfZ() * 0.4, 0.02);
             serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE,

@@ -158,8 +158,8 @@ public abstract class KineticMachineBlockEntity<R extends MachiningRecipe> exten
     }
 
     @Override
-    protected void extraReport(ServerPlayer player) {
-        player.sendSystemMessage(Component.translatable("message.spacereloaded.kinetic.machine",
+    protected void extraReport(java.util.List<Component> lines) {
+        lines.add(Component.translatable("message.spacereloaded.kinetic.machine",
                 String.format(Locale.ROOT, "%.0f", toRpm(minOmega())),
                 String.format(Locale.ROOT, "%.0f", toRpm(maxOmega())),
                 items.get(0).isEmpty() ? Component.literal("—") : items.get(0).getHoverName(),

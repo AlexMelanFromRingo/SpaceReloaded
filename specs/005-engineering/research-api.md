@@ -154,13 +154,13 @@ gfx.disableScissor();
 (+ `t0`/`phaseDeg`, чтобы не было скачка). Если ω — дискретна (off/slow/fast), проще свойство blockstate → клиент видит
 без BE-синка (но смена state = пересборка чанк-секции, реже чем раз в секунду — ок).
 
-## 5. Взрывы и герметичность (TODO T024)
+## 5. Взрывы и герметичность (T024 — закрыт в 005, T528)
 
 Цепочка (javap -c): `ServerExplosion.explode()` → `calculateExplodedPositions()` → `hurtEntities()` →
 `interactWithBlocks(List<BlockPos>)` → для каждой: `BlockState.onExplosionHit(ServerLevel, BlockPos, Explosion, BiConsumer<ItemStack,BlockPos>)`
 → (`BlockBehaviour.onExplosionHit`) дропы + `level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3)` →
 `Level.setBlock` → при `(flags & 2) != 0` и чанке ≥ BLOCK_TICKING → **`sendBlockUpdated(pos, old, new, flags)`**.
-⇒ Ванильные взрывы **уже проходят через `ServerLevelMixin#sendBlockUpdated`** (old≠new) — TODO T024, скорее всего,
+⇒ Ванильные взрывы **уже проходят через `ServerLevelMixin#sendBlockUpdated`** (old≠new) — T024 (закрыт T528, стенд testExplosionSealing), скорее всего,
 закрыт с 004. Проверить gametest-ом: зона + `level.explode(...)` рядом со стеной → зона должна разгерметизироваться.
 
 Если нужен явный хук (напр. блоки, переопределяющие `onExplosionHit` без setBlock, или пакетная обработка):

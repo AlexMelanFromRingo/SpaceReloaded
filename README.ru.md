@@ -43,6 +43,10 @@ Engineering**.
   <img src="docs/img/porkchop.png" width="49%" alt="«Свиная отбивная» перелётов к Марсу">
   <img src="docs/img/radargram.png" width="49%" alt="Радарограмма над лавовой трубкой">
 </p>
+<p align="center">
+  <img src="docs/img/plume-sea-level.png" width="49%" alt="Факел ракеты у земли">
+  <img src="docs/img/plume-high.png" width="49%" alt="Тот же факел высоко: раскрыт в разреженном воздухе">
+</p>
 
 <p align="center">
   <b><a href="https://alexmelanfromringo.github.io/SpaceReloaded/recipes.html">Книга рецептов</a></b>: все рецепты карточками, от дробления до сборочного стола.
@@ -213,6 +217,12 @@ Engineering**.
 Межпространственные события (кинетические удары, беспилотные рейсы) держат
 чанки само-протухающими ticket'ами: полёт завершится даже без игроков рядом
 и переживёт перезапуск сервера.
+
+## Скачать
+
+Сборки релизов — на [странице релизов GitHub](https://github.com/AlexMelanFromRingo/SpaceReloaded/releases)
+(Minecraft 26.2, Fabric Loader ≥ 0.19.3, Fabric API, Java 25). Что изменилось — в
+[CHANGELOG.md](CHANGELOG.md).
 
 ## Документация
 

@@ -932,5 +932,12 @@
 	"advancements.spacereloaded.spectrum.title": "Спектр",
 	"advancements.spacereloaded.spectrum.description": "Проявить карту минералов с найденным минералом",
 	"advancements.spacereloaded.below_ground.title": "Под грунтом",
-	"advancements.spacereloaded.below_ground.description": "Напечатать радарограмму с отражением глубже 5 м"
+	"advancements.spacereloaded.below_ground.description": "Напечатать радарограмму с отражением глубже 5 м",
+	"action.spacereloaded.terminal.mode": "Авто / Стоп",
+	"action.spacereloaded.mission_control.map": "Карта полётов",
+	"message.spacereloaded.mission_control.entry_dv": "%s %s топливо %s кг · h=%s м · Δv %s м/с · %s",
+	"message.spacereloaded.mission_control.satellites": "Покрытие ретрансляторами: %s · спутников-камер %s · гиперспектральных %s",
+	"gauge.spacereloaded.kinetic.omega": "Скорость / предел маховика",
+	"gauge.spacereloaded.spin_hub.bearing": "Нагрузка подшипника",
+	"modmenu.descriptionTranslation.spacereloaded": "Космическая программа на настоящей физике: ракеты из блоков с честной Δv, герметичные базы, которые дышат, орбитальные станции с гравитацией вращением, перелёты по небесной механике, промышленность от песка до реактора Kilopower и кинетические удары с орбиты."
 }

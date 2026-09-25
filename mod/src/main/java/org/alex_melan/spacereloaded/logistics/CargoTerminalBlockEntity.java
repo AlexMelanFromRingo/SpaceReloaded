@@ -36,7 +36,7 @@ import java.util.UUID;
  * окно перелёта, покрытие. Отказ — состояние с причиной и цифрами, старт не
  * выполняется, проверка повторяется. По умолчанию HOLD — чужой борт не улетит.
  */
-public class CargoTerminalBlockEntity extends BlockEntity {
+public class CargoTerminalBlockEntity extends BlockEntity implements org.alex_melan.spacereloaded.multiblock.StatusProvider {
 
     public enum Mode {
         HOLD, AUTO;
@@ -134,6 +134,23 @@ public class CargoTerminalBlockEntity extends BlockEntity {
     }
 
     /** Строки статуса для чата/ЦУПа. */
+    /** Экран терминала (010, US1): состояние линии и переключатель АВТО/СТОП. */
+    @Override
+    public org.alex_melan.spacereloaded.network.MachineStatusPayload status(ServerLevel level) {
+        return new org.alex_melan.spacereloaded.network.MachineStatusPayload(getBlockPos(),
+                Component.translatable("message.spacereloaded.terminal.status.header", getBlockPos().toShortString()),
+                statusLines(), List.of(),
+                List.of(new org.alex_melan.spacereloaded.network.MachineStatusPayload.Action("mode",
+                        Component.translatable("action.spacereloaded.terminal.mode"), 0)));
+    }
+
+    @Override
+    public void action(ServerLevel level, net.minecraft.server.level.ServerPlayer player, String action, double value) {
+        if ("mode".equals(action)) {
+            toggleMode();
+        }
+    }
+
     public List<Component> statusLines() {
         List<Component> lines = new ArrayList<>();
         lines.add(Component.translatable("message.spacereloaded.terminal.status.mode",

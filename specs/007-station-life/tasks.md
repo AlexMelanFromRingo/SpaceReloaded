@@ -60,7 +60,7 @@
 ## Phase 8: Polish
 
 - [X] T730 Достижения (4), руководство и гайд (GUIDE, ADDONS, README), сайт, ROADMAP
-- [ ] T731 Полный прогон (build + стенд), коммит, слияние, push
+- [x] T731 Полный прогон (build + стенд), коммит, слияние, push
 
 ## Dependencies
 
