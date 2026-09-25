@@ -70,6 +70,23 @@ public class RoverEntity extends Entity {
     /** Только для стенда: «газ» без пилота. */
     private boolean testForward;
 
+    /** Георадар (009, US4): стоит ли и буфер трасс. */
+    private boolean radar;
+    private final org.alex_melan.spacereloaded.survey.GroundRadarService.Recorder radarRecorder =
+            new org.alex_melan.spacereloaded.survey.GroundRadarService.Recorder();
+
+    public boolean hasRadar() {
+        return radar;
+    }
+
+    public org.alex_melan.spacereloaded.survey.GroundRadarService.Recorder radarRecorder() {
+        return radarRecorder;
+    }
+
+    public void testRadar(boolean on) {
+        radar = on;
+    }
+
     public void testSetup(int wheels, double chargeE, boolean forward) {
         entityData.set(WHEELS, wheels);
         entityData.set(BATTERY, true);
@@ -169,6 +186,7 @@ public class RoverEntity extends Entity {
     /** Масса ровера, кг: детали, экипаж, груз. */
     public double mass() {
         var access = level().registryAccess();
+        double radarKg = radar ? ItemMasses.massOf(access, new ItemStack(ModItems.GROUND_RADAR)) : 0;
         double m = ItemMasses.massOf(access, new ItemStack(ModItems.ROVER_CHASSIS))
                 + wheels() * ItemMasses.massOf(access, new ItemStack(ModItems.ROVER_WHEEL));
         if (hasBattery()) {
@@ -177,7 +195,7 @@ public class RoverEntity extends Entity {
         for (ItemStack s : cargo.getItems()) {
             m += ItemMasses.massOfStack(access, s);
         }
-        return m + getPassengers().size() * CREW_KG;
+        return m + radarKg + getPassengers().size() * CREW_KG;
     }
 
     @Override
@@ -195,6 +213,33 @@ public class RoverEntity extends Entity {
             entityData.set(BATTERY, true);
             charge = stack.getOrDefault(ModDataComponents.ROVER_CHARGE, 0f);
             stack.consume(1, player);
+            return InteractionResult.SUCCESS_SERVER;
+        }
+        // 009 (US4): георадар ставится ПКМ; бумага печатает записанную радарограмму
+        if (stack.is(ModItems.GROUND_RADAR) && !radar) {
+            radar = true;
+            stack.consume(1, player);
+            return InteractionResult.SUCCESS_SERVER;
+        }
+        if (stack.is(net.minecraft.world.item.Items.PAPER) && radar && player instanceof ServerPlayer sp
+                && level() instanceof ServerLevel serverLevel) {
+            if (radarRecorder.traces() == 0) {
+                sp.sendSystemMessage(Component.translatable("message.spacereloaded.radar.empty"));
+                return InteractionResult.SUCCESS_SERVER;
+            }
+            boolean deep = radarRecorder.echoDeeperThan(5);
+            int traces = radarRecorder.traces();
+            ItemStack printed = radarRecorder.print(serverLevel);
+            stack.consume(1, player);
+            if (!sp.getInventory().add(printed)) {
+                sp.drop(printed, false);
+            }
+            sp.sendSystemMessage(Component.translatable("message.spacereloaded.radar.printed", traces,
+                    String.format(Locale.ROOT, "%.1f", traces * org.alex_melan.spacereloaded.survey.GroundRadarService.STEP_M)));
+            if (deep) {
+                org.alex_melan.spacereloaded.industry.IndustryAdvancements.award(sp,
+                        org.alex_melan.spacereloaded.industry.IndustryAdvancements.BELOW_GROUND);
+            }
             return InteractionResult.SUCCESS_SERVER;
         }
         if (player.isSecondaryUseActive() && player instanceof ServerPlayer sp) {
@@ -222,6 +267,9 @@ public class RoverEntity extends Entity {
             spawnAtLocation(level, new ItemStack(ModItems.ROVER_CHASSIS));
             if (wheels() > 0) {
                 spawnAtLocation(level, new ItemStack(ModItems.ROVER_WHEEL, wheels()));
+            }
+            if (radar) {
+                spawnAtLocation(level, new ItemStack(ModItems.GROUND_RADAR));
             }
             if (hasBattery()) {
                 ItemStack battery = new ItemStack(ModItems.NIFE_BATTERY);
@@ -284,7 +332,8 @@ public class RoverEntity extends Entity {
         }
         // энергия: механическая мощность / КПД + электроника
         if (hasBattery()) {
-            double watts = Math.abs(drive * speed) / EFFICIENCY + (getPassengers().isEmpty() ? 0 : IDLE_W);
+            double watts = Math.abs(drive * speed) / EFFICIENCY + (getPassengers().isEmpty() ? 0 : IDLE_W)
+                    + (radar && charge > 0 ? org.alex_melan.spacereloaded.survey.GroundRadarService.POWER_W : 0);
             charge = Math.max(0, charge - EnergyScale.fromJoules(watts * dt));
         }
         double yaw = Math.toRadians(getYRot());
@@ -298,6 +347,9 @@ public class RoverEntity extends Entity {
             speed *= 0.5; // упёрся: ступень круче предельного склона или стена
         }
         odometer += moved;
+        if (radar && hasBattery() && charge > 0 && moved > 0) {
+            radarRecorder.advance(level, blockPosition().below(), moved);
+        }
         entityData.set(WHEEL_ANGLE, (float) ((wheelAngle() + Math.signum(speed) * moved / (WHEEL.diameterCm() / 200.0)) % (2 * Math.PI)));
         if (odometer >= 1000 && getFirstPassenger() instanceof ServerPlayer pilot
                 && !level.dimension().equals(Level.OVERWORLD)) {
@@ -312,6 +364,9 @@ public class RoverEntity extends Entity {
         output.putBoolean("battery", hasBattery());
         output.putDouble("charge", charge);
         output.putDouble("odometer", odometer);
+        output.putBoolean("radar", radar);
+        output.store("radar_traces", com.mojang.serialization.Codec.BYTE_BUFFER, java.nio.ByteBuffer.wrap(radarRecorder.raw()));
+        output.putFloat("radar_eps", radarRecorder.epsilon());
         net.minecraft.world.ContainerHelper.saveAllItems(output, cargo.getItems());
     }
 
@@ -321,6 +376,12 @@ public class RoverEntity extends Entity {
         entityData.set(BATTERY, input.getBooleanOr("battery", false));
         charge = input.getDoubleOr("charge", 0);
         odometer = input.getDoubleOr("odometer", 0);
+        radar = input.getBooleanOr("radar", false);
+        input.read("radar_traces", com.mojang.serialization.Codec.BYTE_BUFFER).ifPresent(b -> {
+            byte[] raw = new byte[b.remaining()];
+            b.duplicate().get(raw);
+            radarRecorder.load(raw, input.getFloatOr("radar_eps", 3));
+        });
         net.minecraft.world.ContainerHelper.loadAllItems(input, cargo.getItems());
     }
 }

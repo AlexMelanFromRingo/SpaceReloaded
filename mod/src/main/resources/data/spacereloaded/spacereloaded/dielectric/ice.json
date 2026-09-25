@@ -1,0 +1,11 @@
+{
+	"blocks": [
+		"minecraft:ice",
+		"minecraft:packed_ice",
+		"minecraft:blue_ice",
+		"spacereloaded:moon_ice",
+		"spacereloaded:mars_ice"
+	],
+	"epsilon": 3.15,
+	"loss_tangent": 0.0005
+}

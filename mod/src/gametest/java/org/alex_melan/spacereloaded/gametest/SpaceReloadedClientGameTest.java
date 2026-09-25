@@ -108,6 +108,10 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testAirColumn", () -> testAirColumn(context, sp));
             scenarios.put("testArcFurnace", () -> testArcFurnace(context, sp));
             scenarios.put("testDsnAntenna", () -> testDsnAntenna(context, sp));
+            scenarios.put("testLambertTransfer", () -> testLambertTransfer(context, sp));
+            scenarios.put("testDeltaVMap", () -> testDeltaVMap(context, sp));
+            scenarios.put("testMineralMap", () -> testMineralMap(context, sp));
+            scenarios.put("testGroundRadar", () -> testGroundRadar(context, sp));
             scenarios.put("testReadmeShots", () -> testReadmeShots(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
@@ -1406,19 +1410,21 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
         assertThat(methalox > 0, "Сабатье должен произвести метанокс в бак, получено: " + methalox);
         log("реактор Сабатье: метанокс в баке " + methalox + " кг ✓");
 
-        // Окна Гомана: у Марса синод 144000, окно 24000, фаза 0
+        // 009: окно — следствие небесной механики, а не расписание: минимум через ½ суток мира
         String windowCheck = sp.getServer().computeOnServer(server -> {
-            var mars = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(server.overworld(),
-                    Identifier.fromNamespaceAndPath("spacereloaded", "mars"));
-            if (mars.isEmpty()) {
-                return "нет профиля Марса";
+            var access = server.overworld().registryAccess();
+            var orbit = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(access,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit"));
+            var mars = Identifier.fromNamespaceAndPath("spacereloaded", "mars");
+            if (orbit.isEmpty() || !org.alex_melan.spacereloaded.planet.TransferCosts.celestial(access, orbit.get(), mars)) {
+                return "перелёт к Марсу не небесный";
             }
-            boolean openNow = org.alex_melan.spacereloaded.planet.TransferWindows.isOpen(0L, mars.get());
-            boolean closedMid = !org.alex_melan.spacereloaded.planet.TransferWindows.isOpen(50000L, mars.get());
-            return (openNow && closedMid) ? "ok" : ("open0=" + openNow + " closed50k=" + closedMid);
+            double best = org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, orbit.get(), mars, 11815);
+            double mid = org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, orbit.get(), mars, 11815 + 72000);
+            return best < 3650 && mid > 1.5 * best ? "ok" : String.format(java.util.Locale.ROOT, "окно %.0f, между %.0f", best, mid);
         });
-        assertThat(windowCheck.equals("ok"), "Окно Марса: открыто в фазе 0, закрыто в середине; получено: " + windowCheck);
-        log("окно Гомана к Марсу: открыто/закрыто по фазе ✓");
+        assertThat(windowCheck.equals("ok"), "Окно Марса по Ламберту: " + windowCheck);
+        log("окно к Марсу — минимум цены по Ламберту, между окнами дороже в 1.5+ раза ✓");
     }
 
     // ---------- 13. Орбитальная сеть: покрытие, маршрутизация, бури ----------
@@ -3630,6 +3636,287 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
                 mc2.gui.hud.toggle();
             }
         });
+    }
+
+    // ---------- 009. Перелёты по небесной механике (US1) ----------
+
+    /**
+     * Цена перелёта к Марсу — дуга Ламберта на дату: сервис мода совпадает с ядром, минимум
+     * периода — через ½ суток нового мира, между окнами дороже в 1.5+ раза, ближайший доступный
+     * день для бюджета 3.9 км/с (окно 2020 г. — 3808); Луна табличная; пояс — с наклоном Цереры; ДСС — те же эфемериды.
+     */
+    private void testLambertTransfer(ClientGameTestContext context, TestSingleplayerContext sp) {
+        String result = sp.getServer().computeOnServer(server -> {
+            var access = server.overworld().registryAccess();
+            var orbitId = Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit");
+            var marsId = Identifier.fromNamespaceAndPath("spacereloaded", "mars");
+            var moonId = Identifier.fromNamespaceAndPath("spacereloaded", "moon");
+            var beltId = Identifier.fromNamespaceAndPath("spacereloaded", "asteroid_belt");
+            var orbit = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(access, orbitId).orElseThrow();
+            var mars = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(access, marsId).orElseThrow();
+            double[] min = org.alex_melan.spacereloaded.planet.TransferCosts.minimumInPeriod(access, orbit, marsId, 0);
+            double core = org.alex_melan.spacereloaded.core.orbit.InterplanetaryTransfer.best(
+                    org.alex_melan.spacereloaded.planet.TransferCosts.body(orbit).orElseThrow(),
+                    org.alex_melan.spacereloaded.planet.TransferCosts.body(mars).orElseThrow(),
+                    org.alex_melan.spacereloaded.planet.TransferCosts.day(
+                            Math.floorDiv((long) min[0], org.alex_melan.spacereloaded.planet.TransferCosts.BUCKET_TICKS)
+                                    * org.alex_melan.spacereloaded.planet.TransferCosts.BUCKET_TICKS)).totalMs();
+            long mid = (long) min[0] + org.alex_melan.spacereloaded.planet.TransferCosts.synodicTicks(access, orbit, marsId) / 2;
+            double midCost = org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, orbit, marsId, mid);
+            long ok = org.alex_melan.spacereloaded.planet.TransferCosts.nextAffordableTick(access, orbit, marsId, mid, 3900);   // окно 2020 г. — 3808 м/с
+            double okCost = org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, orbit, marsId, ok);
+            double before = org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, orbit, marsId, ok - 369);
+            double moon0 = org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, orbit, moonId, 0);
+            double moonMid = org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, orbit, moonId, mid);
+            double belt = org.alex_melan.spacereloaded.planet.TransferCosts.minimumInPeriod(access, orbit, beltId, 0)[1];
+            double back = org.alex_melan.spacereloaded.planet.TransferCosts.minimumInPeriod(access, mars, orbitId, 0)[1];
+            var dsnEarth = org.alex_melan.spacereloaded.comms.DsnBlockEntity.bodyOf(Identifier.withDefaultNamespace("overworld"));
+            var dsnMars = org.alex_melan.spacereloaded.comms.DsnBlockEntity.bodyOf(marsId);
+            double range = org.alex_melan.spacereloaded.comms.DsnBlockEntity.distance(0, dsnEarth, dsnMars);
+            double day0 = org.alex_melan.spacereloaded.planet.TransferCosts.day(0);
+            double[] re = org.alex_melan.spacereloaded.core.orbit.Ephemeris.state(org.alex_melan.spacereloaded.core.orbit.Ephemeris.EARTH, day0).r();
+            double[] rm = org.alex_melan.spacereloaded.core.orbit.Ephemeris.state(org.alex_melan.spacereloaded.core.orbit.Ephemeris.MARS, day0).r();
+            double eph = Math.sqrt(Math.pow(re[0] - rm[0], 2) + Math.pow(re[1] - rm[1], 2) + Math.pow(re[2] - rm[2], 2));
+            return String.format(java.util.Locale.ROOT, "%.0f;%.1f;%.1f;%.1f;%d;%.1f;%.1f;%.1f;%.1f;%.1f;%.1f;%.6g;%.6g;%d",
+                    min[0], min[1], core, midCost, ok, okCost, before, moon0, moonMid, belt, back, range, eph, mid);
+        });
+        String[] v = result.split(";");
+        double minTick = Double.parseDouble(v[0]), minCost = Double.parseDouble(v[1]), core = Double.parseDouble(v[2]);
+        double midCost = Double.parseDouble(v[3]);
+        long ok = Long.parseLong(v[4]);
+        double okCost = Double.parseDouble(v[5]), before = Double.parseDouble(v[6]);
+        double moon0 = Double.parseDouble(v[7]), moonMid = Double.parseDouble(v[8]);
+        double belt = Double.parseDouble(v[9]), back = Double.parseDouble(v[10]);
+        double range = Double.parseDouble(v[11]), eph = Double.parseDouble(v[12]);
+        long mid = Long.parseLong(v[13]);
+        assertThat(Math.abs(minTick - 11815) < 800 && minCost > 3500 && minCost < 3650 && Math.abs(minCost - core) < 1,
+                "Минимум к Марсу: тик " + minTick + ", " + minCost + " м/с (ядро " + core + ")");
+        log(String.format(java.util.Locale.ROOT, "перелёт к Марсу: минимум %.0f м/с на тике %.0f (ядро %.0f) ✓", minCost, minTick, core));
+        assertThat(midCost > 1.5 * minCost && ok > 0 && okCost <= 3900 && before > 3900,
+                "Между окнами " + midCost + "; бюджет 3900 хватит на тике " + ok + " (" + okCost + ", накануне " + before + ")");
+        log(String.format(java.util.Locale.ROOT, "между окнами %.0f м/с; бюджету 3.9 км/с хватит через %.1f сут мира ✓",
+                midCost, (ok - mid) / 24000.0));
+        assertThat(Math.abs(moon0 - 3955) < 1 && Math.abs(moonMid - 3955) < 1, "Луна табличная: " + moon0 + " / " + moonMid);
+        assertThat(belt > 9500 && belt < 14800 && back > 1900 && back < 2700, "Пояс " + belt + ", возврат с Марса " + back);
+        assertThat(Math.abs(range - eph) < 1e-5 * eph, "ДСС: дальность " + range + " против эфемерид " + eph);
+        log(String.format(java.util.Locale.ROOT, "Луна 3955 м/с в любой день; пояс %.0f м/с; возврат с Марса %.0f м/с; ДСС на тех же эфемеридах ✓",
+                belt, back));
+    }
+
+    // ---------- 009. Карта Δv и «свиная отбивная» (US2) ----------
+
+    /** Карта полётов с ценами рёбер и экран окон: цена на карте = цена сервиса, лучшая дата = минимум. */
+    private void testDeltaVMap(ClientGameTestContext context, TestSingleplayerContext sp) {
+        context.getInput().resizeWindow(1600, 900);
+        var mars = Identifier.fromNamespaceAndPath("spacereloaded", "mars");
+        sp.getServer().runCommand("time set 0");
+        context.waitTicks(5);
+        context.runOnClient(mc -> {
+            var screen = new org.alex_melan.spacereloaded.client.gui.PlanetMapScreen(
+                    new org.alex_melan.spacereloaded.network.PlanetMapPayload(List.of(), false));
+            mc.setScreenAndShow(screen);
+            screen.select(mars);
+        });
+        context.waitTicks(10);
+        readmeShot(context, "delta-v-map");
+        double[] shown = context.computeOnClient(mc -> {
+            var access = mc.level.registryAccess();
+            var orbit = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(access,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")).orElseThrow();
+            long tick = mc.level.getGameTime();
+            return new double[] {org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, orbit, mars, tick), tick};
+        });
+        double server = sp.getServer().computeOnServer(s -> {
+            var access = s.overworld().registryAccess();
+            var orbit = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(access,
+                    Identifier.fromNamespaceAndPath("spacereloaded", "earth_orbit")).orElseThrow();
+            return org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, orbit, mars, (long) shown[1]);
+        });
+        assertThat(Math.abs(shown[0] - server) < 1, "Цена на карте " + shown[0] + " против сервера " + server);
+        log(String.format(java.util.Locale.ROOT, "карта Δv: орбита → Марс %.0f м/с = цена перехода ✓", shown[0]));
+        context.runOnClient(mc -> {
+            if (mc.gui.screen() instanceof org.alex_melan.spacereloaded.client.gui.PlanetMapScreen map) {
+                map.openPorkchop();
+            }
+        });
+        context.waitTicks(10);
+        boolean porkchop = context.computeOnClient(mc -> mc.gui.screen() instanceof org.alex_melan.spacereloaded.client.gui.PorkchopScreen);
+        assertThat(porkchop, "Кнопка «Окна…» должна открыть «свиную отбивную»");
+        readmeShot(context, "porkchop");
+        log("«свиная отбивная»: график Δv(дата) и тепловая карта ✓");
+        context.runOnClient(mc -> {
+            mc.setScreenAndShow(null);
+            if (mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
+        });
+        context.getInput().resizeWindow(854, 480);
+    }
+
+    // ---------- 009. Гиперспектральная карта минералов (US3) ----------
+
+    /**
+     * Выход горючего сланца 24 × 24 м на поверхность и такой же пласт под одним слоем камня: карта
+     * минералов масштаба 3 (8 м/пикс ≥ GSD 4.9 м на 2 мкм) красит выход цветом керогена, погребённый —
+     * фоном; масштаб 2 недоступен (дифракция); без спутника — отказ.
+     */
+    private void testMineralMap(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1700;
+        int z0 = BZ;
+        context.runOnClient(mc -> {
+            if (mc.player != null && mc.player.isDeadOrDying()) {
+                mc.player.respawn();
+            }
+        });
+        context.waitTicks(10);
+        sp.getServer().runCommand("gamemode creative @a");
+        moveTo(context, sp, x0 - 4, z0);
+        sp.getServer().runCommand(String.format("forceload add %d %d %d %d", x0 - 8, z0 - 8, x0 + 40, z0 + 64));
+        sp.getServer().runCommand(set(x0, BY, z0, "spacereloaded:mission_control"));
+        sp.getServer().runCommand(fill(x0 + 8, BY, z0, x0 + 31, BY, z0 + 23, "spacereloaded:oil_shale"));
+        sp.getServer().runCommand(fill(x0 + 8, BY, z0 + 32, x0 + 31, BY, z0 + 55, "spacereloaded:oil_shale"));
+        sp.getServer().runCommand(fill(x0 + 8, BY + 1, z0 + 32, x0 + 31, BY + 1, z0 + 55, "minecraft:stone"));
+        context.waitTicks(5);
+        BlockPos mc = new BlockPos(x0, BY, z0);
+        String ordered = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var player = server.getPlayerList().getPlayers().get(0);
+            player.getInventory().clearContent();
+            var network = org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server);
+            network.setSpectralSats(level.dimension(), 0);
+            var map = new ItemStack(ModItems.MINERAL_MAP, 2);
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.order(level, mc, player, map);
+            boolean refused = map.getCount() == 2;
+            network.setSpectralSats(level.dimension(), 1);
+            var o = org.alex_melan.spacereloaded.orbit.OrbitalImages.optics(level, true).orElseThrow();
+            map.set(ModDataComponents.IMAGE_SCALE, 2);
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.order(level, mc, player, map);
+            boolean diffraction = map.getCount() == 2;
+            map.set(ModDataComponents.IMAGE_SCALE, 3);
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.order(level, mc, player, map);
+            var image = slotOf(player, ModItems.ORBITAL_IMAGE);
+            var order = image.get(ModDataComponents.IMAGE_ORDER);
+            var due = new org.alex_melan.spacereloaded.orbit.ImageOrder(order.dimension(), order.x(), order.z(), order.scale(),
+                    level.getGameTime(), true);
+            image.set(ModDataComponents.IMAGE_ORDER, due);
+            org.alex_melan.spacereloaded.orbit.OrbitalImages.develop(player, image, due);
+            return String.format(java.util.Locale.ROOT, "%b %b %.2f %d %b", refused, diffraction, o.gsd(), o.minScale(), order.spectral());
+        });
+        String[] f = ordered.split(" ");
+        assertThat(f[0].equals("true") && f[1].equals("true") && f[3].equals("3") && f[4].equals("true"),
+                "Заказ карты минералов: без спутника отказ, масштаб 2 — дифракция: " + ordered);
+        log("карта минералов: GSD " + f[2] + " м на 2 мкм с 200 км → масштаб ≥ 3 ✓");
+        context.waitTicks(40);
+        String pixels = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var player = server.getPlayerList().getPlayers().get(0);
+            var filled = slotOf(player, net.minecraft.world.item.Items.FILLED_MAP);
+            if (filled.isEmpty()) {
+                return "no map";
+            }
+            var data = net.minecraft.world.item.MapItem.getSavedData(filled, level);
+            int step = 1 << data.scale;
+            int left = data.centerX - 64 * step;
+            int top = data.centerZ - 64 * step;
+            int exposed = (data.colors[(z0 + 12 - top) / step * 128 + (x0 + 20 - left) / step] & 0xFF) >> 2;
+            int buried = (data.colors[(z0 + 44 - top) / step * 128 + (x0 + 20 - left) / step] & 0xFF) >> 2;
+            var lore = filled.get(net.minecraft.core.component.DataComponents.LORE);
+            return exposed + " " + buried + " " + (lore == null ? 0 : lore.lines().size());
+        });
+        String[] p = pixels.split(" ");
+        int kerogen = net.minecraft.world.level.material.MapColor.COLOR_BROWN.id;
+        assertThat(p.length == 3 && Integer.parseInt(p[0]) == kerogen && Integer.parseInt(p[1]) != kerogen
+                        && Integer.parseInt(p[2]) >= 1,
+                "Карта минералов: выход — цвет керогена (" + kerogen + "), под камнем — фон, легенда: " + pixels);
+        log("карта минералов: выход сланца отмечен керогеном, пласт под камнем не виден, легенда в подсказке ✓");
+        sp.getServer().runOnServer(server -> org.alex_melan.spacereloaded.network.SpaceNetworkState.get(server)
+                .setSpectralSats(server.overworld().dimension(), 0));
+    }
+
+    // ---------- 009. Георадар ровера (US4) ----------
+
+    /**
+     * Трасса ровера 20 м по реголиту (ε 3); под её серединой — пустота 4 м на глубине 8 м (лавовая
+     * трубка). Радарограмма: 40 трасс, над трубкой эхо на 92 нс (8 м), в стороне — нет; во влажной
+     * почве над такой же пустотой сигнал гаснет. Бумага печатает радарограмму, экран её показывает.
+     */
+    private void testGroundRadar(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1760;
+        int z0 = BZ;
+        context.runOnClient(mc -> {
+            if (mc.player != null && mc.player.isDeadOrDying()) {
+                mc.player.respawn();
+            }
+        });
+        context.waitTicks(10);
+        sp.getServer().runCommand("gamemode creative @a");
+        moveTo(context, sp, x0 - 4, z0);
+        sp.getServer().runCommand(fill(x0, BY - 20, z0, x0 + 19, BY, z0 + 2, "spacereloaded:moon_regolith"));
+        sp.getServer().runCommand(fill(x0 + 6, BY - 11, z0, x0 + 13, BY - 8, z0 + 2, "minecraft:air"));
+        sp.getServer().runCommand(fill(x0, BY - 20, z0 + 6, x0 + 19, BY, z0 + 8, "minecraft:dirt"));
+        sp.getServer().runCommand(fill(x0 + 6, BY - 11, z0 + 6, x0 + 13, BY - 8, z0 + 8, "minecraft:air"));
+        context.waitTicks(5);
+        String result = sp.getServer().computeOnServer(server -> {
+            var level = server.overworld();
+            var player = server.getPlayerList().getPlayers().get(0);
+            player.getInventory().clearContent();
+            var rover = new org.alex_melan.spacereloaded.vehicle.RoverEntity(org.alex_melan.spacereloaded.registry.ModEntities.ROVER, level);
+            rover.setPos(x0 + 0.5, BY + 1, z0 + 1.5);
+            rover.testSetup(4, 1e6, false);
+            level.addFreshEntity(rover);
+            // без радара бумага ничего не печатает; ставим радар ПКМ
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(ModItems.GROUND_RADAR));
+            rover.interact(player, net.minecraft.world.InteractionHand.MAIN_HAND, rover.position());
+            var rec = rover.radarRecorder();
+            for (int i = 0; i < 40; i++) {
+                rec.advance(level, new BlockPos(x0 + i / 2, BY, z0 + 1), 0.5);
+            }
+            int traces = rec.traces();
+            int k = (int) Math.round(org.alex_melan.spacereloaded.core.survey.GroundRadar.twoWayNs(8, 3)
+                    / org.alex_melan.spacereloaded.core.survey.GroundRadar.SAMPLE_NS);
+            byte[] raw = rec.raw();
+            int over = raw[20 * 128 + k] & 0xFF;          // трасса над серединой трубки (x0 + 10)
+            int aside = raw[2 * 128 + k] & 0xFF;          // трасса в стороне (x0 + 1)
+            byte[] wet = org.alex_melan.spacereloaded.survey.GroundRadarService.trace(level, new BlockPos(x0 + 10, BY, z0 + 7));
+            int wetMax = 0;
+            for (byte b : wet) {
+                wetMax = Math.max(wetMax, b & 0xFF);
+            }
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.world.item.Items.PAPER));
+            rover.interact(player, net.minecraft.world.InteractionHand.MAIN_HAND, rover.position());
+            var gram = slotOf(player, ModItems.RADARGRAM);
+            var data = gram.get(ModDataComponents.RADARGRAM);
+            rover.discard();
+            return String.format(java.util.Locale.ROOT, "%d %d %d %d %d %d %b", traces, k, over, aside, wetMax,
+                    data == null ? -1 : data.traces(), rover.hasRadar());
+        });
+        String[] f = result.split(" ");
+        int traces = Integer.parseInt(f[0]), k = Integer.parseInt(f[1]), over = Integer.parseInt(f[2]);
+        int aside = Integer.parseInt(f[3]), wetMax = Integer.parseInt(f[4]), printed = Integer.parseInt(f[5]);
+        assertThat(traces == 40 && over > 60 && aside == 0 && k == 31, "Радар: трасс " + traces + ", эхо над трубкой " + over
+                + " на отсчёте " + k + ", в стороне " + aside);
+        log("георадар: 40 трасс по 0.5 м, потолок трубки на 8 м — эхо на 92 нс, в стороне тишина ✓");
+        assertThat(wetMax == 0, "Во влажной почве эхо должно гаснуть, получено " + wetMax);
+        assertThat(printed == 40, "Радарограмма напечатана бумагой: трасс " + printed);
+        log("георадар: во влажной почве сигнал гаснет до трубки; радарограмма напечатана ✓");
+        context.waitTicks(10);   // инвентарь с радарограммой доходит до клиента
+        context.getInput().resizeWindow(1600, 900);
+        context.runOnClient(mc -> {
+            var gram = slotOf(mc.player, ModItems.RADARGRAM);
+            var data = gram.get(ModDataComponents.RADARGRAM);
+            if (data != null) {
+                mc.setScreenAndShow(new org.alex_melan.spacereloaded.client.gui.RadargramScreen(data));
+            }
+        });
+        context.waitTicks(10);
+        readmeShot(context, "radargram");
+        context.runOnClient(mc -> {
+            mc.setScreenAndShow(null);
+            if (mc.gui.hud.isHidden()) {
+                mc.gui.hud.toggle();
+            }
+        });
+        context.getInput().resizeWindow(854, 480);
     }
 
     // ---------- Кадры README и сайта (запуск: SR_ONLY=testReadmeShots) ----------

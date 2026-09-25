@@ -15,6 +15,10 @@ SHOTS = {
     "rover": (160, 120, 1440, 840),
     "gears": (300, 100, 1300, 700),
     "orbital-image": (520, 0, 1080, 440),
+    # 009: экраны навигации и разведки
+    "delta-v-map": None,
+    "porkchop": None,
+    "radargram": None,
     "creative-tab": (505, 160, 1095, 730),
     # 008: кадры снимают стенды машин (SR_ONLY=testEclssRack,…,testDsnAntenna)
     "eclss": None,

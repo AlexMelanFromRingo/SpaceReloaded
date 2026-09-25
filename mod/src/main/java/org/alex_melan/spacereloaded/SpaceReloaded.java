@@ -67,6 +67,7 @@ public class SpaceReloaded implements ModInitializer {
 		ModRecipes.init();
 		ModMenus.init();
 		ModRegistries.init();
+		org.alex_melan.spacereloaded.survey.SurveyRegistries.init();
 		ModWorldgen.init();
 		ModEntities.init();
 		org.alex_melan.spacereloaded.planet.ModTickets.init();

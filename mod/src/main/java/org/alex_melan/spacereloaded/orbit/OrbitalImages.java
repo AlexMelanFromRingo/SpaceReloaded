@@ -43,6 +43,12 @@ import java.util.concurrent.CompletableFuture;
  * сквозь грунт) и рельеф теней по высоте. Загруженные чанки читаются по карте высот в главном
  * потоке; остальная местность — по рельефу генератора (базовая высота, вода, биом или грунт тела
  * из {@code soils}) в фоновом потоке (принцип IV), без построек и фич.
+ * <p>
+ * 009 (US3): тот же заказ бланком карты минералов — гиперспектральный спутник (спектрометр за тем
+ * же телескопом, λ = 2 мкм, GSD вдвое-вчетверо грубее видимого). Пиксель — доли верхних блоков по
+ * сигнатурам датапака; минерал с долей ≥ {@code spectralDetectFraction} красит пиксель своим цветом,
+ * фон — серый рельеф. Минералы видны только в загруженной местности: генератор отдаёт рельеф без
+ * выходов руд.
  */
 public final class OrbitalImages {
 
@@ -84,6 +90,11 @@ public final class OrbitalImages {
     }
 
     public static Optional<Optics> optics(ServerLevel body) {
+        return optics(body, false);
+    }
+
+    /** Оптика над телом: видимый диапазон (снимок) или ближний ИК (карта минералов). */
+    public static Optional<Optics> optics(ServerLevel body, boolean spectral) {
         var profile = PlanetManager.profileFor(body);
         if (profile.isEmpty() || profile.get().transfer().bodyRadius() <= 0
                 || profile.get().transfer().parkingAltitude() <= 0) {
@@ -91,13 +102,15 @@ public final class OrbitalImages {
         }
         double r = profile.get().transfer().bodyRadius();
         double h = profile.get().transfer().parkingAltitude();
-        double gsd = OrbitalImaging.gsd(OrbitalImaging.VISIBLE_M, h, APERTURE_M);
+        double gsd = spectral ? org.alex_melan.spacereloaded.core.survey.SpectralMapping.gsd(h, APERTURE_M)
+                : OrbitalImaging.gsd(OrbitalImaging.VISIBLE_M, h, APERTURE_M);
         return Optional.of(new Optics(gsd, OrbitalImaging.minScale(gsd), r, h, profile.get().gravity() * r * r));
     }
 
     /** Sneak+ПКМ по ЦУПу пустой картой: следующий доступный масштаб и его цена во времени. */
     public static void cycleScale(ServerLevel level, ServerPlayer player, ItemStack map) {
-        var optics = optics(level);
+        boolean spectral = isBlankMineralMap(map);
+        var optics = optics(level, spectral);
         if (optics.isEmpty() || optics.get().minScale() < 0) {
             player.sendSystemMessage(Component.translatable("message.spacereloaded.imaging.no_orbit"));
             return;
@@ -106,7 +119,7 @@ public final class OrbitalImages {
         int current = map.getOrDefault(ModDataComponents.IMAGE_SCALE, o.minScale());
         int next = current >= OrbitalImaging.MAX_SCALE ? o.minScale() : Math.max(o.minScale(), current + 1);
         map.set(ModDataComponents.IMAGE_SCALE, next);
-        int sats = SpaceNetworkState.get(level.getServer()).imagingSats(level.dimension());
+        int sats = sats(SpaceNetworkState.get(level.getServer()), level.dimension(), spectral);
         long worst = OrbitalImaging.waitTicks(o.radius(), o.altitude(), o.mu(), next, Math.max(1, sats), 1.0);
         player.sendSystemMessage(Component.translatable("message.spacereloaded.imaging.scale", next, 1 << next,
                 String.format(Locale.ROOT, "%.2f", o.gsd()),
@@ -121,9 +134,10 @@ public final class OrbitalImages {
      * полосы ((128·2^k м)² / GSD² пикселей по 12 бит) на скорости линии.
      */
     public static void order(ServerLevel level, BlockPos at, ServerPlayer player, ItemStack map) {
+        boolean spectral = isBlankMineralMap(map);
         var network = SpaceNetworkState.get(level.getServer());
         ServerLevel imaged = level;
-        int sats = network.imagingSats(level.dimension());
+        int sats = sats(network, level.dimension(), spectral);
         double linkBps = 0;
         if (sats <= 0) {
             for (var body : org.alex_melan.spacereloaded.comms.DsnBlockEntity.BODIES) {
@@ -131,18 +145,19 @@ public final class OrbitalImages {
                 double rate = network.groundLinkRate(body.id());
                 ServerLevel other = level.getServer().getLevel(key);
                 if (other != null && !key.equals(level.dimension()) && rate >= org.alex_melan.spacereloaded.comms.DsnBlockEntity.telemetryBps()
-                        && network.imagingSats(key) > 0 && rate > linkBps) {
+                        && sats(network, key, spectral) > 0 && rate > linkBps) {
                     imaged = other;
                     linkBps = rate;
                 }
             }
             if (linkBps <= 0) {
-                player.sendSystemMessage(Component.translatable("message.spacereloaded.imaging.no_satellite"));
+                player.sendSystemMessage(Component.translatable(spectral ? "message.spacereloaded.spectral.no_satellite"
+                        : "message.spacereloaded.imaging.no_satellite"));
                 return;
             }
-            sats = network.imagingSats(imaged.dimension());
+            sats = sats(network, imaged.dimension(), spectral);
         }
-        var optics = optics(imaged);
+        var optics = optics(imaged, spectral);
         if (optics.isEmpty() || optics.get().minScale() < 0) {
             player.sendSystemMessage(Component.translatable("message.spacereloaded.imaging.no_orbit"));
             return;
@@ -168,11 +183,12 @@ public final class OrbitalImages {
             cx = (int) Math.round(at.getX() * from / to);
             cz = (int) Math.round(at.getZ() * from / to);
             double side = 128.0 * (1 << scale);
-            double bits = side * side / (o.gsd() * o.gsd()) * 12;
+            // спектрометр — 240 каналов по 12 бит на пиксель (класс M³), камера — один канал
+            double bits = side * side / (o.gsd() * o.gsd()) * 12 * (spectral ? 240 : 1);
             downlink = Math.round(bits / linkBps * 20);
             wait += downlink;
         }
-        ImageOrder order = new ImageOrder(imaged.dimension().identifier(), cx, cz, scale, now + wait);
+        ImageOrder order = new ImageOrder(imaged.dimension().identifier(), cx, cz, scale, now + wait, spectral);
         map.shrink(1);
         ItemStack image = new ItemStack(ModItems.ORBITAL_IMAGE);
         image.set(ModDataComponents.IMAGE_ORDER, order);
@@ -213,17 +229,56 @@ public final class OrbitalImages {
         int[] height = new int[SIZE * SIZE];
         MapColor[] color = new MapColor[SIZE * SIZE];
         readLoaded(level, x0, z0, step, height, color);
+        String[] mineral = order.spectral() ? new String[SIZE * SIZE] : null;
+        boolean[] sampled = new boolean[SIZE * SIZE];
+        if (mineral != null) {
+            classify(level, x0, z0, step, mineral, sampled, loadedTops(level));
+        }
         MapColor surface = Soils.entry(level).flatMap(Soils.Entry::surface)
                 .map(b -> BuiltInRegistries.BLOCK.getValue(b).defaultMapColor()).orElse(null);
-        CompletableFuture.runAsync(() -> readGenerator(level, x0, z0, step, height, color, surface), Util.backgroundExecutor())
+        CompletableFuture.runAsync(() -> {
+                    // разведанная, но выгруженная местность — из region-файлов; неразведанная — рельеф генератора
+                    SavedSurface saved = new SavedSurface(level);
+                    readSaved(saved, x0, z0, step, height, color);
+                    if (mineral != null) {
+                        classify(level, x0, z0, step, mineral, sampled, saved::top);
+                    }
+                    readGenerator(level, x0, z0, step, height, color, surface);
+                }, Util.backgroundExecutor())
                 .thenRunAsync(() -> {
                     DEVELOPING.remove(order);
                     var locked = fresh.locked();
+                    java.util.Map<String, Integer> found = new java.util.TreeMap<>();
                     for (int i = 0; i < SIZE * SIZE; i++) {
                         int north = i >= SIZE ? height[i - SIZE] : height[i];
                         MapColor.Brightness b = color[i] == MapColor.WATER || height[i] == north ? MapColor.Brightness.NORMAL
                                 : height[i] > north ? MapColor.Brightness.HIGH : MapColor.Brightness.LOW;
-                        locked.colors[i] = color[i].getPackedId(b);
+                        if (mineral == null) {
+                            locked.colors[i] = color[i].getPackedId(b);
+                        } else if (mineral[i] != null) {
+                            // минерал — своим цветом; фон — серый рельеф, чтобы находки читались
+                            locked.colors[i] = signatureColor(level, mineral[i]).getPackedId(MapColor.Brightness.HIGH);
+                            found.merge(mineral[i], 1, Integer::sum);
+                        } else {
+                            locked.colors[i] = (color[i] == MapColor.WATER ? MapColor.COLOR_BLACK : MapColor.COLOR_GRAY).getPackedId(b);
+                        }
+                    }
+                    if (mineral != null) {
+                        java.util.List<Component> lines = new java.util.ArrayList<>();
+                        for (var e : found.entrySet()) {
+                            lines.add(Component.translatable("mineral.spacereloaded." + e.getKey())
+                                    .append(String.format(Locale.ROOT, ": %.1f %%", 100.0 * e.getValue() / (SIZE * SIZE)))
+                                    .withStyle(net.minecraft.ChatFormatting.GRAY));
+                        }
+                        if (lines.isEmpty()) {
+                            lines.add(Component.translatable("message.spacereloaded.spectral.none")
+                                    .withStyle(net.minecraft.ChatFormatting.GRAY));
+                        }
+                        map.set(DataComponents.LORE, new net.minecraft.world.item.component.ItemLore(lines));
+                        map.set(DataComponents.CUSTOM_NAME, Component.translatable("item.spacereloaded.mineral_map.developed"));
+                        if (!found.isEmpty()) {
+                            IndustryAdvancements.award(player, IndustryAdvancements.SPECTRUM);
+                        }
                     }
                     locked.setDirty();
                     level.setMapData(id, locked);
@@ -313,6 +368,102 @@ public final class OrbitalImages {
 
     private static String minutes(long ticks) {
         return String.format(Locale.ROOT, "%.1f", ticks / 1200.0);
+    }
+
+    private static int sats(SpaceNetworkState network, ResourceKey<Level> body, boolean spectral) {
+        return spectral ? network.spectralSats(body) : network.imagingSats(body);
+    }
+
+    private static MapColor signatureColor(ServerLevel level, String mineral) {
+        for (var s : level.registryAccess().lookupOrThrow(org.alex_melan.spacereloaded.survey.SurveyRegistries.SPECTRAL)) {
+            if (s.mineral().equals(mineral)) {
+                return s.mapColor();
+            }
+        }
+        return MapColor.COLOR_MAGENTA;
+    }
+
+    /** Источник верхнего блока столбца (загруженный чанк или сохранённый на диске). */
+    private interface TopSource {
+        SavedSurface.Top top(int x, int z);
+    }
+
+    /** Верхние блоки загруженных чанков (только главный поток). */
+    private static TopSource loadedTops(ServerLevel level) {
+        var cursor = new BlockPos.MutableBlockPos();
+        return (x, z) -> {
+            var chunk = level.getChunkSource().getChunkNow(x >> 4, z >> 4);
+            if (chunk == null) {
+                return null;
+            }
+            int y = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x & 15, z & 15);
+            var state = chunk.getBlockState(cursor.set(x, y, z));
+            while (state.getMapColor(level, cursor) == MapColor.NONE && y > level.getMinY()) {
+                state = chunk.getBlockState(cursor.set(x, --y, z));
+            }
+            return new SavedSurface.Top(y, state);
+        };
+    }
+
+    /** Цвет и высота сохранённых выгруженных столбцов для пикселей, где загруженных данных нет. */
+    private static void readSaved(SavedSurface saved, int x0, int z0, int step, int[] height, MapColor[] color) {
+        for (int pz = 0; pz < SIZE; pz++) {
+            for (int px = 0; px < SIZE; px++) {
+                int i = pz * SIZE + px;
+                if (color[i] != null) {
+                    continue;
+                }
+                var top = saved.top(x0 + px * step, z0 + pz * step);
+                if (top != null) {
+                    height[i] = top.y();
+                    color[i] = top.state().getMapColor(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+                }
+            }
+        }
+    }
+
+    /**
+     * Минерал пикселей, ещё не отснятых ({@code sampled} ложно): до 4 × 4 отсчётов верхних блоков на
+     * пиксель (площадь пикселя 2^k × 2^k блоков), доли — по сигнатурам датапака.
+     */
+    private static void classify(ServerLevel level, int x0, int z0, int step, String[] out, boolean[] sampled, TopSource src) {
+        double threshold = org.alex_melan.spacereloaded.SpaceReloaded.config().spectralDetectFraction;
+        int sub = Math.min(4, step);
+        int half = step / 2;
+        var access = level.registryAccess();
+        java.util.Map<String, Integer> areas = new java.util.HashMap<>();
+        for (int pz = 0; pz < SIZE; pz++) {
+            for (int px = 0; px < SIZE; px++) {
+                int i = pz * SIZE + px;
+                if (sampled[i]) {
+                    continue;
+                }
+                areas.clear();
+                int total = 0;
+                for (int sz = 0; sz < sub; sz++) {
+                    for (int sx = 0; sx < sub; sx++) {
+                        var top = src.top(x0 + px * step - half + (sx * step) / sub, z0 + pz * step - half + (sz * step) / sub);
+                        if (top == null) {
+                            continue;
+                        }
+                        total++;
+                        var sig = org.alex_melan.spacereloaded.survey.SurveyRegistries.signature(access, top.state());
+                        if (sig != null) {
+                            areas.merge(sig.mineral(), 1, Integer::sum);
+                        }
+                    }
+                }
+                if (total > 0) {
+                    sampled[i] = true;
+                    out[i] = org.alex_melan.spacereloaded.core.survey.SpectralMapping.classify(areas, total, threshold);
+                }
+            }
+        }
+    }
+
+    /** Бланк карты минералов (009, US3). */
+    public static boolean isBlankMineralMap(ItemStack stack) {
+        return stack.is(ModItems.MINERAL_MAP);
     }
 
     /** Пустая ли это карта для заказа (ванильная {@code map}). */

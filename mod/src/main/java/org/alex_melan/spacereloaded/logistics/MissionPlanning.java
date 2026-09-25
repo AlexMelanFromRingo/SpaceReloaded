@@ -72,7 +72,10 @@ public final class MissionPlanning {
             double startY = i == 0 ? rocket.getY()
                     : "platform".equals(fromProfile.arrival()) ? PlanetManager.ORBIT_PLATFORM_Y
                     : fromProfile.aero().datumY();
-            double transfer = fromProfile.transferDeltaVTo(route.get(i + 1)) * config.transferDeltaVScale;
+            // 009: межпланетное плечо — по Ламберту на сегодня (дата следующих плеч неизвестна —
+            // тоже сегодняшняя, как и в 003 перелёт мгновенный)
+            double transfer = org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, fromProfile,
+                    route.get(i + 1), level.getGameTime());
             boolean last = i + 2 == route.size();
             MissionPlanner.Landing landing = last && !"platform".equals(toProfile.arrival())
                     ? new MissionPlanner.Landing(toProfile.gravity(), config.arrivalHeightM, ARRIVAL_SPEED_MS)
@@ -89,6 +92,41 @@ public final class MissionPlanning {
                 : config.cargoLineDeltaVMarginPercent;
         MissionPlanner.MissionReport report = MissionPlanner.plan(layout, fuel, active, legs, marginPercent / 100.0);
         return new Plan(report, initial, finalTarget, legs.size());
+    }
+
+    /**
+     * Отказ из-за нехватки на межпланетном плече (009, D93): сегодняшняя цена минус нехватка —
+     * бюджет плеча; ближайший день, когда цена ≤ бюджета, или «в этом периоде не хватит».
+     * {@code null} — нехватка не на межпланетном плече (обычное описание).
+     */
+    public static Component waitForWindow(ServerLevel level, Plan plan) {
+        MissionPlanner.MissionReport report = plan.report();
+        if (report.reason() != MissionPlanner.Reason.TRANSFER_SHORTFALL || !Double.isFinite(report.shortfallMs())) {
+            return null;
+        }
+        RegistryAccess access = level.registryAccess();
+        Identifier here = Navigation.entryIdFor(access, level.dimension().identifier());
+        List<Identifier> route = Navigation.route(access, here, plan.target());
+        int legIndex = report.legs().size() - 1;   // план обрывается на плече с нехваткой
+        if (legIndex < 0 || legIndex + 1 >= route.size()) {
+            return null;
+        }
+        var from = PlanetManager.profileById(access, route.get(legIndex));
+        Identifier to = route.get(legIndex + 1);
+        if (from.isEmpty() || !org.alex_melan.spacereloaded.planet.TransferCosts.celestial(access, from.get(), to)) {
+            return null;
+        }
+        long now = level.getGameTime();
+        double today = org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, from.get(), to, now);
+        double budget = today - report.shortfallMs();
+        long at = org.alex_melan.spacereloaded.planet.TransferCosts.nextAffordableTick(access, from.get(), to, now, budget);
+        Component planet = Component.translatable("planet.spacereloaded." + to.getPath());
+        if (at < 0) {
+            return Component.translatable("message.spacereloaded.mission.no_window", planet, fmt(today), fmt(budget));
+        }
+        long wait = at - now;
+        return Component.translatable("message.spacereloaded.mission.wait_window", planet, fmt(today), fmt(budget),
+                wait / 24000L, (wait % 24000L) / 1000L);
     }
 
     /** Суммарно требуемый Δv по отчёту: подъёмы + перелёты + посадки + нехватка. */

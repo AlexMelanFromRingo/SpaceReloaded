@@ -1,0 +1,10 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:hermetic_glass",
+		"spacereloaded:aluminium_ingot"
+	],
+	"result": {
+		"id": "spacereloaded:diffraction_grating"
+	}
+}

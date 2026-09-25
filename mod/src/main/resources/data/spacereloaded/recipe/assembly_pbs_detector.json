@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:galena",
+		"spacereloaded:galena",
+		"spacereloaded:ceramic_package",
+		"spacereloaded:copper_wire"
+	],
+	"result": {
+		"id": "spacereloaded:pbs_detector"
+	}
+}

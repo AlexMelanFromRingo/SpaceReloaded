@@ -681,6 +681,15 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
     public static final Block FEED_HORN = registerNoItem("feed_horn", Block::new,
             BlockBehaviour.Properties.of().noOcclusion().noLootTable());
+    /** Галенит PbS (009): гидротермальные жилы Земли; сырьё ИК-фотоприёмника спектрометра. */
+    public static final Block GALENA_ORE = register("galena_ore", Block::new,
+            BlockBehaviour.Properties.of().strength(3.0f, 3.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
+    /** Гиперспектральный спутник (009, US3): телескоп 10 см + спектрометр ближнего ИК с приёмником PbS. */
+    public static final Block HYPERSPECTRAL_SATELLITE = register("hyperspectral_satellite",
+            props -> new ShapedBlock(props, net.minecraft.world.phys.shapes.Shapes.or(Block.box(5, 0, 5, 11, 16, 11),
+                    Block.box(0, 1, 7, 16, 9, 9))),
+            BlockBehaviour.Properties.of().strength(2.5f, 6.0f).sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops().noOcclusion());
     public static final Block BERYL_ORE = register("beryl_ore", Block::new,
             BlockBehaviour.Properties.of().strength(3.5f, 3.0f).sound(SoundType.STONE).requiresCorrectToolForDrops());
     public static final Block BORAX_ORE = register("borax_ore", Block::new,

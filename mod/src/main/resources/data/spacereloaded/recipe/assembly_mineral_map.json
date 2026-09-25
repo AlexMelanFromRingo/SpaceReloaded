@@ -1,0 +1,10 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"minecraft:map",
+		"minecraft:paper"
+	],
+	"result": {
+		"id": "spacereloaded:mineral_map"
+	}
+}

@@ -10,9 +10,6 @@
 	],
 	"arrival": "descend",
 	"atmosphere": "co2",
-	"synodic_period_ticks": 144000,
-	"window_width_ticks": 24000,
-	"window_phase_ticks": 0,
 	"requires_coverage": true,
 	"temperature": -60,
 	"temperature_amplitude": 25,
@@ -23,5 +20,15 @@
 	"parking_altitude": 200000.0,
 	"transfer_delta_v": {
 		"spacereloaded:earth_orbit": 2103.0
-	}
+	},
+	"orbit": {
+		"a_au": 1.52371034,
+		"e": 0.0933941,
+		"i_deg": 1.84969142,
+		"node_deg": 49.55953891,
+		"peri_deg": -23.94362959,
+		"mean_lon_deg": -4.55343205
+	},
+	"mu": 42828370000000.0,
+	"aerocapture": true
 }

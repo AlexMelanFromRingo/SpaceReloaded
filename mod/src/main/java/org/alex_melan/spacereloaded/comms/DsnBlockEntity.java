@@ -51,20 +51,16 @@ public class DsnBlockEntity extends BlockEntity implements HammerTarget, StatusP
     public static double telemetryBps() { return org.alex_melan.spacereloaded.SpaceReloaded.config().dsnTelemetryBps; }
     public static final int MAX_PANELS = 1000;
     public static final double MOON_DISTANCE_M = 3.844e8;
-    private static final double YEAR_TICKS = 365.25 / 130 * 24000;
-
-    /** Тело-цель: радиус орбиты (а. е.; Луна — в системе Земли), период, начальная долгота, передатчик борта. */
-    public record Body(Identifier id, double au, double periodTicks, double longitude0, double txW, double txDishM) {
+    /** Тело-цель: гелиоцентрическая орбита (эфемериды 009; Луна — в системе Земли), передатчик борта. */
+    public record Body(Identifier id, org.alex_melan.spacereloaded.core.orbit.Ephemeris.Elements orbit, double txW,
+                       double txDishM) {
     }
 
     public static final List<Body> BODIES = List.of(
-            new Body(Identifier.withDefaultNamespace("overworld"), 1.0, YEAR_TICKS, 0, 100, 3),
-            new Body(Identifier.fromNamespaceAndPath("spacereloaded", "moon"), 1.0, YEAR_TICKS, 0, 20, 1),
-            // противостояние Марса — в середине окна перелёта 003 (фаза 12000 тиков)
-            new Body(Identifier.fromNamespaceAndPath("spacereloaded", "mars"), 1.524, 686.98 / 130 * 24000,
-                    2 * Math.PI * 12000 * (1 / YEAR_TICKS - 1 / (686.98 / 130 * 24000)), 100, 3),
-            new Body(Identifier.fromNamespaceAndPath("spacereloaded", "asteroid_belt"), 2.7,
-                    Math.pow(2.7, 1.5) * YEAR_TICKS, 1.0, 100, 3));
+            new Body(Identifier.withDefaultNamespace("overworld"), org.alex_melan.spacereloaded.core.orbit.Ephemeris.EARTH, 100, 3),
+            new Body(Identifier.fromNamespaceAndPath("spacereloaded", "moon"), org.alex_melan.spacereloaded.core.orbit.Ephemeris.EARTH, 20, 1),
+            new Body(Identifier.fromNamespaceAndPath("spacereloaded", "mars"), org.alex_melan.spacereloaded.core.orbit.Ephemeris.MARS, 100, 3),
+            new Body(Identifier.fromNamespaceAndPath("spacereloaded", "asteroid_belt"), org.alex_melan.spacereloaded.core.orbit.Ephemeris.CERES, 100, 3));
 
     private final FormedStructure structure = new FormedStructure();
     private boolean claimed;
@@ -171,13 +167,16 @@ public class DsnBlockEntity extends BlockEntity implements HammerTarget, StatusP
         return null;
     }
 
+    /** Гелиоцентрическое положение, а.е. (календарь мира 009 — тот же, что у перелётов). */
     private static double[] helio(Body b, long gameTime) {
-        double l = b.longitude0() + 2 * Math.PI * gameTime / b.periodTicks();
-        return new double[] {b.au() * Math.cos(l), b.au() * Math.sin(l)};
+        double day = org.alex_melan.spacereloaded.planet.TransferCosts.day(gameTime);
+        double[] r = org.alex_melan.spacereloaded.core.orbit.Ephemeris.state(b.orbit(), day).r();
+        double au = org.alex_melan.spacereloaded.core.orbit.Ephemeris.AU;
+        return new double[] {r[0] / au, r[1] / au, r[2] / au};
     }
 
     private static boolean earthSystem(Body b) {
-        return b.au() == 1.0;
+        return b.orbit() == org.alex_melan.spacereloaded.core.orbit.Ephemeris.EARTH;
     }
 
     /** Дальность между телами, м. */
@@ -187,7 +186,8 @@ public class DsnBlockEntity extends BlockEntity implements HammerTarget, StatusP
         }
         double[] a = helio(from, gameTime);
         double[] b = helio(to, gameTime);
-        return SkyGeometry.AU * Math.hypot(a[0] - b[0], a[1] - b[1]);
+        return SkyGeometry.AU * Math.sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1])
+                + (a[2] - b[2]) * (a[2] - b[2]));
     }
 
     /** Угол цели на дуге неба наблюдателя (одинаково считается на сервере и клиенте). */

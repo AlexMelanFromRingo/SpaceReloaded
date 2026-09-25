@@ -1,0 +1,15 @@
+{
+	"blocks": [
+		"minecraft:ice",
+		"minecraft:packed_ice",
+		"minecraft:blue_ice",
+		"minecraft:snow_block",
+		"minecraft:snow",
+		"minecraft:powder_snow",
+		"spacereloaded:moon_ice",
+		"spacereloaded:mars_ice"
+	],
+	"mineral": "water_ice",
+	"map_color_id": 17,
+	"band_um": 1.5
+}

@@ -1,0 +1,7 @@
+{
+	"blocks": [
+		"spacereloaded:anorthosite"
+	],
+	"epsilon": 5.0,
+	"loss_tangent": 0.005
+}

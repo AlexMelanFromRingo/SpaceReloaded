@@ -1,0 +1,12 @@
+{
+	"blocks": [
+		"spacereloaded:moon_stone",
+		"spacereloaded:asteroid_stone",
+		"minecraft:basalt",
+		"minecraft:smooth_basalt",
+		"minecraft:red_sandstone",
+		"minecraft:sandstone"
+	],
+	"epsilon": 6.0,
+	"loss_tangent": 0.01
+}

@@ -1,0 +1,13 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:copper_plate",
+		"spacereloaded:copper_plate",
+		"spacereloaded:logic_chip",
+		"spacereloaded:circuit_board",
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:ground_radar"
+	}
+}

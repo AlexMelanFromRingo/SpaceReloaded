@@ -59,7 +59,9 @@ public class SpaceNetworkState extends SavedData {
             Codec.unboundedMap(Level.RESOURCE_KEY_CODEC, Codec.INT)
                     .optionalFieldOf("imaging_sats", Map.of()).forGetter(s -> s.imagingSats),
             LinkEntry.CODEC.listOf().optionalFieldOf("ground_links", List.of())
-                    .forGetter(s -> List.copyOf(s.groundLinks.values()))
+                    .forGetter(s -> List.copyOf(s.groundLinks.values())),
+            Codec.unboundedMap(Level.RESOURCE_KEY_CODEC, Codec.INT)
+                    .optionalFieldOf("spectral_sats", Map.of()).forGetter(s -> s.spectralSats)
     ).apply(instance, SpaceNetworkState::new));
 
     public static final SavedDataType<SpaceNetworkState> TYPE = new SavedDataType<>(
@@ -77,17 +79,21 @@ public class SpaceNetworkState extends SavedData {
     /** Спутники-камеры (007, US5): измерение-тело под орбитой → число аппаратов. */
     private final Map<ResourceKey<Level>, Integer> imagingSats;
     private final Map<GlobalPos, LinkEntry> groundLinks = new HashMap<>();
+    /** Гиперспектральные спутники (009, US3): тело под орбитой → число аппаратов. */
+    private final Map<ResourceKey<Level>, Integer> spectralSats;
 
     public SpaceNetworkState() {
-        this(Map.of(), Map.of(), Map.of(), List.of(), List.of(), Map.of(), List.of());
+        this(Map.of(), Map.of(), Map.of(), List.of(), List.of(), Map.of(), List.of(), Map.of());
     }
 
     private SpaceNetworkState(Map<ResourceKey<Level>, Integer> coverage,
                              Map<ResourceKey<Level>, Long> stormUntil,
                              Map<ResourceKey<Level>, Integer> powerSats,
                              List<PosEntry> beaconFrequency, List<PosEntry> interceptors,
-                             Map<ResourceKey<Level>, Integer> imagingSats, List<LinkEntry> links) {
+                             Map<ResourceKey<Level>, Integer> imagingSats, List<LinkEntry> links,
+                             Map<ResourceKey<Level>, Integer> spectralSats) {
         this.imagingSats = new HashMap<>(imagingSats);
+        this.spectralSats = new HashMap<>(spectralSats);
         for (LinkEntry e : links) {
             groundLinks.put(e.pos(), e);
         }
@@ -165,6 +171,19 @@ public class SpaceNetworkState extends SavedData {
             }
         }
         return best;
+    }
+
+    public int spectralSats(ResourceKey<Level> body) {
+        return spectralSats.getOrDefault(body, 0);
+    }
+
+    public void setSpectralSats(ResourceKey<Level> body, int count) {
+        if (count <= 0) {
+            spectralSats.remove(body);
+        } else {
+            spectralSats.put(body, count);
+        }
+        setDirty();
     }
 
     public int imagingSats(ResourceKey<Level> body) {

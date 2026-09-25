@@ -33,7 +33,8 @@ public class MissionControlBlock extends Block {
     protected InteractionResult useItemOn(net.minecraft.world.item.ItemStack stack, BlockState state, Level level,
                                           BlockPos pos, Player player, net.minecraft.world.InteractionHand hand,
                                           BlockHitResult hit) {
-        if (!org.alex_melan.spacereloaded.orbit.OrbitalImages.isBlankMap(stack)) {
+        if (!org.alex_melan.spacereloaded.orbit.OrbitalImages.isBlankMap(stack)
+                && !org.alex_melan.spacereloaded.orbit.OrbitalImages.isBlankMineralMap(stack)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {

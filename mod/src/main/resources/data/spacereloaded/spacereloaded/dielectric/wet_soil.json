@@ -1,0 +1,13 @@
+{
+	"blocks": [
+		"minecraft:dirt",
+		"minecraft:grass_block",
+		"minecraft:coarse_dirt",
+		"minecraft:rooted_dirt",
+		"minecraft:mud",
+		"minecraft:clay",
+		"minecraft:podzol"
+	],
+	"epsilon": 15.0,
+	"loss_tangent": 0.1
+}

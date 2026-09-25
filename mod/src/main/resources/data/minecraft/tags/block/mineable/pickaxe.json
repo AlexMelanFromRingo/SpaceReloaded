@@ -132,6 +132,8 @@
 		"spacereloaded:eaf_roof",
 		"spacereloaded:dsn_controller",
 		"spacereloaded:dish_mount",
-		"spacereloaded:dish_panel"
+		"spacereloaded:dish_panel",
+		"spacereloaded:hyperspectral_satellite",
+		"spacereloaded:galena_ore"
 	]
 }

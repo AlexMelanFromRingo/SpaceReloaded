@@ -1,0 +1,12 @@
+{
+	"type": "spacereloaded:assembly",
+	"ingredients": [
+		"spacereloaded:diffraction_grating",
+		"spacereloaded:pbs_detector",
+		"spacereloaded:logic_chip",
+		"spacereloaded:steel_plate"
+	],
+	"result": {
+		"id": "spacereloaded:ir_spectrometer"
+	}
+}

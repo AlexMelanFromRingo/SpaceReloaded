@@ -267,6 +267,18 @@ public final class ModItems {
     public static final Item GRAPHITE_ELECTRODE = register("graphite_electrode", props -> new Item(props.stacksTo(3)));
     public static final Item FUEL_BASKET = register("fuel_basket", props -> new Item(props.stacksTo(1)));
     public static final Item ZEOLITE_BED = register("zeolite_bed", props -> new Item(props.stacksTo(1)));
+    // --- 009: разведка ---
+    public static final Item GALENA = simple("galena");
+    public static final Item PBS_DETECTOR = simple("pbs_detector");
+    public static final Item DIFFRACTION_GRATING = simple("diffraction_grating");
+    public static final Item IR_SPECTROMETER = simple("ir_spectrometer");
+    /** Бланк карты минералов: ПКМ по ЦУПу — заказ гиперспектральной карты (как снимок 007). */
+    public static final Item MINERAL_MAP = simple("mineral_map");
+    /** Георадар: ставится на ровер ПКМ. */
+    public static final Item GROUND_RADAR = register("ground_radar", props -> new Item(props.stacksTo(1)));
+    /** Радарограмма: ПКМ — экран «путь × глубина». */
+    public static final Item RADARGRAM = register("radargram",
+            props -> new org.alex_melan.spacereloaded.survey.RadargramItem(props.stacksTo(1)));
 
     public static boolean isEnginePart(Item item) {
         return item == TURBOPUMP || item == INJECTOR_PLATE || item == REGEN_NOZZLE || item == CIRCUIT_BOARD;

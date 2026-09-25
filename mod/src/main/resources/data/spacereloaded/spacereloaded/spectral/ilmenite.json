@@ -1,0 +1,10 @@
+{
+	"blocks": [
+		"spacereloaded:titanium_ore",
+		"spacereloaded:deepslate_titanium_ore",
+		"spacereloaded:moon_titanium_ore"
+	],
+	"mineral": "ilmenite",
+	"map_color_id": 24,
+	"band_um": 0.4
+}

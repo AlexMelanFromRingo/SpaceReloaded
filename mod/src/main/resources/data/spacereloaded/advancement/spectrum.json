@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:hyperspectral_satellite"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.spectrum.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.spectrum.description"
+		},
+		"frame": "goal"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:view_from_above"
+}

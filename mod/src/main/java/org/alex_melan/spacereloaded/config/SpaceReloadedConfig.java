@@ -393,6 +393,13 @@ public final class SpaceReloadedConfig {
     /** Антенна дальней связи: скорость привода, °/с; порог телеметрии для связи без ретранслятора, бит/с. */
     public double dsnDriveDegPerS = 5;
     public double dsnTelemetryBps = 1000;
+    /** Календарь мира (009): сутки после J2000 на тике 0 (6647 — 14.03.2018, окно к Марсу через ½ суток). */
+    public double calendarEpochDayJ2000 = 6647;
+    /** Гиперспектральная карта: минимальная доля площади пикселя для отметки минерала. */
+    public double spectralDetectFraction = 0.25;
+    /** Георадар: частота, МГц, и динамический диапазон приёмника, дБ. */
+    public double radarFrequencyMhz = 500;
+    public double radarDynamicRangeDb = 60;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -586,6 +593,9 @@ public final class SpaceReloadedConfig {
         if (reactorRodSpeedPerS <= 0 || reactorRodWorthDollars <= 0 || reactorAlphaCentsPerK < 0
                 || centrifugeSwuPerDay <= 0 || eafElectrodeKgPerTonne < 0 || dsnDriveDegPerS <= 0 || dsnTelemetryBps <= 0) {
             throw new IllegalArgumentException("параметры 008: скорости и веса > 0, расходы >= 0");
+        }
+        if (spectralDetectFraction <= 0 || spectralDetectFraction > 1 || radarFrequencyMhz <= 0 || radarDynamicRangeDb <= 0) {
+            throw new IllegalArgumentException("параметры 009: доля (0, 1], частота и диапазон > 0");
         }
     }
 }

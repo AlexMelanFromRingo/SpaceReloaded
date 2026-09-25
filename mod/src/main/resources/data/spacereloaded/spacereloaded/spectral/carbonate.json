@@ -1,0 +1,9 @@
+{
+	"blocks": [
+		"minecraft:calcite",
+		"minecraft:dripstone_block"
+	],
+	"mineral": "carbonate",
+	"map_color_id": 14,
+	"band_um": 2.33
+}

@@ -1,0 +1,10 @@
+{
+	"blocks": [
+		"spacereloaded:moon_stone",
+		"minecraft:basalt",
+		"minecraft:smooth_basalt"
+	],
+	"mineral": "pyroxene",
+	"map_color_id": 21,
+	"band_um": 1.0
+}

@@ -16,5 +16,15 @@
 	"parking_altitude": 10000.0,
 	"transfer_delta_v": {
 		"spacereloaded:earth_orbit": 4800.0
-	}
+	},
+	"orbit": {
+		"a_au": 2.7675,
+		"e": 0.0758,
+		"i_deg": 10.59,
+		"node_deg": 80.3,
+		"peri_deg": 153.9,
+		"mean_lon_deg": 160.7
+	},
+	"mu": 62600000000.0,
+	"aerocapture": false
 }

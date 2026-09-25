@@ -1,0 +1,8 @@
+{
+	"blocks": [
+		"minecraft:snow_block",
+		"minecraft:powder_snow"
+	],
+	"epsilon": 1.8,
+	"loss_tangent": 0.001
+}

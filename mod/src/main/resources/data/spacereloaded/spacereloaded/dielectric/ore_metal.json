@@ -1,0 +1,13 @@
+{
+	"blocks": [
+		"spacereloaded:moon_titanium_ore",
+		"spacereloaded:titanium_ore",
+		"spacereloaded:deepslate_titanium_ore",
+		"spacereloaded:mars_tungsten_ore",
+		"minecraft:iron_ore",
+		"minecraft:deepslate_iron_ore",
+		"spacereloaded:galena_ore"
+	],
+	"epsilon": 30.0,
+	"loss_tangent": 0.1
+}

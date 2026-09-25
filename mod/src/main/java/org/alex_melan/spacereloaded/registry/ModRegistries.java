@@ -98,12 +98,34 @@ public final class ModRegistries {
      * (см. TransferOrbitsTest); отсутствующая запись стоит 0 — совместимость с аддонами.
      * Плоское поле {@code transfer_delta_v} через MapCodec (лимит 16 полей RecordCodecBuilder).
      */
+    /**
+     * Гелиоцентрическая орбита тела (009, FR-701, D91) — кеплеровы элементы J2000 (JPL, Standish).
+     * По ней цена перелёта считается задачей Ламберта на дату отлёта вместо таблицы.
+     */
+    public record OrbitSpec(double aAu, double e, double iDeg, double nodeDeg, double periDeg, double meanLonDeg) {
+        public static final Codec<OrbitSpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.doubleRange(0.01, 1000).fieldOf("a_au").forGetter(OrbitSpec::aAu),
+                Codec.doubleRange(0, 0.99).optionalFieldOf("e", 0.0).forGetter(OrbitSpec::e),
+                Codec.DOUBLE.optionalFieldOf("i_deg", 0.0).forGetter(OrbitSpec::iDeg),
+                Codec.DOUBLE.optionalFieldOf("node_deg", 0.0).forGetter(OrbitSpec::nodeDeg),
+                Codec.DOUBLE.optionalFieldOf("peri_deg", 0.0).forGetter(OrbitSpec::periDeg),
+                Codec.DOUBLE.optionalFieldOf("mean_lon_deg", 0.0).forGetter(OrbitSpec::meanLonDeg)
+        ).apply(instance, OrbitSpec::new));
+
+        public org.alex_melan.spacereloaded.core.orbit.Ephemeris.Elements elements() {
+            return new org.alex_melan.spacereloaded.core.orbit.Ephemeris.Elements(aAu, e, iDeg, nodeDeg, periDeg, meanLonDeg);
+        }
+    }
+
     public record TransferSpec(java.util.Map<Identifier, Double> deltaV, double bodyRadius,
-                               double parkingAltitude) {
+                               double parkingAltitude, java.util.Optional<OrbitSpec> orbit, double mu,
+                               boolean aerocapture, double parkRadius) {
         /**
          * {@code body_radius}/{@code parking_altitude} (004, FR-205a) — радиус тела и высота
          * парковочной орбиты, от которой отсчитан табличный Δv: из них катапульта обращает
          * табличный перелёт в избыток скорости v∞ (патч-коники). Радиус 0 — тело без катапульты.
+         * {@code orbit}/{@code mu}/{@code aerocapture} (009) — гелиоцентрическая орбита, μ тела
+         * (0 — малое тело), бесплатный аэрозахват при прибытии и радиус парковки отлёта.
          */
         public static final com.mojang.serialization.MapCodec<TransferSpec> MAP_CODEC =
                 RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -113,10 +135,23 @@ public final class ModRegistries {
                         Codec.doubleRange(0.0, 1.0e9).optionalFieldOf("body_radius", 0.0)
                                 .forGetter(TransferSpec::bodyRadius),
                         Codec.doubleRange(0.0, 1.0e9).optionalFieldOf("parking_altitude", 100_000.0)
-                                .forGetter(TransferSpec::parkingAltitude)
+                                .forGetter(TransferSpec::parkingAltitude),
+                        OrbitSpec.CODEC.optionalFieldOf("orbit").forGetter(TransferSpec::orbit),
+                        Codec.doubleRange(0.0, 1.0e22).optionalFieldOf("mu", 0.0).forGetter(TransferSpec::mu),
+                        Codec.BOOL.optionalFieldOf("aerocapture", false).forGetter(TransferSpec::aerocapture),
+                        Codec.doubleRange(0.0, 1.0e12).optionalFieldOf("park_radius", 0.0).forGetter(TransferSpec::parkRadius)
                 ).apply(instance, TransferSpec::new));
 
-        public static final TransferSpec NONE = new TransferSpec(java.util.Map.of(), 0.0, 100_000.0);
+        /**
+         * Радиус круговой парковочной орбиты отлёта по Ламберту, м: {@code park_radius} (у орбитальных
+         * измерений, где {@code body_radius} включил бы катапульту), иначе R + h.
+         */
+        public double departureRadius() {
+            return parkRadius > 0 ? parkRadius : bodyRadius + parkingAltitude;
+        }
+
+        public static final TransferSpec NONE = new TransferSpec(java.util.Map.of(), 0.0, 100_000.0,
+                java.util.Optional.empty(), 0.0, false, 0.0);
 
         /** Δv перелёта к цели, м/с (0, если записи нет). */
         public double deltaVTo(Identifier target) {

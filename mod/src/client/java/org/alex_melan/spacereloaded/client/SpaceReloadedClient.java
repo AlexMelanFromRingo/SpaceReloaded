@@ -29,6 +29,9 @@ public class SpaceReloadedClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		// 009 (US4): радарограмма открывается на клиенте по синхронизированному компоненту
+		org.alex_melan.spacereloaded.survey.RadargramItem.CLIENT_OPEN = data -> net.minecraft.client.Minecraft.getInstance()
+				.setScreenAndShow(new org.alex_melan.spacereloaded.client.gui.RadargramScreen(data));
 		// MenuScreens.register вскрыт classtweaker'ом fabric-menu-api-v1;
 		// параметры типов явно: экран объявлен над базовым MachineMenu
 		MenuScreens.<MachineMenu, MachineScreen>register(ModMenus.CRUSHER, (menu, inventory, title) ->

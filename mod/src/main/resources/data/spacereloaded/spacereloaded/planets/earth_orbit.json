@@ -19,5 +19,16 @@
 		"spacereloaded:moon": 3955.0,
 		"spacereloaded:mars": 3613.0,
 		"spacereloaded:asteroid_belt": 9650.0
-	}
+	},
+	"orbit": {
+		"a_au": 1.00000261,
+		"e": 0.01671123,
+		"i_deg": -1.531e-05,
+		"node_deg": 0.0,
+		"peri_deg": 102.93768193,
+		"mean_lon_deg": 100.46457166
+	},
+	"mu": 398600441800000.0,
+	"aerocapture": true,
+	"park_radius": 6571000.0
 }

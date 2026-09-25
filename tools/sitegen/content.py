@@ -225,6 +225,15 @@ DESC = {
     "uranium_hexafluoride": "Гексафторид урана UF₆ — питание каскада (обогащение в компоненте).",
     "depleted_uranium_hexafluoride": "Обеднённый UF₆ — отвал каскада (0.25 %).",
     "fuel_basket": "Топливная корзина U-Zr: масса U-235 задаёт запас реактивности.",
+    "galena": "Галенит PbS — сырьё ИК-фотоприёмника (1–3 мкм).",
+    "galena_ore": "Галенитовая руда: гидротермальные жилы Земли, y −16…64.",
+    "pbs_detector": "Фотосопротивление PbS: видит ближний ИК, где кремний слеп.",
+    "diffraction_grating": "Голографическая решётка с алюминиевым напылением: разлагает свет в спектр.",
+    "ir_spectrometer": "Спектрометр ближнего ИК: решётка + приёмник PbS, 240 каналов.",
+    "hyperspectral_satellite": "Гиперспектральный спутник: минералы открытой поверхности, GSD 2.4–4.9 м на 2 мкм.",
+    "mineral_map": "Бланк карты минералов: заказ в ЦУПе, проявляется после пролёта.",
+    "ground_radar": "Георадар 500 МГц на ровер: трасса каждые 0.5 м, до ≈ 20 м в сухом реголите.",
+    "radargram": "Радарограмма: путь × глубина, эхо на t = 2d√ε/c.",
     "beryl_ore": "Пегматитовая руда берилла.",
     "borax_ore": "Эвапоритовая залежь буры.",
     "uraninite_ore": "Урановая смолка в глубинном сланце.",
@@ -284,7 +293,7 @@ PHASE = {
     "biomass_oxidizer": 16, "spin_hub": 17, "rim_thruster": 17, "despin_motor": 17, "rover_chassis": 17,
     "rover_wheel": 17, "nife_battery": 17, "rover_charger": 17, "telescope_mirror": 17, "image_sensor": 17,
     "imaging_satellite": 17,
-    "eclss_controller": 18, "eclss_rack_frame": 18, "ogs_module": 18, "sabatier_module": 18, "cdra_module": 18, "wrs_module": 18, "eclss_blank_panel": 18, "control_rod_drive": 18, "reactor_core": 18, "beo_reflector": 18, "heat_pipe": 18, "stirling_convertor": 18, "reactor_power_cap": 18, "radiator_panel": 18, "cascade_controller": 18, "gas_centrifuge": 18, "asu_sump": 18, "asu_tray": 18, "asu_heat_exchanger": 18, "asu_compressor": 18, "argon_canister": 18, "eaf_controller": 18, "eaf_shell": 18, "eaf_roof": 18, "electrode_blank": 18, "graphite_electrode": 18, "dsn_controller": 18, "dish_mount": 18, "dish_panel": 18, "beryl": 18, "beryllium_hydroxide": 18, "beryllium_oxide": 18, "sodium": 18, "borax": 18, "boric_acid": 18, "boron_carbide_blend": 18, "boron_carbide": 18, "zircon": 18, "zirconium": 18, "uraninite": 18, "yellowcake": 18, "uranium_dioxide": 18, "uranium_tetrafluoride": 18, "fluorine": 18, "uranium_hexafluoride": 18, "depleted_uranium_hexafluoride": 18, "fuel_basket": 18, "beryl_ore": 18, "borax_ore": 18, "uraninite_ore": 18,
+    "eclss_controller": 18, "eclss_rack_frame": 18, "ogs_module": 18, "sabatier_module": 18, "cdra_module": 18, "wrs_module": 18, "eclss_blank_panel": 18, "control_rod_drive": 18, "reactor_core": 18, "beo_reflector": 18, "heat_pipe": 18, "stirling_convertor": 18, "reactor_power_cap": 18, "radiator_panel": 18, "cascade_controller": 18, "gas_centrifuge": 18, "asu_sump": 18, "asu_tray": 18, "asu_heat_exchanger": 18, "asu_compressor": 18, "argon_canister": 18, "eaf_controller": 18, "eaf_shell": 18, "eaf_roof": 18, "electrode_blank": 18, "graphite_electrode": 18, "dsn_controller": 18, "dish_mount": 18, "dish_panel": 18, "beryl": 18, "beryllium_hydroxide": 18, "beryllium_oxide": 18, "sodium": 18, "borax": 18, "boric_acid": 18, "boron_carbide_blend": 18, "boron_carbide": 18, "zircon": 18, "zirconium": 18, "uraninite": 18, "yellowcake": 18, "uranium_dioxide": 18, "uranium_tetrafluoride": 18, "fluorine": 18, "uranium_hexafluoride": 18, "depleted_uranium_hexafluoride": 18, "fuel_basket": 18, "beryl_ore": 18, "borax_ore": 18, "uraninite_ore": 18, "galena": 19, "galena_ore": 19, "pbs_detector": 19, "diffraction_grating": 19, "ir_spectrometer": 19, "hyperspectral_satellite": 19, "mineral_map": 19, "ground_radar": 19, "radargram": 19,
     "copper_wire": 5, "relay": 5, "relay_logic": 5, "ferrite_core": 5, "core_rope_memory": 5, "silicon_blend": 14, "metallurgical_silicon": 14, "silicon_dust": 14, "carbon_monoxide": 14, "brine": 14, "hydrogen_chloride": 14, "caustic_soda": 14, "trichlorosilane": 14, "polysilicon": 14, "silicon_boule": 14, "multicrystalline_silicon": 14, "multicrystalline_wafer": 14, "silicon_wafer": 14, "solar_cell": 14, "mono_solar_cell": 14, "rock_salt": 14, "photoresist": 14, "ceramic_package": 14, "die_logic": 14, "die_microprocessor": 14, "die_radhard": 14, "logic_chip": 14, "microprocessor": 14, "radhard_processor": 14, "hydrofluoric_acid": 15, "glass_fiber": 14, "epoxy_resin": 14, "fr4_laminate": 14, "copper_clad_laminate": 14, "incomplete_circuit_board": 14, "circuit_board": 14, "flight_computer": 14, "fluorite": 15, "cryolite": 15, "alumina": 15, "aluminium_ingot": 15, "aluminium_copper_ingot": 15, "spodumene": 15, "beta_spodumene": 15, "lithium_chloride": 15, "lithium_ingot": 15, "aluminium_lithium_ingot": 15, "nickel_ingot": 15, "nickel_superalloy_ingot": 15, "sapphire": 14, "quartz_crucible": 14, "phosphorus": 14, "sulfuric_acid": 15, "gypsum": 15, "sapphire_wafer": 14, "sos_wafer": 14, "photomask_logic": 14, "photomask_microprocessor": 14, "photomask_radhard": 14, "al_cu_blend": 15, "al_li_blend": 15, "superalloy_blend": 15, "phosphate_blend": 14, "chemical_reactor": 15, "deposition_reactor": 14, "crystal_puller": 14, "wafer_saw": 14, "fan_filter_unit": 14, "diffusion_furnace": 14, "lithography_station": 14, "etch_bath": 14, "mono_solar_panel": 14, "aluminium_fuel_tank": 15, "al_li_fuel_tank": 15,
 }
 # фаза по имени файла рецепта (перекрывает фазу результата)
@@ -327,6 +336,7 @@ PHASES = [
     ("Фаза 16. Воздух станции", "Газ зоны из баллонов, дыхание по NASA BVAD, поглотители CO₂, насос шлюза и гидропонная оранжерея."),
     ("Фаза 17. Кольцо, ровер, съёмка", "Вращающееся кольцо g = ω²r, ровер по механике грунта Беккера, спутник-камера с дифракционным пределом."),
     ("Фаза 18. Тяжёлая индустрия", "Стойка жизнеобеспечения, реактор Kilopower с ураном и каскадом центрифуг, воздухоразделительная колонна, дуговая печь, антенна дальней связи."),
+    ("Фаза 19. Навигация и разведка", "Перелёты по Ламберту на дату, карта Δv и окна; гиперспектральный спутник на приёмнике PbS из галенита, георадар ровера."),
 ]
 
 GUIDE_HTML = '''

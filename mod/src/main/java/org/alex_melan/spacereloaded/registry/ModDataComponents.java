@@ -80,6 +80,15 @@ public final class ModDataComponents {
                             org.alex_melan.spacereloaded.orbit.ImageOrder.CODEC))
                     .build());
 
+    /** Радарограмма георадара ровера (009, US4). */
+    public static final DataComponentType<org.alex_melan.spacereloaded.survey.RadargramData> RADARGRAM = Registry.register(
+            BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(SpaceReloaded.MOD_ID, "radargram"),
+            new DataComponentType.Builder<org.alex_melan.spacereloaded.survey.RadargramData>()
+                    .persistent(org.alex_melan.spacereloaded.survey.RadargramData.CODEC)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.fromCodec(
+                            org.alex_melan.spacereloaded.survey.RadargramData.CODEC))
+                    .build());
+
     /** Частота (канал) ключа связи — прошивается в ЦУПе. */
     public static final DataComponentType<Integer> KEY_FREQUENCY = registerInt("key_frequency");
 

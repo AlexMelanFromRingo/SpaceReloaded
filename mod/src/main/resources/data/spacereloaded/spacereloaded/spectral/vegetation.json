@@ -1,0 +1,11 @@
+{
+	"blocks": [
+		"minecraft:grass_block",
+		"#minecraft:leaves",
+		"minecraft:moss_block",
+		"minecraft:moss_carpet"
+	],
+	"mineral": "vegetation",
+	"map_color_id": 27,
+	"band_um": 0.7
+}

@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:ground_radar"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.below_ground.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.below_ground.description"
+		},
+		"frame": "task"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:first_track"
+}

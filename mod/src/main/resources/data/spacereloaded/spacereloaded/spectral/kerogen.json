@@ -1,0 +1,8 @@
+{
+	"blocks": [
+		"spacereloaded:oil_shale"
+	],
+	"mineral": "kerogen",
+	"map_color_id": 26,
+	"band_um": 2.3
+}

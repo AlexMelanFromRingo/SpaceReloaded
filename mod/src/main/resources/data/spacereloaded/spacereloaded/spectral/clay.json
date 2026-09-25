@@ -1,0 +1,10 @@
+{
+	"blocks": [
+		"minecraft:clay",
+		"#minecraft:terracotta",
+		"minecraft:mud"
+	],
+	"mineral": "clay",
+	"map_color_id": 15,
+	"band_um": 2.2
+}

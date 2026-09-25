@@ -1,0 +1,26 @@
+{
+	"criteria": {
+		"done": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"display": {
+		"icon": {
+			"id": "spacereloaded:hyperspectral_satellite"
+		},
+		"title": {
+			"translate": "advancements.spacereloaded.celestial_mechanics.title"
+		},
+		"description": {
+			"translate": "advancements.spacereloaded.celestial_mechanics.description"
+		},
+		"frame": "challenge"
+	},
+	"requirements": [
+		[
+			"done"
+		]
+	],
+	"sends_telemetry_event": false,
+	"parent": "spacereloaded:mars"
+}

@@ -37,6 +37,10 @@ public final class IndustryAdvancements {
     public static final String ARGON = "argon";
     public static final String FIRST_MELT = "first_melt";
     public static final String VOICE_FROM_MARS = "voice_from_mars";
+    // 009: навигация и разведка
+    public static final String CELESTIAL_MECHANICS = "celestial_mechanics";
+    public static final String SPECTRUM = "spectrum";
+    public static final String BELOW_GROUND = "below_ground";
 
     private IndustryAdvancements() {
     }

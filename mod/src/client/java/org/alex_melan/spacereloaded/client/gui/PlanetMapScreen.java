@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.alex_melan.spacereloaded.planet.Navigation;
 import org.alex_melan.spacereloaded.planet.PlanetManager;
+import org.alex_melan.spacereloaded.planet.TransferCosts;
 import org.alex_melan.spacereloaded.planet.TransferWindows;
 import org.alex_melan.spacereloaded.network.PlanetMapPayload;
 import org.alex_melan.spacereloaded.network.SetDestinationPayload;
@@ -22,11 +23,15 @@ import java.util.Locale;
 
 /**
  * Карта полёта. Схема рисуется из графа переходов датапака, а не из таблицы
- * координат: тело садится на кольцо по числу прыжков от Земли, поэтому чужая
+ * координат: тело встаёт в колонку по числу прыжков от Земли, поэтому чужая
  * планета из аддона появляется на карте сама.
  *
  * <p>Почти всё считается на клиенте по синхронизированному реестру планет.
  * С сервера приходит только спутниковое покрытие: клиент о нём знать не может.
+ *
+ * <p>009 (US2): карта Δv — на каждом ребре цена «туда / обратно» на сегодня (межпланетные плечи —
+ * по Ламберту, как спишет переход), в панели — минимум периода и дни до него, сумма маршрута против
+ * Δv стека; «Окна…» открывает «свиную отбивную» следующего межпланетного плеча.
  */
 public class PlanetMapScreen extends Screen {
 
@@ -40,11 +45,10 @@ public class PlanetMapScreen extends Screen {
     private static final int ORBIT = 0xFF1E2A30;
 
     private static final int BODY_RADIUS = 5;
-    private static final int RING_STEP = 46;
     private static final long TICKS_PER_DAY = 24_000L;
 
-    /** Тело на карте: узел графа плюс экранная точка. */
-    private record Body(Identifier id, ModRegistries.PlanetProfile profile, int x, int y, int ringRadius) {
+    /** Тело на карте: узел графа, экранная точка и число прыжков от Земли. */
+    private record Body(Identifier id, ModRegistries.PlanetProfile profile, int x, int y, int depth) {
     }
 
     private final PlanetMapPayload data;
@@ -52,6 +56,7 @@ public class PlanetMapScreen extends Screen {
     private Identifier here;
     private Identifier selected;
     private Button engageButton;
+    private Button windowsButton;
 
     public PlanetMapScreen(PlanetMapPayload data) {
         super(Component.translatable("screen.spacereloaded.map"));
@@ -82,9 +87,11 @@ public class PlanetMapScreen extends Screen {
             return;
         }
 
-        int centerX = width / 2 - 70;
+        // 009: схема-дерево («карта метро» Δv): колонка = число прыжков от корня, тела колонки —
+        // столбиком по центру; рёбра не пересекают чужие тела, цена читается у каждого
+        int left = 40;
+        int right = width / 2 - 24;
         int centerY = height / 2;
-        // Кольцо = число прыжков от корня; тела одного кольца равномерно по углу
         List<List<Identifier>> rings = new ArrayList<>();
         for (Identifier id : ids) {
             int depth = Navigation.route(access, root, id).size() - 1;
@@ -96,18 +103,16 @@ public class PlanetMapScreen extends Screen {
             }
             rings.get(depth).add(id);
         }
+        int columns = Math.max(1, rings.size() - 1);
         for (int depth = 0; depth < rings.size(); depth++) {
             List<Identifier> ring = rings.get(depth);
+            final int column = depth;
+            int x = left + (right - left) * depth / columns;
             for (int i = 0; i < ring.size(); i++) {
                 Identifier id = ring.get(i);
-                double angle = ring.size() == 1 && depth == 0
-                        ? 0
-                        : (2 * Math.PI * i / ring.size()) - Math.PI / 2;
-                int radius = depth * RING_STEP;
-                int x = centerX + (int) Math.round(Math.cos(angle) * radius);
-                int y = centerY + (int) Math.round(Math.sin(angle) * radius);
+                int y = centerY + (int) Math.round((i - (ring.size() - 1) / 2.0) * 56);
                 PlanetManager.profileById(access, id)
-                        .ifPresent(profile -> bodies.add(new Body(id, profile, x, y, radius)));
+                        .ifPresent(profile -> bodies.add(new Body(id, profile, x, y, column)));
             }
         }
 
@@ -123,6 +128,10 @@ public class PlanetMapScreen extends Screen {
                         Component.translatable("screen.spacereloaded.cannon.close"), button -> onClose())
                 .bounds(width / 2 + 20, height / 2 + 92, 130, 20)
                 .build());
+        windowsButton = addRenderableWidget(Button.builder(
+                        Component.translatable("screen.spacereloaded.map.windows"), button -> openPorkchop())
+                .bounds(width / 2 + 20, height / 2 + 116, 130, 20)
+                .build());
         updateEngageButton();
     }
 
@@ -133,7 +142,40 @@ public class PlanetMapScreen extends Screen {
         return ids.isEmpty() ? null : ids.getFirst();
     }
 
+    /** Первое межпланетное плечо маршрута к выбранной цели: {откуда, куда} или null. */
+    private Identifier[] celestialLeg() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || here == null || selected == null) {
+            return null;
+        }
+        var access = mc.level.registryAccess();
+        List<Identifier> route = Navigation.route(access, here, selected);
+        for (int i = 0; i + 1 < route.size(); i++) {
+            var from = PlanetManager.profileById(access, route.get(i));
+            if (from.isPresent() && TransferCosts.celestial(access, from.get(), route.get(i + 1))) {
+                return new Identifier[] {route.get(i), route.get(i + 1)};
+            }
+        }
+        return null;
+    }
+
+    /** Выбор цели (стенд и кадры README). */
+    public void select(Identifier id) {
+        selected = id;
+        updateEngageButton();
+    }
+
+    public void openPorkchop() {
+        Identifier[] leg = celestialLeg();
+        if (leg != null) {
+            Minecraft.getInstance().setScreenAndShow(new PorkchopScreen(this, leg[0], leg[1]));
+        }
+    }
+
     private void updateEngageButton() {
+        if (windowsButton != null) {
+            windowsButton.active = celestialLeg() != null;
+        }
         if (engageButton == null) {
             return;
         }
@@ -163,17 +205,15 @@ public class PlanetMapScreen extends Screen {
         gfx.fill(0, 0, width, height, BG);
         gfx.text(font, getTitle(), 16, 14, ACCENT);
 
-        int centerX = width / 2 - 70;
-        int centerY = height / 2;
-        // Кольца рисуем по одному разу, а не по разу на тело
-        bodies.stream().map(Body::ringRadius).filter(radius -> radius > 0).distinct()
-                .forEach(radius -> drawRing(gfx, centerX, centerY, radius));
 
         Minecraft mc = Minecraft.getInstance();
         var access = mc.level == null ? null : mc.level.registryAccess();
         List<Identifier> route = access == null || here == null || selected == null
                 ? List.of() : Navigation.route(access, here, selected);
 
+        if (access != null && mc.level != null) {
+            drawEdges(gfx, access, mc.level.getGameTime(), route);
+        }
         for (Body body : bodies) {
             boolean onRoute = route.contains(body.id());
             boolean isHere = body.id().equals(here);
@@ -185,23 +225,65 @@ public class PlanetMapScreen extends Screen {
                 gfx.outline(body.x() - BODY_RADIUS - 3, body.y() - BODY_RADIUS - 3,
                         (BODY_RADIUS + 3) * 2, (BODY_RADIUS + 3) * 2, TEXT);
             }
-            gfx.text(font, Component.translatable("planet.spacereloaded." + body.id().getPath()),
-                    body.x() + BODY_RADIUS + 4, body.y() - font.lineHeight / 2,
-                    isSelected ? TEXT : MUTED);
+            Component name = Component.translatable("planet.spacereloaded." + body.id().getPath());
+            gfx.text(font, name, body.x() - font.width(name) / 2, body.y() + BODY_RADIUS + 4, isSelected ? TEXT : MUTED);
         }
 
         drawInfoPanel(gfx, route);
     }
 
-    /** Кольцо орбиты: пунктир из точек, дуг у экстрактора нет. */
-    private void drawRing(GuiGraphicsExtractor gfx, int centerX, int centerY, int radius) {
-        int points = Math.max(48, radius * 2);
-        for (int i = 0; i < points; i += 2) {
-            double angle = 2 * Math.PI * i / points;
-            int x = centerX + (int) Math.round(Math.cos(angle) * radius);
-            int y = centerY + (int) Math.round(Math.sin(angle) * radius);
-            gfx.fill(x, y, x + 1, y + 1, ORBIT);
+    /**
+     * Рёбра графа переходов пунктиром и цена на сегодня, км/с: «наружу / обратно» — от тела ближе к
+     * Земле к дальнему; подпись у внутренней трети ребра, чтобы не наезжать на имена тел.
+     */
+    private void drawEdges(GuiGraphicsExtractor gfx, net.minecraft.core.RegistryAccess access, long tick,
+                           List<Identifier> route) {
+        java.util.Set<String> drawn = new java.util.HashSet<>();
+        for (Body p : bodies) {
+            for (Identifier target : p.profile().transitionTargets()) {
+                Body q = bodies.stream().filter(o -> o.id().equals(target)).findFirst().orElse(null);
+                if (q == null) {
+                    continue;
+                }
+                Body a = p.depth() <= q.depth() ? p : q;   // внутреннее тело
+                Body b = a == p ? q : p;
+                if (!drawn.add(a.id() + ">" + b.id())) {
+                    continue;
+                }
+                boolean onRoute = route.contains(a.id()) && route.contains(b.id());
+                int color = onRoute ? 0xFF3C7F8C : 0xFF26343A;
+                int n = Math.max(8, (int) (Math.hypot(b.x() - a.x(), b.y() - a.y()) / 3));
+                for (int k = 1; k < n; k += 2) {
+                    int x = a.x() + (b.x() - a.x()) * k / n, y = a.y() + (b.y() - a.y()) * k / n;
+                    gfx.fill(x, y, x + 1, y + 1, color);
+                }
+                double out = a.profile().transitionTargets().contains(b.id())
+                        ? TransferCosts.cost(access, a.profile(), b.id(), tick) : Double.NaN;
+                double back = b.profile().transitionTargets().contains(a.id())
+                        ? TransferCosts.cost(access, b.profile(), a.id(), tick) : Double.NaN;
+                String label = (Double.isNaN(out) ? "—" : kms(out)) + " / " + (Double.isNaN(back) ? "—" : kms(back));
+                int mx = (a.x() + b.x()) / 2, my = (a.y() + b.y()) / 2;
+                gfx.text(font, label, mx - font.width(label) / 2, my - font.lineHeight - 2, onRoute ? ACCENT : MUTED);
+            }
         }
+    }
+
+    private String minKey;
+    private double[] minValue;
+
+    /** Минимум периода — перебор сотен дат; на экране пересчитывается раз в игровой час. */
+    private double[] minimumCached(net.minecraft.core.RegistryAccess access, ModRegistries.PlanetProfile from,
+                                   Identifier[] leg, long tick) {
+        String key = leg[0] + ">" + leg[1] + "@" + tick / 1000;
+        if (!key.equals(minKey)) {
+            minValue = TransferCosts.minimumInPeriod(access, from, leg[1], tick);
+            minKey = key;
+        }
+        return minValue;
+    }
+
+    private static String kms(double ms) {
+        return Double.isFinite(ms) ? String.format(Locale.ROOT, "%.1f", ms / 1000) : "∞";
     }
 
     private void drawInfoPanel(GuiGraphicsExtractor gfx, List<Identifier> route) {
@@ -247,9 +329,42 @@ public class PlanetMapScreen extends Screen {
                 x, y, TEXT);
         y += line;
 
-        // Окно перелёта считается по следующему прыжку: именно он сейчас откроется
-        Identifier hop = route.get(1);
+        // 009: цена маршрута сегодня против Δv стека; межпланетное плечо — сегодня и минимум периода
         Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null) {
+            var access = mc.level.registryAccess();
+            long tick = mc.level.getGameTime();
+            double total = 0;
+            for (int i = 0; i + 1 < route.size(); i++) {
+                var from = PlanetManager.profileById(access, route.get(i));
+                if (from.isPresent()) {
+                    total += TransferCosts.cost(access, from.get(), route.get(i + 1), tick);
+                }
+            }
+            double have = mc.player != null && mc.player.getVehicle() instanceof RocketEntity rocket ? rocket.clientDeltaV() : Double.NaN;
+            gfx.text(font, Component.translatable("screen.spacereloaded.map.route_cost", kms(total)), x, y,
+                    Double.isFinite(have) && have < total ? WARN : TEXT);
+            y += line;
+            if (Double.isFinite(have)) {
+                gfx.text(font, Component.translatable("screen.spacereloaded.map.stack_dv", kms(have)), x, y,
+                        have < total ? WARN : GOOD);
+                y += line;
+            }
+            Identifier[] leg = celestialLeg();
+            if (leg != null) {
+                var from = PlanetManager.profileById(access, leg[0]).orElseThrow();
+                double today = TransferCosts.cost(access, from, leg[1], tick);
+                double[] min = minimumCached(access, from, leg, tick);
+                gfx.text(font, Component.translatable("screen.spacereloaded.map.leg_today", kms(today)), x, y, TEXT);
+                y += line;
+                gfx.text(font, Component.translatable("screen.spacereloaded.map.leg_min", kms(min[1]),
+                        String.format(Locale.ROOT, "%.1f", (min[0] - tick) / (double) TICKS_PER_DAY)), x, y,
+                        today <= min[1] * 1.02 ? GOOD : MUTED);
+            }
+        }
+
+        // Датапак-тело без орбиты: окно-расписание по следующему прыжку (003)
+        Identifier hop = route.get(1);
         if (mc.level != null) {
             PlanetManager.profileById(mc.level.registryAccess(), hop).ifPresent(hopProfile -> {
                 if (!TransferWindows.hasWindow(hopProfile)) {

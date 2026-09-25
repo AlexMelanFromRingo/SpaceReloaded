@@ -548,6 +548,11 @@ public class RocketEntity extends Entity {
         return hasPayload(org.alex_melan.spacereloaded.registry.ModBlocks.IMAGING_SATELLITE);
     }
 
+    /** Есть ли гиперспектральный спутник (009, US3). */
+    public boolean hasHyperspectralSatellite() {
+        return hasPayload(org.alex_melan.spacereloaded.registry.ModBlocks.HYPERSPECTRAL_SATELLITE);
+    }
+
     /** Есть ли энергоспутник (Phase 14). */
     public boolean hasPowerSatellite() {
         return hasPayload(org.alex_melan.spacereloaded.registry.ModBlocks.POWER_SATELLITE);
@@ -1063,7 +1068,7 @@ public class RocketEntity extends Entity {
             pilot.sendOverlayMessage(Component.translatable(
                     "message.spacereloaded.rocket.window_closed",
                     Component.translatable("planet.spacereloaded." + targetId.getPath()),
-                    ticks / 24000L, (ticks % 24000L) / 1200L));
+                    ticks / 24000L, (ticks % 24000L) / 1000L));
         }
         return false;
     }
@@ -1090,7 +1095,9 @@ public class RocketEntity extends Entity {
         ServerPlayer pilot = getFirstPassenger() instanceof ServerPlayer sp ? sp : null;
         var config = org.alex_melan.spacereloaded.SpaceReloaded.config();
         // 003 (FR-102/FR-103, D21): списание Δv перелёта по Циолковскому через ступени ДО телепорта
-        double transferCost = fromProfile.transferDeltaVTo(targetId) * config.transferDeltaVScale;
+        // 009: цена на сегодня — Ламберт для межпланетного плеча, таблица для остальных
+        double transferCost = org.alex_melan.spacereloaded.planet.TransferCosts.cost(from.registryAccess(),
+                fromProfile, targetId, from.getGameTime());
         if (transferCost > 0) {
             if (transferWarned) {
                 return; // уже предупреждали за этот подъём — считать заново нечего
@@ -1108,6 +1115,16 @@ public class RocketEntity extends Entity {
                 org.alex_melan.spacereloaded.SpaceReloaded.LOGGER.info(
                         "Перелёт к {} отклонён: нужно {} м/с, есть {} м/с", targetId, need, have);
                 return;
+            }
+            // 009: «Небесная механика» — межпланетный перелёт в день минимума периода (≤ 2 % дороже)
+            if (pilot != null && org.alex_melan.spacereloaded.planet.TransferCosts.celestial(from.registryAccess(), fromProfile, targetId)) {
+                double[] min = org.alex_melan.spacereloaded.planet.TransferCosts.minimumInPeriod(from.registryAccess(),
+                        fromProfile, targetId, from.getGameTime() - org.alex_melan.spacereloaded.planet.TransferCosts.synodicTicks(
+                                from.registryAccess(), fromProfile, targetId) / 2);
+                if (transferCost <= 1.02 * min[1]) {
+                    org.alex_melan.spacereloaded.industry.IndustryAdvancements.award(pilot,
+                            org.alex_melan.spacereloaded.industry.IndustryAdvancements.CELESTIAL_MECHANICS);
+                }
             }
             if (burn.activeStage() > activeStage) {
                 StageSeparation.dropBurnedStages(this, burn.activeStage(),
@@ -1166,7 +1183,9 @@ public class RocketEntity extends Entity {
             // спутник-камера (007): над Землёй — с орбитальной платформы, у Луны и Марса аппарат
             // остаётся на парковочной орбите вместо посадки (ракета — его платформа)
             boolean imaging = rocket.hasImagingSatellite();
-            boolean payload = toOrbit ? rocket.hasSatellite() || rocket.hasPowerSatellite() || imaging : imaging;
+            boolean spectral = rocket.hasHyperspectralSatellite();
+            boolean payload = toOrbit ? rocket.hasSatellite() || rocket.hasPowerSatellite() || imaging || spectral
+                    : imaging || spectral;
             if (payload && pilot == null) {
                 var network = org.alex_melan.spacereloaded.network.SpaceNetworkState.get(target.getServer());
                 if (toOrbit && rocket.hasSatellite()) {
@@ -1178,6 +1197,10 @@ public class RocketEntity extends Entity {
                 if (imaging) {
                     org.alex_melan.spacereloaded.orbit.OrbitalImages.bodyUnder(target).ifPresent(body ->
                             network.setImagingSats(body, network.imagingSats(body) + 1));
+                }
+                if (spectral) {
+                    org.alex_melan.spacereloaded.orbit.OrbitalImages.bodyUnder(target).ifPresent(body ->
+                            network.setSpectralSats(body, network.spectralSats(body) + 1));
                 }
                 target.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
                         rocket.getX(), rocket.getY() + 1.5, rocket.getZ(), 40, 1.0, 1.0, 1.0, 0.05);
@@ -1346,8 +1369,10 @@ public class RocketEntity extends Entity {
         // 003 (FR-105…FR-107): бюджет всего маршрута — отказ с причиной и цифрами
         var plan = org.alex_melan.spacereloaded.logistics.MissionPlanning.plan(level, this, finalDestination(level));
         if (plan != null && !plan.feasible()) {
-            return refused(LaunchResult.Kind.BUDGET,
-                    org.alex_melan.spacereloaded.logistics.MissionPlanning.describe(plan));
+            // 009 (FR-723, D93): нехватка на межпланетном плече — назвать день, когда цена опустится
+            Component wait = org.alex_melan.spacereloaded.logistics.MissionPlanning.waitForWindow(level, plan);
+            return refused(LaunchResult.Kind.BUDGET, wait != null ? wait
+                    : org.alex_melan.spacereloaded.logistics.MissionPlanning.describe(plan));
         }
         // Окно перелёта на момент прибытия на высоту перехода (иначе борт сжёг бы топливо зря)
         if (org.alex_melan.spacereloaded.planet.TransferWindows.hasWindow(target.get())) {
@@ -1357,7 +1382,7 @@ public class RocketEntity extends Entity {
                 long ticks = org.alex_melan.spacereloaded.planet.TransferWindows.ticksToOpen(at, target.get());
                 return refused(LaunchResult.Kind.WINDOW, Component.translatable("message.spacereloaded.rocket.window_closed",
                         Component.translatable("planet.spacereloaded." + targetId.getPath()),
-                        ticks / 24000L, (ticks % 24000L) / 1200L));
+                        ticks / 24000L, (ticks % 24000L) / 1000L));
             }
         }
         // Покрытие для беспилотного межпланетного рейса — до старта, а не на высоте перехода
@@ -1404,7 +1429,8 @@ public class RocketEntity extends Entity {
             return 0;
         }
         var config = org.alex_melan.spacereloaded.SpaceReloaded.config();
-        double cost = profile.get().transferDeltaVTo(hop) * config.transferDeltaVScale;
+        double cost = org.alex_melan.spacereloaded.planet.TransferCosts.cost(level.registryAccess(), profile.get(), hop,
+                level.getGameTime());
         var target = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, hop);
         if (target.isPresent() && !"platform".equals(target.get().arrival()) && target.get().gravity() > 0) {
             var perf = PerformanceCalculator.calculate(currentView(), target.get().gravity());
@@ -1672,7 +1698,17 @@ public class RocketEntity extends Entity {
         Component window = Component.empty();
         if (hop != null) {
             var hopProfile = org.alex_melan.spacereloaded.planet.PlanetManager.profileById(level, hop);
-            if (hopProfile.isPresent()
+            var hereProfile = org.alex_melan.spacereloaded.planet.PlanetManager.profileFor(level);
+            if (hereProfile.isPresent() && org.alex_melan.spacereloaded.planet.TransferCosts.celestial(access, hereProfile.get(), hop)) {
+                // 009: цена сегодня и лучший день периода
+                long now = level.getGameTime();
+                double today = org.alex_melan.spacereloaded.planet.TransferCosts.cost(access, hereProfile.get(), hop, now);
+                double[] min = org.alex_melan.spacereloaded.planet.TransferCosts.minimumInPeriod(access, hereProfile.get(), hop, now);
+                long wait = Math.max(0, (long) min[0] - now);
+                window = Component.translatable("message.spacereloaded.rocket.transfer_today",
+                        org.alex_melan.spacereloaded.logistics.MissionPlanning.fmt(today),
+                        org.alex_melan.spacereloaded.logistics.MissionPlanning.fmt(min[1]), wait / 24000L, (wait % 24000L) / 1000L);
+            } else if (hopProfile.isPresent()
                     && org.alex_melan.spacereloaded.planet.TransferWindows.hasWindow(hopProfile.get())) {
                 boolean open = org.alex_melan.spacereloaded.planet.TransferWindows
                         .isOpen(level.getGameTime(), hopProfile.get());

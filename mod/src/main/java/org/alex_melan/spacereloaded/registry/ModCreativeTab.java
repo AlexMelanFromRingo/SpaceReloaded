@@ -161,7 +161,8 @@ public final class ModCreativeTab {
                                 ModBlocks.ASU_SUMP, ModBlocks.ASU_TRAY, ModBlocks.ASU_HEAT_EXCHANGER, ModBlocks.ASU_COMPRESSOR,
                                 ModBlocks.EAF_CONTROLLER, ModBlocks.EAF_SHELL, ModBlocks.EAF_ROOF,
                                 ModBlocks.DSN_CONTROLLER, ModBlocks.DISH_MOUNT, ModBlocks.DISH_PANEL,
-                                ModBlocks.BERYL_ORE, ModBlocks.BORAX_ORE, ModBlocks.URANINITE_ORE}) {
+                                ModBlocks.BERYL_ORE, ModBlocks.BORAX_ORE, ModBlocks.URANINITE_ORE,
+                                ModBlocks.GALENA_ORE, ModBlocks.HYPERSPECTRAL_SATELLITE}) {
                             output.accept(block);
                         }
                         for (var item : new net.minecraft.world.item.Item[] {
@@ -191,7 +192,9 @@ public final class ModCreativeTab {
                                 ModItems.ZIRCON, ModItems.ZIRCONIUM, ModItems.URANINITE, ModItems.YELLOWCAKE,
                                 ModItems.URANIUM_DIOXIDE, ModItems.URANIUM_TETRAFLUORIDE, ModItems.FLUORINE,
                                 ModItems.URANIUM_HEXAFLUORIDE, ModItems.DEPLETED_URANIUM_HEXAFLUORIDE, ModItems.ARGON_CANISTER,
-                                ModItems.ELECTRODE_BLANK, ModItems.GRAPHITE_ELECTRODE}) {
+                                ModItems.ELECTRODE_BLANK, ModItems.GRAPHITE_ELECTRODE,
+                                ModItems.GALENA, ModItems.PBS_DETECTOR, ModItems.DIFFRACTION_GRATING, ModItems.IR_SPECTROMETER,
+                                ModItems.MINERAL_MAP, ModItems.GROUND_RADAR}) {
                             output.accept(item);
                         }
                         // корзина ВОУ 93 % (28 кг U-235, как KRUSTY) — для творческого режима и стенда

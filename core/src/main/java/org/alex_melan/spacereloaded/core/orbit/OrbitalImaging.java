@@ -20,7 +20,8 @@ public final class OrbitalImaging {
     private OrbitalImaging() {
     }
 
-    public static final double ASTRO_COMPRESSION = 130;
+    /** Сжатие астрономического времени — календарь мира (009, D90). */
+    public static final double ASTRO_COMPRESSION = GameCalendar.DAYS_PER_GAME_DAY;
     public static final int MAX_SCALE = 4;
 
     public static double gsd(double wavelength, double altitudeM, double apertureM) {

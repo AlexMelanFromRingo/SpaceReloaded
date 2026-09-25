@@ -1,0 +1,8 @@
+{
+	"blocks": [
+		"spacereloaded:borax_ore"
+	],
+	"mineral": "borate",
+	"map_color_id": 18,
+	"band_um": 1.9
+}

@@ -26,6 +26,7 @@ public final class ModWorldgen {
     public static final ResourceKey<PlacedFeature> ORE_BERYL = placed("ore_beryl");
     public static final ResourceKey<PlacedFeature> ORE_BORAX = placed("ore_borax");
     public static final ResourceKey<PlacedFeature> ORE_URANINITE = placed("ore_uraninite");
+    public static final ResourceKey<PlacedFeature> ORE_GALENA = placed("ore_galena");
 
     /** Ударный кратер безатмосферного тела: рельеф, а не разрушение. */
     public static final net.minecraft.world.level.levelgen.feature.Feature<
@@ -68,7 +69,7 @@ public final class ModWorldgen {
         BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(),
                 GenerationStep.Decoration.UNDERGROUND_ORES, OIL_SHALE);
         for (ResourceKey<PlacedFeature> ore : java.util.List.of(ORE_HALITE, ORE_FLUORITE, ORE_SPODUMENE,
-                ORE_BERYL, ORE_BORAX, ORE_URANINITE)) {
+                ORE_BERYL, ORE_BORAX, ORE_URANINITE, ORE_GALENA)) {
             BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(), GenerationStep.Decoration.UNDERGROUND_ORES, ore);
         }
     }
