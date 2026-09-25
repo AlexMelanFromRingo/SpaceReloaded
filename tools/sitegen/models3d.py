@@ -59,6 +59,11 @@ def export(item_id):
     return out
 
 
+def texture_path(tex_id):
+    """Путь текстуры для просмотрщика (кладёт файл в docs/models/tex)."""
+    return _tex_file(tex_id)
+
+
 def export_model(model):
     """Разрешённая блочная модель (вариант блокстейта мультиблока) → путь к JSON; одинаковые — один файл."""
     import hashlib

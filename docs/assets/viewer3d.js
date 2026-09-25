@@ -136,14 +136,27 @@ async function buildScene(T, data) {
   const cache = new Map();
   const root = new T.Group();
   for (const part of data.parts) {
-    if (!cache.has(part.m)) cache.set(part.m, fetch(part.m).then((r) => r.json()).then((d) => buildBlock(T, d)));
+    if (part.m && !cache.has(part.m)) cache.set(part.m, fetch(part.m).then((r) => r.json()).then((d) => buildBlock(T, d)));
   }
   for (const part of data.parts) {
+    if (part.mesh) {
+      // готовая сетка (оболочка тарелки, растяжки): вершины уже в координатах сцены
+      const tex = await loadTexture(T, part.mesh.t);
+      const quads = part.mesh.quads.map((q) => ({ p: q.p, uv: q.uv.map(([u, v]) => [u, 1 - v]), shade: q.s }));
+      root.add(new T.Mesh(geometry(T, quads), material(T, tex)));
+      continue;
+    }
     const inner = (await cache.get(part.m)).clone();
     inner.position.set(-0.5, -0.5, -0.5);
     const g = new T.Group();
     g.add(inner);
-    g.rotation.set(-(part.x || 0) * Math.PI / 180, -(part.y || 0) * Math.PI / 180, 0, 'YXZ');
+    if (part.m3) {
+      // произвольный поворот (плитки тарелки по нормали параболоида), строки матрицы 3×3
+      const r = part.m3;
+      g.quaternion.setFromRotationMatrix(new T.Matrix4().set(r[0], r[1], r[2], 0, r[3], r[4], r[5], 0, r[6], r[7], r[8], 0, 0, 0, 0, 1));
+    } else {
+      g.rotation.set(-(part.x || 0) * Math.PI / 180, -(part.y || 0) * Math.PI / 180, 0, 'YXZ');
+    }
     g.position.set(part.p[0] + 0.5, part.p[1] + 0.5, part.p[2] + 0.5);
     root.add(g);
   }

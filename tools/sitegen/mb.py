@@ -14,6 +14,11 @@ OUT_DIR = res.DOCS / "img/mb"
 
 
 UNFORMED_ON_SITE = {"centrifuge_cascade"}
+# Показательная тарелка антенны: шаблон содержит только приёмник и опору, панели игрок кладёт сам
+# любым плоским пятном в плоскости +2 (до 1000). На схеме — круг r² ≤ 12 (37 панелей, Ø ≈ 6.9 м).
+DEMO_DISH = {"deep_space_antenna": 12}
+DISH_PANEL = f"{res.MOD}:dish_panel"
+DISH_MAX = 1000
 
 class Cell:
     def __init__(self, pos, block, role):
@@ -43,6 +48,13 @@ class Multiblock:
                 for c in rep["cells"]:
                     o = c["offset"]
                     self.cells.append(Cell([o[i] + step[i] * k for i in range(3)], c["block"], "repeat"))
+        r2 = DEMO_DISH.get(mid)
+        if r2:
+            n = int(r2 ** 0.5) + 1
+            for dx in range(-n, n + 1):
+                for dz in range(-n, n + 1):
+                    if dx * dx + dz * dz <= r2:
+                        self.cells.append(Cell((dx, 2, dz), DISH_PANEL, "demo"))
         xs, ys, zs = zip(*(c.pos for c in self.cells))
         self.min = (min(xs), min(ys), min(zs))
         self.max = (max(xs), max(ys), max(zs))
@@ -76,6 +88,8 @@ class Multiblock:
             if b in per_rep:
                 base = n - per_rep[b] * rep.get("display", 0)
                 rng = (base + per_rep[b] * rep["min"], base + per_rep[b] * rep["max"])
+            elif b == DISH_PANEL and self.id in DEMO_DISH:
+                rng = (1, DISH_MAX)
             out.append((b, n, rng))
         return out
 
@@ -84,7 +98,7 @@ class Multiblock:
         step = (self.repeat or {}).get("step", [0, 0, -1])
         return "xyz"[max(range(3), key=lambda i: abs(step[i]))]
 
-    def block_state(self, block):
+    def block_state(self, block, formed=None):
         """(модель, x, y) собранного вида: вариант blockstate с formed/in_rail, ключ — лицом наружу
         (facing=north: шаблон строится вглубь по +z), ось — вдоль линии структуры."""
         ns, _, name = block.partition(":")
@@ -93,7 +107,8 @@ class Multiblock:
             return None
         # собранный вид каскада — полые кожухи под роторы клиентского рендера; на сайте роторов нет,
         # поэтому центрифуги показаны цельными, как их ставит игрок
-        formed = "false" if self.id in UNFORMED_ON_SITE else "true"
+        if formed is None:
+            formed = "false" if self.id in UNFORMED_ON_SITE else "true"
         want = {"formed": formed, "in_rail": "true", "facing": "north", "lit": "false", "axis": self.line_axis(),
                 "powered": "false", "open": "false"}
         best, score = None, -1
@@ -113,14 +128,82 @@ class Multiblock:
         from . import models3d
         parts = []
         for c in self.cells:
-            if c.shown == "minecraft:air":
+            if c.shown == "minecraft:air" or c.role == "demo":
                 continue
             state = self.block_state(c.shown)
             model, bx, by = state if state else (icons.model_for(c.shown), 0, 0)
             path = models3d.export_model(model) if model else None
             if path:
                 parts.append({"m": path, "p": [-c.pos[0], c.pos[1], c.pos[2]], "x": bx, "y": by})
+        demo = [c for c in self.cells if c.role == "demo"]
+        if demo:
+            parts.extend(self._dish_parts(demo, models3d))
         return models3d.export_scene(self.id, parts) if parts else None
+
+    @staticmethod
+    def _dish_parts(panels, models3d):
+        """Собранная тарелка, как рисует DsnRenderer (в зените): сплошная оболочка по параболоиду
+        y = r²/4f (F/D = 0.4, D по площади панелей) — вершины в углах клеток общие, тыл и кромка;
+        четыре растяжки от кромки и облучатель в фокусе."""
+        import math
+        pivot, lift, shell = 1 + 12.5 / 16, 0.3, 1.5 / 16
+        d = 2 * math.sqrt(len(panels) / math.pi)
+        f = 0.4 * d
+        base = pivot + lift
+        cells = {(-c.pos[0], c.pos[2]) for c in panels}
+
+        def surf(x, z, back=False):
+            return [x + 0.5, base + (x * x + z * z) / (4 * f) - (shell if back else 0), z + 0.5]
+
+        def shade(nx, ny, nz):
+            ln = math.sqrt(nx * nx + ny * ny + nz * nz) or 1
+            nx, ny, nz = nx / ln, ny / ln, nz / ln
+            return round(nx * nx * 0.6 + ny * ny * (1 if ny > 0 else 0.5) + nz * nz * 0.8, 3)
+
+        quads = []
+        for cx, cz in sorted(cells):
+            x0, x1, z0, z1 = cx - 0.5, cx + 0.5, cz - 0.5, cz + 0.5
+            s_top = shade(-cx / (2 * f), 1, -cz / (2 * f))
+            quads.append({"p": [surf(x0, z1), surf(x1, z1), surf(x1, z0), surf(x0, z0)],
+                          "uv": [[0, 0], [1, 0], [1, 1], [0, 1]], "s": s_top})
+            quads.append({"p": [surf(x0, z1, True), surf(x0, z0, True), surf(x1, z0, True), surf(x1, z1, True)],
+                          "uv": [[0, 0], [0, 1], [1, 1], [1, 0]], "s": round(s_top * 0.7, 3)})
+            for (nx, nz), (ax, az, bx, bz) in (((-1, 0), (x0, z0, x0, z1)), ((1, 0), (x1, z1, x1, z0)),
+                                              ((0, -1), (x1, z0, x0, z0)), ((0, 1), (x0, z1, x1, z1))):
+                if (cx + nx, cz + nz) in cells:
+                    continue
+                quads.append({"p": [surf(ax, az, True), surf(bx, bz, True), surf(bx, bz), surf(ax, az)],
+                              "uv": [[0, 1], [1, 1], [1, 0.9], [0, 0.9]], "s": shade(nx, 0, nz)})
+        tex = models3d.texture_path(f"{res.MOD}:block/dish_panel")
+        out = [{"mesh": {"t": tex, "quads": quads}}]
+        # растяжки: брус 1.5 px от кромки к облучателю
+        rim = math.sqrt(len(panels) / math.pi) * 0.8
+        rim_y = base + rim * rim / (4 * f)
+        top = [0.5, base + f - 0.3, 0.5]
+        bars = []
+        w = 0.75 / 16
+        for ax, az in ((rim, 0), (-rim, 0), (0, rim), (0, -rim)):
+            a = [ax + 0.5, rim_y, az + 0.5]
+            dvec = [top[i] - a[i] for i in range(3)]
+            ln = math.sqrt(sum(v * v for v in dvec))
+            dvec = [v / ln for v in dvec]
+            up = [0, 1, 0] if abs(dvec[1]) < 0.9 else [1, 0, 0]
+            e1 = [dvec[1] * up[2] - dvec[2] * up[1], dvec[2] * up[0] - dvec[0] * up[2], dvec[0] * up[1] - dvec[1] * up[0]]
+            l1 = math.sqrt(sum(v * v for v in e1)); e1 = [v / l1 * w for v in e1]
+            e2 = [dvec[1] * e1[2] - dvec[2] * e1[1], dvec[2] * e1[0] - dvec[0] * e1[2], dvec[0] * e1[1] - dvec[1] * e1[0]]
+            l2 = math.sqrt(sum(v * v for v in e2)); e2 = [v / l2 * w for v in e2]
+            sides = [e1, e2, [-v for v in e1], [-v for v in e2]]
+            for k in range(4):
+                s0, s1 = sides[k], sides[(k + 1) % 4]
+                bars.append({"p": [[a[i] + s0[i] for i in range(3)], [top[i] + s0[i] for i in range(3)],
+                                   [top[i] + s1[i] for i in range(3)], [a[i] + s1[i] for i in range(3)]],
+                             "uv": [[0, 0], [0, 1], [0.1, 1], [0.1, 0]], "s": 0.8})
+        out.append({"mesh": {"t": models3d.texture_path(f"{res.MOD}:block/dsn_mount"), "quads": bars}})
+        horn = models3d.export_model(res.resolve_model(f"{res.MOD}:block/feed_horn"))
+        if horn:
+            # раструбом вниз к зеркалу: поворот X на 180°, низ — в фокусе
+            out.append({"m": horn, "p": [0, base + f - 1, 0], "m3": [1, 0, 0, 0, -1, 0, 0, 0, -1]})
+        return out
 
     def render(self, S=64, SS=2, yrot=0):
         """PNG собранного вида: все грани всех блоков сцены, общий painter-sort.
@@ -133,7 +216,7 @@ class Multiblock:
             if yrot:
                 p = render._rot(pos, "y", -yrot, (0, 0, 0))
                 pos = tuple(round(v) for v in p)
-            if c.shown == "minecraft:air":
+            if c.shown == "minecraft:air" or c.role == "demo":
                 continue
             state = self.block_state(c.shown)
             model, bx, by = state if state else (icons.model_for(c.shown), 0, 0)

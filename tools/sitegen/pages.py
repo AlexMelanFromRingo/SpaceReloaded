@@ -423,6 +423,10 @@ def mb_article(m: Multiblock):
     sx, sy, sz = m.size
     rep = m.repeat
     rep_note = ""
+    if any(c.role == "demo" for c in m.cells):
+        n = sum(1 for c in m.cells if c.role == "demo")
+        rep_note = (f"Тарелка показательная: {n} панелей кругом; игрок кладёт любое плоское пятно до 1000 панелей, "
+                    "диаметр считается по площади. В 3D — собранный параболоид, как в игре.")
     if rep:
         rep_note = (f'На схеме {rep.get("display")} повторяемых секций; допустимо от {rep["min"]} до {rep["max"]}.')
     # спецификация
@@ -447,7 +451,8 @@ def mb_article(m: Multiblock):
         if c.block == "minecraft:air":
             return f'<span class="mcell air" data-tip="Воздух (пусто) · {pos}" tabindex="0"><span class="vh">Воздух</span></span>'
         label = _block_label(c.block, ctx)
-        tag = {"key": " · ключевой блок", "repeat": " · повторяемая секция"}.get(c.role, "")
+        tag = {"key": " · ключевой блок", "repeat": " · повторяемая секция",
+               "demo": " · показательная тарелка (форма и размер — любые)"}.get(c.role, "")
         _, icon = item_info(c.shown, ctx)
         im = img_tag(icon, label, 40) if icon else ""
         return f'<span class="mcell {c.role}" data-tip="{escape(label + tag)} · {pos}" tabindex="0">{im}</span>'
@@ -455,6 +460,8 @@ def mb_article(m: Multiblock):
     legend_items = ['<span><i class="lg key"></i>ключевой блок</span>']
     if m.repeat:
         legend_items.append('<span><i class="lg repeat"></i>повторяемая секция</span>')
+    if any(c.role == "demo" for c in m.cells):
+        legend_items.append('<span><i class="lg demo"></i>показательная тарелка</span>')
     if any(c.block == "minecraft:air" for c in m.cells):
         legend_items.append('<span><i class="lg air"></i>воздух</span>')
     xs = range(m.min[0], m.max[0] + 1)
