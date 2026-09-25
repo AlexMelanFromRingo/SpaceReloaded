@@ -7,7 +7,7 @@ from .mb import Multiblock
 
 SITE_URL = "https://alexmelanfromringo.github.io/SpaceReloaded/"
 REPO_URL = "https://github.com/AlexMelanFromRingo/SpaceReloaded"
-ASSET_VER = "9"  # сброс кэша CSS/JS при изменении
+ASSET_VER = "10"  # сброс кэша CSS/JS при изменении
 
 PROBLEMS = []  # (контекст, id, что не так) — проверка в конце генерации
 
@@ -416,6 +416,9 @@ def mb_article(m: Multiblock):
     ctx = f"мультиблок {m.id}"
     title = spec.get("title") or item_info(m.key, ctx)[0]
     src, (w, h) = m.render(yrot=spec.get("view", 0))
+    scene = m.export3d()
+    scene_attr = (f' data-model="{scene}" data-name="{escape(title)}" role="button" tabindex="0"'
+                  f' aria-label="{escape(title)}: открыть 3D-модель"') if scene else ""
     key_name = item_info(m.key, ctx)[0]
     sx, sy, sz = m.size
     rep = m.repeat
@@ -490,8 +493,8 @@ def mb_article(m: Multiblock):
 <header class="mb-head">{slot(m.key, ctx, big=True)}<div><h2 id="{m.id}-h">{escape(title)}</h2>
 <ul class="badges">{"".join(f"<li>{b}</li>" for b in badges)}</ul></div></header>
 <div class="mb-top">
-<figure class="mb-iso"><img src="{src}" width="{w}" height="{h}" alt="{escape(title)}: собранная структура в изометрии" loading="lazy" decoding="async">
-<figcaption>Собранный вид. {escape(rep_note)}</figcaption></figure>
+<figure class="mb-iso{" has3d" if scene else ""}"{scene_attr}><img src="{src}" width="{w}" height="{h}" alt="{escape(title)}: собранная структура в изометрии" loading="lazy" decoding="async">
+<figcaption>Собранный вид{" — нажмите, чтобы повертеть в 3D" if scene else ""}. {escape(rep_note)}</figcaption></figure>
 <div class="mb-text prose">{spec.get("physics", "")}<p class="form-note">{form}</p></div>
 </div>
 <div class="mb-bottom">

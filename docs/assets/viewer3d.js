@@ -1,4 +1,4 @@
-// SpaceReloaded — просмотр 3D-моделей предметов (клик по слоту с data-model).
+// SpaceReloaded — просмотр 3D-моделей предметов и мультиблоков (клик по слоту или схеме с data-model).
 // Модели выгружает tools/sitegen/models3d.py: элементы блочной модели Minecraft (from/to, поворот,
 // грани с UV) или плоская текстура предмета, которую просмотрщик выдавливает по пикселям, как игра.
 // three.js грузится лениво при первом открытии.
@@ -130,6 +130,26 @@ async function buildFlat(T, url) {
   return root;
 }
 
+// мультиблок: сцена из блочных моделей — позиция клетки и поворот варианта блокстейта (сначала X, потом Y,
+// как в игре); одинаковые модели строятся один раз и клонируются (геометрия и материалы общие)
+async function buildScene(T, data) {
+  const cache = new Map();
+  const root = new T.Group();
+  for (const part of data.parts) {
+    if (!cache.has(part.m)) cache.set(part.m, fetch(part.m).then((r) => r.json()).then((d) => buildBlock(T, d)));
+  }
+  for (const part of data.parts) {
+    const inner = (await cache.get(part.m)).clone();
+    inner.position.set(-0.5, -0.5, -0.5);
+    const g = new T.Group();
+    g.add(inner);
+    g.rotation.set(-(part.x || 0) * Math.PI / 180, -(part.y || 0) * Math.PI / 180, 0, 'YXZ');
+    g.position.set(part.p[0] + 0.5, part.p[1] + 0.5, part.p[2] + 0.5);
+    root.add(g);
+  }
+  return root;
+}
+
 let ui = null;
 function dialog() {
   if (ui) return ui;
@@ -141,14 +161,15 @@ function dialog() {
   document.body.appendChild(dlg);
   dlg.querySelector('.v3d-close').addEventListener('click', () => dlg.close());
   dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
-  ui = { dlg, title: dlg.querySelector('b'), stage: dlg.querySelector('.v3d-stage') };
+  ui = { dlg, title: dlg.querySelector('b'), stage: dlg.querySelector('.v3d-stage'), hint: dlg.querySelector('.v3d-hint') };
   return ui;
 }
 
 let session = null;
 async function open(slot) {
-  const { dlg, title, stage } = dialog();
+  const { dlg, title, stage, hint } = dialog();
   title.textContent = slot.getAttribute('data-name') || '';
+  dlg.classList.toggle('wide', slot.tagName === 'FIGURE');   // мультиблок — большое окно
   stage.classList.add('loading');
   if (!dlg.open) dlg.showModal();
   let T, OrbitControls, data;
@@ -161,7 +182,9 @@ async function open(slot) {
     return;
   }
   close();
-  const model = data.flat ? await buildFlat(T, data.flat) : await buildBlock(T, data);
+  hint.textContent = 'Тяните — вращать · колесо или щипок — приблизить'
+    + (data.parts ? ' · правая кнопка или два пальца — сдвинуть' : '') + ' · двойной клик — вид по умолчанию';
+  const model = data.parts ? await buildScene(T, data) : data.flat ? await buildFlat(T, data.flat) : await buildBlock(T, data);
   const box = new T.Box3().setFromObject(model);
   const center = box.getCenter(new T.Vector3());
   model.position.sub(center);
@@ -181,8 +204,8 @@ async function open(slot) {
   camera.position.copy(home);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  controls.enablePan = false;
-  controls.minDistance = dist * 0.35;
+  controls.enablePan = !!data.parts;   // по большой структуре удобно ходить (правая кнопка / два пальца)
+  controls.minDistance = dist * (data.parts ? 0.08 : 0.35);   // мультиблок — подойти к отдельному блоку
   controls.maxDistance = dist * 3;
   controls.autoRotate = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   controls.autoRotateSpeed = 1.6;
@@ -209,9 +232,14 @@ function close() {
   session.stop();
   session.ro.disconnect();
   session.controls.dispose();
+  const seen = new Set();   // клоны делят геометрию и материалы — освобождаем по разу
   session.scene.traverse((o) => {
-    if (o.geometry) o.geometry.dispose();
-    if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); }
+    if (o.geometry && !seen.has(o.geometry)) { seen.add(o.geometry); o.geometry.dispose(); }
+    if (o.material && !seen.has(o.material)) {
+      seen.add(o.material);
+      if (o.material.map) o.material.map.dispose();
+      o.material.dispose();
+    }
   });
   session.renderer.dispose();
   session.renderer.domElement.remove();

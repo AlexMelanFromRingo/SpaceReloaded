@@ -374,3 +374,17 @@ dialog.v3d::backdrop { background: rgba(5, 12, 16, .55); }
 .v3d-stage.loading::before { content: "загрузка…"; position: absolute; inset: 0; display: grid; place-items: center;
   font: 13px var(--mono); color: var(--dim); }
 .v3d-hint { margin: 0; padding: 8px 14px 10px; font-size: 12.5px; color: var(--dim); border-top: 1px solid var(--line); }
+
+/* 3D-просмотр мультиблока: схема кликабельна */
+.mb-iso.has3d { cursor: zoom-in; position: relative; }
+.mb-iso.has3d img { transition: transform .15s ease; }
+.mb-iso.has3d:hover img, .mb-iso.has3d:focus-visible img { transform: scale(1.02); }
+.mb-iso.has3d:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+.mb-iso.has3d::after {
+  content: "3D"; position: absolute; top: 8px; right: 8px; padding: 2px 7px; border-radius: 6px;
+  font: 600 12px/1.4 system-ui, sans-serif; color: var(--accent-ink); background: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) { .mb-iso.has3d img { transition: none; } }
+/* мультиблок — окно шире и выше */
+dialog.v3d.wide { width: min(1100px, 94vw); }
+dialog.v3d.wide .v3d-stage { height: min(720px, 72vh); }

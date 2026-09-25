@@ -59,6 +59,30 @@ def export(item_id):
     return out
 
 
+def export_model(model):
+    """Разрешённая блочная модель (вариант блокстейта мультиблока) → путь к JSON; одинаковые — один файл."""
+    import hashlib
+    key = hashlib.sha1(json.dumps(model, sort_keys=True).encode()).hexdigest()[:16]
+    fn = f"blk__{key}.json"
+    if fn not in _written:
+        data = _elements(model) if model and model.get("elements") else None
+        if data is None:
+            return None
+        MODEL_DIR.mkdir(parents=True, exist_ok=True)
+        (MODEL_DIR / fn).write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
+        _written.add(fn)
+    return f"models/{fn}"
+
+
+def export_scene(name, parts):
+    """Сцена мультиблока: [{m: модель, p: [x, y, z], x: поворот X, y: поворот Y}] → путь к JSON."""
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    fn = f"mb__{name}.json"
+    (MODEL_DIR / fn).write_text(json.dumps({"parts": parts}, separators=(",", ":")), encoding="utf-8")
+    _written.add(fn)
+    return f"models/{fn}"
+
+
 def _elements(model):
     textures, index = [], {}
     elements = []

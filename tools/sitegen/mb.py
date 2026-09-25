@@ -108,6 +108,20 @@ class Multiblock:
             return None
         return model, best.get("x", 0), best.get("y", 0)
 
+    def export3d(self):
+        """Сцена для 3D-просмотрщика: те же варианты блокстейтов и то же зеркалирование x, что у изометрии."""
+        from . import models3d
+        parts = []
+        for c in self.cells:
+            if c.shown == "minecraft:air":
+                continue
+            state = self.block_state(c.shown)
+            model, bx, by = state if state else (icons.model_for(c.shown), 0, 0)
+            path = models3d.export_model(model) if model else None
+            if path:
+                parts.append({"m": path, "p": [-c.pos[0], c.pos[1], c.pos[2]], "x": bx, "y": by})
+        return models3d.export_scene(self.id, parts) if parts else None
+
     def render(self, S=64, SS=2, yrot=0):
         """PNG собранного вида: все грани всех блоков сцены, общий painter-sort.
         yrot поворачивает всю сцену вокруг Y (чтобы длинная структура уходила вглубь)."""
