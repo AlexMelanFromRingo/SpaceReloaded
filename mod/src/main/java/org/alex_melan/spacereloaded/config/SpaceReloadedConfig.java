@@ -319,8 +319,8 @@ public final class SpaceReloadedConfig {
     public double gearMeshEfficiency = 0.98;
     /** КПД конической пары углового редуктора. */
     public double bevelEfficiency = 0.97;
-    /** Момент трения на блок сети (подшипники), Н·м. */
-    public double kineticFrictionTorqueNm = 2.0;
+    /** Нижний предел трения узла — уплотнения и смазка, Н·м (011: подшипник сверх него — μ·m·g·r по весу ротора). */
+    public double kineticFrictionTorqueNm = 0.5;
     /** Диаметр вала, м (визуал 4 px = 0.25 м) — для предела кручения τ_max = πd³τ_y/16. */
     public double shaftDiameterM = 0.25;
     /** Предел текучести стали при сдвиге τ_y ≈ 0.58·σ_y, Па. */

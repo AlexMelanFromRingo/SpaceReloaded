@@ -59,9 +59,45 @@ public class KineticBlockEntity extends BlockEntity implements org.alex_melan.sp
         return (KineticBlock) getBlockState().getBlock();
     }
 
-    /** Механика узла для решателя (сервер): по умолчанию — только трение и инерция ротора. */
+    /** Механика узла для решателя (сервер): по умолчанию — только потери ротора и его инерция. */
     public NodeLoad load(ServerLevel level) {
-        return new NodeLoad(0, 0, SpaceReloaded.config().kineticFrictionTorqueNm, kineticBlock().inertia());
+        return rotorLoad(level, 0, 0, 0, kineticBlock().inertia());
+    }
+
+    /** Радиус ротора узла, м: по нему масса диска (m = 2I/r²) и аэродинамика (r⁵). */
+    protected double rotorRadius() {
+        return switch (kineticBlock().kind()) {
+            case SHAFT -> SpaceReloaded.config().shaftDiameterM / 2;
+            case SMALL_GEAR, FLYWHEEL, PRESS -> 0.5;
+            case LARGE_GEAR -> 1.0;
+            case GEARBOX, COMPRESSOR -> 0.4;
+            default -> 0.3;
+        };
+    }
+
+    /** Трение подшипника ротора, Н·м: μ·m·g·r_вала по весу диска на этом теле (011). */
+    protected double bearingTorque(ServerLevel level, double inertia) {
+        var config = SpaceReloaded.config();
+        double mass = org.alex_melan.spacereloaded.core.kinetics.Bearing.diskMass(inertia, rotorRadius());
+        return org.alex_melan.spacereloaded.core.kinetics.Bearing.frictionTorque(mass,
+                org.alex_melan.spacereloaded.planet.PlanetManager.gravity(level), config.shaftDiameterM / 2,
+                config.kineticFrictionTorqueNm);
+    }
+
+    /**
+     * Нагрузка узла с потерями ротора (011): источник a − b·ω, собственная нагрузка машины extraC, трение
+     * подшипника по весу (с добавкой трения покоя) и аэродинамика диска по плотности атмосферы на высоте
+     * узла (в вакууме — ноль; вал тонкий — аэродинамикой пренебрегаем).
+     */
+    protected NodeLoad rotorLoad(ServerLevel level, double a, double b, double extraC, double inertia) {
+        double bearing = bearingTorque(level, inertia);
+        double windage = 0;
+        if (kineticBlock().kind() != KineticBlock.Kind.SHAFT) {
+            double rho = org.alex_melan.spacereloaded.planet.PlanetManager.aero(level).density(getBlockPos().getY());
+            windage = org.alex_melan.spacereloaded.core.kinetics.Bearing.windageCoefficient(rho, omega, rotorRadius());
+        }
+        return new NodeLoad(a, b + windage, bearing + extraC, inertia,
+                (org.alex_melan.spacereloaded.core.kinetics.Bearing.BREAKAWAY - 1) * bearing);
     }
 
     /** Серверный тик: регистрация в сети при загрузке; машины расширяют. */
@@ -170,7 +206,12 @@ public class KineticBlockEntity extends BlockEntity implements org.alex_melan.sp
                 java.util.List.of(new org.alex_melan.spacereloaded.network.MachineStatusPayload.Gauge(
                         Component.translatable("gauge.spacereloaded.kinetic.omega"),
                         (float) Math.min(1, Math.abs(omega) / maxOmega), 0x6FD5E8)),
-                java.util.List.of());
+                statusActions());
+    }
+
+    /** Кнопки экрана узла (мотор — напряжение якоря). */
+    protected java.util.List<org.alex_melan.spacereloaded.network.MachineStatusPayload.Action> statusActions() {
+        return java.util.List.of();
     }
 
     /** Доп. строки отчёта у машин. */

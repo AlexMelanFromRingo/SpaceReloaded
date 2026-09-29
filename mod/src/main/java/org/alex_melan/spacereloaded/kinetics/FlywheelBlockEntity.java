@@ -32,8 +32,7 @@ public class FlywheelBlockEntity extends KineticBlockEntity {
 
     @Override
     public NodeLoad load(ServerLevel level) {
-        return new NodeLoad(0, 0, SpaceReloaded.config().kineticFrictionTorqueNm,
-                SpaceReloaded.config().flywheelInertia);
+        return rotorLoad(level, 0, 0, 0, SpaceReloaded.config().flywheelInertia);
     }
 
     /** Запасённая энергия, Дж. */

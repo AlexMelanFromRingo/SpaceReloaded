@@ -17,7 +17,21 @@ import java.util.List;
  * действий (id, подпись, значение). Экран сам просит обновление раз в секунду.
  */
 public record MachineStatusPayload(BlockPos pos, Component title, List<Component> lines, List<Gauge> gauges,
-                                   List<Action> actions) implements CustomPacketPayload {
+                                   List<Action> actions, boolean refresh) implements CustomPacketPayload {
+
+    /** Открыть экран (ответ на клик). */
+    public MachineStatusPayload(BlockPos pos, Component title, List<Component> lines, List<Gauge> gauges,
+                                List<Action> actions) {
+        this(pos, title, lines, gauges, actions, false);
+    }
+
+    /**
+     * 011: ответ на запрос обновления — только обновляет открытый экран и никогда не открывает его
+     * заново (иначе ответ, пришедший после закрытия, возвращал окно).
+     */
+    public MachineStatusPayload asRefresh() {
+        return new MachineStatusPayload(pos, title, lines, gauges, actions, true);
+    }
 
     public record Gauge(Component label, float fraction, int rgb) {
         public static final StreamCodec<RegistryFriendlyByteBuf, Gauge> CODEC = StreamCodec.composite(
@@ -40,6 +54,7 @@ public record MachineStatusPayload(BlockPos pos, Component title, List<Component
             ComponentSerialization.TRUSTED_STREAM_CODEC.apply(ByteBufCodecs.list()), MachineStatusPayload::lines,
             Gauge.CODEC.apply(ByteBufCodecs.list()), MachineStatusPayload::gauges,
             Action.CODEC.apply(ByteBufCodecs.list()), MachineStatusPayload::actions,
+            ByteBufCodecs.BOOL, MachineStatusPayload::refresh,
             MachineStatusPayload::new);
 
     @Override

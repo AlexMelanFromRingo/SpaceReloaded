@@ -130,7 +130,7 @@ public class SpaceReloadedClient implements ClientModInitializer {
 					var open = org.alex_melan.spacereloaded.client.gui.MachineStatusScreen.active();
 					if (open != null && open.shows(payload)) {
 						open.update(payload);
-					} else {
+					} else if (!payload.refresh()) {
 						context.client().setScreenAndShow(new org.alex_melan.spacereloaded.client.gui.MachineStatusScreen(payload));
 					}
 				});

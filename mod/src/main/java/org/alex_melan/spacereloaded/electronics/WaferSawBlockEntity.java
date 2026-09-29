@@ -92,7 +92,7 @@ public class WaferSawBlockEntity extends KineticMachineBlockEntity<MachiningReci
 
     @Override
     public NodeLoad load(ServerLevel level) {
-        return new NodeLoad(0, 0, SpaceReloaded.config().kineticFrictionTorqueNm + (cutting ? CUT_TORQUE : 0), 5);
+        return rotorLoad(level, 0, 0, cutting ? CUT_TORQUE : 0, 5);
     }
 
     private static boolean finishedWafer(ItemStack stack) {

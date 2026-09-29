@@ -51,7 +51,10 @@ public class RoverRenderer extends EntityRenderer<RoverEntity, RoverRenderState>
         if (state.battery) {
             state.pack.submit(pose, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
         }
-        float[][] corners = {{-0.6f, 1.2f}, {1.6f, 1.2f}, {-0.6f, -1.2f}, {1.6f, -1.2f}};
+        // колёса симметрично по бортам: платформа x −0.5…1.5 (центр 0.5), колесо толщиной 5 px с зазором
+        // 0.02 — центр колеса на 0.5 ± (1.0 + 2.5/16 + 0.02); по длине — 0.5 ± 1.2
+        float side = 1.0f + 2.5f / 16 + 0.02f;
+        float[][] corners = {{-side, 1.2f}, {side, 1.2f}, {-side, -1.2f}, {side, -1.2f}};
         for (int i = 0; i < state.wheels && i < 4; i++) {
             pose.pushPose();
             pose.translate(corners[i][0], 0f, corners[i][1]);

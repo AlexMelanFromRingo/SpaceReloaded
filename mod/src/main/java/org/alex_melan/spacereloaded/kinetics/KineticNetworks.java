@@ -205,7 +205,42 @@ public final class KineticNetworks {
                 }
             }
         }
+        if (large) {
+            addBevelMeshes(level, pos, axis, config, out, unloaded);
+        }
         return out;
+    }
+
+    /**
+     * 011: коническая пара — большие шестерни (венец с фаской 45°) на перпендикулярных осях со сдвигом
+     * по диагонали в плоскости обеих осей: d = u·â + v·b̂ (u, v = ±1). Ободья сходятся в общей точке,
+     * вершины делительных конусов совпадают. Скорости — из равенства окружных скоростей в точке
+     * контакта: ω_B/ω_A = (d·b̂)/(d·â) = v/u; передаточное 1:1, КПД конической пары.
+     */
+    private static void addBevelMeshes(ServerLevel level, BlockPos pos, Direction.Axis axis, SpaceReloadedConfig config,
+                                       List<Link> out, boolean[] unloaded) {
+        for (Direction.Axis other : Direction.Axis.values()) {
+            if (other == axis) {
+                continue;
+            }
+            for (int u = -1; u <= 1; u += 2) {
+                for (int v = -1; v <= 1; v += 2) {
+                    BlockPos n = pos.relative(Direction.fromAxisAndDirection(axis, u > 0
+                                    ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE))
+                            .relative(Direction.fromAxisAndDirection(other, v > 0
+                                    ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE));
+                    if (!level.isLoaded(n)) {
+                        unloaded[0] = true;
+                        continue;
+                    }
+                    BlockState ns = level.getBlockState(n);
+                    if (ns.getBlock() instanceof KineticBlock nb && nb.kind() == KineticBlock.Kind.LARGE_GEAR
+                            && nb.axis(ns) == other) {
+                        out.add(new Link(n, (double) v / u, config.bevelEfficiency));
+                    }
+                }
+            }
+        }
     }
 
     private static void addMesh(ServerLevel level, BlockPos n, Direction.Axis axis, KineticBlock.Kind wanted,
@@ -300,11 +335,7 @@ public final class KineticNetworks {
                 data.byPos.put(p.asLong(), net);
             }
             KineticGraph.State state = net.analysis.state();
-            if (state == KineticGraph.State.OK && level.getBlockEntity(pos) instanceof KineticBlockEntity root) {
-                net.omega = root.omega();
-            } else {
-                net.omega = 0;
-            }
+            net.omega = state == KineticGraph.State.OK ? engagedOmega(level, net) : 0;
             // Мгновенно согласовать узлы и показать состояние (заклинено, слишком велика…); фаза
             // каждого узла — rᵢ·Θ от корня, чтобы зубья соседних шестерён были в зацеплении
             int rootIndex = Math.max(0, net.nodes.indexOf(pos));
@@ -326,6 +357,26 @@ public final class KineticNetworks {
                         org.alex_melan.spacereloaded.industry.IndustryAdvancements.GEAR_RATIO);
             }
         }
+    }
+
+    /**
+     * ω опорного узла новой сети по сохранению обобщённого импульса (011): удар при сцеплении
+     * частей с разными скоростями — p = Σ Iᵢ·rᵢ·ωᵢ до и после, ω = p / Σ Iᵢ·rᵢ² (ωᵢ — прежние
+     * скорости узлов в их системах). Новая неподвижная деталь лишь чуть тормозит сеть, а не
+     * обнуляет её; разница энергий уходит в удар (как у фрикционной муфты).
+     */
+    private static double engagedOmega(ServerLevel level, Net net) {
+        double p = 0;
+        double j = 0;
+        for (int i = 0; i < net.nodes.size(); i++) {
+            if (level.getBlockEntity(net.nodes.get(i)) instanceof KineticBlockEntity be) {
+                double r = net.analysis.ratio()[i];
+                double inertia = Math.max(1e-3, be.load(level).inertia());
+                p += inertia * r * be.omega();
+                j += inertia * r * r;
+            }
+        }
+        return j > 0 ? p / j : 0;
     }
 
     private static boolean hasRatio(Net net) {
@@ -410,7 +461,9 @@ public final class KineticNetworks {
             }
         }
         long now = level.getGameTime();
-        boolean settled = Math.abs(net.omega - previous) < 1e-4 * Math.max(1, Math.abs(net.omega));
+        // 011: спать — только в настоящем равновесии (покой или баланс моментов). Прежний порог 10⁻⁴·ω
+        // усыплял сеть на выбеге: трение подшипников тормозит на ~10⁻⁵·ω за тик — и маховик крутился вечно
+        boolean settled = s.resting() || Math.abs(net.omega - previous) < 1e-7 * Math.max(1, Math.abs(net.omega));
         net.calm = settled ? net.calm + 1 : 0;
         boolean sleepNow = net.calm >= CALM_TICKS_TO_SLEEP;
         double change = Math.abs(net.omega - net.lastSyncedOmega) / Math.max(1, Math.abs(net.omega));

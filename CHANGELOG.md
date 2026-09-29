@@ -3,6 +3,24 @@
 All notable changes to SpaceReloaded. Each release line lists the feature branches it contains; the
 full specifications live in `specs/<feature>/`.
 
+## [1.0.1] — 2026-09-29
+
+Playtest fixes.
+
+- **Gears at right angles:** two large gears on perpendicular axes, offset diagonally in the plane of
+  both axes, now mesh 1:1 as a bevel pair (the large gear rim has a 45° chamfer).
+- **Networks no longer reset when a part is attached:** the new network keeps its generalized
+  momentum Σ I·r·ω, so a spinning flywheel only slows a little to spin up the new part.
+- **Friction:** bearing friction now scales with rotor weight (μ·m·g·r, less on the Moon and in
+  orbit), static friction is 1.5× the running friction, and gear discs and flywheels feel air drag
+  (none in vacuum). A coasting network no longer falls asleep while still spinning, so it now
+  actually slows down.
+- **Screens** close with the inventory key as well as Esc, and a late refresh no longer reopens a
+  screen you just closed.
+- **Motor speed:** armature voltage 10–100 % from the motor screen (no-load speed ∝ U).
+- **Batteries** power a machine placed right next to them, without a cable.
+- **Rover:** the wheels sit symmetrically at the sides of the deck (one pair used to hang far off it).
+
 ## [1.0.0] — 2026-09-25
 
 First release. Minecraft 26.2, Fabric Loader ≥ 0.19.3, Java 25.

@@ -73,4 +73,9 @@ public class RadargramScreen extends Screen {
     public boolean isPauseScreen() {
         return false;
     }
+
+    @Override
+    public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
+        return ScreenKeys.closeOnInventoryKey(this, event) || super.keyPressed(event);
+    }
 }

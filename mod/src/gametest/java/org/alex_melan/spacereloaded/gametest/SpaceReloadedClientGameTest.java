@@ -113,6 +113,7 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             scenarios.put("testMineralMap", () -> testMineralMap(context, sp));
             scenarios.put("testGroundRadar", () -> testGroundRadar(context, sp));
             scenarios.put("testAnimations010", () -> testAnimations010(context, sp));
+            scenarios.put("testPlaytest011", () -> testPlaytest011(context, sp));
             scenarios.put("testReadmeShots", () -> testReadmeShots(context, sp));
             scenarios.put("testVisualShowcase", () -> testVisualShowcase(context, sp));
             scenarios.forEach((name, scenario) -> {
@@ -4008,6 +4009,134 @@ public class SpaceReloadedClientGameTest implements FabricClientGameTest {
             }
         });
         context.getInput().resizeWindow(854, 480);
+    }
+
+    // ---------- 011. Замечания плейтеста ----------
+
+    /**
+     * Коническая пара больших шестерён под 90°, сохранение импульса при подключении детали, трение
+     * покоя и выбег, напряжение мотора, батарея питает соседа без кабеля, E закрывает экран.
+     */
+    private void testPlaytest011(ClientGameTestContext context, TestSingleplayerContext sp) {
+        int x0 = BX + 1860;
+        int z = BZ;
+        context.runOnClient(mc -> {
+            if (mc.player != null && mc.player.isDeadOrDying()) {
+                mc.player.respawn();
+            }
+        });
+        context.waitTicks(10);
+        sp.getServer().runCommand("gamemode creative @a");
+        moveTo(context, sp, x0 - 5, z);
+        // 1. коническая пара: большая на оси X и большая на оси Y со сдвигом (+1, +1, 0)
+        sp.getServer().runCommand(set(x0 - 1, BY, z, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(x0, BY, z, "spacereloaded:motor[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 1, BY, z, "spacereloaded:large_gear[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 2, BY + 1, z, "spacereloaded:large_gear[axis=y]"));
+        BlockPos motor = new BlockPos(x0, BY, z);
+        BlockPos bevel = new BlockPos(x0 + 2, BY + 1, z);
+        context.waitTicks(200);
+        double wm = omegaAt(sp, motor), wb = omegaAt(sp, bevel);
+        assertThat(netState(sp, motor).equals("running") && wm > 50 && Math.abs(wb / wm - 1) < 0.01,
+                "Коническая пара: ω_выход/ω_мотор = " + wb / wm + " (ожидалось 1), сеть " + netState(sp, motor));
+        log(String.format(java.util.Locale.ROOT, "коническая пара больших шестерён под 90°: %.0f → %.0f об/мин ✓",
+                wm * 60 / (2 * Math.PI), wb * 60 / (2 * Math.PI)));
+
+        // 2. подключение новой детали не обнуляет сеть: маховик раскручен, ставим вал — ω падает на долю инерции
+        int fz = z + 6;
+        sp.getServer().runCommand(set(x0 - 1, BY, fz, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(x0, BY, fz, "spacereloaded:motor[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 1, BY, fz, "spacereloaded:flywheel[axis=x]"));
+        BlockPos fly = new BlockPos(x0 + 1, BY, fz);
+        context.waitTicks(400);
+        double before = omegaAt(sp, fly);
+        sp.getServer().runCommand(set(x0 + 2, BY, fz, "spacereloaded:steel_shaft[axis=x]"));
+        context.waitTicks(2);
+        double after = omegaAt(sp, fly);
+        double shaft = omegaAt(sp, new BlockPos(x0 + 2, BY, fz));
+        assertThat(before > 20 && after > 0.97 * before && Math.abs(shaft - after) < 1e-6,
+                String.format(java.util.Locale.ROOT, "Импульс при подключении: до %.2f, после %.2f, вал %.2f", before, after, shaft));
+        log(String.format(java.util.Locale.ROOT, "подключение вала к раскрученному маховику: %.1f → %.1f рад/с (импульс сохранён) ✓",
+                before, after));
+
+        // 3. выбег без мотора: ω падает (подшипник по весу маховика), затем сеть стоит — трение покоя
+        sp.getServer().runCommand(set(x0 - 1, BY, fz, "minecraft:air"));
+        sp.getServer().runCommand(set(x0, BY, fz, "minecraft:air"));
+        context.waitTicks(100);
+        double coastA = omegaAt(sp, fly);
+        context.waitTicks(100);
+        double coastB = omegaAt(sp, fly);
+        double decel = (coastA - coastB) / 5.0;
+        double expected = sp.getServer().computeOnServer(server -> {
+            double c = 0, jsum = 0;
+            for (BlockPos p2 : new BlockPos[] {fly, new BlockPos(x0 + 2, BY, fz)}) {
+                if (server.overworld().getBlockEntity(p2) instanceof org.alex_melan.spacereloaded.kinetics.KineticBlockEntity be) {
+                    var l = be.load(server.overworld());
+                    c += l.c() + l.b() * Math.abs(be.omega());
+                    jsum += l.inertia();
+                }
+            }
+            return c / jsum;
+        });
+        assertThat(decel > 0 && Math.abs(decel - expected) < 0.2 * expected,
+                String.format(java.util.Locale.ROOT, "Выбег: замедление %.4f рад/с² (ожидалось %.4f по подшипнику и воздуху)", decel, expected));
+        log(String.format(java.util.Locale.ROOT, "выбег маховика: −%.4f рад/с² = (трение подшипника по весу + воздух)/J ✓", decel));
+
+        // 4. напряжение мотора: 50 % — холостая скорость вдвое ниже
+        int mz = z + 12;
+        sp.getServer().runCommand(set(x0 - 1, BY, mz, "spacereloaded:creative_power"));
+        sp.getServer().runCommand(set(x0, BY, mz, "spacereloaded:motor[axis=x]"));
+        sp.getServer().runCommand(set(x0 + 1, BY, mz, "spacereloaded:steel_shaft[axis=x]"));
+        BlockPos m2 = new BlockPos(x0, BY, mz);
+        context.waitTicks(200);
+        double full = omegaAt(sp, m2);
+        sp.getServer().runOnServer(server -> {
+            var m = (org.alex_melan.spacereloaded.kinetics.MotorBlockEntity) server.overworld().getBlockEntity(m2);
+            m.action(server.overworld(), server.getPlayerList().getPlayers().get(0), "voltage", -0.5);
+        });
+        context.waitTicks(300);
+        double half = omegaAt(sp, m2);
+        assertThat(Math.abs(half / full - 0.5) < 0.03, "Напряжение 50 %: ω " + half + " при полном " + full);
+        log(String.format(java.util.Locale.ROOT, "мотор на 50 %% напряжения: %.0f → %.0f об/мин ✓", full * 60 / (2 * Math.PI),
+                half * 60 / (2 * Math.PI)));
+
+        // 5. батарея питает соседний станок без кабеля
+        int bz = z + 18;
+        sp.getServer().runCommand(set(x0, BY, bz, "spacereloaded:battery"));
+        sp.getServer().runCommand(set(x0 + 1, BY, bz, "spacereloaded:electric_furnace"));
+        context.waitTicks(5);
+        sp.getServer().runOnServer(server -> {
+            var bat = (org.alex_melan.spacereloaded.energy.BatteryBlockEntity) server.overworld().getBlockEntity(new BlockPos(x0, BY, bz));
+            try (var tx = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
+                bat.energyStorage().insert(50_000, tx);
+                tx.commit();
+            }
+        });
+        context.waitTicks(20);
+        long got = sp.getServer().computeOnServer(server -> {
+            var st = team.reborn.energy.api.EnergyStorage.SIDED.find(server.overworld(), new BlockPos(x0 + 1, BY, bz),
+                    net.minecraft.core.Direction.WEST);
+            return st == null ? -1L : st.getAmount();
+        });
+        assertThat(got > 0, "Станок вплотную к батарее должен получить энергию: " + got);
+        log("батарея питает соседний станок без кабеля: " + got + " E ✓");
+
+        // 6. экран состояния закрывается клавишей инвентаря
+        context.runOnClient(mc -> {
+            if (mc.player != null && mc.player.isDeadOrDying()) {
+                mc.player.respawn();
+            }
+        });
+        context.waitTicks(10);
+        context.runOnClient(mc -> mc.setScreenAndShow(new org.alex_melan.spacereloaded.client.gui.MachineStatusScreen(
+                new org.alex_melan.spacereloaded.network.MachineStatusPayload(motor, net.minecraft.network.chat.Component.literal("test"),
+                        List.of(), List.of(), List.of()))));
+        context.waitTicks(5);
+        context.getInput().pressKey(org.lwjgl.glfw.GLFW.GLFW_KEY_E);
+        context.waitTicks(5);
+        String openNow = context.computeOnClient(mc -> mc.gui.screen() == null ? "none" : mc.gui.screen().getClass().getSimpleName());
+        assertThat(openNow.equals("none"), "Экран состояния должен закрываться клавишей E, открыт: " + openNow);
+        log("экран состояния закрывается клавишей E и не открывается заново ✓");
     }
 
     // ---------- Кадры README и сайта (запуск: SR_ONLY=testReadmeShots) ----------

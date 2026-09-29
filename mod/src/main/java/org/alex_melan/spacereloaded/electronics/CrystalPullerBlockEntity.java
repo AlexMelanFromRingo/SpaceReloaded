@@ -116,7 +116,7 @@ public class CrystalPullerBlockEntity extends KineticMachineBlockEntity<Machinin
 
     @Override
     public NodeLoad load(ServerLevel level) {
-        return new NodeLoad(0, 0, SpaceReloaded.config().kineticFrictionTorqueNm + (pulling ? PULL_TORQUE : 0), 30);
+        return rotorLoad(level, 0, 0, pulling ? PULL_TORQUE : 0, 30);
     }
 
     /** Коэффициент сегрегации лигатуры или −1. */

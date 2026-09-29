@@ -22,6 +22,10 @@ import team.reborn.energy.api.base.SimpleEnergyStorage;
  * энергобуфера по канонической шкале мода (1 E = 15 кДж — масштаб 004); если сеть крутит его
  * быстрее ω₀, момент меняет знак и машина генерирует |τ·ω|·η. Нехватка энергии — момент
  * масштабируется долей доступной энергии k.
+ *
+ * <p>011: скорость задаётся напряжением якоря u = 10…100 % (кнопки экрана): у машины постоянного тока
+ * с постоянным сопротивлением якоря ω₀ ∝ U и τ_st ∝ U, поэтому холостая скорость и пусковой момент
+ * пропорциональны u, пиковая мощность — u².
  */
 public class MotorBlockEntity extends KineticBlockEntity {
 
@@ -30,6 +34,8 @@ public class MotorBlockEntity extends KineticBlockEntity {
     private final SimpleEnergyStorage energy;
     private double availability = 1.0;
     private double energyAccumulator;
+    /** Напряжение якоря, доля номинала (011). */
+    private double voltage = 1.0;
 
     public MotorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MOTOR, pos, state);
@@ -49,11 +55,54 @@ public class MotorBlockEntity extends KineticBlockEntity {
         return 4 * SpaceReloaded.config().motorPowerW / noLoadOmega();
     }
 
+    /** Холостая скорость при текущем напряжении, рад/с. */
+    public double noLoadOmegaNow() {
+        return noLoadOmega() * voltage;
+    }
+
+    /** Пусковой момент при текущем напряжении, Н·м. */
+    public double stallTorqueNow() {
+        return stallTorque() * voltage;
+    }
+
+    public double voltage() {
+        return voltage;
+    }
+
+    public void setVoltage(double v) {
+        voltage = Math.max(0.1, Math.min(1.0, Math.round(v * 10) / 10.0));
+        setChanged();
+    }
+
     @Override
     public NodeLoad load(ServerLevel level) {
-        double stall = stallTorque() * availability;
-        return new NodeLoad(stall, stall / noLoadOmega(), SpaceReloaded.config().kineticFrictionTorqueNm,
-                MOTOR_INERTIA);
+        double stall = stallTorqueNow() * availability;
+        return rotorLoad(level, stall, stall / noLoadOmegaNow(), 0, MOTOR_INERTIA);
+    }
+
+    @Override
+    protected void extraReport(java.util.List<net.minecraft.network.chat.Component> lines) {
+        lines.add(net.minecraft.network.chat.Component.translatable("message.spacereloaded.motor.voltage",
+                String.format(java.util.Locale.ROOT, "%.0f", voltage * 100),
+                String.format(java.util.Locale.ROOT, "%.0f", toRpm(noLoadOmegaNow())),
+                String.format(java.util.Locale.ROOT, "%.1f", SpaceReloaded.config().motorPowerW * voltage * voltage / 1000)));
+    }
+
+    @Override
+    protected java.util.List<org.alex_melan.spacereloaded.network.MachineStatusPayload.Action> statusActions() {
+        return java.util.List.of(
+                new org.alex_melan.spacereloaded.network.MachineStatusPayload.Action("voltage",
+                        net.minecraft.network.chat.Component.translatable("action.spacereloaded.motor.slower"), -0.1),
+                new org.alex_melan.spacereloaded.network.MachineStatusPayload.Action("voltage",
+                        net.minecraft.network.chat.Component.translatable("action.spacereloaded.motor.faster"), 0.1));
+    }
+
+    @Override
+    public void action(ServerLevel level, net.minecraft.server.level.ServerPlayer player, String action, double value) {
+        if ("voltage".equals(action)) {
+            setVoltage(voltage + value);
+            KineticNetworks.wake(level, getBlockPos());
+        }
     }
 
     @Override
@@ -63,7 +112,7 @@ public class MotorBlockEntity extends KineticBlockEntity {
         if (level.getGameTime() % 20 == 0) {
             EnergyUtil.ensureAdjacentCableNetworks(level, getBlockPos());
         }
-        double torque = stallTorque() * availability * (1 - omega / noLoadOmega());
+        double torque = stallTorqueNow() * availability * (1 - omega / noLoadOmegaNow());
         double mechanical = torque * omega; // Вт, > 0 — отдаёт в сеть
         double jPerE = config.massDriverJoulesPerEnergy;
         double nextAvailability = availability;
@@ -96,7 +145,7 @@ public class MotorBlockEntity extends KineticBlockEntity {
         if (level.getGameTime() % 40 == Math.floorMod(getBlockPos().asLong(), 40) && Math.abs(omega) > 5) {
             level.playSound(null, getBlockPos(), org.alex_melan.spacereloaded.registry.ModSounds.MOTOR_HUM,
                     net.minecraft.sounds.SoundSource.BLOCKS, 0.5f,
-                    (float) Math.max(0.5, Math.min(2.0, Math.abs(omega) / noLoadOmega() * 1.2)));
+                    (float) Math.max(0.5, Math.min(2.0, Math.abs(omega) / noLoadOmega() * 1.2)));  // тон — от оборотов
         }
         if (Math.abs(nextAvailability - availability) > 0.02) {
             availability = nextAvailability;
@@ -130,6 +179,7 @@ public class MotorBlockEntity extends KineticBlockEntity {
         super.saveAdditional(output);
         output.putLong("energy", energy.amount);
         output.putDouble("availability", availability);
+        output.putDouble("voltage", voltage);
     }
 
     @Override
@@ -137,5 +187,6 @@ public class MotorBlockEntity extends KineticBlockEntity {
         super.loadAdditional(input);
         energy.amount = Math.min(energy.capacity, input.getLongOr("energy", 0));
         availability = input.getDoubleOr("availability", 1.0);
+        voltage = input.getDoubleOr("voltage", 1.0);
     }
 }

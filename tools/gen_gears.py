@@ -23,8 +23,11 @@ HUB = 3.6       # радиус ступицы (стенка вокруг вал�
 RIM_Y = (6.5, 9.5)
 WEB_Y = (7.0, 9.0)
 HUB_Y = (5.0, 11.0)
-EMPTY, BORE_C, WEB, RIM, HUBC = 0, 1, 2, 3, 4
-THICK = {WEB: WEB_Y, RIM: RIM_Y, HUBC: HUB_Y}
+EMPTY, BORE_C, WEB, RIM, HUBC, T1, T2, T3 = 0, 1, 2, 3, 4, 5, 6, 7
+# 011: фаска зубьев большой шестерни 45° с обеих сторон — конический венец: с перпендикулярной
+# большой шестернёй по диагонали она работает как коническая пара (контакт по фаске)
+T1_Y, T2_Y, T3_Y = (7.0, 9.0), (7.5, 8.5), (7.75, 8.25)
+THICK = {WEB: WEB_Y, RIM: RIM_Y, HUBC: HUB_Y, T1: T1_Y, T2: T2_Y, T3: T3_Y}
 
 
 def tooth(phase):
@@ -38,7 +41,7 @@ def tooth(phase):
     return 0.0
 
 
-def classify(x, z, teeth, root, tip, rim_w):
+def classify(x, z, teeth, root, tip, rim_w, chamfer=False):
     dx, dz = x - CENTER, z - CENTER
     if max(abs(dx), abs(dz)) < BORE:
         return BORE_C  # квадратное отверстие по сечению вала
@@ -47,13 +50,16 @@ def classify(x, z, teeth, root, tip, rim_w):
         return HUBC
     phase = (math.atan2(dz, dx) / (2 * math.pi) * teeth) % 1.0
     if r < root + (tip - root) * tooth(phase):
+        if chamfer and r > root:
+            d = r - root
+            return T1 if d < 0.5 else T2 if d < 1.0 else T3
         return RIM if r >= root - rim_w else WEB
     return EMPTY
 
 
-def rasterize(teeth, root, tip, rim_w, cell, lo, hi):
+def rasterize(teeth, root, tip, rim_w, cell, lo, hi, chamfer=False):
     n = round((hi - lo) / cell)
-    grid = [[classify(lo + (i + 0.5) * cell, lo + (j + 0.5) * cell, teeth, root, tip, rim_w)
+    grid = [[classify(lo + (i + 0.5) * cell, lo + (j + 0.5) * cell, teeth, root, tip, rim_w, chamfer)
              for i in range(n)] for j in range(n)]
     return grid, n
 
@@ -101,8 +107,8 @@ def exposed(grid, n, c, cells):
     return False
 
 
-def model(name, teeth, root, tip, rim_w, cell, lo, hi):
-    grid, n = rasterize(teeth, root, tip, rim_w, cell, lo, hi)
+def model(name, teeth, root, tip, rim_w, cell, lo, hi, chamfer=False):
+    grid, n = rasterize(teeth, root, tip, rim_w, cell, lo, hi, chamfer)
     span = hi - lo
     s = 16.0 / span  # развёртка текстуры 16×16 на весь диаметр
 
@@ -144,7 +150,7 @@ def main():
     # Размеры подобраны так, чтобы зубья заходили во впадины соседа (1.8 и 2.3 px) и не упирались
     # вершиной в дно впадины; с фазовым сдвигом рендера (π/16, π/32) перекрытия нет на всём обороте.
     model("rotor_small_gear", 8, 6.6, 8.9, 1.2, 0.5, -1.0, 17.0)
-    model("rotor_large_gear", 16, 13.6, 16.0, 1.5, 0.5, -8.0, 24.0)
+    model("rotor_large_gear", 16, 13.6, 16.0, 1.5, 0.5, -8.0, 24.0, chamfer=True)
 
 
 if __name__ == "__main__":

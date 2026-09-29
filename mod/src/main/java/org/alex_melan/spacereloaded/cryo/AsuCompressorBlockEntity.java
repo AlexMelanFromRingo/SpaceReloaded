@@ -25,7 +25,7 @@ public class AsuCompressorBlockEntity extends KineticBlockEntity {
 
     @Override
     public NodeLoad load(ServerLevel level) {
-        return new NodeLoad(0, B, SpaceReloaded.config().kineticFrictionTorqueNm, kineticBlock().inertia());
+        return rotorLoad(level, 0, B, 0, kineticBlock().inertia());
     }
 
     /** Мощность сжатия, Вт. */

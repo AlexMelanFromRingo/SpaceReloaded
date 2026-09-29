@@ -6,7 +6,8 @@ package org.alex_melan.spacereloaded.core.kinetics;
  * J = Σ Iᵢ·rᵢ², A = Σ rᵢ·eᵢ·aᵢ, B = Σ rᵢ²·eᵢ·bᵢ, C = Σ |rᵢ|·cᵢ/eᵢ
  * (мощность сохраняется через передачу: τ_оп·ω = τᵢ·ωᵢ → τ_оп = rᵢ·τᵢ; потери — множитель
  * КПД у источника и делитель у нагрузки). Шаг неявный по линейной части (жёсткий мотор при
- * малой инерции валов устойчив), кулоновское трение — с покоем: при ω = 0 и |A| ≤ C сеть стоит.
+ * малой инерции валов устойчив), кулоновское трение — с покоем: при ω = 0 и |A| ≤ C·k_пуск сеть стоит
+ * + добавки трения покоя подшипников ({@link NodeLoad#breakaway()}, {@link Bearing#BREAKAWAY}).
  *
  * <p>Моменты через узлы — сумма «чистых» приведённых моментов поддерева обхода (включая
  * инерционный −I·r²·α), делённая на |rᵢ|: это момент, который вал узла передаёт к корню, —
@@ -44,12 +45,13 @@ public final class KineticSolver {
         return (a - Math.signum(a) * c) / b;
     }
 
-    /** {A, B, C, J}. */
+    /** {A, B, C, J, C_покоя}. */
     static double[] sums(KineticGraph.Analysis analysis, NodeLoad[] loads) {
         double a = 0;
         double b = 0;
         double c = 0;
         double j = 0;
+        double stat = 0;
         for (int i = 0; i < analysis.size(); i++) {
             NodeLoad load = loads[i];
             double r = analysis.ratio()[i];
@@ -58,8 +60,9 @@ public final class KineticSolver {
             b += r * r * e * load.b();
             c += Math.abs(r) * load.c() / e;
             j += load.inertia() * r * r;
+            stat += Math.abs(r) * load.breakaway() / e;
         }
-        return new double[] {a, b, c, j};
+        return new double[] {a, b, c, j, stat};
     }
 
     /** Один шаг длительности dt, с. */
@@ -74,7 +77,8 @@ public final class KineticSolver {
         double next;
         double frictionScale = 1.0;
         double sgn;
-        if (omega == 0.0 && Math.abs(a) <= c) {
+        if (omega == 0.0 && Math.abs(a) <= c + s[4]) {
+            // трение покоя: пусковой момент подшипников выше рабочего (011)
             resting = true;
             next = 0.0;
             sgn = Math.signum(a);

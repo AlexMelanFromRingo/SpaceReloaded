@@ -51,6 +51,7 @@ public class BatteryBlockEntity extends MachineBlockEntity implements MenuProvid
     }
 
     public void serverTick(ServerLevel level) {
+        pushToNeighbours(level);
         if (level.getGameTime() % 20 != 0) {
             return;
         }
@@ -62,6 +63,37 @@ public class BatteryBlockEntity extends MachineBlockEntity implements MenuProvid
             int charge = (int) Math.round(4.0 * energy.amount / Math.max(1, energy.capacity));
             if (state.getValue(BatteryBlock.CHARGE) != charge) {
                 level.setBlock(getBlockPos(), state.setValue(BatteryBlock.CHARGE, charge), 3);
+            }
+        }
+    }
+
+    /**
+     * 011: батарея питает соседние потребители напрямую (станок вплотную, без кабеля) — до предела
+     * отдачи за тик на все грани. Кабели обслуживает их сеть, соседние батареи не подпитываются
+     * (иначе две батареи перекачивали бы заряд туда-обратно).
+     */
+    private void pushToNeighbours(ServerLevel level) {
+        long budget = Math.min(energy.amount, SpaceReloaded.config().batteryMaxTransfer);
+        if (budget <= 0) {
+            return;
+        }
+        for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+            if (budget <= 0) {
+                break;
+            }
+            BlockPos n = getBlockPos().relative(dir);
+            if (level.getBlockState(n).getBlock() instanceof CableBlock || level.getBlockEntity(n) instanceof BatteryBlockEntity) {
+                continue;
+            }
+            team.reborn.energy.api.EnergyStorage target = team.reborn.energy.api.EnergyStorage.SIDED.find(level, n, dir.getOpposite());
+            if (target == null || !target.supportsInsertion()) {
+                continue;
+            }
+            try (net.fabricmc.fabric.api.transfer.v1.transaction.Transaction tx =
+                         net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
+                long moved = team.reborn.energy.api.EnergyStorageUtil.move(energy, target, budget, tx);
+                tx.commit();
+                budget -= moved;
             }
         }
     }

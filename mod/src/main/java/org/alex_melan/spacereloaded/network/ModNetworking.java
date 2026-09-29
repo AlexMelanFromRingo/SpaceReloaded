@@ -72,14 +72,14 @@ public final class ModNetworking {
             if (!refresh) {
                 machine.action(level, player, payload.action(), payload.value());
             }
-            ServerPlayNetworking.send(player, machine.status(level));
+            ServerPlayNetworking.send(player, machine.status(level).asRefresh());
         } else if (level.getBlockState(payload.pos()).getBlock()
                 instanceof org.alex_melan.spacereloaded.multiblock.BlockStatusProvider block) {
             // 010: экран блока без сущности (ЦУП)
             if (!refresh) {
                 block.action(level, payload.pos(), player, payload.action(), payload.value());
             }
-            ServerPlayNetworking.send(player, block.status(level, payload.pos(), player));
+            ServerPlayNetworking.send(player, block.status(level, payload.pos(), player).asRefresh());
         }
     }
 

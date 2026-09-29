@@ -59,7 +59,7 @@ public class LatheBlockEntity extends KineticMachineBlockEntity<MachiningRecipe.
     @Override
     public NodeLoad load(ServerLevel level) {
         SpaceReloadedConfig config = SpaceReloaded.config();
-        return new NodeLoad(0, 0, config.kineticFrictionTorqueNm + (cutting ? cuttingTorque() : 0), 5.0);
+        return rotorLoad(level, 0, 0, cutting ? cuttingTorque() : 0, 5.0);
     }
 
     @Override

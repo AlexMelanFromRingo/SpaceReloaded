@@ -61,7 +61,7 @@ public class PressBlockEntity extends KineticMachineBlockEntity<MachiningRecipe.
             double seconds = config.pressStrokeTicks * KineticNetworks.DT;
             strike = config.pressStrokeJ / (seconds * Math.max(Math.abs(omega), minOmega()));
         }
-        return new NodeLoad(0, 0, config.kineticFrictionTorqueNm + strike, 20.0);
+        return rotorLoad(level, 0, 0, strike, 20.0);
     }
 
     @Override

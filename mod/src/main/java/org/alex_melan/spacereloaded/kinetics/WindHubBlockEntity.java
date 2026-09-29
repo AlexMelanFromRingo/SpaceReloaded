@@ -89,8 +89,8 @@ public class WindHubBlockEntity extends KineticBlockEntity {
 
     @Override
     public NodeLoad load(ServerLevel level) {
-        double friction = SpaceReloaded.config().kineticFrictionTorqueNm;
         double inertia = 20 + sails * 15.0;
+        double friction = bearingTorque(level, inertia);
         if (radius <= 0 || density <= 0 || windSpeed <= 0) {
             return new NodeLoad(0, 0, friction, inertia);
         }

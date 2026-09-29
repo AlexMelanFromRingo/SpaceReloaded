@@ -939,5 +939,8 @@
 	"message.spacereloaded.mission_control.satellites": "Покрытие ретрансляторами: %s · спутников-камер %s · гиперспектральных %s",
 	"gauge.spacereloaded.kinetic.omega": "Скорость / предел маховика",
 	"gauge.spacereloaded.spin_hub.bearing": "Нагрузка подшипника",
-	"modmenu.descriptionTranslation.spacereloaded": "Космическая программа на настоящей физике: ракеты из блоков с честной Δv, герметичные базы, которые дышат, орбитальные станции с гравитацией вращением, перелёты по небесной механике, промышленность от песка до реактора Kilopower и кинетические удары с орбиты."
+	"modmenu.descriptionTranslation.spacereloaded": "Космическая программа на настоящей физике: ракеты из блоков с честной Δv, герметичные базы, которые дышат, орбитальные станции с гравитацией вращением, перелёты по небесной механике, промышленность от песка до реактора Kilopower и кинетические удары с орбиты.",
+	"message.spacereloaded.motor.voltage": "Напряжение якоря %s %% · холостой ход %s об/мин · пиковая мощность %s кВт",
+	"action.spacereloaded.motor.slower": "Напряжение −10 %",
+	"action.spacereloaded.motor.faster": "Напряжение +10 %"
 }
