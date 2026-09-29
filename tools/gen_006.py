@@ -22,6 +22,8 @@ def sr(name):
 
 
 def write(path, obj):
+    from modelkit import fix_uv
+    fix_uv(obj)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(obj, f, indent="\t", ensure_ascii=False)

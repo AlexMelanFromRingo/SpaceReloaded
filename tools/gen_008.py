@@ -512,10 +512,16 @@ def dsn_models():
     mk.blockstate("dsn_controller", mk.facing_variants(
         lambda formed, active: f"{NS}:block/dsn_controller" + ("_formed" if formed else "") + ("_on" if active else "")))
     mk.item("dsn_controller", f"{NS}:block/dsn_controller")
-    # опора: пьедестал и вилка (ось вращения север — юг, на ней качается тарелка)
+    # опора: пьедестал и вилка. Щёки вилки — на севере и юге, ось цапф между ними идёт по Z (север — юг):
+    # тарелка качается на ней к востоку и западу — по дуге неба (рендер наклоняет вокруг Z); на север
+    # и юг она повернуться не может — щёки не пускают
     mount = [mk.box([3, 0, 3], [13, 9, 13], "#steel"),
-             mk.box([1, 9, 6], [3, 16, 10], "#steel"), mk.box([13, 9, 6], [15, 16, 10], "#steel"),
-             mk.box([3, 9, 6.5], [13, 10, 9.5], "#steel", skip=("east", "west"))]
+             mk.box([6, 9, 1], [10, 16, 3], "#steel"), mk.box([6, 9, 13], [10, 16, 15], "#steel"),
+             mk.box([6.5, 9, 3], [9.5, 10, 13], "#steel", skip=("north", "south")),
+             # ось цапф: сквозь щёки, на высоте шарнира (12.5 px)
+             mk.box([7.25, 11.75, 0.5], [8.75, 13.25, 1], "#steel", skip=("south",)),
+             mk.box([7.25, 11.75, 3], [8.75, 13.25, 13], "#steel", skip=("north", "south")),
+             mk.box([7.25, 11.75, 15], [8.75, 13.25, 15.5], "#steel", skip=("north",))]
     mk.model("dish_mount", {"steel": f"{NS}:block/dsn_mount"}, mount)
     mk.model("dish_mount_formed", {"steel": f"{NS}:block/dsn_mount"}, mount)
     mk.blockstate("dish_mount", {"formed=false": {"model": f"{NS}:block/dish_mount"}, "formed=true": {"model": f"{NS}:block/dish_mount_formed"}})
