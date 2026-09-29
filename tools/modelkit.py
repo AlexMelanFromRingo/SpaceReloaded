@@ -12,6 +12,7 @@ ROT = {"north": 0, "east": 90, "south": 180, "west": 270}
 
 
 def write(path, obj):
+    fix_uv(obj)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(obj, f, indent="\t", ensure_ascii=False)
@@ -39,6 +40,36 @@ def fit_uv(face, f, t):
             a, b = base + (a - lo) * k, base + (b - lo) * k
         out.append((round(a, 4), round(b, 4)))
     return [out[0][0], out[1][0], out[0][1], out[1][1]]
+
+
+def _fit_explicit(uv):
+    out = []
+    for a, b in ((uv[0], uv[2]), (uv[1], uv[3])):
+        lo, hi = min(a, b), max(a, b)
+        if lo < 0 or hi > 16:
+            span = hi - lo
+            k = 16 / span if span > 16 else 1
+            base = 0 if span > 16 else max(0, min(16 - span, lo % 16))
+            a, b = base + (a - lo) * k, base + (b - lo) * k
+        out.append((round(a, 4), round(b, 4)))
+    return [out[0][0], out[1][0], out[0][1], out[1][1]]
+
+
+def fix_uv(obj):
+    """Вписывает UV всех граней модели в 0..16: и явные, и по умолчанию у элементов, выходящих за блок.
+    Возвращает число исправленных граней."""
+    n = 0
+    for e in obj.get("elements", []) if isinstance(obj, dict) else []:
+        outside = any(v < 0 or v > 16 for v in e["from"] + e["to"])
+        for face, fc in e.get("faces", {}).items():
+            uv = fc.get("uv")
+            if uv is None and outside:
+                fc["uv"] = fit_uv(face, e["from"], e["to"])
+                n += 1
+            elif uv is not None and any(v < 0 or v > 16 for v in uv):
+                fc["uv"] = _fit_explicit(uv)
+                n += 1
+    return n
 
 
 def box(f, t, tex, skip=(), over=None, rot=None, shade=True):
